@@ -1,0 +1,40 @@
+
+body{background:#f5f7fb}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{width:min(420px,95vw)}
+#mapDashboard{height:520px;border:1px solid #d7dbe6;border-radius:.75rem}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.stat-card{background:#fff;border:1px solid #d7dbe6;border-radius:.75rem;padding:.9rem}
+.checklist-box{min-height:300px;max-height:420px;overflow:auto;border:1px solid #d7dbe6;border-radius:.75rem;padding:.75rem;background:#fff}
+.selected-box{min-height:300px;max-height:420px;overflow:auto}
+.badge-sem-verde{background:#198754}
+.badge-sem-ambar{background:#fd7e14}
+.badge-sem-rojo{background:#dc3545}
+.selected-territorio{border:1px solid #d7dbe6;border-radius:.65rem;padding:.55rem .7rem;background:#fff;margin-bottom:.45rem}
+.sector-chip label{display:block;border:1px solid #d7dbe6;border-radius:.75rem;padding:.55rem .7rem;background:#fff}
+.admin-only.hidden-by-role{display:none!important}
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:1fr}
+  #mapDashboard{height:380px}
+}
+
+#tablaUsuariosProgramaBody td{vertical-align:middle}
+
+.blink-soft{animation:blinkSoft 1s ease-in-out infinite}
+@keyframes blinkSoft{0%{opacity:1}50%{opacity:.35}100%{opacity:1}}
+
+
+.role-admin-btn{font-weight:600}
+.admin-panel-stat{border:1px solid #d7dbe6;border-radius:.75rem;padding:.75rem;background:#fff}
+#tablaAdminUsuarios td,#tablaAuditoria td,#tablaConflictos td{vertical-align:middle}
+.admin-only.hidden-by-role{display:none!important}
+
+.sla-ok{background:#198754}
+.sla-observado{background:#fd7e14}
+.sla-critico{background:#dc3545}
+
+#mapDashboardControls{border:1px solid #d7dbe6;border-radius:.75rem;padding:.75rem;background:#fff}
+.map-ds-toolbar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.map-ds-chip{border:1px solid #d7dbe6;border-radius:999px;padding:.35rem .7rem;background:#fff;cursor:pointer;font-size:.9rem}
+.map-ds-chip.active{color:#fff;font-weight:600}
+.map-ds-help{font-size:.85rem;color:#6c757d}
