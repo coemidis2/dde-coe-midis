@@ -67,3 +67,25 @@ export async function requireSession(context, allowedRoles = []) {
   }
   return { ok: true, session };
 }
+export function setCookie(name, value, options = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=Lax'];
+
+  if (typeof options.maxAge === 'number') {
+    parts.push(`Max-Age=${options.maxAge}`);
+  }
+
+  if (options.expires) {
+    const expires = options.expires instanceof Date
+      ? options.expires.toUTCString()
+      : new Date(options.expires).toUTCString();
+    parts.push(`Expires=${expires}`);
+  }
+
+  if (options.secure !== false) {
+    parts.push('Secure');
+  }
+
+  return parts.join('; ');
+}
+
+
