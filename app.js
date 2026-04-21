@@ -45,7 +45,8 @@ const STORAGE_KEY = 'dee_midis_local_v4';
 let state = {
   session: null,
   decretos: [],
-  acciones: []
+  acciones: [],
+  nuevoDSTerritorios: []
 };
 
 const $ = (id)=>document.getElementById(id);
@@ -58,7 +59,7 @@ function init(){
   wireLogin();
   wireUI();
   autoLogin();
-  initUbigeo(); // 👈 CLAVE
+  initUbigeo();
 }
 
 // ================== STORAGE ==================
@@ -69,6 +70,7 @@ function loadStorage(){
       const parsed = JSON.parse(raw);
       state.decretos = parsed.decretos || [];
       state.acciones = parsed.acciones || [];
+      state.nuevoDSTerritorios = [];
     }
   }catch(e){}
 }
@@ -79,7 +81,9 @@ function saveStorage(){
 
 // ================== LOGIN ==================
 function wireLogin(){
-  $('btnLogin').addEventListener('click', doLogin);
+  if($('btnLogin')){
+    $('btnLogin').addEventListener('click', doLogin);
+  }
 }
 
 function wireUI(){
@@ -92,8 +96,8 @@ function wireUI(){
 }
 
 async function doLogin(){
-  const email = ($('loginUser').value || '').trim().toLowerCase();
-  const pass = $('loginPass').value || '';
+  const email = ($('loginUser')?.value || '').trim().toLowerCase();
+  const pass = $('loginPass')?.value || '';
 
   const resp = await apiPost('/login', {email, password: pass});
 
@@ -106,8 +110,8 @@ async function doLogin(){
       role: resp.role || 'Administrador'
     };
 
-    $('loginView').classList.add('d-none');
-    $('appView').classList.remove('d-none');
+    if($('loginView')) $('loginView').classList.add('d-none');
+    if($('appView')) $('appView').classList.remove('d-none');
 
     await syncFromBackend();
     renderAll();
@@ -130,8 +134,8 @@ async function autoLogin(){
       role:'Administrador'
     };
 
-    $('loginView').classList.add('d-none');
-    $('appView').classList.remove('d-none');
+    if($('loginView')) $('loginView').classList.add('d-none');
+    if($('appView')) $('appView').classList.remove('d-none');
 
     state.decretos = data.decretos || [];
     state.acciones = data.acciones || [];
@@ -157,22 +161,53 @@ let ubigeoCache = [];
 
 function initUbigeo(){
   if(!window.ubigeoData || !Array.isArray(window.ubigeoData)){
-    console.error("ubigeoData no cargó");
+    console.error('ubigeoData no cargó');
     return;
   }
 
   ubigeoCache = window.ubigeoData;
 
   cargarDepartamentos();
+  renderTerritorioSeleccionado();
 
-  $('selDepartamento').addEventListener('change', cargarProvincias);
-  $('selProvincia').addEventListener('change', cargarDistritos);
-  $('buscarDistrito').addEventListener('input', filtrarDistritos);
-  $('btnAgregarDistritos').addEventListener('click', agregarDistritosSeleccionados);
+  if($('selDepartamento')){
+    $('selDepartamento').addEventListener('change', cargarProvincias);
+  }
+
+  if($('selProvincia')){
+    $('selProvincia').addEventListener('change', cargarDistritos);
+  }
+
+  if($('buscarDistrito')){
+    $('buscarDistrito').addEventListener('input', filtrarDistritos);
+  }
+
+  if($('btnAgregarDistritos')){
+    $('btnAgregarDistritos').addEventListener('click', (e)=>{
+      e.preventDefault();
+      agregarDistritosSeleccionados();
+    });
+  }
+
+  if($('btnMarcarTodos')){
+    $('btnMarcarTodos').addEventListener('click', (e)=>{
+      e.preventDefault();
+      marcarTodosDistritosVisibles();
+    });
+  }
+
+  if($('btnLimpiarChecks')){
+    $('btnLimpiarChecks').addEventListener('click', (e)=>{
+      e.preventDefault();
+      limpiarChecksDistritos();
+    });
+  }
 }
 
 function cargarDepartamentos(){
   const sel = $('selDepartamento');
+  if(!sel) return;
+
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
   const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
@@ -186,12 +221,19 @@ function cargarDepartamentos(){
 }
 
 function cargarProvincias(){
-  const dep = $('selDepartamento').value;
+  const dep = $('selDepartamento')?.value || '';
   const selProv = $('selProvincia');
+
+  if(!selProv) return;
 
   selProv.innerHTML = '<option value="">Seleccione...</option>';
 
-  if(!dep) return;
+  if(!dep){
+    if($('distritosChecklist')){
+      $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
+    }
+    return;
+  }
 
   const provincias = [...new Set(
     ubigeoCache
@@ -206,67 +248,180 @@ function cargarProvincias(){
     selProv.appendChild(opt);
   });
 
-  $('distritosChecklist').innerHTML = '';
+  if($('distritosChecklist')){
+    $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione una provincia.</div>';
+  }
+
+  if($('buscarDistrito')){
+    $('buscarDistrito').value = '';
+  }
+
+  limpiarChecksDistritos(true);
 }
 
 function cargarDistritos(){
-  const dep = $('selDepartamento').value;
-  const prov = $('selProvincia').value;
-
-  if(!dep || !prov) return;
-
+  const dep = $('selDepartamento')?.value || '';
+  const prov = $('selProvincia')?.value || '';
   const cont = $('distritosChecklist');
+
+  if(!cont) return;
+
+  if(!dep || !prov){
+    cont.innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
+    return;
+  }
+
   cont.innerHTML = '';
+
+  if($('buscarDistrito')){
+    $('buscarDistrito').value = '';
+  }
 
   const distritos = ubigeoCache.filter(x =>
     x.departamento === dep && x.provincia === prov
   );
 
+  if(!distritos.length){
+    cont.innerHTML = '<div class="text-muted small">No hay distritos para la selección actual.</div>';
+    return;
+  }
+
   distritos.forEach(d=>{
+    const yaSeleccionado = state.nuevoDSTerritorios.some(t => String(t.ubigeo) === String(d.ubigeo));
+
     const div = document.createElement('div');
+    div.className = 'form-check';
     div.innerHTML = `
-      <label>
-        <input type="checkbox" value="${d.ubigeo}">
-        ${d.distrito}
-      </label>
+      <input class="form-check-input chk-distrito" type="checkbox" id="dist_${d.ubigeo}" value="${d.ubigeo}" ${yaSeleccionado ? 'checked' : ''}>
+      <label class="form-check-label" for="dist_${d.ubigeo}">${d.distrito}</label>
     `;
     cont.appendChild(div);
   });
 }
 
 function filtrarDistritos(){
-  const txt = $('buscarDistrito').value.toLowerCase();
-  const checks = $('distritosChecklist').querySelectorAll('div');
+  const txt = ($('buscarDistrito')?.value || '').trim().toLowerCase();
+  const checklist = $('distritosChecklist');
+  if(!checklist) return;
 
-  checks.forEach(div=>{
-    div.style.display = div.textContent.toLowerCase().includes(txt)
-      ? ''
-      : 'none';
+  const filas = checklist.querySelectorAll('.form-check');
+
+  filas.forEach(div=>{
+    const visible = div.textContent.toLowerCase().includes(txt);
+    div.style.display = visible ? '' : 'none';
   });
 }
 
+function marcarTodosDistritosVisibles(){
+  const checklist = $('distritosChecklist');
+  if(!checklist) return;
+
+  const visibles = [...checklist.querySelectorAll('.form-check')]
+    .filter(div => div.style.display !== 'none')
+    .map(div => div.querySelector('input[type="checkbox"]'))
+    .filter(Boolean);
+
+  visibles.forEach(chk => chk.checked = true);
+}
+
+function limpiarChecksDistritos(silencioso = false){
+  const checklist = $('distritosChecklist');
+  if(checklist){
+    checklist.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+      chk.checked = false;
+    });
+  }
+
+  if(!silencioso){
+    if($('buscarDistrito')){
+      $('buscarDistrito').value = '';
+    }
+    filtrarDistritos();
+  }
+}
+
 function agregarDistritosSeleccionados(){
-  const checks = $('distritosChecklist').querySelectorAll('input:checked');
-  const cont = $('territorioSeleccionado');
+  const checklist = $('distritosChecklist');
+  if(!checklist) return;
+
+  const checks = checklist.querySelectorAll('input[type="checkbox"]:checked');
 
   if(!checks.length){
+    alert('Seleccione al menos un distrito para agregar.');
+    renderTerritorioSeleccionado();
+    return;
+  }
+
+  let agregados = 0;
+
+  checks.forEach(chk=>{
+    const data = ubigeoCache.find(x => String(x.ubigeo) === String(chk.value));
+    if(!data) return;
+
+    const existe = state.nuevoDSTerritorios.some(t => String(t.ubigeo) === String(data.ubigeo));
+    if(existe) return;
+
+    state.nuevoDSTerritorios.push({
+      ubigeo: data.ubigeo,
+      departamento: data.departamento,
+      provincia: data.provincia,
+      distrito: data.distrito,
+      latitud: data.latitud ?? data.lat ?? '',
+      longitud: data.longitud ?? data.lng ?? ''
+    });
+
+    agregados += 1;
+  });
+
+  renderTerritorioSeleccionado();
+
+  if(agregados === 0){
+    alert('Los distritos marcados ya estaban agregados.');
+  }else{
+    limpiarChecksDistritos(true);
+    cargarDistritos();
+  }
+}
+
+function quitarTerritorioSeleccionado(ubigeo){
+  state.nuevoDSTerritorios = state.nuevoDSTerritorios.filter(
+    t => String(t.ubigeo) !== String(ubigeo)
+  );
+
+  renderTerritorioSeleccionado();
+  cargarDistritos();
+}
+
+function renderTerritorioSeleccionado(){
+  const cont = $('territorioSeleccionado');
+  if(!cont) return;
+
+  if(!state.nuevoDSTerritorios.length){
     cont.innerHTML = '<div class="text-muted">No hay territorios agregados.</div>';
     return;
   }
 
-  let html = '';
+  cont.innerHTML = state.nuevoDSTerritorios.map(t => `
+    <div class="d-flex justify-content-between align-items-start gap-2 border rounded bg-white px-2 py-1 mb-2">
+      <div>
+        <div><strong>${escapeHtml(t.departamento)}</strong> - ${escapeHtml(t.provincia)} - ${escapeHtml(t.distrito)}</div>
+        <div class="text-muted small">Ubigeo: ${escapeHtml(String(t.ubigeo))}</div>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="quitarTerritorioSeleccionado('${String(t.ubigeo).replace(/'/g, "\\'")}')">Quitar</button>
+    </div>
+  `).join('');
+}
 
-  checks.forEach(chk=>{
-    const data = ubigeoCache.find(x => x.ubigeo === chk.value);
-    if(data){
-      html += `<div>${data.departamento} - ${data.provincia} - ${data.distrito}</div>`;
-    }
-  });
-
-  cont.innerHTML = html;
+function escapeHtml(value){
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 // ================== RENDER ==================
 function renderAll(){
-  console.log("Sistema cargado", state);
+  console.log('Sistema cargado', state);
 }
