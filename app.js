@@ -2,16 +2,32 @@
 const API_BASE = window.location.origin + '/api';
 let AUTH_TOKEN = localStorage.getItem('auth_token') || '';
 
+if (AUTH_TOKEN === 'undefined' || AUTH_TOKEN === 'null') {
+  AUTH_TOKEN = '';
+  localStorage.removeItem('auth_token');
+}
+
 function setToken(token){
-  AUTH_TOKEN = token;
-  localStorage.setItem('auth_token', token);
+  AUTH_TOKEN = token || '';
+
+  if (AUTH_TOKEN && AUTH_TOKEN !== 'undefined' && AUTH_TOKEN !== 'null') {
+    localStorage.setItem('auth_token', AUTH_TOKEN);
+  } else {
+    AUTH_TOKEN = '';
+    localStorage.removeItem('auth_token');
+  }
 }
 
 function getHeaders(){
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': AUTH_TOKEN ? `Bearer ${AUTH_TOKEN}` : ''
+  const headers = {
+    'Content-Type': 'application/json'
   };
+
+  if (AUTH_TOKEN && AUTH_TOKEN !== 'undefined' && AUTH_TOKEN !== 'null') {
+    headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
+  }
+
+  return headers;
 }
 
 async function apiGet(path){
@@ -128,6 +144,8 @@ async function doLogin(){
 
   const resp = await apiPost('/login', { email, password: pass });
 
+  console.log('LOGIN RESPONSE:', resp);
+
   if(resp && resp.ok){
     setToken(resp.token);
 
@@ -136,6 +154,10 @@ async function doLogin(){
       name: resp.name || email,
       role: resp.role || 'Administrador'
     };
+
+    if (!resp.token) {
+      console.warn('El backend autenticó pero no devolvió token.');
+    }
 
     $('loginView')?.classList.add('d-none');
     $('appView')?.classList.remove('d-none');
@@ -410,7 +432,7 @@ async function guardarDecretoSupremo(){
     creadoEn: new Date().toISOString()
   };
 
-  // Payload alineado con tabla D1 decretos
+  // Payload alineado con tabla D1
   const payload = {
     id: nuevoUI.id,
     codigo_registro: codigoRegistro,
@@ -433,11 +455,14 @@ async function guardarDecretoSupremo(){
     locked: 0
   };
 
+  console.log('PAYLOAD DS -> BACKEND:', payload);
+
   // Guardado local temporal
   state.decretos.push(nuevoUI);
   saveStorage();
 
   const resp = await apiPost('/decretos', payload);
+  console.log('RESPUESTA POST /decretos:', resp);
 
   if(resp && resp.ok){
     console.log('Guardado en backend');
