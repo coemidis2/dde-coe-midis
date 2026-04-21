@@ -163,7 +163,7 @@ async function autoLogin(){
     $('loginView')?.classList.add('d-none');
     $('appView')?.classList.remove('d-none');
 
-    state.decretos = data.decretos || [];
+    state.decretos = (data.decretos || []).map(normalizarDecretoDesdeBackend);
     state.acciones = data.acciones || [];
 
     renderAll();
@@ -174,7 +174,7 @@ async function syncFromBackend(){
   const data = await apiGet('/decretos');
 
   if(data && data.ok){
-    state.decretos = data.decretos || [];
+    state.decretos = (data.decretos || []).map(normalizarDecretoDesdeBackend);
     state.acciones = data.acciones || [];
     saveStorage();
   }
@@ -386,7 +386,8 @@ async function guardarDecretoSupremo(){
     cadenaProrroga = dataProrroga.cadena;
   }
 
-  const nuevo = {
+  // Objeto para UI local
+  const nuevoUI = {
     id: cryptoRandomId(),
     numero,
     anio,
@@ -400,7 +401,7 @@ async function guardarDecretoSupremo(){
     semaforo,
     motivos,
     territorios: structuredCloneSafe(state.nuevoDSTerritorios),
-    sectoresFirmantes,
+    sectoresFirmantes: structuredCloneSafe(sectoresFirmantes),
     esProrroga,
     dsOrigenId: esProrroga ? dsOrigenId : '',
     dsOrigenNumero: esProrroga ? origenNumero : '',
@@ -409,10 +410,35 @@ async function guardarDecretoSupremo(){
     creadoEn: new Date().toISOString()
   };
 
-  state.decretos.push(nuevo);
+  // Payload alineado con tabla D1 decretos
+  const payload = {
+    id: nuevoUI.id,
+    codigo_registro: codigoRegistro,
+    numero: numero,
+    anio: anio,
+    peligro: peligro,
+    tipo_peligro: tipoPeligro,
+    fecha_inicio: fechaInicio,
+    fecha_fin: fechaFin,
+    vigencia: vigencia,
+    semaforo: semaforo,
+    motivos: motivos,
+    sectores: JSON.stringify(sectoresFirmantes),
+    territorio: JSON.stringify(state.nuevoDSTerritorios),
+    es_prorroga: esProrroga ? 1 : 0,
+    usuario_registro: state.session?.email || 'admin@midis.gob.pe',
+    fecha_registro: new Date().toISOString(),
+    estado: 'activo',
+    version: 1,
+    locked: 0
+  };
+
+  // Guardado local temporal
+  state.decretos.push(nuevoUI);
   saveStorage();
 
-  const resp = await apiPost('/decretos', nuevo);
+  const resp = await apiPost('/decretos', payload);
+
   if(resp && resp.ok){
     console.log('Guardado en backend');
   }else{
@@ -552,6 +578,35 @@ function verDecreto(id){
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
   }
+}
+
+// ================== NORMALIZACION BACKEND -> UI ==================
+function normalizarDecretoDesdeBackend(ds){
+  const territorios = parseJsonSafe(ds.territorio, []);
+  const sectoresFirmantes = parseJsonSafe(ds.sectores, []);
+
+  return {
+    id: ds.id,
+    numero: ds.numero || '',
+    anio: ds.anio || '',
+    codigoRegistro: ds.codigo_registro || '',
+    peligro: ds.peligro || '',
+    tipoPeligro: ds.tipo_peligro || '',
+    plazoDias: safeNumber(ds.vigencia),
+    fechaInicio: ds.fecha_inicio || '',
+    fechaFin: ds.fecha_fin || '',
+    vigencia: ds.vigencia || '',
+    semaforo: ds.semaforo || '',
+    motivos: ds.motivos || '',
+    territorios: Array.isArray(territorios) ? territorios : [],
+    sectoresFirmantes: Array.isArray(sectoresFirmantes) ? sectoresFirmantes : [],
+    esProrroga: Number(ds.es_prorroga || 0) === 1,
+    dsOrigenId: '',
+    dsOrigenNumero: '',
+    nivelProrroga: 0,
+    cadenaProrroga: '',
+    creadoEn: ds.fecha_registro || ''
+  };
 }
 
 // ================== UBIGEO ==================
@@ -837,6 +892,20 @@ function escapeHtml(value){
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function parseJsonSafe(value, fallback){
+  try{
+    if(value == null || value === '') return fallback;
+    return JSON.parse(value);
+  }catch{
+    return fallback;
+  }
+}
+
+function safeNumber(value){
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : 0;
 }
 
 // ================== RENDER ==================
