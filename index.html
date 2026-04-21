@@ -13,7 +13,7 @@
     <div class="card shadow-sm login-card">
       <div class="card-body p-4">
         <h3 class="text-primary mb-1">Registro de Declaratorias de Estado de Emergencia MIDIS</h3>
-        <div class="text-muted small mb-4">VERSION 3 21/04/2026 15:00 hrs</div>
+        <div class="text-muted small mb-4">VERSION 5 21/04/2026 15:35 hrs</div>
         <div class="mb-3">
           <label class="form-label">Usuario</label>
           <input id="loginUser" class="form-control" placeholder="usuario@midis.gob.pe">
@@ -123,42 +123,46 @@
                     <option>Por peligro inminente</option>
                   </select>
                 </div>
-                <div class="col-md-3">
-                  <label class="form-label">Tipo de Peligro</label>
-                  <select id="dsTipoPeligro" class="form-select">
-                    <option value="">Seleccione...</option>
-                    <option>Lluvias intensas</option>
-                    <option>Inundaciones</option>
-                    <option>Huaicos</option>
-                    <option>Sismos</option>
-                    <option>Incendios Urbanos</option>
-                    <option>Incendios Forestales</option>
-                    <option>Deslizamiento</option>
-                    <option>Deflagración</option>
-                    <option>Derrumbe</option>
-                    <option>Reptación</option>
-                    <option>Sequía</option>
-                    <option>Bajas temperaturas</option>
-                    <option>Heladas</option>
-                    <option>Friaje</option>
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Fecha de inicio</label>
-                  <input id="dsFechaInicio" class="form-control" type="date">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Fecha final</label>
-                  <input id="dsFechaFin" class="form-control" type="date" readonly>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Vigencia</label>
-                  <input id="dsVigencia" class="form-control" readonly>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Semáforo</label>
-                  <input id="dsSemaforo" class="form-control" readonly>
-                </div>
+		<div class="col-md-3">
+		  <label class="form-label">Tipo de Peligro</label>
+		  <select id="dsTipoPeligro" class="form-select">
+		     <option value="">Seleccione...</option>
+		     <option>Lluvias intensas</option>
+  	  	     <option>Inundaciones</option>
+		     <option>Huaicos</option>
+		     <option>Sismos</option>
+		     <option>Incendios Urbanos</option>
+		     <option>Incendios Forestales</option>
+		     <option>Deslizamiento</option>
+		     <option>Deflagración</option>
+		     <option>Derrumbe</option>
+		     <option>Reptación</option>
+		     <option>Sequía</option>
+		     <option>Bajas temperaturas</option>
+		     <option>Heladas</option>
+		     <option>Friaje</option>
+		  </select>
+		</div>
+		<div class="col-md-2">
+		  <label class="form-label">Plazo (Días)</label>
+		  <input id="dsPlazoDias" class="form-control" type="number" min="1" placeholder="Ej.: 60">
+		</div>
+		<div class="col-md-2">
+		  <label class="form-label">Fecha de inicio</label>
+		  <input id="dsFechaInicio" class="form-control" type="date">
+		</div>
+		<div class="col-md-2">
+		  <label class="form-label">Fecha final</label>
+		  <input id="dsFechaFin" class="form-control" type="date" readonly>
+		</div>	
+		<div class="col-md-1">
+		  <label class="form-label">Vigencia</label>
+		  <input id="dsVigencia" class="form-control" readonly>
+		</div>
+		<div class="col-md-2">
+		  <label class="form-label">Semáforo</label>
+		  <input id="dsSemaforo" class="form-control" readonly>
+		</div>
                 <div class="col-md-12">
                   <label class="form-label">Exposición de Motivos</label>
                   <textarea id="dsMotivos" class="form-control" rows="2"></textarea>
