@@ -186,6 +186,7 @@ function wireDSForm(){
   $('dsPlazoDias')?.addEventListener('input', recalcularFechasDS);
 
   $('dsEsProrroga')?.addEventListener('change', onToggleProrroga);
+  $('dsOrigen')?.addEventListener('change', actualizarDatosProrrogaVisual);
 }
 
 function renderSectoresFirmantes(){
@@ -254,6 +255,7 @@ function onToggleProrroga(){
 
   if(origen){
     origen.disabled = !checked;
+
     if(!checked){
       origen.value = '';
       if($('dsNivelProrroga')) $('dsNivelProrroga').value = '0';
@@ -282,6 +284,22 @@ function actualizarOrigenesProrroga(){
     });
 
   if(actual) sel.value = actual;
+  actualizarDatosProrrogaVisual();
+}
+
+function actualizarDatosProrrogaVisual(){
+  const esProrroga = $('dsEsProrroga')?.checked || false;
+  const origenId = $('dsOrigen')?.value || '';
+
+  if(!esProrroga || !origenId){
+    if($('dsNivelProrroga')) $('dsNivelProrroga').value = esProrroga ? '1' : '0';
+    if($('dsCadena')) $('dsCadena').value = '';
+    return;
+  }
+
+  const dataProrroga = construirCadenaProrroga(origenId);
+  if($('dsNivelProrroga')) $('dsNivelProrroga').value = String(dataProrroga.nivel);
+  if($('dsCadena')) $('dsCadena').value = dataProrroga.cadenaPreview;
 }
 
 function getSectoresFirmantesSeleccionados(){
@@ -291,16 +309,24 @@ function getSectoresFirmantesSeleccionados(){
 function construirCadenaProrroga(origenId){
   const origen = state.decretos.find(x => String(x.id) === String(origenId));
   if(!origen){
-    return { nivel: 1, cadena: '' };
+    return {
+      nivel: 1,
+      cadena: '',
+      cadenaPreview: ''
+    };
   }
 
   const nivelBase = parseInt(origen.nivelProrroga || 0, 10);
   const nivel = nivelBase + 1;
+  const baseCadena = origen.cadenaProrroga || origen.numero || '';
+  const numeroNuevo = ($('dsNumero')?.value || '').trim() || '[NUEVO]';
 
-  const cadenaAnterior = origen.cadenaProrroga || origen.numero || '';
-  const cadena = cadenaAnterior ? `${cadenaAnterior} -> [NUEVO]` : '[NUEVO]';
-
-  return { nivel, cadena, origen };
+  return {
+    nivel,
+    origen,
+    cadena: `${baseCadena} -> ${numeroNuevo}`,
+    cadenaPreview: `${baseCadena} -> ${numeroNuevo}`
+  };
 }
 
 async function guardarDecretoSupremo(){
@@ -344,10 +370,7 @@ async function guardarDecretoSupremo(){
     const dataProrroga = construirCadenaProrroga(dsOrigenId);
     nivelProrroga = dataProrroga.nivel;
     origenNumero = dataProrroga.origen?.numero || '';
-    cadenaProrroga = (dataProrroga.origen?.cadenaProrroga || dataProrroga.origen?.numero || '') + ` -> ${numero}`;
-
-    if($('dsNivelProrroga')) $('dsNivelProrroga').value = String(nivelProrroga);
-    if($('dsCadena')) $('dsCadena').value = cadenaProrroga;
+    cadenaProrroga = dataProrroga.cadena;
   }
 
   const nuevo = {
@@ -376,7 +399,6 @@ async function guardarDecretoSupremo(){
   state.decretos.push(nuevo);
   saveStorage();
 
-  // intento backend si existe endpoint
   const resp = await apiPost('/decretos', nuevo);
   if(resp && resp.ok){
     console.log('Guardado en backend');
@@ -394,7 +416,7 @@ function limpiarFormularioDS(){
   [
     'dsNumero','dsPeligro','dsTipoPeligro','dsPlazoDias',
     'dsFechaInicio','dsFechaFin','dsVigencia','dsSemaforo',
-    'dsMotivos','dsOrigen','dsNivelProrroga','dsCadena'
+    'dsMotivos','dsOrigen','dsCadena'
   ].forEach(id=>{
     if($(id)) $(id).value = '';
   });
@@ -413,7 +435,14 @@ function limpiarFormularioDS(){
 
   state.nuevoDSTerritorios = [];
   renderTerritorioSeleccionado();
-  limpiarChecksDistritos(true);
+
+  if($('selDepartamento')) $('selDepartamento').value = '';
+  if($('selProvincia')) $('selProvincia').innerHTML = '<option value="">Seleccione...</option>';
+  if($('buscarDistrito')) $('buscarDistrito').value = '';
+  if($('distritosChecklist')){
+    $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
+  }
+
   generarCodigoRegistro();
 }
 
@@ -431,9 +460,10 @@ function renderTablaDecretos(){
   }
 
   tbody.innerHTML = state.decretos.map(ds=>{
-    const departamentos = new Set(ds.territorios.map(x => x.departamento)).size;
-    const provincias = new Set(ds.territorios.map(x => `${x.departamento}|${x.provincia}`)).size;
-    const distritos = ds.territorios.length;
+    const territorios = Array.isArray(ds.territorios) ? ds.territorios : [];
+    const departamentos = new Set(territorios.map(x => normalizarTexto(x.departamento))).size;
+    const provincias = new Set(territorios.map(x => `${normalizarTexto(x.departamento)}|${normalizarTexto(x.provincia)}`)).size;
+    const distritos = territorios.length;
 
     return `
       <tr>
@@ -472,9 +502,9 @@ function verDecreto(id){
       <div class="mb-2"><strong>Plazo:</strong> ${escapeHtml(String(ds.plazoDias))} días</div>
       <div class="mb-2"><strong>Fecha inicio:</strong> ${escapeHtml(ds.fechaInicio)}</div>
       <div class="mb-2"><strong>Fecha final:</strong> ${escapeHtml(ds.fechaFin)}</div>
-      <div class="mb-2"><strong>Sectores firmantes:</strong> ${escapeHtml(ds.sectoresFirmantes.join(', '))}</div>
+      <div class="mb-2"><strong>Sectores firmantes:</strong> ${escapeHtml((ds.sectoresFirmantes || []).join(', '))}</div>
       <div class="mb-2"><strong>Territorios:</strong></div>
-      <ul>${ds.territorios.map(t => `<li>${escapeHtml(t.departamento)} - ${escapeHtml(t.provincia)} - ${escapeHtml(t.distrito)}</li>`).join('')}</ul>
+      <ul>${(ds.territorios || []).map(t => `<li>${escapeHtml(t.departamento)} - ${escapeHtml(t.provincia)} - ${escapeHtml(t.distrito)}</li>`).join('')}</ul>
     `;
   }
 
@@ -517,6 +547,29 @@ function initUbigeo(){
   });
 }
 
+function normalizarTexto(valor){
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+}
+
+function obtenerUbigeoRegistro(reg){
+  return reg.ubigeo || reg.UBIGEO || reg.codigo || reg.cod_ubigeo || '';
+}
+
+function obtenerClaveTerritorio(reg){
+  const ubigeo = obtenerUbigeoRegistro(reg);
+  if(ubigeo) return String(ubigeo);
+
+  return [
+    normalizarTexto(reg.departamento),
+    normalizarTexto(reg.provincia),
+    normalizarTexto(reg.distrito)
+  ].join('|');
+}
+
 function cargarDepartamentos(){
   const sel = $('selDepartamento');
   if(!sel) return;
@@ -547,7 +600,9 @@ function cargarProvincias(){
   }
 
   const provincias = [...new Set(
-    ubigeoCache.filter(x => x.departamento === dep).map(x => x.provincia)
+    ubigeoCache
+      .filter(x => normalizarTexto(x.departamento) === normalizarTexto(dep))
+      .map(x => x.provincia)
   )];
 
   provincias.sort().forEach(p=>{
@@ -562,7 +617,6 @@ function cargarProvincias(){
   }
 
   if($('buscarDistrito')) $('buscarDistrito').value = '';
-  limpiarChecksDistritos(true);
 }
 
 function cargarDistritos(){
@@ -579,7 +633,10 @@ function cargarDistritos(){
   cont.innerHTML = '';
   if($('buscarDistrito')) $('buscarDistrito').value = '';
 
-  const distritos = ubigeoCache.filter(x => x.departamento === dep && x.provincia === prov);
+  const distritos = ubigeoCache.filter(x =>
+    normalizarTexto(x.departamento) === normalizarTexto(dep) &&
+    normalizarTexto(x.provincia) === normalizarTexto(prov)
+  );
 
   if(!distritos.length){
     cont.innerHTML = '<div class="text-muted small">No hay distritos para la selección actual.</div>';
@@ -587,13 +644,18 @@ function cargarDistritos(){
   }
 
   distritos.forEach(d=>{
-    const yaSeleccionado = state.nuevoDSTerritorios.some(t => String(t.ubigeo) === String(d.ubigeo));
+    const clave = obtenerClaveTerritorio(d);
+    const idSeguro = clave.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+    const yaSeleccionado = state.nuevoDSTerritorios.some(
+      t => String(t.clave) === String(clave)
+    );
 
     const div = document.createElement('div');
     div.className = 'form-check';
     div.innerHTML = `
-      <input class="form-check-input chk-distrito" type="checkbox" id="dist_${d.ubigeo}" value="${d.ubigeo}" ${yaSeleccionado ? 'checked' : ''}>
-      <label class="form-check-label" for="dist_${d.ubigeo}">${d.distrito}</label>
+      <input class="form-check-input chk-distrito" type="checkbox" id="dist_${idSeguro}" value="${escapeHtml(clave)}" ${yaSeleccionado ? 'checked' : ''}>
+      <label class="form-check-label" for="dist_${idSeguro}">${escapeHtml(d.distrito)}</label>
     `;
     cont.appendChild(div);
   });
@@ -648,14 +710,19 @@ function agregarDistritosSeleccionados(){
   let agregados = 0;
 
   checks.forEach(chk=>{
-    const data = ubigeoCache.find(x => String(x.ubigeo) === String(chk.value));
+    const data = ubigeoCache.find(x => String(obtenerClaveTerritorio(x)) === String(chk.value));
     if(!data) return;
 
-    const existe = state.nuevoDSTerritorios.some(t => String(t.ubigeo) === String(data.ubigeo));
+    const clave = obtenerClaveTerritorio(data);
+
+    const existe = state.nuevoDSTerritorios.some(
+      t => String(t.clave) === String(clave)
+    );
     if(existe) return;
 
     state.nuevoDSTerritorios.push({
-      ubigeo: data.ubigeo,
+      clave,
+      ubigeo: obtenerUbigeoRegistro(data),
       departamento: data.departamento,
       provincia: data.provincia,
       distrito: data.distrito,
@@ -676,9 +743,9 @@ function agregarDistritosSeleccionados(){
   }
 }
 
-function quitarTerritorioSeleccionado(ubigeo){
+function quitarTerritorioSeleccionado(clave){
   state.nuevoDSTerritorios = state.nuevoDSTerritorios.filter(
-    t => String(t.ubigeo) !== String(ubigeo)
+    t => String(t.clave) !== String(clave)
   );
 
   renderTerritorioSeleccionado();
@@ -698,9 +765,9 @@ function renderTerritorioSeleccionado(){
     <div class="d-flex justify-content-between align-items-start gap-2 border rounded bg-white px-2 py-1 mb-2">
       <div>
         <div><strong>${escapeHtml(t.departamento)}</strong> - ${escapeHtml(t.provincia)} - ${escapeHtml(t.distrito)}</div>
-        <div class="text-muted small">Ubigeo: ${escapeHtml(String(t.ubigeo))}</div>
+        <div class="text-muted small">Ubigeo: ${escapeHtml(String(t.ubigeo || ''))}</div>
       </div>
-      <button type="button" class="btn btn-sm btn-outline-danger" onclick="quitarTerritorioSeleccionado('${String(t.ubigeo).replace(/'/g, "\\'")}')">Quitar</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="quitarTerritorioSeleccionado('${String(t.clave).replace(/'/g, "\\'")}')">Quitar</button>
     </div>
   `).join('');
 }
