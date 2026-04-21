@@ -78,8 +78,10 @@ function init(){
   initUbigeo();
   renderSectoresFirmantes();
   renderTablaDecretos();
+  renderSelectAccionDs();
   generarCodigoRegistro();
   actualizarOrigenesProrroga();
+  renderSesion();
 }
 
 // ================== STORAGE ==================
@@ -178,12 +180,23 @@ async function syncFromBackend(){
   }
 }
 
+// ================== SESION ==================
+function renderSesion(){
+  if($('sessionName')){
+    $('sessionName').textContent = state.session?.name || '';
+  }
+  if($('sessionRole')){
+    $('sessionRole').textContent = state.session?.role || '';
+  }
+}
+
 // ================== FORM DS ==================
 function wireDSForm(){
   $('btnGuardarDS')?.addEventListener('click', guardarDecretoSupremo);
 
   $('dsFechaInicio')?.addEventListener('change', recalcularFechasDS);
   $('dsPlazoDias')?.addEventListener('input', recalcularFechasDS);
+  $('dsNumero')?.addEventListener('input', actualizarDatosProrrogaVisual);
 
   $('dsEsProrroga')?.addEventListener('change', onToggleProrroga);
   $('dsOrigen')?.addEventListener('change', actualizarDatosProrrogaVisual);
@@ -234,10 +247,10 @@ function recalcularFechasDS(){
 
 function actualizarSemaforo(fechaFin){
   const hoy = new Date();
-  hoy.setHours(0,0,0,0);
+  hoy.setHours(0, 0, 0, 0);
 
   const fin = new Date(fechaFin);
-  fin.setHours(0,0,0,0);
+  fin.setHours(0, 0, 0, 0);
 
   const diffDias = Math.ceil((fin - hoy) / 86400000);
 
@@ -275,8 +288,8 @@ function actualizarOrigenesProrroga(){
 
   state.decretos
     .slice()
-    .sort((a,b)=> (a.numero || '').localeCompare(b.numero || ''))
-    .forEach(ds=>{
+    .sort((a, b) => (a.numero || '').localeCompare(b.numero || ''))
+    .forEach(ds => {
       const opt = document.createElement('option');
       opt.value = ds.id;
       opt.textContent = ds.numero;
@@ -408,16 +421,25 @@ async function guardarDecretoSupremo(){
 
   renderTablaDecretos();
   actualizarOrigenesProrroga();
+  renderSelectAccionDs();
   limpiarFormularioDS();
   alert('Decreto Supremo guardado correctamente.');
 }
 
 function limpiarFormularioDS(){
   [
-    'dsNumero','dsPeligro','dsTipoPeligro','dsPlazoDias',
-    'dsFechaInicio','dsFechaFin','dsVigencia','dsSemaforo',
-    'dsMotivos','dsOrigen','dsCadena'
-  ].forEach(id=>{
+    'dsNumero',
+    'dsPeligro',
+    'dsTipoPeligro',
+    'dsPlazoDias',
+    'dsFechaInicio',
+    'dsFechaFin',
+    'dsVigencia',
+    'dsSemaforo',
+    'dsMotivos',
+    'dsOrigen',
+    'dsCadena'
+  ].forEach(id => {
     if($(id)) $(id).value = '';
   });
 
@@ -459,7 +481,7 @@ function renderTablaDecretos(){
     return;
   }
 
-  tbody.innerHTML = state.decretos.map(ds=>{
+  tbody.innerHTML = state.decretos.map(ds => {
     const territorios = Array.isArray(ds.territorios) ? ds.territorios : [];
     const departamentos = new Set(territorios.map(x => normalizarTexto(x.departamento))).size;
     const provincias = new Set(territorios.map(x => `${normalizarTexto(x.departamento)}|${normalizarTexto(x.provincia)}`)).size;
@@ -478,7 +500,7 @@ function renderTablaDecretos(){
         <td>${departamentos}</td>
         <td>${provincias}</td>
         <td>${distritos}</td>
-        <td>${ds.esProrroga ? 'Prórroga' : 'Original'}</td>
+        <td>${ds.esProrroga ? `Prórroga de ${escapeHtml(ds.dsOrigenNumero || '')}` : 'Original'}</td>
         <td>${escapeHtml(ds.cadenaProrroga || '')}</td>
         <td>${escapeHtml(String(ds.nivelProrroga || 0))}</td>
         <td>-</td>
@@ -487,6 +509,23 @@ function renderTablaDecretos(){
       </tr>
     `;
   }).join('');
+}
+
+function renderSelectAccionDs(){
+  const sel = $('accionDs');
+  if(!sel) return;
+
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+
+  state.decretos
+    .slice()
+    .sort((a, b) => (a.numero || '').localeCompare(b.numero || ''))
+    .forEach(ds => {
+      const opt = document.createElement('option');
+      opt.value = ds.id;
+      opt.textContent = ds.numero;
+      sel.appendChild(opt);
+    });
 }
 
 function verDecreto(id){
@@ -531,17 +570,17 @@ function initUbigeo(){
   $('selProvincia')?.addEventListener('change', cargarDistritos);
   $('buscarDistrito')?.addEventListener('input', filtrarDistritos);
 
-  $('btnAgregarDistritos')?.addEventListener('click', (e)=>{
+  $('btnAgregarDistritos')?.addEventListener('click', (e) => {
     e.preventDefault();
     agregarDistritosSeleccionados();
   });
 
-  $('btnMarcarTodos')?.addEventListener('click', (e)=>{
+  $('btnMarcarTodos')?.addEventListener('click', (e) => {
     e.preventDefault();
     marcarTodosDistritosVisibles();
   });
 
-  $('btnLimpiarChecks')?.addEventListener('click', (e)=>{
+  $('btnLimpiarChecks')?.addEventListener('click', (e) => {
     e.preventDefault();
     limpiarChecksDistritos();
   });
@@ -577,7 +616,7 @@ function cargarDepartamentos(){
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
   const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
-  deps.sort().forEach(dep=>{
+  deps.sort().forEach(dep => {
     const opt = document.createElement('option');
     opt.value = dep;
     opt.textContent = dep;
@@ -605,7 +644,7 @@ function cargarProvincias(){
       .map(x => x.provincia)
   )];
 
-  provincias.sort().forEach(p=>{
+  provincias.sort().forEach(p => {
     const opt = document.createElement('option');
     opt.value = p;
     opt.textContent = p;
@@ -643,7 +682,7 @@ function cargarDistritos(){
     return;
   }
 
-  distritos.forEach(d=>{
+  distritos.forEach(d => {
     const clave = obtenerClaveTerritorio(d);
     const idSeguro = clave.replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -666,7 +705,7 @@ function filtrarDistritos(){
   const checklist = $('distritosChecklist');
   if(!checklist) return;
 
-  checklist.querySelectorAll('.form-check').forEach(div=>{
+  checklist.querySelectorAll('.form-check').forEach(div => {
     div.style.display = div.textContent.toLowerCase().includes(txt) ? '' : 'none';
   });
 }
@@ -677,7 +716,7 @@ function marcarTodosDistritosVisibles(){
 
   [...checklist.querySelectorAll('.form-check')]
     .filter(div => div.style.display !== 'none')
-    .forEach(div=>{
+    .forEach(div => {
       const chk = div.querySelector('input[type="checkbox"]');
       if(chk) chk.checked = true;
     });
@@ -709,7 +748,7 @@ function agregarDistritosSeleccionados(){
 
   let agregados = 0;
 
-  checks.forEach(chk=>{
+  checks.forEach(chk => {
     const data = ubigeoCache.find(x => String(obtenerClaveTerritorio(x)) === String(chk.value));
     if(!data) return;
 
@@ -802,9 +841,11 @@ function escapeHtml(value){
 
 // ================== RENDER ==================
 function renderAll(){
+  renderSesion();
   renderSectoresFirmantes();
   renderTerritorioSeleccionado();
   renderTablaDecretos();
   actualizarOrigenesProrroga();
+  renderSelectAccionDs();
   console.log('Sistema cargado', state);
 }
