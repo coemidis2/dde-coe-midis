@@ -56,7 +56,9 @@ document.addEventListener('DOMContentLoaded', init);
 function init(){
   loadStorage();
   wireLogin();
+  wireUI();
   autoLogin();
+  initUbigeo(); // 👈 CLAVE
 }
 
 // ================== STORAGE ==================
@@ -78,6 +80,15 @@ function saveStorage(){
 // ================== LOGIN ==================
 function wireLogin(){
   $('btnLogin').addEventListener('click', doLogin);
+}
+
+function wireUI(){
+  if($('btnLogout')){
+    $('btnLogout').addEventListener('click', ()=>{
+      localStorage.removeItem('auth_token');
+      location.reload();
+    });
+  }
 }
 
 async function doLogin(){
@@ -140,19 +151,119 @@ async function syncFromBackend(){
   }
 }
 
-// ================== CRUD ==================
-async function saveDecreto(decreto){
-  state.decretos.push(decreto);
-  saveStorage();
+// ================== UBIGEO ==================
 
-  await apiPost('/decretos', decreto);
+let ubigeoCache = [];
+
+function initUbigeo(){
+  if(!window.ubigeoData || !Array.isArray(window.ubigeoData)){
+    console.error("ubigeoData no cargó");
+    return;
+  }
+
+  ubigeoCache = window.ubigeoData;
+
+  cargarDepartamentos();
+
+  $('selDepartamento').addEventListener('change', cargarProvincias);
+  $('selProvincia').addEventListener('change', cargarDistritos);
+  $('buscarDistrito').addEventListener('input', filtrarDistritos);
+  $('btnAgregarDistritos').addEventListener('click', agregarDistritosSeleccionados);
 }
 
-async function saveAccion(accion){
-  state.acciones.push(accion);
-  saveStorage();
+function cargarDepartamentos(){
+  const sel = $('selDepartamento');
+  sel.innerHTML = '<option value="">Seleccione...</option>';
 
-  await apiPost('/acciones', accion);
+  const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
+
+  deps.sort().forEach(dep=>{
+    const opt = document.createElement('option');
+    opt.value = dep;
+    opt.textContent = dep;
+    sel.appendChild(opt);
+  });
+}
+
+function cargarProvincias(){
+  const dep = $('selDepartamento').value;
+  const selProv = $('selProvincia');
+
+  selProv.innerHTML = '<option value="">Seleccione...</option>';
+
+  if(!dep) return;
+
+  const provincias = [...new Set(
+    ubigeoCache
+      .filter(x => x.departamento === dep)
+      .map(x => x.provincia)
+  )];
+
+  provincias.sort().forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    selProv.appendChild(opt);
+  });
+
+  $('distritosChecklist').innerHTML = '';
+}
+
+function cargarDistritos(){
+  const dep = $('selDepartamento').value;
+  const prov = $('selProvincia').value;
+
+  if(!dep || !prov) return;
+
+  const cont = $('distritosChecklist');
+  cont.innerHTML = '';
+
+  const distritos = ubigeoCache.filter(x =>
+    x.departamento === dep && x.provincia === prov
+  );
+
+  distritos.forEach(d=>{
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" value="${d.ubigeo}">
+        ${d.distrito}
+      </label>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function filtrarDistritos(){
+  const txt = $('buscarDistrito').value.toLowerCase();
+  const checks = $('distritosChecklist').querySelectorAll('div');
+
+  checks.forEach(div=>{
+    div.style.display = div.textContent.toLowerCase().includes(txt)
+      ? ''
+      : 'none';
+  });
+}
+
+function agregarDistritosSeleccionados(){
+  const checks = $('distritosChecklist').querySelectorAll('input:checked');
+  const cont = $('territorioSeleccionado');
+
+  if(!checks.length){
+    cont.innerHTML = '<div class="text-muted">No hay territorios agregados.</div>';
+    return;
+  }
+
+  let html = '';
+
+  checks.forEach(chk=>{
+    const data = ubigeoCache.find(x => x.ubigeo === chk.value);
+    if(data){
+      html += `<div>${data.departamento} - ${data.provincia} - ${data.distrito}</div>`;
+    }
+  });
+
+  cont.innerHTML = html;
 }
 
 // ================== RENDER ==================
