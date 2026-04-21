@@ -1891,3 +1891,4 @@ const ubigeoData = [
   {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "BOQUERON", "lat": -9.035813, "lon": -75.752348},
   {"departamento": "UCAYALI", "provincia": "PURUS", "distrito": "PURUS", "lat": -10.373495, "lon": -71.582316},
 ];
+window.ubigeoData = ubigeoData;
