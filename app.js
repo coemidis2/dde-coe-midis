@@ -51,6 +51,20 @@ async function apiPatch(path, data) {
   }
 }
 
+async function apiDelete(path) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'DELETE',
+      headers: getHeaders(),
+      credentials: 'include'
+    });
+    return await res.json();
+  } catch (e) {
+    console.warn('API DELETE error:', e);
+    return null;
+  }
+}
+
 // ================== APP ==================
 const STORAGE_KEY = 'dee_midis_local_v4';
 
@@ -128,11 +142,34 @@ function wireLogin() {
 
 function wireUI() {
   if ($('btnLogout')) {
-    $('btnLogout').addEventListener('click', async () => {
-      // Si luego creas /logout, aquí lo llamas.
+    $('btnLogout').addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     });
+  }
+
+  if ($('btnAdminPanel')) {
+    $('btnAdminPanel').addEventListener('click', openAdminPanel);
+  }
+
+  if ($('btnCrearUsuarioAdmin')) {
+    $('btnCrearUsuarioAdmin').addEventListener('click', createUserAdmin);
+  }
+
+  if ($('btnCopiarClaveAdmin')) {
+    $('btnCopiarClaveAdmin').addEventListener('click', copyGeneratedPassword);
+  }
+
+  if ($('btnVerAuditoria')) {
+    $('btnVerAuditoria').addEventListener('click', loadAuditLog);
+  }
+
+  if ($('btnLimpiarAuditoria')) {
+    $('btnLimpiarAuditoria').addEventListener('click', clearAuditLog);
+  }
+
+  if ($('btnLimpiarConflictos')) {
+    $('btnLimpiarConflictos').addEventListener('click', clearConflictos);
   }
 }
 
@@ -212,11 +249,252 @@ function renderSesion() {
 function applyRolePermissions() {
   const role = state.session?.role || '';
   const isAdmin = role === 'Administrador';
+  const isRevisor = role === 'Revisor' || role === 'Evaluador';
+  const isConsulta = role === 'Consulta';
+  const isRegistrador = role === 'Registrador';
+
   const adminBtn = $('btnAdminPanel');
   const tabSegBtn = document.querySelector('[data-bs-target="#tabSeg"]');
+  const tabNuevoBtn = document.querySelector('[data-bs-target="#tabNuevo"]');
+  const tabAccionesBtn = document.querySelector('[data-bs-target="#tabAcciones"]');
 
   if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
-  if (tabSegBtn) tabSegBtn.style.display = isAdmin ? '' : 'none';
+  if (tabSegBtn) tabSegBtn.style.display = (isAdmin || isRevisor) ? '' : 'none';
+  if (tabNuevoBtn) tabNuevoBtn.style.display = (isAdmin || isRevisor) ? '' : (isConsulta ? 'none' : '');
+  if (tabAccionesBtn) tabAccionesBtn.style.display = isConsulta ? 'none' : '';
+}
+
+// ================== ADMIN PANEL ==================
+async function openAdminPanel() {
+  await loadUsers();
+  await loadAuditLog();
+  await loadConflictos();
+
+  const modalEl = $('modalAdminPanel');
+  if (modalEl && window.bootstrap) {
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+}
+
+function formatRole(role, programa) {
+  if (role === 'Registrador' && programa) return `Registrador (${programa})`;
+  if (role === 'Evaluador') return 'Revisor';
+  return role || '';
+}
+
+// ================== USERS ==================
+async function loadUsers() {
+  const tbody = document.querySelector('#tablaAdminUsuarios tbody');
+  if (!tbody) return;
+
+  const resp = await apiGet('/users');
+
+  if (!resp || !resp.ok) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No se pudo cargar usuarios.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = (resp.users || []).map(u => `
+    <tr>
+      <td>${escapeHtml(u.name || '')}</td>
+      <td>${escapeHtml(u.email || '')}</td>
+      <td>${escapeHtml(formatRole(u.role, u.programa))}</td>
+      <td>${u.active ? 'Activo' : 'Inactivo'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-warning" type="button"
+          onclick="toggleUserStatus('${u.id}', ${u.active ? 0 : 1})">
+          ${u.active ? 'Desactivar' : 'Activar'}
+        </button>
+        <button class="btn btn-sm btn-outline-primary" type="button"
+          onclick="resetUserPassword('${u.id}')">
+          Reset clave
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function createUserAdmin() {
+  const name = ($('adminUserName')?.value || '').trim();
+  const email = ($('adminUserEmail')?.value || '').trim().toLowerCase();
+  const rawRole = ($('adminUserRole')?.value || '').trim();
+
+  if (!name || !email || !rawRole) {
+    alert('Complete Nombre, Correo y Rol.');
+    return;
+  }
+
+  let role = rawRole;
+  let programa = '';
+
+  if (rawRole.startsWith('Registrador|')) {
+    role = 'Registrador';
+    programa = rawRole.split('|')[1] || '';
+  } else if (rawRole === 'Evaluador') {
+    role = 'Revisor';
+  }
+
+  const resp = await apiPost('/users', { name, email, role, programa });
+
+  if (!resp || !resp.ok) {
+    alert('No se pudo crear el usuario.');
+    return;
+  }
+
+  if ($('adminGeneratedPassword')) {
+    $('adminGeneratedPassword').value = resp.temporaryPassword || '';
+  }
+
+  await loadUsers();
+  alert('Usuario creado correctamente.');
+}
+
+function copyGeneratedPassword() {
+  const val = $('adminGeneratedPassword')?.value || '';
+  if (!val) {
+    alert('No hay clave para copiar.');
+    return;
+  }
+
+  navigator.clipboard.writeText(val)
+    .then(() => alert('Clave copiada.'))
+    .catch(() => alert('No se pudo copiar la clave.'));
+}
+
+async function toggleUserStatus(id, active) {
+  const resp = await apiPatch('/users', {
+    action: 'status',
+    id,
+    active
+  });
+
+  if (!resp || !resp.ok) {
+    alert('No se pudo actualizar el estado del usuario.');
+    return;
+  }
+
+  await loadUsers();
+}
+
+async function resetUserPassword(id) {
+  const resp = await apiPatch('/users', {
+    action: 'reset_password',
+    id
+  });
+
+  if (!resp || !resp.ok) {
+    alert('No se pudo resetear la clave.');
+    return;
+  }
+
+  if ($('adminGeneratedPassword')) {
+    $('adminGeneratedPassword').value = resp.temporaryPassword || '';
+  }
+
+  alert('Clave reseteada correctamente.');
+}
+
+// ================== AUDITORIA ==================
+async function loadAuditLog() {
+  const tbody = document.querySelector('#tablaAuditoria tbody');
+  if (!tbody) return;
+
+  const from = $('auditDesde')?.value || '';
+  const to = $('auditHasta')?.value || '';
+  const actor = $('auditActor')?.value || '';
+
+  const params = new URLSearchParams();
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (actor) params.set('actor', actor);
+
+  const resp = await apiGet('/audit-log' + (params.toString() ? `?${params.toString()}` : ''));
+
+  if (!resp || !resp.ok) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No se pudo cargar auditoría.</td></tr>`;
+    return;
+  }
+
+  const rows = resp.rows || [];
+
+  tbody.innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.created_at || '')}</td>
+      <td>${escapeHtml(r.actor || '')}</td>
+      <td>${escapeHtml(r.action || '')}</td>
+      <td>${escapeHtml(r.detail || '')}</td>
+      <td><button class="btn btn-sm btn-outline-primary" type="button">Ver</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="5" class="text-center text-muted">No hay registros de auditoría.</td></tr>`;
+
+  fillAuditActorSelect(rows);
+}
+
+function fillAuditActorSelect(rows) {
+  const sel = $('auditActor');
+  if (!sel) return;
+
+  const current = sel.value;
+  const actors = [...new Set(rows.map(x => x.actor).filter(Boolean))].sort();
+
+  sel.innerHTML = '<option value="">Todos</option>' +
+    actors.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+
+  sel.value = current;
+}
+
+async function clearAuditLog() {
+  const ok = confirm('¿Seguro que desea limpiar la auditoría?');
+  if (!ok) return;
+
+  const resp = await apiDelete('/audit-log');
+  if (!resp || !resp.ok) {
+    alert('No se pudo limpiar la auditoría.');
+    return;
+  }
+
+  await loadAuditLog();
+}
+
+// ================== CONFLICTOS ==================
+async function loadConflictos() {
+  const tbody = document.querySelector('#tablaConflictos tbody');
+  if (!tbody) return;
+
+  const resp = await apiGet('/conflictos');
+
+  if (!resp || !resp.ok) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se pudo cargar conflictos.</td></tr>`;
+    return;
+  }
+
+  const rows = resp.rows || [];
+
+  tbody.innerHTML = rows.length ? rows.map(c => `
+    <tr>
+      <td>${escapeHtml(c.created_at || '')}</td>
+      <td>${escapeHtml(c.codigo || '')}</td>
+      <td>${escapeHtml(c.motivo || '')}</td>
+      <td>${escapeHtml(c.fecha_servidor || '')}</td>
+      <td>${escapeHtml(c.estado_local_servidor || '')}</td>
+      <td>${escapeHtml(c.resolucion_aplicada || '')}</td>
+      <td>-</td>
+    </tr>
+  `).join('') : `<tr><td colspan="7" class="text-center text-muted">No hay conflictos registrados.</td></tr>`;
+}
+
+async function clearConflictos() {
+  const ok = confirm('¿Seguro que desea limpiar conflictos?');
+  if (!ok) return;
+
+  const resp = await apiDelete('/conflictos');
+  if (!resp || !resp.ok) {
+    alert('No se pudo limpiar conflictos.');
+    return;
+  }
+
+  await loadConflictos();
 }
 
 // ================== FORM DS ==================
@@ -940,5 +1218,6 @@ function renderAll() {
   renderTablaDecretos();
   actualizarOrigenesProrroga();
   renderSelectAccionDs();
+  applyRolePermissions();
   console.log('Sistema cargado', state);
 }
