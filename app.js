@@ -65,7 +65,7 @@ async function apiDelete(path) {
   }
 }
 
-// ================== APP ==================
+// ================== APP STATE ==================
 const STORAGE_KEY = 'dee_midis_local_v4';
 
 let state = {
@@ -140,44 +140,11 @@ function wireLogin() {
   }
 }
 
-function wireUI() {
-  if ($('btnLogout')) {
-    $('btnLogout').addEventListener('click', () => {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    });
-  }
-
-  if ($('btnAdminPanel')) {
-    $('btnAdminPanel').addEventListener('click', openAdminPanel);
-  }
-
-  if ($('btnCrearUsuarioAdmin')) {
-    $('btnCrearUsuarioAdmin').addEventListener('click', createUserAdmin);
-  }
-
-  if ($('btnCopiarClaveAdmin')) {
-    $('btnCopiarClaveAdmin').addEventListener('click', copyGeneratedPassword);
-  }
-
-  if ($('btnVerAuditoria')) {
-    $('btnVerAuditoria').addEventListener('click', loadAuditLog);
-  }
-
-  if ($('btnLimpiarAuditoria')) {
-    $('btnLimpiarAuditoria').addEventListener('click', clearAuditLog);
-  }
-
-  if ($('btnLimpiarConflictos')) {
-    $('btnLimpiarConflictos').addEventListener('click', clearConflictos);
-  }
-}
-
 async function doLogin() {
   const email = ($('loginUser')?.value || '').trim().toLowerCase();
-  const pass = $('loginPass')?.value || '';
+  const password = $('loginPass')?.value || '';
 
-  const resp = await apiPost('/login', { email, password: pass });
+  const resp = await apiPost('/login', { email, password });
   console.log('LOGIN RESPONSE:', resp);
 
   if (!resp || !resp.ok) {
@@ -236,7 +203,40 @@ async function syncFromBackend() {
   }
 }
 
-// ================== SESION / ROLES ==================
+function wireUI() {
+  if ($('btnLogout')) {
+    $('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    });
+  }
+
+  if ($('btnAdminPanel')) {
+    $('btnAdminPanel').addEventListener('click', openAdminPanel);
+  }
+
+  if ($('btnCrearUsuarioAdmin')) {
+    $('btnCrearUsuarioAdmin').addEventListener('click', createUserAdmin);
+  }
+
+  if ($('btnCopiarClaveAdmin')) {
+    $('btnCopiarClaveAdmin').addEventListener('click', copyGeneratedPassword);
+  }
+
+  if ($('btnVerAuditoria')) {
+    $('btnVerAuditoria').addEventListener('click', loadAuditLog);
+  }
+
+  if ($('btnLimpiarAuditoria')) {
+    $('btnLimpiarAuditoria').addEventListener('click', clearAuditLog);
+  }
+
+  if ($('btnLimpiarConflictos')) {
+    $('btnLimpiarConflictos').addEventListener('click', clearConflictos);
+  }
+}
+
+// ================== SESSION / ROLES ==================
 function renderSesion() {
   if ($('sessionName')) {
     $('sessionName').textContent = state.session?.name || '';
@@ -251,7 +251,6 @@ function applyRolePermissions() {
   const isAdmin = role === 'Administrador';
   const isRevisor = role === 'Revisor' || role === 'Evaluador';
   const isConsulta = role === 'Consulta';
-  const isRegistrador = role === 'Registrador';
 
   const adminBtn = $('btnAdminPanel');
   const tabSegBtn = document.querySelector('[data-bs-target="#tabSeg"]');
@@ -497,7 +496,7 @@ async function clearConflictos() {
   await loadConflictos();
 }
 
-// ================== FORM DS ==================
+// ================== FORM DECRETOS ==================
 function wireDSForm() {
   $('btnGuardarDS')?.addEventListener('click', guardarDecretoSupremo);
 
@@ -796,6 +795,7 @@ function limpiarFormularioDS() {
   generarCodigoRegistro();
 }
 
+// ================== TABLA / MODAL DECRETOS ==================
 function renderTablaDecretos() {
   const tbody = document.querySelector('#tablaDS tbody');
   if (!tbody) return;
