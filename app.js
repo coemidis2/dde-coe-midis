@@ -1,55 +1,52 @@
 // ================== CONFIG API ==================
 const API_BASE = window.location.origin + '/api';
-let AUTH_TOKEN = localStorage.getItem('auth_token') || '';
 
-if (AUTH_TOKEN === 'undefined' || AUTH_TOKEN === 'null') {
-  AUTH_TOKEN = '';
-  localStorage.removeItem('auth_token');
-}
-
-function setToken(token){
-  AUTH_TOKEN = token || '';
-
-  if (AUTH_TOKEN && AUTH_TOKEN !== 'undefined' && AUTH_TOKEN !== 'null') {
-    localStorage.setItem('auth_token', AUTH_TOKEN);
-  } else {
-    AUTH_TOKEN = '';
-    localStorage.removeItem('auth_token');
-  }
-}
-
-function getHeaders(){
-  const headers = {
+function getHeaders() {
+  return {
     'Content-Type': 'application/json'
   };
-
-  if (AUTH_TOKEN && AUTH_TOKEN !== 'undefined' && AUTH_TOKEN !== 'null') {
-    headers['Authorization'] = `Bearer ${AUTH_TOKEN}`;
-  }
-
-  return headers;
 }
 
-async function apiGet(path){
-  try{
-    const res = await fetch(API_BASE + path, { headers: getHeaders() });
+async function apiGet(path) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include'
+    });
     return await res.json();
-  }catch(e){
+  } catch (e) {
     console.warn('API GET error:', e);
     return null;
   }
 }
 
-async function apiPost(path, data){
-  try{
+async function apiPost(path, data) {
+  try {
     const res = await fetch(API_BASE + path, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data)
     });
     return await res.json();
-  }catch(e){
+  } catch (e) {
     console.warn('API POST error:', e);
+    return null;
+  }
+}
+
+async function apiPatch(path, data) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  } catch (e) {
+    console.warn('API PATCH error:', e);
     return null;
   }
 }
@@ -85,12 +82,11 @@ const $ = (id) => document.getElementById(id);
 
 document.addEventListener('DOMContentLoaded', init);
 
-function init(){
+async function init() {
   loadStorage();
   wireLogin();
   wireUI();
   wireDSForm();
-  autoLogin();
   initUbigeo();
   renderSectoresFirmantes();
   renderTablaDecretos();
@@ -98,122 +94,133 @@ function init(){
   generarCodigoRegistro();
   actualizarOrigenesProrroga();
   renderSesion();
+  await autoLogin();
 }
 
 // ================== STORAGE ==================
-function loadStorage(){
-  try{
+function loadStorage() {
+  try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
+    if (raw) {
       const parsed = JSON.parse(raw);
       state.decretos = parsed.decretos || [];
       state.acciones = parsed.acciones || [];
     }
     state.nuevoDSTerritorios = [];
-  }catch(e){
+  } catch (e) {
     console.warn('loadStorage error', e);
   }
 }
 
-function saveStorage(){
+function saveStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     decretos: state.decretos,
     acciones: state.acciones
   }));
 }
 
-// ================== LOGIN ==================
-function wireLogin(){
-  if($('btnLogin')){
+// ================== LOGIN / SESSION ==================
+function wireLogin() {
+  if ($('btnLogin')) {
     $('btnLogin').addEventListener('click', doLogin);
   }
 }
 
-function wireUI(){
-  if($('btnLogout')){
-    $('btnLogout').addEventListener('click', ()=>{
-      localStorage.removeItem('auth_token');
+function wireUI() {
+  if ($('btnLogout')) {
+    $('btnLogout').addEventListener('click', async () => {
+      // Si luego creas /logout, aquí lo llamas.
+      localStorage.removeItem(STORAGE_KEY);
       location.reload();
     });
   }
 }
 
-async function doLogin(){
+async function doLogin() {
   const email = ($('loginUser')?.value || '').trim().toLowerCase();
   const pass = $('loginPass')?.value || '';
 
   const resp = await apiPost('/login', { email, password: pass });
-
   console.log('LOGIN RESPONSE:', resp);
 
-  if(resp && resp.ok){
-    setToken(resp.token);
+  if (!resp || !resp.ok) {
+    alert('Credenciales inválidas.');
+    return;
+  }
 
+  const sessionResp = await apiGet('/session');
+  console.log('SESSION RESPONSE:', sessionResp);
+
+  if (!sessionResp || !sessionResp.ok || !sessionResp.user) {
+    alert('Se autenticó, pero no se pudo recuperar la sesión.');
+    return;
+  }
+
+  state.session = {
+    email: sessionResp.user.email || email,
+    name: sessionResp.user.name || email,
+    role: sessionResp.user.role || '',
+    programa: sessionResp.user.programa || ''
+  };
+
+  $('loginView')?.classList.add('d-none');
+  $('appView')?.classList.remove('d-none');
+
+  await syncFromBackend();
+  renderAll();
+}
+
+async function autoLogin() {
+  const sessionResp = await apiGet('/session');
+
+  if (sessionResp && sessionResp.ok && sessionResp.user) {
     state.session = {
-      email,
-      name: resp.name || email,
-      role: resp.role || 'Administrador'
+      email: sessionResp.user.email || '',
+      name: sessionResp.user.name || sessionResp.user.email || '',
+      role: sessionResp.user.role || '',
+      programa: sessionResp.user.programa || ''
     };
-
-    if (!resp.token) {
-      console.warn('El backend autenticó pero no devolvió token.');
-    }
 
     $('loginView')?.classList.add('d-none');
     $('appView')?.classList.remove('d-none');
 
     await syncFromBackend();
     renderAll();
-    return;
-  }
-
-  alert('Login backend falló, usando modo local.');
-}
-
-async function autoLogin(){
-  if(!AUTH_TOKEN) return;
-
-  const data = await apiGet('/decretos');
-
-  if(data && data.ok){
-    state.session = {
-      email: 'admin@midis.gob.pe',
-      name: 'Administrador MIDIS',
-      role: 'Administrador'
-    };
-
-    $('loginView')?.classList.add('d-none');
-    $('appView')?.classList.remove('d-none');
-
-    state.decretos = (data.decretos || []).map(normalizarDecretoDesdeBackend);
-    state.acciones = data.acciones || [];
-
-    renderAll();
   }
 }
 
-async function syncFromBackend(){
+async function syncFromBackend() {
   const data = await apiGet('/decretos');
 
-  if(data && data.ok){
+  if (data && data.ok) {
     state.decretos = (data.decretos || []).map(normalizarDecretoDesdeBackend);
     state.acciones = data.acciones || [];
     saveStorage();
   }
 }
 
-// ================== SESION ==================
-function renderSesion(){
-  if($('sessionName')){
+// ================== SESION / ROLES ==================
+function renderSesion() {
+  if ($('sessionName')) {
     $('sessionName').textContent = state.session?.name || '';
   }
-  if($('sessionRole')){
+  if ($('sessionRole')) {
     $('sessionRole').textContent = state.session?.role || '';
   }
 }
 
+function applyRolePermissions() {
+  const role = state.session?.role || '';
+  const isAdmin = role === 'Administrador';
+  const adminBtn = $('btnAdminPanel');
+  const tabSegBtn = document.querySelector('[data-bs-target="#tabSeg"]');
+
+  if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
+  if (tabSegBtn) tabSegBtn.style.display = isAdmin ? '' : 'none';
+}
+
 // ================== FORM DS ==================
-function wireDSForm(){
+function wireDSForm() {
   $('btnGuardarDS')?.addEventListener('click', guardarDecretoSupremo);
 
   $('dsFechaInicio')?.addEventListener('change', recalcularFechasDS);
@@ -224,9 +231,9 @@ function wireDSForm(){
   $('dsOrigen')?.addEventListener('change', actualizarDatosProrrogaVisual);
 }
 
-function renderSectoresFirmantes(){
+function renderSectoresFirmantes() {
   const cont = $('sectoresContainer');
-  if(!cont) return;
+  if (!cont) return;
 
   cont.innerHTML = SECTORES_FIRMANTES.map((sector, i) => `
     <div class="col-md-3 col-sm-4 col-6">
@@ -238,22 +245,22 @@ function renderSectoresFirmantes(){
   `).join('');
 }
 
-function generarCodigoRegistro(){
+function generarCodigoRegistro() {
   const input = $('dsCodigoRegistro');
-  if(!input) return;
+  if (!input) return;
 
   const correlativo = String(state.decretos.length + 1).padStart(4, '0');
   input.value = `DS-${new Date().getFullYear()}-${correlativo}`;
 }
 
-function recalcularFechasDS(){
+function recalcularFechasDS() {
   const fechaInicio = $('dsFechaInicio')?.value || '';
   const plazo = parseInt($('dsPlazoDias')?.value || '0', 10);
 
-  if(!fechaInicio || !plazo || plazo < 1){
-    if($('dsFechaFin')) $('dsFechaFin').value = '';
-    if($('dsVigencia')) $('dsVigencia').value = '';
-    if($('dsSemaforo')) $('dsSemaforo').value = '';
+  if (!fechaInicio || !plazo || plazo < 1) {
+    if ($('dsFechaFin')) $('dsFechaFin').value = '';
+    if ($('dsVigencia')) $('dsVigencia').value = '';
+    if ($('dsSemaforo')) $('dsSemaforo').value = '';
     return;
   }
 
@@ -261,13 +268,13 @@ function recalcularFechasDS(){
   const fin = new Date(inicio);
   fin.setDate(fin.getDate() + plazo - 1);
 
-  if($('dsFechaFin')) $('dsFechaFin').value = toDateInputValue(fin);
-  if($('dsVigencia')) $('dsVigencia').value = String(plazo);
+  if ($('dsFechaFin')) $('dsFechaFin').value = toDateInputValue(fin);
+  if ($('dsVigencia')) $('dsVigencia').value = String(plazo);
 
   actualizarSemaforo(fin);
 }
 
-function actualizarSemaforo(fechaFin){
+function actualizarSemaforo(fechaFin) {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
 
@@ -277,33 +284,33 @@ function actualizarSemaforo(fechaFin){
   const diffDias = Math.ceil((fin - hoy) / 86400000);
 
   let texto = 'Vencido';
-  if(diffDias > 15) texto = 'Verde';
-  else if(diffDias >= 1) texto = 'Amarillo';
+  if (diffDias > 15) texto = 'Verde';
+  else if (diffDias >= 1) texto = 'Amarillo';
   else texto = 'Rojo';
 
-  if($('dsSemaforo')) $('dsSemaforo').value = texto;
+  if ($('dsSemaforo')) $('dsSemaforo').value = texto;
 }
 
-function onToggleProrroga(){
+function onToggleProrroga() {
   const checked = $('dsEsProrroga')?.checked || false;
   const origen = $('dsOrigen');
 
-  if(origen){
+  if (origen) {
     origen.disabled = !checked;
 
-    if(!checked){
+    if (!checked) {
       origen.value = '';
-      if($('dsNivelProrroga')) $('dsNivelProrroga').value = '0';
-      if($('dsCadena')) $('dsCadena').value = '';
-    }else{
+      if ($('dsNivelProrroga')) $('dsNivelProrroga').value = '0';
+      if ($('dsCadena')) $('dsCadena').value = '';
+    } else {
       actualizarOrigenesProrroga();
     }
   }
 }
 
-function actualizarOrigenesProrroga(){
+function actualizarOrigenesProrroga() {
   const sel = $('dsOrigen');
-  if(!sel) return;
+  if (!sel) return;
 
   const actual = sel.value;
   sel.innerHTML = '<option value="">Seleccione...</option>';
@@ -318,32 +325,32 @@ function actualizarOrigenesProrroga(){
       sel.appendChild(opt);
     });
 
-  if(actual) sel.value = actual;
+  if (actual) sel.value = actual;
   actualizarDatosProrrogaVisual();
 }
 
-function actualizarDatosProrrogaVisual(){
+function actualizarDatosProrrogaVisual() {
   const esProrroga = $('dsEsProrroga')?.checked || false;
   const origenId = $('dsOrigen')?.value || '';
 
-  if(!esProrroga || !origenId){
-    if($('dsNivelProrroga')) $('dsNivelProrroga').value = esProrroga ? '1' : '0';
-    if($('dsCadena')) $('dsCadena').value = '';
+  if (!esProrroga || !origenId) {
+    if ($('dsNivelProrroga')) $('dsNivelProrroga').value = esProrroga ? '1' : '0';
+    if ($('dsCadena')) $('dsCadena').value = '';
     return;
   }
 
   const dataProrroga = construirCadenaProrroga(origenId);
-  if($('dsNivelProrroga')) $('dsNivelProrroga').value = String(dataProrroga.nivel);
-  if($('dsCadena')) $('dsCadena').value = dataProrroga.cadenaPreview;
+  if ($('dsNivelProrroga')) $('dsNivelProrroga').value = String(dataProrroga.nivel);
+  if ($('dsCadena')) $('dsCadena').value = dataProrroga.cadenaPreview;
 }
 
-function getSectoresFirmantesSeleccionados(){
+function getSectoresFirmantesSeleccionados() {
   return [...document.querySelectorAll('.ds-sector-firma:checked')].map(x => x.value);
 }
 
-function construirCadenaProrroga(origenId){
+function construirCadenaProrroga(origenId) {
   const origen = state.decretos.find(x => String(x.id) === String(origenId));
-  if(!origen){
+  if (!origen) {
     return {
       nivel: 1,
       cadena: '',
@@ -364,7 +371,7 @@ function construirCadenaProrroga(origenId){
   };
 }
 
-async function guardarDecretoSupremo(){
+async function guardarDecretoSupremo() {
   const numero = ($('dsNumero')?.value || '').trim();
   const anio = ($('dsAnio')?.value || '').trim();
   const codigoRegistro = ($('dsCodigoRegistro')?.value || '').trim();
@@ -382,18 +389,18 @@ async function guardarDecretoSupremo(){
 
   const sectoresFirmantes = getSectoresFirmantesSeleccionados();
 
-  if(!numero) return alert('Ingrese el Número de Decreto Supremo.');
-  if(!anio) return alert('Ingrese el Año.');
-  if(!peligro) return alert('Seleccione el Peligro.');
-  if(!tipoPeligro) return alert('Seleccione el Tipo de Peligro.');
-  if(!plazoDias || plazoDias < 1) return alert('Ingrese el Plazo (Días).');
-  if(!fechaInicio) return alert('Ingrese la Fecha de inicio.');
-  if(!fechaFin) return alert('No se pudo calcular la Fecha final.');
-  if(!sectoresFirmantes.length) return alert('Seleccione al menos un Sector que firma.');
-  if(!state.nuevoDSTerritorios.length) return alert('Agregue al menos un distrito.');
-  if(esProrroga && !dsOrigenId) return alert('Seleccione el DS de origen inmediato.');
+  if (!numero) return alert('Ingrese el Número de Decreto Supremo.');
+  if (!anio) return alert('Ingrese el Año.');
+  if (!peligro) return alert('Seleccione el Peligro.');
+  if (!tipoPeligro) return alert('Seleccione el Tipo de Peligro.');
+  if (!plazoDias || plazoDias < 1) return alert('Ingrese el Plazo (Días).');
+  if (!fechaInicio) return alert('Ingrese la Fecha de inicio.');
+  if (!fechaFin) return alert('No se pudo calcular la Fecha final.');
+  if (!sectoresFirmantes.length) return alert('Seleccione al menos un Sector que firma.');
+  if (!state.nuevoDSTerritorios.length) return alert('Agregue al menos un distrito.');
+  if (esProrroga && !dsOrigenId) return alert('Seleccione el DS de origen inmediato.');
 
-  if(state.decretos.some(x => (x.numero || '').toUpperCase() === numero.toUpperCase())){
+  if (state.decretos.some(x => (x.numero || '').toUpperCase() === numero.toUpperCase())) {
     return alert('Ya existe un Decreto Supremo con ese número.');
   }
 
@@ -401,14 +408,13 @@ async function guardarDecretoSupremo(){
   let cadenaProrroga = '';
   let origenNumero = '';
 
-  if(esProrroga){
+  if (esProrroga) {
     const dataProrroga = construirCadenaProrroga(dsOrigenId);
     nivelProrroga = dataProrroga.nivel;
     origenNumero = dataProrroga.origen?.numero || '';
     cadenaProrroga = dataProrroga.cadena;
   }
 
-  // Objeto para UI local
   const nuevoUI = {
     id: cryptoRandomId(),
     numero,
@@ -432,23 +438,22 @@ async function guardarDecretoSupremo(){
     creadoEn: new Date().toISOString()
   };
 
-  // Payload alineado con tabla D1
   const payload = {
     id: nuevoUI.id,
     codigo_registro: codigoRegistro,
-    numero: numero,
-    anio: anio,
-    peligro: peligro,
+    numero,
+    anio,
+    peligro,
     tipo_peligro: tipoPeligro,
     fecha_inicio: fechaInicio,
     fecha_fin: fechaFin,
-    vigencia: vigencia,
-    semaforo: semaforo,
-    motivos: motivos,
-    sectores: JSON.stringify(sectoresFirmantes),
-    territorio: JSON.stringify(state.nuevoDSTerritorios),
+    vigencia,
+    semaforo,
+    motivos,
+    sectores: sectoresFirmantes,
+    territorio: state.nuevoDSTerritorios,
     es_prorroga: esProrroga ? 1 : 0,
-    usuario_registro: state.session?.email || 'admin@midis.gob.pe',
+    usuario_registro: state.session?.email || '',
     fecha_registro: new Date().toISOString(),
     estado: 'activo',
     version: 1,
@@ -457,27 +462,26 @@ async function guardarDecretoSupremo(){
 
   console.log('PAYLOAD DS -> BACKEND:', payload);
 
-  // Guardado local temporal
-  state.decretos.push(nuevoUI);
-  saveStorage();
-
   const resp = await apiPost('/decretos', payload);
   console.log('RESPUESTA POST /decretos:', resp);
 
-  if(resp && resp.ok){
+  if (resp && resp.ok) {
     console.log('Guardado en backend');
-  }else{
-    console.warn('No se confirmó guardado en backend; quedó guardado localmente.');
+    state.decretos.unshift(nuevoUI);
+    saveStorage();
+    renderTablaDecretos();
+    actualizarOrigenesProrroga();
+    renderSelectAccionDs();
+    limpiarFormularioDS();
+    alert('Decreto Supremo guardado correctamente.');
+    return;
   }
 
-  renderTablaDecretos();
-  actualizarOrigenesProrroga();
-  renderSelectAccionDs();
-  limpiarFormularioDS();
-  alert('Decreto Supremo guardado correctamente.');
+  console.warn('No se confirmó guardado en backend; no se agregó a la lista local.');
+  alert('No se pudo guardar el Decreto Supremo en backend.');
 }
 
-function limpiarFormularioDS(){
+function limpiarFormularioDS() {
   [
     'dsNumero',
     'dsPeligro',
@@ -491,39 +495,34 @@ function limpiarFormularioDS(){
     'dsOrigen',
     'dsCadena'
   ].forEach(id => {
-    if($(id)) $(id).value = '';
+    if ($(id)) $(id).value = '';
   });
 
-  if($('dsAnio')) $('dsAnio').value = new Date().getFullYear();
-
-  if($('dsEsProrroga')){
-    $('dsEsProrroga').checked = false;
-  }
-  if($('dsOrigen')){
-    $('dsOrigen').disabled = true;
-  }
-  if($('dsNivelProrroga')) $('dsNivelProrroga').value = '0';
+  if ($('dsAnio')) $('dsAnio').value = new Date().getFullYear();
+  if ($('dsEsProrroga')) $('dsEsProrroga').checked = false;
+  if ($('dsOrigen')) $('dsOrigen').disabled = true;
+  if ($('dsNivelProrroga')) $('dsNivelProrroga').value = '0';
 
   document.querySelectorAll('.ds-sector-firma').forEach(chk => chk.checked = false);
 
   state.nuevoDSTerritorios = [];
   renderTerritorioSeleccionado();
 
-  if($('selDepartamento')) $('selDepartamento').value = '';
-  if($('selProvincia')) $('selProvincia').innerHTML = '<option value="">Seleccione...</option>';
-  if($('buscarDistrito')) $('buscarDistrito').value = '';
-  if($('distritosChecklist')){
+  if ($('selDepartamento')) $('selDepartamento').value = '';
+  if ($('selProvincia')) $('selProvincia').innerHTML = '<option value="">Seleccione...</option>';
+  if ($('buscarDistrito')) $('buscarDistrito').value = '';
+  if ($('distritosChecklist')) {
     $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
   }
 
   generarCodigoRegistro();
 }
 
-function renderTablaDecretos(){
+function renderTablaDecretos() {
   const tbody = document.querySelector('#tablaDS tbody');
-  if(!tbody) return;
+  if (!tbody) return;
 
-  if(!state.decretos.length){
+  if (!state.decretos.length) {
     tbody.innerHTML = `
       <tr>
         <td colspan="17" class="text-center text-muted">No hay Decretos Supremos registrados.</td>
@@ -562,9 +561,9 @@ function renderTablaDecretos(){
   }).join('');
 }
 
-function renderSelectAccionDs(){
+function renderSelectAccionDs() {
   const sel = $('accionDs');
-  if(!sel) return;
+  if (!sel) return;
 
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
@@ -579,12 +578,12 @@ function renderSelectAccionDs(){
     });
 }
 
-function verDecreto(id){
+function verDecreto(id) {
   const ds = state.decretos.find(x => String(x.id) === String(id));
-  if(!ds) return;
+  if (!ds) return;
 
   const body = $('modalDSBody');
-  if(body){
+  if (body) {
     body.innerHTML = `
       <div class="mb-2"><strong>DS:</strong> ${escapeHtml(ds.numero)}</div>
       <div class="mb-2"><strong>Peligro:</strong> ${escapeHtml(ds.peligro)}</div>
@@ -599,16 +598,16 @@ function verDecreto(id){
   }
 
   const modalEl = $('modalDS');
-  if(modalEl && window.bootstrap){
+  if (modalEl && window.bootstrap) {
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
   }
 }
 
 // ================== NORMALIZACION BACKEND -> UI ==================
-function normalizarDecretoDesdeBackend(ds){
-  const territorios = parseJsonSafe(ds.territorio, []);
-  const sectoresFirmantes = parseJsonSafe(ds.sectores, []);
+function normalizarDecretoDesdeBackend(ds) {
+  const territorios = Array.isArray(ds.territorio) ? ds.territorio : parseJsonSafe(ds.territorio, []);
+  const sectoresFirmantes = Array.isArray(ds.sectores) ? ds.sectores : parseJsonSafe(ds.sectores, []);
 
   return {
     id: ds.id,
@@ -635,8 +634,8 @@ function normalizarDecretoDesdeBackend(ds){
 }
 
 // ================== UBIGEO ==================
-function initUbigeo(){
-  if(!window.ubigeoData || !Array.isArray(window.ubigeoData)){
+function initUbigeo() {
+  if (!window.ubigeoData || !Array.isArray(window.ubigeoData)) {
     console.error('ubigeoData no cargó');
     return;
   }
@@ -666,7 +665,7 @@ function initUbigeo(){
   });
 }
 
-function normalizarTexto(valor){
+function normalizarTexto(valor) {
   return String(valor || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -674,13 +673,13 @@ function normalizarTexto(valor){
     .toUpperCase();
 }
 
-function obtenerUbigeoRegistro(reg){
+function obtenerUbigeoRegistro(reg) {
   return reg.ubigeo || reg.UBIGEO || reg.codigo || reg.cod_ubigeo || '';
 }
 
-function obtenerClaveTerritorio(reg){
+function obtenerClaveTerritorio(reg) {
   const ubigeo = obtenerUbigeoRegistro(reg);
-  if(ubigeo) return String(ubigeo);
+  if (ubigeo) return String(ubigeo);
 
   return [
     normalizarTexto(reg.departamento),
@@ -689,9 +688,9 @@ function obtenerClaveTerritorio(reg){
   ].join('|');
 }
 
-function cargarDepartamentos(){
+function cargarDepartamentos() {
   const sel = $('selDepartamento');
-  if(!sel) return;
+  if (!sel) return;
 
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
@@ -704,15 +703,15 @@ function cargarDepartamentos(){
   });
 }
 
-function cargarProvincias(){
+function cargarProvincias() {
   const dep = $('selDepartamento')?.value || '';
   const selProv = $('selProvincia');
-  if(!selProv) return;
+  if (!selProv) return;
 
   selProv.innerHTML = '<option value="">Seleccione...</option>';
 
-  if(!dep){
-    if($('distritosChecklist')){
+  if (!dep) {
+    if ($('distritosChecklist')) {
       $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
     }
     return;
@@ -731,33 +730,33 @@ function cargarProvincias(){
     selProv.appendChild(opt);
   });
 
-  if($('distritosChecklist')){
+  if ($('distritosChecklist')) {
     $('distritosChecklist').innerHTML = '<div class="text-muted small">Seleccione una provincia.</div>';
   }
 
-  if($('buscarDistrito')) $('buscarDistrito').value = '';
+  if ($('buscarDistrito')) $('buscarDistrito').value = '';
 }
 
-function cargarDistritos(){
+function cargarDistritos() {
   const dep = $('selDepartamento')?.value || '';
   const prov = $('selProvincia')?.value || '';
   const cont = $('distritosChecklist');
-  if(!cont) return;
+  if (!cont) return;
 
-  if(!dep || !prov){
+  if (!dep || !prov) {
     cont.innerHTML = '<div class="text-muted small">Seleccione primero departamento y provincia.</div>';
     return;
   }
 
   cont.innerHTML = '';
-  if($('buscarDistrito')) $('buscarDistrito').value = '';
+  if ($('buscarDistrito')) $('buscarDistrito').value = '';
 
   const distritos = ubigeoCache.filter(x =>
     normalizarTexto(x.departamento) === normalizarTexto(dep) &&
     normalizarTexto(x.provincia) === normalizarTexto(prov)
   );
 
-  if(!distritos.length){
+  if (!distritos.length) {
     cont.innerHTML = '<div class="text-muted small">No hay distritos para la selección actual.</div>';
     return;
   }
@@ -780,47 +779,47 @@ function cargarDistritos(){
   });
 }
 
-function filtrarDistritos(){
+function filtrarDistritos() {
   const txt = ($('buscarDistrito')?.value || '').trim().toLowerCase();
   const checklist = $('distritosChecklist');
-  if(!checklist) return;
+  if (!checklist) return;
 
   checklist.querySelectorAll('.form-check').forEach(div => {
     div.style.display = div.textContent.toLowerCase().includes(txt) ? '' : 'none';
   });
 }
 
-function marcarTodosDistritosVisibles(){
+function marcarTodosDistritosVisibles() {
   const checklist = $('distritosChecklist');
-  if(!checklist) return;
+  if (!checklist) return;
 
   [...checklist.querySelectorAll('.form-check')]
     .filter(div => div.style.display !== 'none')
     .forEach(div => {
       const chk = div.querySelector('input[type="checkbox"]');
-      if(chk) chk.checked = true;
+      if (chk) chk.checked = true;
     });
 }
 
-function limpiarChecksDistritos(silencioso = false){
+function limpiarChecksDistritos(silencioso = false) {
   const checklist = $('distritosChecklist');
-  if(checklist){
+  if (checklist) {
     checklist.querySelectorAll('input[type="checkbox"]').forEach(chk => chk.checked = false);
   }
 
-  if(!silencioso){
-    if($('buscarDistrito')) $('buscarDistrito').value = '';
+  if (!silencioso) {
+    if ($('buscarDistrito')) $('buscarDistrito').value = '';
     filtrarDistritos();
   }
 }
 
-function agregarDistritosSeleccionados(){
+function agregarDistritosSeleccionados() {
   const checklist = $('distritosChecklist');
-  if(!checklist) return;
+  if (!checklist) return;
 
   const checks = checklist.querySelectorAll('input[type="checkbox"]:checked');
 
-  if(!checks.length){
+  if (!checks.length) {
     alert('Seleccione al menos un distrito para agregar.');
     renderTerritorioSeleccionado();
     return;
@@ -830,14 +829,14 @@ function agregarDistritosSeleccionados(){
 
   checks.forEach(chk => {
     const data = ubigeoCache.find(x => String(obtenerClaveTerritorio(x)) === String(chk.value));
-    if(!data) return;
+    if (!data) return;
 
     const clave = obtenerClaveTerritorio(data);
 
     const existe = state.nuevoDSTerritorios.some(
       t => String(t.clave) === String(clave)
     );
-    if(existe) return;
+    if (existe) return;
 
     state.nuevoDSTerritorios.push({
       clave,
@@ -854,15 +853,15 @@ function agregarDistritosSeleccionados(){
 
   renderTerritorioSeleccionado();
 
-  if(agregados === 0){
+  if (agregados === 0) {
     alert('Los distritos marcados ya estaban agregados.');
-  }else{
+  } else {
     limpiarChecksDistritos(true);
     cargarDistritos();
   }
 }
 
-function quitarTerritorioSeleccionado(clave){
+function quitarTerritorioSeleccionado(clave) {
   state.nuevoDSTerritorios = state.nuevoDSTerritorios.filter(
     t => String(t.clave) !== String(clave)
   );
@@ -871,11 +870,11 @@ function quitarTerritorioSeleccionado(clave){
   cargarDistritos();
 }
 
-function renderTerritorioSeleccionado(){
+function renderTerritorioSeleccionado() {
   const cont = $('territorioSeleccionado');
-  if(!cont) return;
+  if (!cont) return;
 
-  if(!state.nuevoDSTerritorios.length){
+  if (!state.nuevoDSTerritorios.length) {
     cont.innerHTML = '<div class="text-muted">No hay territorios agregados.</div>';
     return;
   }
@@ -892,25 +891,25 @@ function renderTerritorioSeleccionado(){
 }
 
 // ================== HELPERS ==================
-function toDateInputValue(date){
+function toDateInputValue(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
 
-function structuredCloneSafe(obj){
+function structuredCloneSafe(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-function cryptoRandomId(){
-  if(window.crypto?.randomUUID){
+function cryptoRandomId() {
+  if (window.crypto?.randomUUID) {
     return crypto.randomUUID();
   }
   return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
 }
 
-function escapeHtml(value){
+function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -919,22 +918,22 @@ function escapeHtml(value){
     .replaceAll("'", '&#39;');
 }
 
-function parseJsonSafe(value, fallback){
-  try{
-    if(value == null || value === '') return fallback;
+function parseJsonSafe(value, fallback) {
+  try {
+    if (value == null || value === '') return fallback;
     return JSON.parse(value);
-  }catch{
+  } catch {
     return fallback;
   }
 }
 
-function safeNumber(value){
+function safeNumber(value) {
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? n : 0;
 }
 
 // ================== RENDER ==================
-function renderAll(){
+function renderAll() {
   renderSesion();
   renderSectoresFirmantes();
   renderTerritorioSeleccionado();
