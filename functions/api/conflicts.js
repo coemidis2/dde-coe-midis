@@ -7,8 +7,9 @@ export async function onRequestGet(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    // 🔎 Alineado con tu tabla: usa 'fecha'
     const { results } = await context.env.DB
-      .prepare('SELECT * FROM conflictos ORDER BY created_at DESC LIMIT 1000')
+      .prepare('SELECT * FROM conflictos ORDER BY fecha DESC LIMIT 1000')
       .all();
 
     return json({ ok: true, rows: results });
@@ -24,6 +25,7 @@ export async function onRequestPost(context) {
   try {
     const body = await readJson(context.request);
 
+    // 🔧 Pasa el DB correcto a writeConflict
     await writeConflict(context.env.DB, body || {});
 
     return json({ ok: true });
