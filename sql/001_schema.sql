@@ -1,5 +1,8 @@
 PRAGMA foreign_keys = ON;
 
+-- =========================
+-- USERS
+-- =========================
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
@@ -8,10 +11,15 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   programa TEXT DEFAULT '',
   active INTEGER NOT NULL DEFAULT 1,
+  force_password_change INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  last_login_at TEXT
 );
 
+-- =========================
+-- SESSIONS
+-- =========================
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   token TEXT NOT NULL UNIQUE,
@@ -25,6 +33,9 @@ CREATE TABLE IF NOT EXISTS sessions (
   FOREIGN KEY (email) REFERENCES users(email)
 );
 
+-- =========================
+-- DECRETOS
+-- =========================
 CREATE TABLE IF NOT EXISTS decretos (
   id TEXT PRIMARY KEY,
   codigo_registro TEXT,
@@ -46,12 +57,16 @@ CREATE TABLE IF NOT EXISTS decretos (
   cadena_id TEXT,
   usuario_registro TEXT NOT NULL,
   fecha_registro TEXT NOT NULL,
+  estado TEXT NOT NULL DEFAULT 'activo',
   version INTEGER NOT NULL DEFAULT 1,
   locked INTEGER NOT NULL DEFAULT 0,
   deleted_at TEXT,
   updated_at TEXT NOT NULL
 );
 
+-- =========================
+-- ACCIONES
+-- =========================
 CREATE TABLE IF NOT EXISTS acciones (
   id TEXT PRIMARY KEY,
   ds_id TEXT NOT NULL,
@@ -79,8 +94,11 @@ CREATE TABLE IF NOT EXISTS acciones (
   FOREIGN KEY (ds_id) REFERENCES decretos(id)
 );
 
+-- =========================
+-- AUDIT LOG
+-- =========================
 CREATE TABLE IF NOT EXISTS audit_log (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   actor TEXT NOT NULL,
   action TEXT NOT NULL,
   detail TEXT,
@@ -89,20 +107,47 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS conflict_log (
+-- =========================
+-- CONFLICTOS
+-- =========================
+CREATE TABLE IF NOT EXISTS conflictos (
+  id TEXT PRIMARY KEY,
+  entidad TEXT,
+  entidad_id TEXT,
+  version_local INTEGER DEFAULT 0,
+  version_servidor INTEGER DEFAULT 0,
+  usuario TEXT,
+  fecha TEXT NOT NULL,
+  estado TEXT NOT NULL DEFAULT 'pendiente'
+);
+
+-- =========================
+-- LOGIN ATTEMPTS
+-- =========================
+CREATE TABLE IF NOT EXISTS login_attempts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  codigo TEXT,
-  motivo TEXT NOT NULL,
-  fecha_servidor TEXT,
-  estado_local_servidor TEXT,
-  resolucion_aplicada TEXT,
+  ip TEXT NOT NULL,
+  email TEXT,
   created_at TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_decretos_numero ON decretos(numero, anio);
-CREATE INDEX IF NOT EXISTS idx_decretos_fecha ON decretos(fecha_registro);
+-- =========================
+-- INDICES
+-- =========================
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+CREATE INDEX IF NOT EXISTS idx_sessions_email ON sessions(email);
+
+CREATE INDEX IF NOT EXISTS idx_decretos_numero_anio ON decretos(numero, anio);
+CREATE INDEX IF NOT EXISTS idx_decretos_fecha_registro ON decretos(fecha_registro);
+CREATE INDEX IF NOT EXISTS idx_decretos_deleted_at ON decretos(deleted_at);
+
 CREATE INDEX IF NOT EXISTS idx_acciones_ds ON acciones(ds_id);
 CREATE INDEX IF NOT EXISTS idx_acciones_codigo ON acciones(codigo);
-CREATE INDEX IF NOT EXISTS idx_acciones_fecha ON acciones(fecha_registro);
+CREATE INDEX IF NOT EXISTS idx_acciones_fecha_registro ON acciones(fecha_registro);
+CREATE INDEX IF NOT EXISTS idx_acciones_deleted_at ON acciones(deleted_at);
+
 CREATE INDEX IF NOT EXISTS idx_audit_actor_fecha ON audit_log(actor, created_at);
-CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+CREATE INDEX IF NOT EXISTS idx_conflictos_fecha ON conflictos(fecha);
+CREATE INDEX IF NOT EXISTS idx_conflictos_entidad_id ON conflictos(entidad, entidad_id);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_ip_created_at ON login_attempts(ip, created_at);
