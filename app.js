@@ -1,5 +1,8 @@
 // ================== CONFIG API ==================
 const API_BASE = window.location.origin + '/api';
+const STORAGE_KEY = 'dee_midis_local_v4';
+
+let authAlertShown = false;
 
 function getCookieValue(name) {
   const cookie = document.cookie || '';
@@ -19,11 +22,9 @@ function getCookieValue(name) {
 }
 
 function getHeaders() {
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-
+  const headers = { 'Content-Type': 'application/json' };
   const csrf = getCookieValue('dee_csrf');
+
   if (csrf) {
     headers['x-csrf-token'] = csrf;
   }
@@ -31,27 +32,49 @@ function getHeaders() {
   return headers;
 }
 
-async function handleResponse(res) {
+function clearClientState() {
+  localStorage.removeItem(STORAGE_KEY);
+  state.session = null;
+}
+
+function showLogin() {
+  $('appView')?.classList.add('d-none');
+  $('loginView')?.classList.remove('d-none');
+}
+
+function showApp() {
+  $('loginView')?.classList.add('d-none');
+  $('appView')?.classList.remove('d-none');
+}
+
+async function handleResponse(res, options = {}) {
+  const silentAuth = !!options.silentAuth;
+
   let data = null;
 
   try {
     data = await res.json();
   } catch {
-    throw new Error('invalid_json_response');
+    data = null;
   }
 
   if (!res.ok) {
     console.warn('API ERROR:', res.status, data);
 
     if (res.status === 401) {
-      alert('Sesión expirada. Ingrese nuevamente.');
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
+      clearClientState();
+      showLogin();
+
+      if (!silentAuth && !authAlertShown) {
+        authAlertShown = true;
+        alert('Sesión expirada. Ingrese nuevamente.');
+      }
+
       return null;
     }
 
     if (res.status === 403) {
-      alert('No tiene permisos para esta acción.');
+      if (!silentAuth) alert('No tiene permisos para esta acción.');
       return null;
     }
 
@@ -66,7 +89,7 @@ async function handleResponse(res) {
   return data;
 }
 
-async function apiGet(path) {
+async function apiGet(path, options = {}) {
   try {
     const res = await fetch(API_BASE + path, {
       method: 'GET',
@@ -74,46 +97,46 @@ async function apiGet(path) {
       credentials: 'include'
     });
 
-    return await handleResponse(res);
+    return await handleResponse(res, options);
   } catch (e) {
     console.warn('API GET error:', e);
     return null;
   }
 }
 
-async function apiPost(path, data) {
+async function apiPost(path, data, options = {}) {
   try {
     const res = await fetch(API_BASE + path, {
       method: 'POST',
       headers: getHeaders(),
       credentials: 'include',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data || {})
     });
 
-    return await handleResponse(res);
+    return await handleResponse(res, options);
   } catch (e) {
     console.warn('API POST error:', e);
     return null;
   }
 }
 
-async function apiPatch(path, data) {
+async function apiPatch(path, data, options = {}) {
   try {
     const res = await fetch(API_BASE + path, {
       method: 'PATCH',
       headers: getHeaders(),
       credentials: 'include',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data || {})
     });
 
-    return await handleResponse(res);
+    return await handleResponse(res, options);
   } catch (e) {
     console.warn('API PATCH error:', e);
     return null;
   }
 }
 
-async function apiDelete(path) {
+async function apiDelete(path, options = {}) {
   try {
     const res = await fetch(API_BASE + path, {
       method: 'DELETE',
@@ -121,7 +144,7 @@ async function apiDelete(path) {
       credentials: 'include'
     });
 
-    return await handleResponse(res);
+    return await handleResponse(res, options);
   } catch (e) {
     console.warn('API DELETE error:', e);
     return null;
@@ -129,8 +152,6 @@ async function apiDelete(path) {
 }
 
 // ================== APP STATE ==================
-const STORAGE_KEY = 'dee_midis_local_v4';
-
 let state = {
   session: null,
   decretos: [],
@@ -139,18 +160,9 @@ let state = {
 };
 
 const SECTORES_FIRMANTES = [
-  'PCM',
-  'MIDIS',
-  'MINEDU',
-  'MINSA',
-  'MVCS',
-  'MTC',
-  'MININTER',
-  'MINDEF',
-  'MINAGRI',
-  'MIMP',
-  'MINEM',
-  'MINAM'
+  'PCM', 'MIDIS', 'MINEDU', 'MINSA',
+  'MVCS', 'MTC', 'MININTER', 'MINDEF',
+  'MINAGRI', 'MIMP', 'MINEM', 'MINAM'
 ];
 
 let ubigeoCache = [];
@@ -171,6 +183,8 @@ async function init() {
   generarCodigoRegistro();
   actualizarOrigenesProrroga();
   renderSesion();
+
+  showLogin();
   await autoLogin();
 }
 
@@ -198,28 +212,36 @@ function saveStorage() {
 
 // ================== LOGIN / SESSION ==================
 function wireLogin() {
-  if ($('btnLogin')) {
-    $('btnLogin').addEventListener('click', doLogin);
-  }
+  $('btnLogin')?.addEventListener('click', doLogin);
+
+  $('loginPass')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
 }
 
 async function doLogin() {
   const email = ($('loginUser')?.value || '').trim().toLowerCase();
   const password = $('loginPass')?.value || '';
 
-  const resp = await apiPost('/login', { email, password });
-  console.log('LOGIN RESPONSE:', resp);
-
-  if (!resp || !resp.ok) {
-    alert('Credenciales inválidas.');
+  if (!email || !password) {
+    alert('Ingrese usuario y contraseña.');
     return;
   }
 
-  const sessionResp = await apiGet('/session');
+  const resp = await apiPost('/login', { email, password }, { silentAuth: true });
+  console.log('LOGIN RESPONSE:', resp);
+
+  if (!resp || !resp.ok) {
+    alert('Credenciales inválidas o usuario inactivo.');
+    return;
+  }
+
+  const sessionResp = await apiGet('/session', { silentAuth: true });
   console.log('SESSION RESPONSE:', sessionResp);
 
   if (!sessionResp || !sessionResp.ok || !sessionResp.user) {
     alert('Se autenticó, pero no se pudo recuperar la sesión.');
+    showLogin();
     return;
   }
 
@@ -230,34 +252,38 @@ async function doLogin() {
     programa: sessionResp.user.programa || ''
   };
 
-  $('loginView')?.classList.add('d-none');
-  $('appView')?.classList.remove('d-none');
+  authAlertShown = false;
+  showApp();
 
   await syncFromBackend();
   renderAll();
 }
 
 async function autoLogin() {
-  const sessionResp = await apiGet('/session');
+  const sessionResp = await apiGet('/session', { silentAuth: true });
 
-  if (sessionResp && sessionResp.ok && sessionResp.user) {
-    state.session = {
-      email: sessionResp.user.email || '',
-      name: sessionResp.user.name || sessionResp.user.email || '',
-      role: sessionResp.user.role || '',
-      programa: sessionResp.user.programa || ''
-    };
-
-    $('loginView')?.classList.add('d-none');
-    $('appView')?.classList.remove('d-none');
-
-    await syncFromBackend();
-    renderAll();
+  if (!sessionResp || !sessionResp.ok || !sessionResp.user) {
+    clearClientState();
+    showLogin();
+    return;
   }
+
+  state.session = {
+    email: sessionResp.user.email || '',
+    name: sessionResp.user.name || sessionResp.user.email || '',
+    role: sessionResp.user.role || '',
+    programa: sessionResp.user.programa || ''
+  };
+
+  authAlertShown = false;
+  showApp();
+
+  await syncFromBackend();
+  renderAll();
 }
 
 async function syncFromBackend() {
-  const data = await apiGet('/decretos');
+  const data = await apiGet('/decretos', { silentAuth: false });
 
   if (data && data.ok) {
     state.decretos = (data.decretos || []).map(normalizarDecretoDesdeBackend);
@@ -268,58 +294,36 @@ async function syncFromBackend() {
 
 // ================== UI ==================
 function wireUI() {
-  if ($('btnLogout')) {
-    $('btnLogout').addEventListener('click', async () => {
-      try {
-        await apiPost('/logout', {});
-      } catch (e) {
-        console.warn('logout error', e);
-      }
+  $('btnLogout')?.addEventListener('click', async () => {
+    try {
+      await apiPost('/logout', {}, { silentAuth: true });
+    } catch (e) {
+      console.warn('logout error', e);
+    }
 
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    });
-  }
+    clearClientState();
+    showLogin();
+  });
 
-  if ($('btnAdminPanel')) {
-    $('btnAdminPanel').addEventListener('click', openAdminPanel);
-  }
-
-  if ($('btnCrearUsuarioAdmin')) {
-    $('btnCrearUsuarioAdmin').addEventListener('click', createUserAdmin);
-  }
-
-  if ($('btnCopiarClaveAdmin')) {
-    $('btnCopiarClaveAdmin').addEventListener('click', copyGeneratedPassword);
-  }
-
-  if ($('btnVerAuditoria')) {
-    $('btnVerAuditoria').addEventListener('click', loadAuditLog);
-  }
-
-  if ($('btnLimpiarAuditoria')) {
-    $('btnLimpiarAuditoria').addEventListener('click', clearAuditLog);
-  }
-
-  if ($('btnLimpiarConflictos')) {
-    $('btnLimpiarConflictos').addEventListener('click', clearConflictos);
-  }
+  $('btnAdminPanel')?.addEventListener('click', openAdminPanel);
+  $('btnCrearUsuarioAdmin')?.addEventListener('click', createUserAdmin);
+  $('btnCopiarClaveAdmin')?.addEventListener('click', copyGeneratedPassword);
+  $('btnVerAuditoria')?.addEventListener('click', loadAuditLog);
+  $('btnLimpiarAuditoria')?.addEventListener('click', clearAuditLog);
+  $('btnLimpiarConflictos')?.addEventListener('click', clearConflictos);
 }
 
 // ================== SESSION / ROLES ==================
 function renderSesion() {
-  if ($('sessionName')) {
-    $('sessionName').textContent = state.session?.name || '';
-  }
-  if ($('sessionRole')) {
-    $('sessionRole').textContent = state.session?.role || '';
-  }
+  if ($('sessionName')) $('sessionName').textContent = state.session?.name || '';
+  if ($('sessionRole')) $('sessionRole').textContent = state.session?.role || '';
 }
 
 function applyRolePermissions() {
   const role = state.session?.role || '';
   const isAdmin = role === 'Administrador';
   const isRevisor = role === 'Revisor';
+  const isRegistrador = role === 'Registrador';
   const isConsulta = role === 'Consulta';
 
   const adminBtn = $('btnAdminPanel');
@@ -329,20 +333,30 @@ function applyRolePermissions() {
 
   if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
   if (tabSegBtn) tabSegBtn.style.display = (isAdmin || isRevisor) ? '' : 'none';
-  if (tabNuevoBtn) tabNuevoBtn.style.display = (isAdmin || isRevisor) ? '' : (isConsulta ? 'none' : '');
-  if (tabAccionesBtn) tabAccionesBtn.style.display = isConsulta ? 'none' : '';
+  if (tabNuevoBtn) tabNuevoBtn.style.display = (isAdmin || isRevisor) ? '' : 'none';
+  if (tabAccionesBtn) tabAccionesBtn.style.display = (isAdmin || isRevisor || isRegistrador) ? '' : 'none';
+
+  if (isConsulta) {
+    if (tabNuevoBtn) tabNuevoBtn.style.display = 'none';
+    if (tabAccionesBtn) tabAccionesBtn.style.display = 'none';
+    if (tabSegBtn) tabSegBtn.style.display = 'none';
+  }
 }
 
 // ================== ADMIN PANEL ==================
 async function openAdminPanel() {
+  if (state.session?.role !== 'Administrador') {
+    alert('Solo el Administrador puede abrir este panel.');
+    return;
+  }
+
   await loadUsers();
   await loadAuditLog();
   await loadConflictos();
 
   const modalEl = $('modalAdminPanel');
   if (modalEl && window.bootstrap) {
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
   }
 }
 
@@ -401,8 +415,6 @@ async function createUserAdmin() {
   if (rawRole.startsWith('Registrador|')) {
     role = 'Registrador';
     programa = rawRole.split('|')[1] || '';
-  } else if (rawRole === 'Evaluador') {
-    role = 'Revisor';
   }
 
   const resp = await apiPost('/users', { name, email, role, programa });
@@ -433,11 +445,7 @@ function copyGeneratedPassword() {
 }
 
 async function toggleUserStatus(id, active) {
-  const resp = await apiPatch('/users', {
-    action: 'status',
-    id,
-    active
-  });
+  const resp = await apiPatch('/users', { action: 'status', id, active });
 
   if (!resp || !resp.ok) {
     alert('No se pudo actualizar el estado del usuario.');
@@ -450,10 +458,7 @@ async function toggleUserStatus(id, active) {
 window.toggleUserStatus = toggleUserStatus;
 
 async function resetUserPassword(id) {
-  const resp = await apiPatch('/users', {
-    action: 'reset_password',
-    id
-  });
+  const resp = await apiPatch('/users', { action: 'reset_password', id });
 
   if (!resp || !resp.ok) {
     alert('No se pudo resetear la clave.');
@@ -519,8 +524,7 @@ function fillAuditActorSelect(rows) {
 }
 
 async function clearAuditLog() {
-  const ok = confirm('¿Seguro que desea limpiar la auditoría?');
-  if (!ok) return;
+  if (!confirm('¿Seguro que desea limpiar la auditoría?')) return;
 
   const resp = await apiDelete('/audit-log');
   if (!resp || !resp.ok) {
@@ -559,8 +563,7 @@ async function loadConflictos() {
 }
 
 async function clearConflictos() {
-  const ok = confirm('¿Seguro que desea limpiar conflictos?');
-  if (!ok) return;
+  if (!confirm('¿Seguro que desea limpiar conflictos?')) return;
 
   const resp = await apiDelete('/conflicts');
   if (!resp || !resp.ok) {
@@ -677,8 +680,8 @@ function actualizarOrigenesProrroga() {
       sel.appendChild(opt);
     });
 
-    if (actual) sel.value = actual;
-    actualizarDatosProrrogaVisual();
+  if (actual) sel.value = actual;
+  actualizarDatosProrrogaVisual();
 }
 
 function actualizarDatosProrrogaVisual() {
@@ -702,12 +705,9 @@ function getSectoresFirmantesSeleccionados() {
 
 function construirCadenaProrroga(origenId) {
   const origen = state.decretos.find(x => String(x.id) === String(origenId));
+
   if (!origen) {
-    return {
-      nivel: 1,
-      cadena: '',
-      cadenaPreview: ''
-    };
+    return { nivel: 1, cadena: '', cadenaPreview: '' };
   }
 
   const nivelBase = parseInt(origen.nivelProrroga || 0, 10);
@@ -724,6 +724,12 @@ function construirCadenaProrroga(origenId) {
 }
 
 async function guardarDecretoSupremo() {
+  const role = state.session?.role || '';
+  if (!['Administrador', 'Revisor'].includes(role)) {
+    alert('No tiene permiso para registrar Decretos Supremos.');
+    return;
+  }
+
   const numero = ($('dsNumero')?.value || '').trim();
   const anio = ($('dsAnio')?.value || '').trim();
   const codigoRegistro = ($('dsCodigoRegistro')?.value || '').trim();
@@ -812,10 +818,7 @@ async function guardarDecretoSupremo() {
     locked: 0
   };
 
-  console.log('PAYLOAD DS -> BACKEND:', payload);
-
   const resp = await apiPost('/decretos', payload);
-  console.log('RESPUESTA POST /decretos:', resp);
 
   if (resp && resp.ok) {
     state.decretos.unshift(nuevoUI);
@@ -833,17 +836,10 @@ async function guardarDecretoSupremo() {
 
 function limpiarFormularioDS() {
   [
-    'dsNumero',
-    'dsPeligro',
-    'dsTipoPeligro',
-    'dsPlazoDias',
-    'dsFechaInicio',
-    'dsFechaFin',
-    'dsVigencia',
-    'dsSemaforo',
-    'dsMotivos',
-    'dsOrigen',
-    'dsCadena'
+    'dsNumero', 'dsPeligro', 'dsTipoPeligro',
+    'dsPlazoDias', 'dsFechaInicio', 'dsFechaFin',
+    'dsVigencia', 'dsSemaforo', 'dsMotivos',
+    'dsOrigen', 'dsCadena'
   ].forEach(id => {
     if ($(id)) $(id).value = '';
   });
@@ -874,11 +870,7 @@ function renderTablaDecretos() {
   if (!tbody) return;
 
   if (!state.decretos.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="17" class="text-center text-muted">No hay Decretos Supremos registrados.</td>
-      </tr>
-    `;
+    tbody.innerHTML = `<tr><td colspan="17" class="text-center text-muted">No hay Decretos Supremos registrados.</td></tr>`;
     return;
   }
 
@@ -950,8 +942,7 @@ function verDecreto(id) {
 
   const modalEl = $('modalDS');
   if (modalEl && window.bootstrap) {
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
   }
 }
 
@@ -1198,7 +1189,7 @@ function agregarDistritosSeleccionados() {
       provincia: data.provincia,
       distrito: data.distrito,
       latitud: data.latitud ?? data.lat ?? '',
-      longitud: data.longitud ?? data.lng ?? ''
+      longitud: data.longitud ?? data.lng ?? data.lon ?? ''
     });
 
     agregados += 1;
@@ -1258,9 +1249,7 @@ function structuredCloneSafe(obj) {
 }
 
 function cryptoRandomId() {
-  if (window.crypto?.randomUUID) {
-    return crypto.randomUUID();
-  }
+  if (window.crypto?.randomUUID) return crypto.randomUUID();
   return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
 }
 
