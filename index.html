@@ -7,15 +7,13 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="app.css?v=20260423-01" />
+  <link rel="stylesheet" href="app.css?v=20260423-02" />
 </head>
-
 <body>
 
   <!-- LOGIN -->
   <div id="loginView" class="login-wrap">
     <div class="login-card">
-
       <div class="login-logo-row">
         <div class="login-shield">🛡️</div>
         <div class="login-brand-text">
@@ -47,7 +45,7 @@
       </div>
 
       <div class="login-version">
-        VERSION 9 · 23/04/2026 · MIDIS © 2026
+        VERSION 10 · 23/04/2026 · MIDIS © 2026
       </div>
     </div>
   </div>
@@ -56,21 +54,16 @@
   <div id="appView" class="d-none">
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom">
       <div class="container-fluid px-3">
-
-        <span class="navbar-brand">
-          🛡️ DEE MIDIS
-        </span>
+        <span class="navbar-brand">🛡️ DEE MIDIS</span>
 
         <div class="d-flex align-items-center gap-2 ms-auto">
-
-          <div class="session-pill d-none d-sm-flex">
+          <div class="session-pill d-none d-sm-flex align-items-center gap-2">
             <span id="sessionName" class="small"></span>
             <span id="sessionRole" class="badge text-bg-primary"></span>
           </div>
 
-          <!-- 🔥 BOTÓN ADMIN ACTIVO -->
           <button id="btnAdminPanel"
                   class="btn btn-sm btn-primary admin-only hidden-by-role"
                   type="button">
@@ -80,14 +73,12 @@
           <button id="btnLogout" class="btn btn-sm btn-outline-secondary">
             Salir
           </button>
-
         </div>
       </div>
     </nav>
 
     <!-- CONTENIDO -->
     <div class="container-fluid py-3">
-
       <ul class="nav nav-tabs">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabListado">Listado DS</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNuevo">Nuevo DS</button></li>
@@ -102,10 +93,8 @@
         <div class="tab-pane fade show active" id="tabListado">
           <div class="card shadow-sm">
             <div class="card-body">
-
               <div class="d-flex justify-content-between mb-3">
                 <h4 class="text-primary">Listado de Decretos Supremos</h4>
-
                 <div>
                   <button id="btnExportListadoExcel" class="btn btn-sm btn-outline-success">CSV</button>
                   <button id="btnPrintListado" class="btn btn-sm btn-outline-danger">PDF</button>
@@ -127,13 +116,17 @@
                       <th>Departamentos</th>
                       <th>Provincias</th>
                       <th>Distritos</th>
+                      <th>Relación</th>
+                      <th>Cadena</th>
+                      <th>Prórrogas</th>
+                      <th>RDS</th>
+                      <th>PreAprobar</th>
                       <th>Ver</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
                 </table>
               </div>
-
             </div>
           </div>
         </div>
@@ -142,32 +135,181 @@
         <div class="tab-pane fade" id="tabNuevo">
           <div class="card shadow-sm">
             <div class="card-body">
-
               <h4 class="text-primary mb-3">Nuevo Decreto Supremo</h4>
 
               <div class="row g-3">
                 <div class="col-md-4">
+                  <label class="form-label">Número DS</label>
                   <input id="dsNumero" class="form-control" placeholder="Número DS">
                 </div>
                 <div class="col-md-2">
+                  <label class="form-label">Año</label>
                   <input id="dsAnio" class="form-control" value="2026">
                 </div>
                 <div class="col-md-3">
+                  <label class="form-label">Código de registro</label>
                   <input id="dsCodigoRegistro" class="form-control" readonly>
                 </div>
                 <div class="col-md-3">
+                  <label class="form-label">Peligro</label>
                   <select id="dsPeligro" class="form-select">
                     <option value="">Seleccione...</option>
                     <option>Por impacto de daños</option>
                     <option>Por peligro inminente</option>
                   </select>
                 </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Tipo de peligro</label>
+                  <select id="dsTipoPeligro" class="form-select">
+                    <option value="">Seleccione...</option>
+                    <option>Lluvias intensas</option>
+                    <option>Inundación</option>
+                    <option>Deslizamiento</option>
+                    <option>Friaje</option>
+                    <option>Heladas</option>
+                    <option>Incendio forestal</option>
+                    <option>Sismo</option>
+                  </select>
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Plazo (Días)</label>
+                  <input id="dsPlazoDias" type="number" class="form-control" min="1">
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Fecha inicio</label>
+                  <input id="dsFechaInicio" type="date" class="form-control">
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Fecha final</label>
+                  <input id="dsFechaFin" type="date" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-1">
+                  <label class="form-label">Vigencia</label>
+                  <input id="dsVigencia" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-2">
+                  <label class="form-label">Semáforo</label>
+                  <input id="dsSemaforo" class="form-control" readonly>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Motivos</label>
+                  <textarea id="dsMotivos" class="form-control" rows="2"></textarea>
+                </div>
               </div>
 
-              <button id="btnGuardarDS" class="btn btn-primary mt-3">
+              <hr class="my-4">
+
+              <h5 class="text-primary">Relación de prórrogas</h5>
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <div class="form-check mt-4">
+                    <input id="dsEsProrroga" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="dsEsProrroga">
+                      Este Decreto Supremo es prórroga
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">DS origen</label>
+                  <select id="dsOrigen" class="form-select" disabled></select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Nivel prórroga</label>
+                  <input id="dsNivelProrroga" class="form-control" value="0" readonly>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Cadena</label>
+                  <input id="dsCadena" class="form-control" readonly>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <h5 class="text-primary">Sectores que firman</h5>
+              <div id="sectoresContainer" class="row g-2"></div>
+
+              <hr class="my-4">
+
+              <h5 class="text-primary">Territorio involucrado</h5>
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label">Departamento</label>
+                  <select id="selDepartamento" class="form-select"></select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Provincia</label>
+                  <select id="selProvincia" class="form-select">
+                    <option value="">Seleccione...</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Buscar distrito</label>
+                  <input id="buscarDistrito" class="form-control" placeholder="Buscar distrito">
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                  <button id="btnMarcarTodos" type="button" class="btn btn-outline-secondary">Marcar todos</button>
+                  <button id="btnLimpiarChecks" type="button" class="btn btn-outline-secondary">Limpiar</button>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                  <div id="distritosChecklist" class="border rounded p-3 bg-light" style="min-height: 220px;">
+                    <div class="text-muted small">Seleccione primero departamento y provincia.</div>
+                  </div>
+                  <button id="btnAgregarDistritos" type="button" class="btn btn-outline-primary mt-2">Agregar distritos seleccionados</button>
+                </div>
+                <div class="col-md-6">
+                  <div id="territorioSeleccionado" class="border rounded p-3 bg-light" style="min-height: 220px;"></div>
+                </div>
+              </div>
+
+              <button id="btnGuardarDS" class="btn btn-primary mt-4">
                 Guardar Decreto Supremo
               </button>
+            </div>
+          </div>
+        </div>
 
+        <!-- ACCIONES -->
+        <div class="tab-pane fade" id="tabAcciones">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="text-primary mb-3">Registro de Acciones</h4>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Seleccione DS</label>
+                  <select id="accionDs" class="form-select"></select>
+                </div>
+              </div>
+              <div class="text-muted mt-3">Módulo en preparación.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="tab-pane fade" id="tabDashboard">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="text-primary mb-3">Dashboard</h4>
+              <div class="text-muted">Tablero en preparación.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEGUIMIENTO -->
+        <div class="tab-pane fade" id="tabSeg">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="text-primary mb-3">Seguimiento</h4>
+              <div class="text-muted">Módulo de seguimiento en preparación.</div>
             </div>
           </div>
         </div>
@@ -177,34 +319,146 @@
   </div>
 
   <!-- MODAL ADMIN -->
-  <div class="modal fade" id="modalAdminPanel">
-    <div class="modal-dialog modal-xl">
+  <div class="modal fade" id="modalAdminPanel" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>⚙ Panel de Administración</h5>
+          <h5 class="modal-title">⚙ Panel de Administración</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
         <div class="modal-body">
 
           <ul class="nav nav-tabs">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Auditoría</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos</button></li>
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Auditoría</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos</button>
+            </li>
           </ul>
 
           <div class="tab-content pt-3">
 
+            <!-- Usuarios -->
             <div class="tab-pane fade show active" id="adminUsuarios">
-              <table class="table table-sm" id="tablaAdminUsuarios"></table>
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <label class="form-label">Nombre y apellidos</label>
+                  <input id="adminUserName" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Correo</label>
+                  <input id="adminUserEmail" class="form-control" placeholder="usuario@midis.gob.pe">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Rol</label>
+                  <select id="adminUserRole" class="form-select">
+                    <option value="">Seleccione...</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Revisor">Revisor</option>
+                    <option value="Consulta">Consulta</option>
+                    <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
+                    <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
+                    <option value="Registrador|JUNTOS">Registrador - Juntos</option>
+                    <option value="Registrador|PAE">Registrador - PAE</option>
+                    <option value="Registrador|FONCODES">Registrador - Foncodes</option>
+                    <option value="Registrador|PAIS">Registrador - PAIS</option>
+                    <option value="Registrador|CONTIGO">Registrador - Contigo</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Clave generada / reseteada</label>
+                  <input id="adminGeneratedPassword" class="form-control" readonly>
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end gap-2">
+                  <button id="btnCrearUsuarioAdmin" type="button" class="btn btn-primary">Crear usuario</button>
+                  <button id="btnCopiarClaveAdmin" type="button" class="btn btn-outline-secondary">Copiar clave</button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-striped" id="tablaAdminUsuarios">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Correo</th>
+                      <th>Rol</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
 
+            <!-- Auditoría -->
             <div class="tab-pane fade" id="adminAuditoria">
-              <table class="table table-sm" id="tablaAuditoria"></table>
+              <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                  <label class="form-label">Desde</label>
+                  <input id="auditDesde" type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Hasta</label>
+                  <input id="auditHasta" type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Actor</label>
+                  <select id="auditActor" class="form-select">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                  <button id="btnVerAuditoria" type="button" class="btn btn-primary">Ver</button>
+                  <button id="btnLimpiarAuditoria" type="button" class="btn btn-outline-danger">Limpiar</button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-striped" id="tablaAuditoria">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Actor</th>
+                      <th>Acción</th>
+                      <th>Detalle</th>
+                      <th>Ver</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
 
+            <!-- Conflictos -->
             <div class="tab-pane fade" id="adminConflictos">
-              <table class="table table-sm" id="tablaConflictos"></table>
+              <div class="d-flex justify-content-end mb-3">
+                <button id="btnLimpiarConflictos" type="button" class="btn btn-outline-danger">Limpiar conflictos</button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-striped" id="tablaConflictos">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Entidad</th>
+                      <th>Entidad ID</th>
+                      <th>Versión local</th>
+                      <th>Versión servidor</th>
+                      <th>Usuario</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
 
           </div>
@@ -214,13 +468,22 @@
     </div>
   </div>
 
+  <!-- MODAL DS -->
+  <div class="modal fade" id="modalDS" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detalle del Decreto Supremo</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalDSBody"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <script src="ubigeoData.js?v=20260423-01"></script>
-
-  <!-- 🔥 CLAVE: FORZAR RECARGA DEL APP -->
-  <script src="app.js?v=20260423-04"></script>
-
+  <script src="app.js?v=20260423-05"></script>
 </body>
 </html>
