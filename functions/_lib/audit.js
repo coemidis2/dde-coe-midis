@@ -35,21 +35,34 @@ export async function writeAudit(env, data) {
     console.error('AUDIT ERROR:', e);
   }
 }
+
 export async function writeConflict(db, data) {
-  await db.prepare(`
-    INSERT INTO conflictos (
+  try {
+    const id = newId();
+    const now = new Date().toISOString();
+
+    await db.prepare(`
+      INSERT INTO conflictos (
+        id,
+        entidad,
+        entidad_id,
+        version_local,
+        version_servidor,
+        usuario,
+        fecha,
+        estado
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
       id,
-      codigo,
-      motivo,
-      estado_local,
-      estado_servidor,
-      created_at
-    ) VALUES (?, ?, ?, ?, ?, datetime('now'))
-  `).bind(
-    crypto.randomUUID(),
-    data.codigo || '',
-    data.motivo || '',
-    data.estado_local || '',
-    data.estado_servidor || ''
-  ).run();
+      data.entidad || '',
+      data.entidad_id || '',
+      Number(data.version_local || 0),
+      Number(data.version_servidor || 0),
+      data.usuario || '',
+      now,
+      data.estado || 'pendiente'
+    ).run();
+  } catch (e) {
+    console.error('CONFLICT ERROR:', e);
+  }
 }
