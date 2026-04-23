@@ -35,3 +35,21 @@ export async function writeAudit(env, data) {
     console.error('AUDIT ERROR:', e);
   }
 }
+export async function writeConflict(db, data) {
+  await db.prepare(`
+    INSERT INTO conflictos (
+      id,
+      codigo,
+      motivo,
+      estado_local,
+      estado_servidor,
+      created_at
+    ) VALUES (?, ?, ?, ?, ?, datetime('now'))
+  `).bind(
+    crypto.randomUUID(),
+    data.codigo || '',
+    data.motivo || '',
+    data.estado_local || '',
+    data.estado_servidor || ''
+  ).run();
+}
