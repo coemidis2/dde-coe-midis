@@ -1,10 +1,69 @@
 // ================== CONFIG API ==================
 const API_BASE = window.location.origin + '/api';
 
+function getCookieValue(name) {
+  const cookie = document.cookie || '';
+  const parts = cookie.split(/;\s*/);
+
+  for (const part of parts) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+
+    const key = part.slice(0, idx);
+    const value = part.slice(idx + 1);
+
+    if (key === name) return decodeURIComponent(value);
+  }
+
+  return '';
+}
+
 function getHeaders() {
-  return {
+  const headers = {
     'Content-Type': 'application/json'
   };
+
+  const csrf = getCookieValue('dee_csrf');
+  if (csrf) {
+    headers['x-csrf-token'] = csrf;
+  }
+
+  return headers;
+}
+
+async function handleResponse(res) {
+  let data = null;
+
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('invalid_json_response');
+  }
+
+  if (!res.ok) {
+    console.warn('API ERROR:', res.status, data);
+
+    if (res.status === 401) {
+      alert('Sesión expirada. Ingrese nuevamente.');
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+      return null;
+    }
+
+    if (res.status === 403) {
+      alert('No tiene permisos para esta acción.');
+      return null;
+    }
+
+    if (res.status === 429) {
+      alert('Demasiados intentos. Espere unos minutos.');
+      return null;
+    }
+
+    throw new Error(data?.error || 'api_error');
+  }
+
+  return data;
 }
 
 async function apiGet(path) {
@@ -14,7 +73,8 @@ async function apiGet(path) {
       headers: getHeaders(),
       credentials: 'include'
     });
-    return await res.json();
+
+    return await handleResponse(res);
   } catch (e) {
     console.warn('API GET error:', e);
     return null;
@@ -29,7 +89,8 @@ async function apiPost(path, data) {
       credentials: 'include',
       body: JSON.stringify(data)
     });
-    return await res.json();
+
+    return await handleResponse(res);
   } catch (e) {
     console.warn('API POST error:', e);
     return null;
@@ -44,7 +105,8 @@ async function apiPatch(path, data) {
       credentials: 'include',
       body: JSON.stringify(data)
     });
-    return await res.json();
+
+    return await handleResponse(res);
   } catch (e) {
     console.warn('API PATCH error:', e);
     return null;
@@ -58,7 +120,8 @@ async function apiDelete(path) {
       headers: getHeaders(),
       credentials: 'include'
     });
-    return await res.json();
+
+    return await handleResponse(res);
   } catch (e) {
     console.warn('API DELETE error:', e);
     return null;
@@ -203,9 +266,16 @@ async function syncFromBackend() {
   }
 }
 
+// ================== UI ==================
 function wireUI() {
   if ($('btnLogout')) {
-    $('btnLogout').addEventListener('click', () => {
+    $('btnLogout').addEventListener('click', async () => {
+      try {
+        await apiPost('/logout', {});
+      } catch (e) {
+        console.warn('logout error', e);
+      }
+
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     });
@@ -249,7 +319,7 @@ function renderSesion() {
 function applyRolePermissions() {
   const role = state.session?.role || '';
   const isAdmin = role === 'Administrador';
-  const isRevisor = role === 'Revisor' || role === 'Evaluador';
+  const isRevisor = role === 'Revisor';
   const isConsulta = role === 'Consulta';
 
   const adminBtn = $('btnAdminPanel');
@@ -276,9 +346,10 @@ async function openAdminPanel() {
   }
 }
 
+window.openAdminPanel = openAdminPanel;
+
 function formatRole(role, programa) {
   if (role === 'Registrador' && programa) return `Registrador (${programa})`;
-  if (role === 'Evaluador') return 'Revisor';
   return role || '';
 }
 
@@ -301,7 +372,7 @@ async function loadUsers() {
       <td>${escapeHtml(formatRole(u.role, u.programa))}</td>
       <td>${u.active ? 'Activo' : 'Inactivo'}</td>
       <td>
-        <button class="btn btn-sm btn-outline-warning" type="button"
+        <button class="btn btn-sm btn-outline-warning me-1" type="button"
           onclick="toggleUserStatus('${u.id}', ${u.active ? 0 : 1})">
           ${u.active ? 'Desactivar' : 'Activar'}
         </button>
@@ -376,6 +447,8 @@ async function toggleUserStatus(id, active) {
   await loadUsers();
 }
 
+window.toggleUserStatus = toggleUserStatus;
+
 async function resetUserPassword(id) {
   const resp = await apiPatch('/users', {
     action: 'reset_password',
@@ -393,6 +466,8 @@ async function resetUserPassword(id) {
 
   alert('Clave reseteada correctamente.');
 }
+
+window.resetUserPassword = resetUserPassword;
 
 // ================== AUDITORIA ==================
 async function loadAuditLog() {
@@ -461,7 +536,7 @@ async function loadConflictos() {
   const tbody = document.querySelector('#tablaConflictos tbody');
   if (!tbody) return;
 
-  const resp = await apiGet('/conflictos');
+  const resp = await apiGet('/conflicts');
 
   if (!resp || !resp.ok) {
     tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se pudo cargar conflictos.</td></tr>`;
@@ -472,13 +547,13 @@ async function loadConflictos() {
 
   tbody.innerHTML = rows.length ? rows.map(c => `
     <tr>
-      <td>${escapeHtml(c.created_at || '')}</td>
-      <td>${escapeHtml(c.codigo || '')}</td>
-      <td>${escapeHtml(c.motivo || '')}</td>
-      <td>${escapeHtml(c.fecha_servidor || '')}</td>
-      <td>${escapeHtml(c.estado_local_servidor || '')}</td>
-      <td>${escapeHtml(c.resolucion_aplicada || '')}</td>
-      <td>-</td>
+      <td>${escapeHtml(c.fecha || '')}</td>
+      <td>${escapeHtml(c.entidad || '')}</td>
+      <td>${escapeHtml(c.entidad_id || '')}</td>
+      <td>${escapeHtml(String(c.version_local ?? ''))}</td>
+      <td>${escapeHtml(String(c.version_servidor ?? ''))}</td>
+      <td>${escapeHtml(c.usuario || '')}</td>
+      <td>${escapeHtml(c.estado || '')}</td>
     </tr>
   `).join('') : `<tr><td colspan="7" class="text-center text-muted">No hay conflictos registrados.</td></tr>`;
 }
@@ -487,7 +562,7 @@ async function clearConflictos() {
   const ok = confirm('¿Seguro que desea limpiar conflictos?');
   if (!ok) return;
 
-  const resp = await apiDelete('/conflictos');
+  const resp = await apiDelete('/conflicts');
   if (!resp || !resp.ok) {
     alert('No se pudo limpiar conflictos.');
     return;
@@ -602,8 +677,8 @@ function actualizarOrigenesProrroga() {
       sel.appendChild(opt);
     });
 
-  if (actual) sel.value = actual;
-  actualizarDatosProrrogaVisual();
+    if (actual) sel.value = actual;
+    actualizarDatosProrrogaVisual();
 }
 
 function actualizarDatosProrrogaVisual() {
@@ -743,7 +818,6 @@ async function guardarDecretoSupremo() {
   console.log('RESPUESTA POST /decretos:', resp);
 
   if (resp && resp.ok) {
-    console.log('Guardado en backend');
     state.decretos.unshift(nuevoUI);
     saveStorage();
     renderTablaDecretos();
@@ -754,7 +828,6 @@ async function guardarDecretoSupremo() {
     return;
   }
 
-  console.warn('No se confirmó guardado en backend; no se agregó a la lista local.');
   alert('No se pudo guardar el Decreto Supremo en backend.');
 }
 
@@ -881,6 +954,8 @@ function verDecreto(id) {
     modal.show();
   }
 }
+
+window.verDecreto = verDecreto;
 
 // ================== NORMALIZACION BACKEND -> UI ==================
 function normalizarDecretoDesdeBackend(ds) {
@@ -1147,6 +1222,8 @@ function quitarTerritorioSeleccionado(clave) {
   renderTerritorioSeleccionado();
   cargarDistritos();
 }
+
+window.quitarTerritorioSeleccionado = quitarTerritorioSeleccionado;
 
 function renderTerritorioSeleccionado() {
   const cont = $('territorioSeleccionado');
