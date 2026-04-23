@@ -1,5 +1,18 @@
-import { json, readJson, badRequest, notFound, serverError } from '../_lib/http.js';
-import { requireSession, newId } from '../_lib/auth.js';
+import {
+  json,
+  readJson,
+  badRequest,
+  notFound,
+  forbidden,
+  serverError
+} from '../_lib/http.js';
+
+import {
+  requireSession,
+  verifyCsrf,
+  newId
+} from '../_lib/auth.js';
+
 import { writeAudit, writeConflict } from '../_lib/audit.js';
 
 function normalizeRow(row) {
@@ -9,12 +22,28 @@ function normalizeRow(row) {
     territorio: row.territorio ? JSON.parse(row.territorio) : [],
     es_prorroga: Number(row.es_prorroga) === 1,
     locked: Number(row.locked) === 1,
-    deleted: !!row.deleted_at,
+    deleted: !!row.deleted_at
+  };
+}
+
+function buildConflictPayload(current, body, sessionEmail) {
+  return {
+    entidad: 'decretos',
+    entidad_id: current.id || body.id || '',
+    version_local: Number(body.version || 0),
+    version_servidor: Number(current.version || 0),
+    usuario: sessionEmail || '',
+    estado: 'rechazado'
   };
 }
 
 export async function onRequestGet(context) {
-  const auth = await requireSession(context, ['Administrador', 'Evaluador', 'Registrador', 'Consulta']);
+  const auth = await requireSession(context, [
+    'Administrador',
+    'Revisor',
+    'Registrador',
+    'Consulta'
+  ]);
   if (!auth.ok) return auth.response;
 
   try {
@@ -29,17 +58,23 @@ export async function onRequestGet(context) {
     `;
 
     const { results } = await context.env.DB.prepare(sql).all();
-    const decretos = results.map(normalizeRow);
 
-    return json({ ok: true, decretos });
+    return json({
+      ok: true,
+      decretos: results.map(normalizeRow)
+    });
   } catch (error) {
     return serverError('decretos_fetch_failed', String(error?.message || error));
   }
 }
 
 export async function onRequestPost(context) {
-  const auth = await requireSession(context, ['Administrador', 'Evaluador']);
+  const auth = await requireSession(context, ['Administrador', 'Revisor']);
   if (!auth.ok) return auth.response;
+
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
 
   try {
     const body = await readJson(context.request);
@@ -72,8 +107,9 @@ export async function onRequestPost(context) {
         estado,
         version,
         locked,
-        deleted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        deleted_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       body.codigo_registro || '',
@@ -94,7 +130,8 @@ export async function onRequestPost(context) {
       body.estado || 'activo',
       1,
       0,
-      null
+      null,
+      now
     ).run();
 
     await writeAudit(context.env, {
@@ -112,8 +149,12 @@ export async function onRequestPost(context) {
 }
 
 export async function onRequestPut(context) {
-  const auth = await requireSession(context, ['Administrador', 'Evaluador']);
+  const auth = await requireSession(context, ['Administrador', 'Revisor']);
   if (!auth.ok) return auth.response;
+
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
 
   try {
     const body = await readJson(context.request);
@@ -132,12 +173,10 @@ export async function onRequestPut(context) {
     if (Number(current.locked) === 1) return badRequest('decreto_locked');
 
     if (Number(current.version) !== Number(body.version)) {
-      await writeConflict(context.env, {
-        codigo: current.numero || body.id,
-        motivo: 'version_mismatch',
-        estado_local_servidor: `local=${body.version} / servidor=${current.version}`,
-        resolucion_aplicada: 'rechazado'
-      });
+      await writeConflict(
+        context.env.DB,
+        buildConflictPayload(current, body, auth.session.email)
+      );
 
       return json(
         { ok: false, error: 'version_mismatch', serverVersion: Number(current.version) },
@@ -146,6 +185,7 @@ export async function onRequestPut(context) {
     }
 
     const nextVersion = Number(current.version) + 1;
+    const now = new Date().toISOString();
 
     await context.env.DB.prepare(`
       UPDATE decretos
@@ -162,7 +202,8 @@ export async function onRequestPut(context) {
           sectores = ?,
           territorio = ?,
           es_prorroga = ?,
-          version = ?
+          version = ?,
+          updated_at = ?
       WHERE id = ?
     `).bind(
       body.codigo_registro || '',
@@ -179,6 +220,7 @@ export async function onRequestPut(context) {
       JSON.stringify(body.territorio || []),
       body.es_prorroga ? 1 : 0,
       nextVersion,
+      now,
       body.id
     ).run();
 
@@ -200,6 +242,10 @@ export async function onRequestDelete(context) {
   const auth = await requireSession(context, ['Administrador']);
   if (!auth.ok) return auth.response;
 
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
+
   try {
     const url = new URL(context.request.url);
     const id = url.searchParams.get('id');
@@ -213,9 +259,11 @@ export async function onRequestDelete(context) {
     if (!current) return notFound('decreto_not_found');
     if (Number(current.locked) === 1) return badRequest('decreto_locked');
 
+    const now = new Date().toISOString();
+
     await context.env.DB
-      .prepare('UPDATE decretos SET deleted_at = ? WHERE id = ?')
-      .bind(new Date().toISOString(), id)
+      .prepare('UPDATE decretos SET deleted_at = ?, updated_at = ? WHERE id = ?')
+      .bind(now, now, id)
       .run();
 
     await writeAudit(context.env, {
@@ -236,22 +284,27 @@ export async function onRequestPatch(context) {
   const auth = await requireSession(context, ['Administrador']);
   if (!auth.ok) return auth.response;
 
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
+
   try {
     const body = await readJson(context.request);
     if (!body.id) return badRequest('id_required');
 
     const current = await context.env.DB
-      .prepare('SELECT id, numero, locked FROM decretos WHERE id = ?')
+      .prepare('SELECT id, numero FROM decretos WHERE id = ?')
       .bind(body.id)
       .first();
 
     if (!current) return notFound('decreto_not_found');
 
     const locked = body.locked ? 1 : 0;
+    const now = new Date().toISOString();
 
     await context.env.DB
-      .prepare('UPDATE decretos SET locked = ? WHERE id = ?')
-      .bind(locked, body.id)
+      .prepare('UPDATE decretos SET locked = ?, updated_at = ? WHERE id = ?')
+      .bind(locked, now, body.id)
       .run();
 
     await writeAudit(context.env, {

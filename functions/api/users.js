@@ -1,5 +1,19 @@
-import { json, readJson, badRequest, notFound, serverError } from '../_lib/http.js';
-import { requireSession, newId, sha256 } from '../_lib/auth.js';
+import {
+  json,
+  readJson,
+  badRequest,
+  notFound,
+  forbidden,
+  serverError
+} from '../_lib/http.js';
+
+import {
+  requireSession,
+  verifyCsrf,
+  sha256,
+  newId
+} from '../_lib/auth.js';
+
 import { writeAudit } from '../_lib/audit.js';
 
 function normalizeUser(row) {
@@ -21,24 +35,13 @@ function normalizeRoleInput(role, programa) {
   const rawRole = String(role || '').trim();
   const rawPrograma = String(programa || '').trim();
 
-  if (!rawRole) {
-    return { role: '', programa: '' };
-  }
+  if (!rawRole) return { role: '', programa: '' };
 
-  // Compatibilidad con frontend viejo: "Registrador|JUNTOS"
   if (rawRole.startsWith('Registrador|')) {
     const parts = rawRole.split('|');
     return {
       role: 'Registrador',
       programa: (parts[1] || '').trim()
-    };
-  }
-
-  // Compatibilidad: "Evaluador" -> "Revisor"
-  if (rawRole === 'Evaluador') {
-    return {
-      role: 'Revisor',
-      programa: ''
     };
   }
 
@@ -50,7 +53,7 @@ function normalizeRoleInput(role, programa) {
   }
 
   return {
-    role: rawRole,
+    role: rawRole === 'Evaluador' ? 'Revisor' : rawRole,
     programa: ''
   };
 }
@@ -76,10 +79,7 @@ function generateTemporaryPassword(length = 10) {
     password += all[Math.floor(Math.random() * all.length)];
   }
 
-  return password
-    .split('')
-    .sort(() => Math.random() - 0.5)
-    .join('');
+  return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 export async function onRequestGet(context) {
@@ -116,6 +116,10 @@ export async function onRequestPost(context) {
   const auth = await requireSession(context, ['Administrador']);
   if (!auth.ok) return auth.response;
 
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
+
   try {
     const body = await readJson(context.request);
 
@@ -149,8 +153,8 @@ export async function onRequestPost(context) {
 
     const temporaryPassword = generateTemporaryPassword();
     const passwordHash = await sha256(temporaryPassword);
-    const id = newId();
     const now = new Date().toISOString();
+    const id = newId();
 
     await context.env.DB.prepare(`
       INSERT INTO users (
@@ -202,13 +206,16 @@ export async function onRequestPatch(context) {
   const auth = await requireSession(context, ['Administrador']);
   if (!auth.ok) return auth.response;
 
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
+
   try {
     const body = await readJson(context.request);
-
     const action = String(body.action || '').trim();
-    const id = String(body.id || '').trim();
+    const id = body.id;
 
-    if (!id) {
+    if (id === undefined || id === null || id === '') {
       return badRequest('id_required');
     }
 
@@ -233,12 +240,20 @@ export async function onRequestPatch(context) {
         WHERE id = ?
       `).bind(active, now, id).run();
 
+      if (!active) {
+        await context.env.DB.prepare(`
+          UPDATE sessions
+          SET revoked_at = ?
+          WHERE email = ? AND revoked_at IS NULL
+        `).bind(now, current.email).run();
+      }
+
       await writeAudit(context.env, {
         actor: auth.session.email,
         action: active ? 'activate_user' : 'deactivate_user',
         detail: current.email,
         entity_type: 'user',
-        entity_id: id
+        entity_id: String(id)
       });
 
       return json({
@@ -257,12 +272,18 @@ export async function onRequestPatch(context) {
         WHERE id = ?
       `).bind(passwordHash, now, id).run();
 
+      await context.env.DB.prepare(`
+        UPDATE sessions
+        SET revoked_at = ?
+        WHERE email = ? AND revoked_at IS NULL
+      `).bind(now, current.email).run();
+
       await writeAudit(context.env, {
         actor: auth.session.email,
         action: 'reset_password',
         detail: current.email,
         entity_type: 'user',
-        entity_id: id
+        entity_id: String(id)
       });
 
       return json({
