@@ -1,4 +1,4 @@
-// ================= VERSION 20 24/04/2026 - 16:46 HRS =================
+// ================= VERSION 21 FIX LOGIN REAL =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -42,17 +42,10 @@ async function api(path, method = 'GET', body = null) {
     let data = null;
     try { data = await res.json(); } catch {}
 
-    if (!res.ok) {
-      if (res.status === 401) {
-        return null;
-      }
-      return null;
-    }
-
-    return data;
+    return { ok: res.ok, data };
   } catch (e) {
-    // 🔥 fallback silencioso
-    return null;
+    console.error('API ERROR:', e);
+    return { ok: false, data: null };
   }
 }
 
@@ -72,40 +65,55 @@ async function doLogin() {
   const email = $('loginUser')?.value.trim();
   const password = $('loginPass')?.value;
 
-  // 🔹 Intento backend
-  const login = await api('/login', 'POST', { email, password });
-
-  if (login && login.ok) {
-    const session = await api('/session');
-    if (session && session.user) {
-      state.session = session.user;
-    }
+  if (!email || !password) {
+    alert('Ingrese usuario y contraseña');
+    return;
   }
 
-  // 🔥 Fallback local (CLAVE)
-  if (!state.session) {
-    if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
-      state.session = {
-        name: 'Administrador DEMO',
-        role: 'Administrador'
-      };
-    } else {
-      alert('Credenciales inválidas');
+  // 🔹 LOGIN REAL
+  const resLogin = await api('/login', 'POST', { email, password });
+
+  if (resLogin.ok && resLogin.data?.ok) {
+
+    // 🔹 SESSION
+    const resSession = await api('/session');
+
+    if (resSession.ok && resSession.data?.user) {
+      state.session = resSession.data.user;
+
+      showApp();
+      renderSession();
+      initUbigeo();
+      activarEventosDS();
+
       return;
     }
   }
 
-  showApp();
-  renderSession();
-  initUbigeo();
-  activarEventosDS();
+  // 🔥 FALLBACK SOLO DEMO (SI API FALLA)
+  if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
+    state.session = {
+      name: 'Administrador DEMO',
+      role: 'Administrador'
+    };
+
+    showApp();
+    renderSession();
+    initUbigeo();
+    activarEventosDS();
+    return;
+  }
+
+  alert('Credenciales inválidas');
 }
 
+// ================= AUTO LOGIN =================
 async function autoLogin() {
-  const session = await api('/session');
+  const res = await api('/session');
 
-  if (session && session.user) {
-    state.session = session.user;
+  if (res.ok && res.data?.user) {
+    state.session = res.data.user;
+
     showApp();
     renderSession();
     initUbigeo();
@@ -145,7 +153,7 @@ function openAdminPanel() {
 
 window.openAdminPanel = openAdminPanel;
 
-// ================= FECHA AUTOMÁTICA =================
+// ================= FECHA =================
 function activarEventosDS() {
   $('dsFechaInicio')?.addEventListener('change', calcularFechaFin);
   $('dsPlazoDias')?.addEventListener('input', calcularFechaFin);
@@ -180,7 +188,6 @@ function initUbigeo() {
   }
 
   ubigeoCache = window.ubigeoData;
-
   cargarDepartamentos();
 
   if (ubigeoInicializado) return;
