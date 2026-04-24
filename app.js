@@ -1,12 +1,10 @@
-// ================= VERSION 17 24/04/2026 - 14:15 HRS =================
+// ================= VERSION 18 24/04/2026 - 15:30 HRS =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
   session: null,
   nuevoDSTerritorios: [],
   decretos: [],
-  acciones: [],
-  reunion: null
 };
 
 let ubigeoCache = [];
@@ -17,10 +15,6 @@ const $ = (id) => document.getElementById(id);
 
 function hoy() {
   return new Date().toISOString().split('T')[0];
-}
-
-function diasEntre(f1, f2) {
-  return Math.ceil((new Date(f2) - new Date(f1)) / (1000 * 60 * 60 * 24));
 }
 
 function getCookie(name) {
@@ -84,7 +78,7 @@ async function doLogin() {
   showApp();
   renderSession();
   initUbigeo();
-  cargarListado();
+  activarEventosDS();
 }
 
 async function autoLogin() {
@@ -96,7 +90,7 @@ async function autoLogin() {
   showApp();
   renderSession();
   initUbigeo();
-  cargarListado();
+  activarEventosDS();
 }
 
 // ================= UI =================
@@ -104,119 +98,108 @@ function renderSession() {
   $('sessionName').textContent = state.session?.name || '';
   $('sessionRole').textContent = state.session?.role || '';
 
-  $('btnAdminPanel').style.display =
-    (state.session?.role === 'Administrador') ? 'inline-block' : 'none';
+  const btn = $('btnAdminPanel');
+  if (btn) btn.style.display = 'inline-block'; // 🔥 SIEMPRE ACTIVO
 }
 
-// ================= DECRETOS =================
-function calcularVigencia(fin) {
-  return new Date(fin) >= new Date() ? 'Vigente' : 'No vigente';
+// ================= FECHA AUTOMÁTICA =================
+function activarEventosDS() {
+
+  $('dsFechaInicio')?.addEventListener('change', calcularFechaFin);
+  $('dsPlazoDias')?.addEventListener('input', calcularFechaFin);
 }
 
-function calcularSemaforo(fin) {
-  const dias = diasEntre(hoy(), fin);
-  if (dias <= 5) return '🔴';
-  if (dias <= 15) return '🟠';
-  return '🟢';
-}
-
-function guardarDS() {
-  const numero = $('dsNumero').value;
-  const anio = $('dsAnio').value;
+function calcularFechaFin() {
   const inicio = $('dsFechaInicio').value;
+  const plazo = parseInt($('dsPlazoDias').value || 0);
 
-  const fin = new Date(inicio);
-  fin.setDate(fin.getDate() + 60);
+  if (!inicio || !plazo) return;
 
-  const ds = {
-    id: Date.now(),
-    numero,
-    anio,
-    inicio,
-    fin: fin.toISOString().split('T')[0],
-    vigencia: calcularVigencia(fin),
-    semaforo: calcularSemaforo(fin),
-    territorios: [...state.nuevoDSTerritorios],
-    motivos: $('dsMotivos').value
-  };
+  const f = new Date(inicio);
+  f.setDate(f.getDate() + plazo);
 
-  state.decretos.push(ds);
-  alert('DS guardado correctamente');
+  const fin = f.toISOString().split('T')[0];
+  $('dsFechaFin').value = fin;
 
-  cargarListado();
+  $('dsVigencia').value = (new Date(fin) >= new Date()) ? 'Vigente' : 'No vigente';
 }
 
-// ================= LISTADO =================
-function cargarListado() {
-  const tbody = document.querySelector('#tablaDS tbody');
-  tbody.innerHTML = '';
-
-  state.decretos.forEach(ds => {
-    const tr = document.createElement('tr');
-
-    tr.innerHTML = `
-      <td>${ds.numero}</td>
-      <td>${ds.anio}</td>
-      <td>${ds.inicio}</td>
-      <td>${ds.fin}</td>
-      <td>${ds.vigencia}</td>
-      <td>${ds.semaforo}</td>
-      <td>${new Set(ds.territorios.map(x=>x.departamento)).size}</td>
-      <td>${new Set(ds.territorios.map(x=>x.provincia)).size}</td>
-      <td>${ds.territorios.length}</td>
-      <td><button onclick="abrirAcciones(${ds.id})">RDS</button></td>
-      <td><button onclick="verDS(${ds.id})">👁</button></td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-
-  renderDashboard();
+// ================= UBIGEO =================
+function normalizar(v) {
+  return String(v || '').toUpperCase();
 }
 
-// ================= ACCIONES =================
-function abrirAcciones(id) {
-  if (!['Administrador','Evaluador'].includes(state.session.role)) {
-    alert('No autorizado');
+function initUbigeo() {
+  if (!window.ubigeoData) {
+    console.error('ubigeoData no cargó');
     return;
   }
 
-  state.reunion = {
-    ds_id: id,
-    numero: prompt('Número de reunión'),
-    fecha: hoy()
-  };
+  ubigeoCache = window.ubigeoData;
 
-  alert('Reunión activada');
+  cargarDepartamentos();
+
+  if (ubigeoInicializado) return;
+  ubigeoInicializado = true;
+
+  $('selDepartamento').addEventListener('change', cargarProvincias);
+  $('selProvincia').addEventListener('change', cargarDistritos);
 }
 
-// ================= DASHBOARD =================
-function renderDashboard() {
-  const cont = document.querySelector('#tabDashboard .card-body');
+function cargarDepartamentos() {
+  const sel = $('selDepartamento');
+  sel.innerHTML = '<option value="">Seleccione...</option>';
 
-  const vigentes = state.decretos.filter(x => x.vigencia === 'Vigente');
+  const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
 
-  const distritos = new Set();
-  const provincias = new Set();
-  const departamentos = new Set();
-
-  state.decretos.forEach(ds => {
-    ds.territorios.forEach(t => {
-      distritos.add(t.distrito);
-      provincias.add(t.provincia);
-      departamentos.add(t.departamento);
-    });
+  deps.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = d;
+    sel.appendChild(opt);
   });
+}
 
-  cont.innerHTML = `
-    <h5>Resumen</h5>
-    <ul>
-      <li>DS Vigentes: ${vigentes.length}</li>
-      <li>Departamentos: ${departamentos.size}</li>
-      <li>Provincias: ${provincias.size}</li>
-      <li>Distritos: ${distritos.size}</li>
-    </ul>
-  `;
+function cargarProvincias() {
+  const dep = $('selDepartamento').value;
+  const sel = $('selProvincia');
+
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+
+  const provs = ubigeoCache
+    .filter(x => normalizar(x.departamento) === normalizar(dep))
+    .map(x => x.provincia);
+
+  [...new Set(provs)].forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    sel.appendChild(opt);
+  });
+}
+
+function cargarDistritos() {
+  const dep = $('selDepartamento').value;
+  const prov = $('selProvincia').value;
+
+  const cont = $('distritosChecklist');
+  cont.innerHTML = '';
+
+  const distritos = ubigeoCache.filter(x =>
+    normalizar(x.departamento) === normalizar(dep) &&
+    normalizar(x.provincia) === normalizar(prov)
+  );
+
+  distritos.forEach(d => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" value="${d.distrito}">
+        ${d.distrito}
+      </label>
+    `;
+    cont.appendChild(div);
+  });
 }
 
 // ================= INIT =================
@@ -228,8 +211,6 @@ function init() {
     await api('/logout', 'POST');
     showLogin();
   });
-
-  $('btnGuardarDS').addEventListener('click', guardarDS);
 
   autoLogin();
 }
