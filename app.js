@@ -1,4 +1,4 @@
-// ================= VERSION 18 24/04/2026 - 15:30 HRS =================
+// ================= VERSION 19 24/04/2026 - 15:47 HRS =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -95,12 +95,40 @@ async function autoLogin() {
 
 // ================= UI =================
 function renderSession() {
-  $('sessionName').textContent = state.session?.name || '';
-  $('sessionRole').textContent = state.session?.role || '';
+  if ($('sessionName')) $('sessionName').textContent = state.session?.name || '';
+  if ($('sessionRole')) $('sessionRole').textContent = state.session?.role || '';
 
   const btn = $('btnAdminPanel');
-  if (btn) btn.style.display = 'inline-block'; // 🔥 SIEMPRE ACTIVO
+  if (btn) {
+    const esAdmin = String(state.session?.role || '').toLowerCase() === 'administrador';
+    btn.style.display = esAdmin ? 'inline-block' : 'none';
+    btn.disabled = !esAdmin;
+    btn.classList.remove('disabled');
+    btn.removeAttribute('aria-disabled');
+    btn.style.pointerEvents = esAdmin ? 'auto' : 'none';
+  }
 }
+
+// ================= ADMIN =================
+function openAdminPanel() {
+  const modal = $('modalAdminPanel');
+  if (!modal) {
+    alert('No se encontró el panel de Administración en el index.');
+    return;
+  }
+
+  if (window.bootstrap && bootstrap.Modal) {
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    return;
+  }
+
+  modal.style.display = 'block';
+  modal.classList.add('show');
+  modal.removeAttribute('aria-hidden');
+  document.body.classList.add('modal-open');
+}
+
+window.openAdminPanel = openAdminPanel;
 
 // ================= FECHA AUTOMÁTICA =================
 function activarEventosDS() {
@@ -205,12 +233,26 @@ function cargarDistritos() {
 // ================= INIT =================
 function init() {
 
-  $('btnLogin').addEventListener('click', doLogin);
+  $('btnLogin')?.addEventListener('click', doLogin);
 
-  $('btnLogout').addEventListener('click', async () => {
+  $('loginPass')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  $('btnLogout')?.addEventListener('click', async () => {
     await api('/logout', 'POST');
     showLogin();
   });
+
+  const btnAdmin = $('btnAdminPanel');
+  if (btnAdmin) {
+    btnAdmin.disabled = false;
+    btnAdmin.classList.remove('disabled');
+    btnAdmin.removeAttribute('aria-disabled');
+    btnAdmin.style.pointerEvents = 'auto';
+    btnAdmin.addEventListener('click', openAdminPanel);
+    btnAdmin.onclick = openAdminPanel;
+  }
 
   autoLogin();
 }
