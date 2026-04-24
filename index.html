@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="app.css?v=20260423-02" />
+  <style>
+    .badge-vigente{background:#dc3545;color:#fff}.badge-novigente{background:#198754;color:#fff}.badge-ambar{background:#ffc107;color:#111}.badge-rojo{background:#dc3545;color:#fff}.badge-verde{background:#198754;color:#fff}.metric-card{border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#fff}.metric-value{font-size:1.65rem;font-weight:800}.map-box{height:430px;border-radius:14px;border:1px solid #d8dee9;overflow:hidden}.table-xs{font-size:.78rem}.section-title{font-weight:700;color:#0d6efd;margin:18px 0 10px}.only-admin{display:none}.rds-alert{animation:pulseRDS 1.1s infinite}@keyframes pulseRDS{0%{box-shadow:0 0 0 0 rgba(220,53,69,.55)}70%{box-shadow:0 0 0 8px rgba(220,53,69,0)}100%{box-shadow:0 0 0 0 rgba(220,53,69,0)}}
+  </style>
 </head>
 <body>
 
@@ -23,467 +26,146 @@
       </div>
 
       <div class="login-title">Acceso al Sistema</div>
-      <div class="login-subtitle">
-        Ministerio de Desarrollo e Inclusión Social · República del Perú
-      </div>
+      <div class="login-subtitle">Ministerio de Desarrollo e Inclusión Social · República del Perú</div>
 
-      <div class="mb-3">
-        <label class="form-label-custom">Usuario institucional</label>
-        <input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe">
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label-custom">Contraseña</label>
-        <input id="loginPass" type="password" class="input-custom">
-      </div>
-
+      <div class="mb-3"><label class="form-label-custom">Usuario institucional</label><input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe"></div>
+      <div class="mb-3"><label class="form-label-custom">Contraseña</label><input id="loginPass" type="password" class="input-custom"></div>
       <button id="btnLogin" class="btn-login">Ingresar al Sistema →</button>
       <div id="loginMsg" class="text-danger small mt-3"></div>
-
-      <div class="login-demo-creds">
-        <strong>Demo:</strong> admin@midis.gob.pe / AdminMIDIS2026!
-      </div>
-
-      <div class="login-version">
-        VERSION 11 · 24/04/2026 12:35 hrs· MIDIS © 2026
-      </div>
+      <div class="login-demo-creds"><strong>Demo:</strong> admin@midis.gob.pe / AdminMIDIS2026!</div>
+      <div class="login-version">VERSION 12 · 24/04/2026 14:16 hrs· MIDIS © 2026</div>
     </div>
   </div>
 
   <!-- APP -->
   <div id="appView" class="d-none">
-
-    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom">
       <div class="container-fluid px-3">
         <span class="navbar-brand">🛡️ DEE MIDIS</span>
-
         <div class="d-flex align-items-center gap-2 ms-auto">
-          <div class="session-pill d-none d-sm-flex align-items-center gap-2">
-            <span id="sessionName" class="small"></span>
-            <span id="sessionRole" class="badge text-bg-primary"></span>
-          </div>
-
-          <button id="btnAdminPanel"
-                  class="btn btn-sm btn-primary"
-                  type="button">
-            ⚙ Administrador
-          </button>
-
-          <button id="btnLogout" class="btn btn-sm btn-outline-secondary">
-            Salir
-          </button>
+          <div class="session-pill d-none d-sm-flex align-items-center gap-2"><span id="sessionName" class="small"></span><span id="sessionRole" class="badge text-bg-primary"></span></div>
+          <button id="btnAdminPanel" class="btn btn-sm btn-primary" type="button">⚙ Administrador</button>
+          <button id="btnLogout" class="btn btn-sm btn-outline-secondary">Salir</button>
         </div>
       </div>
     </nav>
 
-    <!-- CONTENIDO -->
     <div class="container-fluid py-3">
-      <ul class="nav nav-tabs">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabListado">Listado DS</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNuevo">Nuevo DS</button></li>
+      <ul class="nav nav-tabs" id="mainTabs">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabListado">Listado Decretos Supremos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNuevo">Decretos Supremos Nuevos</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAcciones">Registro de Acciones</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDashboard">Dashboard</button></li>
-        <li class="nav-item"><button class="nav-link admin-only" data-bs-toggle="tab" data-bs-target="#tabSeg">Seguimiento</button></li>
+        <li class="nav-item"><button class="nav-link admin-only" data-bs-toggle="tab" data-bs-target="#tabSeg">Seguimiento Productividad</button></li>
       </ul>
 
       <div class="tab-content pt-3">
-
-        <!-- LISTADO -->
         <div class="tab-pane fade show active" id="tabListado">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <div class="d-flex justify-content-between mb-3">
-                <h4 class="text-primary">Listado de Decretos Supremos</h4>
-                <div>
-                  <button id="btnExportListadoExcel" class="btn btn-sm btn-outline-success">CSV</button>
-                  <button id="btnPrintListado" class="btn btn-sm btn-outline-danger">PDF</button>
-                </div>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm table-striped" id="tablaDS">
-                  <thead class="table-primary">
-                    <tr>
-                      <th>DS</th>
-                      <th>Año</th>
-                      <th>Peligro</th>
-                      <th>Tipo</th>
-                      <th>Inicio</th>
-                      <th>Final</th>
-                      <th>Vigencia</th>
-                      <th>Semáforo</th>
-                      <th>Departamentos</th>
-                      <th>Provincias</th>
-                      <th>Distritos</th>
-                      <th>Relación</th>
-                      <th>Cadena</th>
-                      <th>Prórrogas</th>
-                      <th>RDS</th>
-                      <th>PreAprobar</th>
-                      <th>Ver</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
+          <div class="card shadow-sm"><div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+              <h4 class="text-primary mb-0">Listado de Decretos Supremos</h4>
+              <div class="d-flex gap-2"><button id="btnExportListadoExcel" class="btn btn-sm btn-outline-success">Exportar Excel</button><button id="btnPrintListado" class="btn btn-sm btn-outline-danger">Exportar PDF</button></div>
             </div>
-          </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-3"><label class="form-label">Número de Reunión</label><input id="exportNumeroReunion" class="form-control" placeholder="Primera, Segunda..."></div>
+              <div class="col-md-3"><label class="form-label">Fecha de elaboración</label><input id="exportFechaElaboracion" type="date" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">DS para matriz ejecutiva</label><select id="exportDsSelect" class="form-select"></select></div>
+            </div>
+            <div class="table-responsive"><table class="table table-sm table-striped table-xs" id="tablaDS"><thead class="table-primary"><tr><th>DS</th><th>Año</th><th>Departamentos involucrados</th><th>Inicio</th><th>Final</th><th>Vigencia</th><th>Semáforo</th><th>N.° departamentos</th><th>N.° provincias</th><th>N.° distritos</th><th>RDS</th><th>PreAprobar</th><th>Ver</th></tr></thead><tbody></tbody></table></div>
+          </div></div>
         </div>
 
-        <!-- NUEVO -->
         <div class="tab-pane fade" id="tabNuevo">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h4 class="text-primary mb-3">Nuevo Decreto Supremo</h4>
-
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Número DS</label>
-                  <input id="dsNumero" class="form-control" placeholder="Número DS">
-                </div>
-                <div class="col-md-2">
-                  <label class="form-label">Año</label>
-                  <input id="dsAnio" class="form-control" value="2026">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Código de registro</label>
-                  <input id="dsCodigoRegistro" class="form-control" readonly>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Peligro</label>
-                  <select id="dsPeligro" class="form-select">
-                    <option value="">Seleccione...</option>
-                    <option>Por impacto de daños</option>
-                    <option>Por peligro inminente</option>
-                  </select>
-                </div>
-
-                <div class="col-md-3">
-                  <label class="form-label">Tipo de peligro</label>
-                  <select id="dsTipoPeligro" class="form-select">
-                    <option value="">Seleccione...</option>
-                    <option>Lluvias intensas</option>
-                    <option>Inundación</option>
-                    <option>Deslizamiento</option>
-                    <option>Friaje</option>
-                    <option>Heladas</option>
-                    <option>Incendio forestal</option>
-                    <option>Sismo</option>
-                  </select>
-                </div>
-
-                <div class="col-md-2">
-                  <label class="form-label">Plazo (Días)</label>
-                  <input id="dsPlazoDias" type="number" class="form-control" min="1">
-                </div>
-
-                <div class="col-md-2">
-                  <label class="form-label">Fecha inicio</label>
-                  <input id="dsFechaInicio" type="date" class="form-control">
-                </div>
-
-                <div class="col-md-2">
-                  <label class="form-label">Fecha final</label>
-                  <input id="dsFechaFin" type="date" class="form-control" readonly>
-                </div>
-
-                <div class="col-md-1">
-                  <label class="form-label">Vigencia</label>
-                  <input id="dsVigencia" class="form-control" readonly>
-                </div>
-
-                <div class="col-md-2">
-                  <label class="form-label">Semáforo</label>
-                  <input id="dsSemaforo" class="form-control" readonly>
-                </div>
-
-                <div class="col-12">
-                  <label class="form-label">Motivos</label>
-                  <textarea id="dsMotivos" class="form-control" rows="2"></textarea>
-                </div>
-              </div>
-
-              <hr class="my-4">
-
-              <h5 class="text-primary">Relación de prórrogas</h5>
-              <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                  <div class="form-check mt-4">
-                    <input id="dsEsProrroga" class="form-check-input" type="checkbox">
-                    <label class="form-check-label" for="dsEsProrroga">
-                      Este Decreto Supremo es prórroga
-                    </label>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">DS origen</label>
-                  <select id="dsOrigen" class="form-select" disabled></select>
-                </div>
-                <div class="col-md-2">
-                  <label class="form-label">Nivel prórroga</label>
-                  <input id="dsNivelProrroga" class="form-control" value="0" readonly>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Cadena</label>
-                  <input id="dsCadena" class="form-control" readonly>
-                </div>
-              </div>
-
-              <hr class="my-4">
-
-              <h5 class="text-primary">Sectores que firman</h5>
-              <div id="sectoresContainer" class="row g-2"></div>
-
-              <hr class="my-4">
-
-              <h5 class="text-primary">Territorio involucrado</h5>
-              <div class="row g-3">
-                <div class="col-md-3">
-                  <label class="form-label">Departamento</label>
-                  <select id="selDepartamento" class="form-select"></select>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Provincia</label>
-                  <select id="selProvincia" class="form-select">
-                    <option value="">Seleccione...</option>
-                  </select>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Buscar distrito</label>
-                  <input id="buscarDistrito" class="form-control" placeholder="Buscar distrito">
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                  <button id="btnMarcarTodos" type="button" class="btn btn-outline-secondary">Marcar todos</button>
-                  <button id="btnLimpiarChecks" type="button" class="btn btn-outline-secondary">Limpiar</button>
-                </div>
-              </div>
-
-              <div class="row g-3 mt-2">
-                <div class="col-md-6">
-                  <div id="distritosChecklist" class="border rounded p-3 bg-light" style="min-height: 220px;">
-                    <div class="text-muted small">Seleccione primero departamento y provincia.</div>
-                  </div>
-                  <button id="btnAgregarDistritos" type="button" class="btn btn-outline-primary mt-2">Agregar distritos seleccionados</button>
-                </div>
-                <div class="col-md-6">
-                  <div id="territorioSeleccionado" class="border rounded p-3 bg-light" style="min-height: 220px;"></div>
-                </div>
-              </div>
-
-              <button id="btnGuardarDS" class="btn btn-primary mt-4">
-                Guardar Decreto Supremo
-              </button>
+          <div class="card shadow-sm"><div class="card-body">
+            <h4 class="text-primary mb-3">Decretos Supremos Nuevos</h4>
+            <div class="row g-3">
+              <div class="col-md-3"><label class="form-label">Número DS</label><input id="dsNumero" class="form-control" placeholder="Ej. 036-2026-PCM"></div>
+              <div class="col-md-2"><label class="form-label">Año</label><input id="dsAnio" class="form-control" value="2026"></div>
+              <div class="col-md-3"><label class="form-label">Código de registro</label><input id="dsCodigoRegistro" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Fecha inicio</label><input id="dsFechaInicio" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Fecha final</label><input id="dsFechaFin" type="date" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Plazo (Días)</label><input id="dsPlazoDias" type="number" class="form-control" min="1" value="60"></div>
+              <div class="col-md-2"><label class="form-label">Vigencia</label><input id="dsVigencia" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Semáforo</label><input id="dsSemaforo" class="form-control" readonly></div>
+              <div class="col-md-3"><label class="form-label">Peligro</label><select id="dsPeligro" class="form-select"><option value="">Seleccione...</option><option>Por impacto de daños</option><option>Por peligro inminente</option></select></div>
+              <div class="col-md-3"><label class="form-label">Tipo de peligro</label><select id="dsTipoPeligro" class="form-select"><option value="">Seleccione...</option><option>Lluvias intensas</option><option>Inundaciones</option><option>Huaicos</option><option>Sismos</option><option>Incendios Urbanos</option><option>Incendios Forestales</option><option>Deslizamiento</option><option>Deflagración</option><option>Derrumbe</option><option>Reptación</option><option>Sequía</option><option>Bajas temperaturas</option><option>Heladas</option><option>Friaje</option></select></div>
+              <div class="col-12"><label class="form-label">Exposición de Motivos</label><textarea id="dsMotivos" class="form-control" rows="3"></textarea></div>
             </div>
-          </div>
+            <hr class="my-4"><h5 class="text-primary">Sectores que firman</h5><div id="sectoresContainer" class="row g-2"></div>
+            <hr class="my-4"><h5 class="text-primary">Territorio involucrado</h5>
+            <div class="row g-3"><div class="col-md-3"><label class="form-label">Departamento</label><select id="selDepartamento" class="form-select"></select></div><div class="col-md-3"><label class="form-label">Provincia</label><select id="selProvincia" class="form-select"><option value="">Seleccione...</option></select></div><div class="col-md-3"><label class="form-label">Buscar distrito</label><input id="buscarDistrito" class="form-control" placeholder="Buscar distrito"></div><div class="col-md-3 d-flex align-items-end gap-2"><button id="btnMarcarTodos" type="button" class="btn btn-outline-secondary">Marcar todos</button><button id="btnLimpiarChecks" type="button" class="btn btn-outline-secondary">Limpiar</button></div></div>
+            <div class="row g-3 mt-2"><div class="col-md-6"><div id="distritosChecklist" class="border rounded p-3 bg-light" style="min-height:220px"><div class="text-muted small">Seleccione primero departamento y provincia.</div></div><button id="btnAgregarDistritos" type="button" class="btn btn-outline-primary mt-2">Agregar distritos seleccionados</button></div><div class="col-md-6"><div id="territorioSeleccionado" class="border rounded p-3 bg-light" style="min-height:220px"></div></div></div>
+            <button id="btnGuardarDS" class="btn btn-primary mt-4">Guardar Decreto Supremo</button>
+          </div></div>
         </div>
 
-        <!-- ACCIONES -->
         <div class="tab-pane fade" id="tabAcciones">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h4 class="text-primary mb-3">Registro de Acciones</h4>
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Seleccione DS</label>
-                  <select id="accionDs" class="form-select"></select>
-                </div>
-              </div>
-              <div class="text-muted mt-3">Módulo en preparación.</div>
+          <div class="card shadow-sm"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h4 class="text-primary mb-0">Registro de Acciones</h4><span id="accionesEstadoFlujo" class="badge text-bg-secondary">Pendiente</span></div>
+            <div class="row g-3">
+              <div class="col-md-4"><label class="form-label">Seleccione DS</label><select id="accionDs" class="form-select"></select></div>
+              <div class="col-md-3"><label class="form-label">Número de Reunión</label><input id="accionNumeroReunion" class="form-control" placeholder="Primera, Segunda..."></div>
+              <div class="col-md-3"><label class="form-label">Fecha de la reunión</label><input id="accionFechaReunion" type="date" class="form-control"></div>
+              <div class="col-md-2 d-flex align-items-end"><button id="btnHabilitarRDS" class="btn btn-danger w-100">Habilitar RDS</button></div>
             </div>
-          </div>
+            <div id="accionDsResumen" class="alert alert-light border mt-3">Seleccione un Decreto Supremo.</div>
+            <hr>
+            <div class="row g-3">
+              <div class="col-md-3"><label class="form-label">Programa Nacional</label><select id="accionPrograma" class="form-select"><option value="">Seleccione...</option><option>CUNA MÁS</option><option>PAE</option><option>JUNTOS</option><option>CONTIGO</option><option>PENSIÓN 65</option><option>FONCODES</option><option>PAIS</option></select></div>
+              <div class="col-md-3"><label class="form-label">Tipo de Acción</label><select id="accionTipo" class="form-select"><option>Preparación</option><option>Respuesta</option><option>Rehabilitación</option></select></div>
+              <div class="col-md-3"><label class="form-label">Código de Acción</label><input id="accionCodigo" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Unidad de Medida</label><select id="accionUnidad" class="form-select"><option>ALMACEN</option><option>REGISTROS</option><option>REUNIÓN</option><option>EXPEDIENTES</option><option>GALONES</option><option>KM</option><option>FAMILIAS</option><option>PERSONAS</option><option>INTERVENCIÓN</option></select></div>
+              <div class="col-md-3"><label class="form-label">Meta Programada</label><input id="accionMetaProgramada" type="number" min="0" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Plazo (Días)</label><input id="accionPlazo" type="number" min="1" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Fecha Inicio de Acción</label><input id="accionFechaInicio" type="date" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Fecha Final de Acción</label><input id="accionFechaFinal" type="date" class="form-control" readonly></div>
+              <div class="col-md-3"><label class="form-label">Meta Ejecutada</label><input id="accionMetaEjecutada" type="number" min="0" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">% Avance</label><input id="accionAvance" class="form-control" readonly></div>
+              <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="accionFechaRegistro" class="form-control" readonly></div>
+              <div class="col-12"><label class="form-label">Acciones Específicas Programadas y Ejecutadas por el Sector</label><textarea id="accionDetalle" class="form-control" rows="2"></textarea></div>
+              <div class="col-12"><label class="form-label">Comentarios y/o Descripción de Actividades</label><textarea id="accionDescripcion" class="form-control" rows="2"></textarea></div>
+            </div>
+            <button id="btnGuardarAccion" class="btn btn-primary mt-3">Guardar acción</button>
+            <hr><h5 class="section-title">Acciones registradas / Preaprobación / Aprobación</h5><div class="table-responsive"><table class="table table-sm table-striped table-xs" id="tablaAcciones"><thead class="table-light"><tr><th>DS</th><th>Programa</th><th>Tipo</th><th>Código</th><th>Acción</th><th>Meta</th><th>Ejecutada</th><th>%</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>
+          </div></div>
         </div>
 
-        <!-- DASHBOARD -->
         <div class="tab-pane fade" id="tabDashboard">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h4 class="text-primary mb-3">Dashboard</h4>
-              <div class="text-muted">Tablero en preparación.</div>
-            </div>
-          </div>
+          <div class="card shadow-sm"><div class="card-body">
+            <h4 class="text-primary mb-3">Dashboard</h4>
+            <div class="d-flex flex-wrap gap-2 mb-3"><button id="btnDashVigentes" class="btn btn-sm btn-danger">Vigentes</button><button id="btnDashNoVigentes" class="btn btn-sm btn-success">No vigentes</button><div id="dashDsToggles" class="d-flex flex-wrap gap-2"></div></div>
+            <div id="mapaDS" class="map-box mb-3"></div>
+            <div class="row g-3 mb-3" id="dashboardMetricas"></div>
+            <h5 class="section-title">Resumen ejecutivo por Decreto Supremo</h5><div class="table-responsive"><table class="table table-sm table-striped table-xs" id="tablaResumenDS"><thead class="table-primary"><tr><th>Decreto Supremo</th><th>Fecha Inicio</th><th>Fecha Final</th><th>Días restantes</th><th>Semáforo</th><th>N.° departamentos</th><th>N.° provincias</th><th>N.° distritos</th></tr></thead><tbody></tbody></table></div>
+            <h5 class="section-title">Departamentos declarados en estado de emergencia</h5><div class="table-responsive"><table class="table table-sm table-striped table-xs" id="tablaDeptos"><thead class="table-primary"><tr><th>Departamento</th><th>Número de provincias únicas</th><th>Número de distritos únicos</th></tr></thead><tbody></tbody></table></div>
+            <h5 class="section-title">Distritos comprendidos en más de una declaratoria vigente</h5><div class="table-responsive"><table class="table table-sm table-striped table-xs" id="tablaRepetidos"><thead class="table-primary"><tr><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Veces que se repite</th><th>Decretos Supremos</th></tr></thead><tbody></tbody></table></div>
+          </div></div>
         </div>
 
-        <!-- SEGUIMIENTO -->
         <div class="tab-pane fade" id="tabSeg">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h4 class="text-primary mb-3">Seguimiento</h4>
-              <div class="text-muted">Módulo de seguimiento en preparación.</div>
-            </div>
-          </div>
+          <div class="card shadow-sm"><div class="card-body">
+            <h4 class="text-primary mb-3">Seguimiento Productividad</h4>
+            <div id="segNoAdmin" class="alert alert-warning">Módulo disponible solo para Administrador.</div>
+            <div id="segContenido"><div class="row g-3 mb-3" id="segMetricas"></div><div class="row g-3"><div class="col-lg-6"><h5 class="section-title">Indicadores: quienes no registran en fecha de reunión</h5><div id="segNoRegistran"></div></div><div class="col-lg-6"><h5 class="section-title">SLA por etapas</h5><div id="segSla"></div></div><div class="col-lg-6"><h5 class="section-title">Alertas de inactividad</h5><div id="segAlertas"></div></div><div class="col-lg-6"><h5 class="section-title">Carga de trabajo (Backlog) por Registrador</h5><div id="segBacklog"></div></div><div class="col-lg-6"><h5 class="section-title">Productividad con calidad / Tiempos de respuesta</h5><div id="segProductividad"></div></div><div class="col-lg-6"><h5 class="section-title">Checklist de completitud (Top 10 más incompletos)</h5><div id="segChecklist"></div></div><div class="col-lg-6"><h5 class="section-title">Motivos de observación (Top)</h5><div id="segObservaciones"></div></div><div class="col-lg-6"><h5 class="section-title">Priorización por severidad / Casos en riesgo</h5><div id="segRiesgo"></div></div></div></div>
+          </div></div>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- MODAL ADMIN -->
-  <div class="modal fade" id="modalAdminPanel" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">⚙ Panel de Administración</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+  <div class="modal fade" id="modalAdminPanel" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">⚙ Panel de Administración</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <ul class="nav nav-tabs"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Bitácora/Auditoría</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Solucionar conflictos</button></li></ul>
+    <div class="tab-content pt-3"><div class="tab-pane fade show active" id="adminUsuarios"><div class="row g-3 mb-3"><div class="col-md-4"><label class="form-label">Nombre y apellidos</label><input id="adminUserName" class="form-control"></div><div class="col-md-4"><label class="form-label">Correo/Usuario</label><input id="adminUserEmail" class="form-control" placeholder="usuario@midis.gob.pe"></div><div class="col-md-4"><label class="form-label">Rol</label><select id="adminUserRole" class="form-select"><option value="">Seleccione...</option><option value="Administrador">Administrador</option><option value="Evaluador">Evaluador</option><option value="Consulta">Consulta</option><option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option><option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option><option value="Registrador|JUNTOS">Registrador - Juntos</option><option value="Registrador|PAE">Registrador - PAE</option><option value="Registrador|FONCODES">Registrador - Foncodes</option><option value="Registrador|PAIS">Registrador - PAIS</option><option value="Registrador|CONTIGO">Registrador - Contigo</option></select></div><div class="col-md-6"><label class="form-label">Clave generada / reseteada</label><input id="adminGeneratedPassword" class="form-control" readonly></div><div class="col-md-6 d-flex align-items-end gap-2"><button id="btnCrearUsuarioAdmin" type="button" class="btn btn-primary">Crear usuario</button><button id="btnCopiarClaveAdmin" type="button" class="btn btn-outline-secondary">Copiar clave</button></div></div><div class="table-responsive"><table class="table table-sm table-striped" id="tablaAdminUsuarios"><thead class="table-light"><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="tab-pane fade" id="adminAuditoria"><div class="row g-3 mb-3"><div class="col-md-3"><label class="form-label">Desde</label><input id="auditDesde" type="date" class="form-control"></div><div class="col-md-3"><label class="form-label">Hasta</label><input id="auditHasta" type="date" class="form-control"></div><div class="col-md-3"><label class="form-label">Actor</label><select id="auditActor" class="form-select"><option value="">Todos</option></select></div><div class="col-md-3 d-flex align-items-end gap-2"><button id="btnVerAuditoria" type="button" class="btn btn-primary">Ver</button><button id="btnLimpiarAuditoria" type="button" class="btn btn-outline-danger">Limpiar</button></div></div><div class="table-responsive"><table class="table table-sm table-striped" id="tablaAuditoria"><thead class="table-light"><tr><th>Fecha</th><th>Actor</th><th>Acción</th><th>Detalle</th><th>Ver</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="tab-pane fade" id="adminConflictos"><div class="d-flex flex-wrap gap-2 justify-content-end mb-3"><button id="btnConflictosServidor" type="button" class="btn btn-outline-primary">Actualizar desde servidor</button><button id="btnConflictosLocal" type="button" class="btn btn-outline-secondary">Actualizar local</button><button id="btnLimpiarConflictos" type="button" class="btn btn-outline-danger">Limpiar</button></div><div class="table-responsive"><table class="table table-sm table-striped" id="tablaConflictos"><thead class="table-light"><tr><th>Fecha/hora del conflicto</th><th>Código</th><th>Motivo</th><th>Fecha del servidor</th><th>Estado local/servidor</th><th>Resolución aplicada</th><th>Acción</th></tr></thead><tbody></tbody></table></div></div></div>
+  </div></div></div></div>
 
-        <div class="modal-body">
+  <div class="modal fade" id="modalDS" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Detalle del Decreto Supremo</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="modalDSBody"></div></div></div></div>
 
-          <ul class="nav nav-tabs">
-            <li class="nav-item">
-              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Auditoría</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos</button>
-            </li>
-          </ul>
-
-          <div class="tab-content pt-3">
-
-            <!-- Usuarios -->
-            <div class="tab-pane fade show active" id="adminUsuarios">
-              <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                  <label class="form-label">Nombre y apellidos</label>
-                  <input id="adminUserName" class="form-control">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Correo</label>
-                  <input id="adminUserEmail" class="form-control" placeholder="usuario@midis.gob.pe">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Rol</label>
-                  <select id="adminUserRole" class="form-select">
-                    <option value="">Seleccione...</option>
-                    <option value="Administrador">Administrador</option>
-                    <option value="Revisor">Revisor</option>
-                    <option value="Consulta">Consulta</option>
-                    <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
-                    <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
-                    <option value="Registrador|JUNTOS">Registrador - Juntos</option>
-                    <option value="Registrador|PAE">Registrador - PAE</option>
-                    <option value="Registrador|FONCODES">Registrador - Foncodes</option>
-                    <option value="Registrador|PAIS">Registrador - PAIS</option>
-                    <option value="Registrador|CONTIGO">Registrador - Contigo</option>
-                  </select>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label">Clave generada / reseteada</label>
-                  <input id="adminGeneratedPassword" class="form-control" readonly>
-                </div>
-
-                <div class="col-md-6 d-flex align-items-end gap-2">
-                  <button id="btnCrearUsuarioAdmin" type="button" class="btn btn-primary">Crear usuario</button>
-                  <button id="btnCopiarClaveAdmin" type="button" class="btn btn-outline-secondary">Copiar clave</button>
-                </div>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm table-striped" id="tablaAdminUsuarios">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Correo</th>
-                      <th>Rol</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Auditoría -->
-            <div class="tab-pane fade" id="adminAuditoria">
-              <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                  <label class="form-label">Desde</label>
-                  <input id="auditDesde" type="date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Hasta</label>
-                  <input id="auditHasta" type="date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Actor</label>
-                  <select id="auditActor" class="form-select">
-                    <option value="">Todos</option>
-                  </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                  <button id="btnVerAuditoria" type="button" class="btn btn-primary">Ver</button>
-                  <button id="btnLimpiarAuditoria" type="button" class="btn btn-outline-danger">Limpiar</button>
-                </div>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm table-striped" id="tablaAuditoria">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Actor</th>
-                      <th>Acción</th>
-                      <th>Detalle</th>
-                      <th>Ver</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Conflictos -->
-            <div class="tab-pane fade" id="adminConflictos">
-              <div class="d-flex justify-content-end mb-3">
-                <button id="btnLimpiarConflictos" type="button" class="btn btn-outline-danger">Limpiar conflictos</button>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm table-striped" id="tablaConflictos">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Entidad</th>
-                      <th>Entidad ID</th>
-                      <th>Versión local</th>
-                      <th>Versión servidor</th>
-                      <th>Usuario</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DS -->
-  <div class="modal fade" id="modalDS" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Detalle del Decreto Supremo</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="modalDSBody"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app.js?v=20260424-1235-fix"></script>
+  <script src="app.js?v=20260424-1415-v17-dee-final"></script>
 </body>
 </html>
