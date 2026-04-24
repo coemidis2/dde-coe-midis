@@ -1,11 +1,11 @@
-// ================= CONFIG 24/04/2026 ver 14 - 12:26 hrs =================
+// ================= VERSION 15 24/04/2026 - 12:44 HRS =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
   session: null
 };
 
-let authAlertShown = false;
+let ubigeoCache = [];
 
 // ================= HELPERS =================
 const $ = (id) => document.getElementById(id);
@@ -23,42 +23,27 @@ function getHeaders() {
 }
 
 // ================= API =================
-async function api(path, method='GET', body=null, silent=false) {
-  try {
-    const res = await fetch(API_BASE + path, {
-      method,
-      headers: getHeaders(),
-      credentials: 'include',
-      body: body ? JSON.stringify(body) : null
-    });
+async function api(path, method='GET', body=null) {
+  const res = await fetch(API_BASE + path, {
+    method,
+    headers: getHeaders(),
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : null
+  });
 
-    let data = null;
-    try { data = await res.json(); } catch {}
+  let data = null;
+  try { data = await res.json(); } catch {}
 
-    if (!res.ok) {
-      if (res.status === 401) {
-        logoutClient();
-        if (!silent && !authAlertShown) {
-          authAlertShown = true;
-          alert('Sesión expirada');
-        }
-        return null;
-      }
-
-      if (res.status === 403) {
-        alert('Sin permisos');
-        return null;
-      }
-
-      throw new Error(data?.error || 'api_error');
+  if (!res.ok) {
+    if (res.status === 401) {
+      showLogin();
+      return null;
     }
-
-    return data;
-
-  } catch (e) {
-    console.error('API ERROR', e);
+    alert(data?.error || 'Error API');
     return null;
   }
+
+  return data;
 }
 
 // ================= SESSION =================
@@ -72,53 +57,34 @@ function showApp() {
   $('appView').classList.remove('d-none');
 }
 
-function logoutClient() {
-  state.session = null;
-  showLogin();
-}
-
 // ================= LOGIN =================
 async function doLogin() {
   const email = $('loginUser').value.trim();
   const password = $('loginPass').value;
 
-  if (!email || !password) {
-    alert('Ingrese credenciales');
-    return;
-  }
+  const login = await api('/login','POST',{email,password});
+  if (!login || !login.ok) return alert('Credenciales inválidas');
 
-  const login = await api('/login', 'POST', { email, password }, true);
-
-  if (!login || !login.ok) {
-    alert('Credenciales inválidas');
-    return;
-  }
-
-  const session = await api('/session', 'GET', null, true);
-
-  if (!session || !session.user) {
-    alert('Error de sesión');
-    return;
-  }
+  const session = await api('/session');
+  if (!session || !session.user) return alert('Error sesión');
 
   state.session = session.user;
 
   showApp();
   renderSession();
+  initUbigeo();
 }
 
 // ================= AUTO LOGIN =================
 async function autoLogin() {
-  const session = await api('/session', 'GET', null, true);
-
-  if (!session || !session.user) {
-    showLogin();
-    return;
-  }
+  const session = await api('/session');
+  if (!session || !session.user) return showLogin();
 
   state.session = session.user;
+
   showApp();
   renderSession();
+  initUbigeo();
 }
 
 // ================= UI =================
@@ -126,80 +92,116 @@ function renderSession() {
   $('sessionName').textContent = state.session.name || '';
   $('sessionRole').textContent = state.session.role || '';
 
-  applyRoles();
-}
-
-// ================= ROLES =================
-function applyRoles() {
-  const role = state.session.role;
-
-  if (role === 'Administrador') {
-    $('btnAdminPanel').style.display = 'inline-block';
-  } else {
-    $('btnAdminPanel').style.display = 'none';
+  // 🔴 FORZAR botón administrador
+  const btn = $('btnAdminPanel');
+  if (btn) {
+    btn.style.display = (state.session.role === 'Administrador') ? 'inline-block' : 'none';
   }
 }
 
-// ================= ADMIN PANEL =================
+// ================= ADMIN =================
 function openAdminPanel() {
-
-  if (state.session.role !== 'Administrador') {
-    alert('Solo administrador');
-    return;
-  }
-
   const modal = $('modalAdminPanel');
 
   if (!modal) {
-    alert('Modal no encontrado');
+    alert('Modal no existe');
     return;
   }
 
-  // Bootstrap OK
   if (window.bootstrap) {
     bootstrap.Modal.getOrCreateInstance(modal).show();
+  } else {
+    modal.style.display = 'block';
+  }
+}
+
+// ================= UBIGEO =================
+function initUbigeo() {
+
+  if (!window.ubigeoData) {
+    console.error('ubigeoData NO cargó');
     return;
   }
 
-  // FALLBACK DURO (nunca falla)
-  modal.style.display = 'block';
-  modal.classList.add('show');
+  ubigeoCache = window.ubigeoData;
+
+  cargarDepartamentos();
+
+  $('selDepartamento')?.addEventListener('change', cargarProvincias);
+  $('selProvincia')?.addEventListener('change', cargarDistritos);
+}
+
+function cargarDepartamentos() {
+  const sel = $('selDepartamento');
+  if (!sel) return;
+
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+
+  const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
+
+  deps.forEach(dep => {
+    const opt = document.createElement('option');
+    opt.value = dep;
+    opt.textContent = dep;
+    sel.appendChild(opt);
+  });
+}
+
+function cargarProvincias() {
+  const dep = $('selDepartamento').value;
+  const sel = $('selProvincia');
+
+  sel.innerHTML = '<option value="">Seleccione...</option>';
+
+  const provincias = [...new Set(
+    ubigeoCache
+      .filter(x => x.departamento === dep)
+      .map(x => x.provincia)
+  )];
+
+  provincias.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    sel.appendChild(opt);
+  });
+}
+
+function cargarDistritos() {
+  const dep = $('selDepartamento').value;
+  const prov = $('selProvincia').value;
+
+  const cont = $('distritosChecklist');
+
+  cont.innerHTML = '';
+
+  ubigeoCache
+    .filter(x => x.departamento === dep && x.provincia === prov)
+    .forEach(d => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <input type="checkbox"> ${d.distrito}
+      `;
+      cont.appendChild(div);
+    });
 }
 
 // ================= INIT =================
 function init() {
 
-  // Login
   $('btnLogin')?.addEventListener('click', doLogin);
 
-  $('loginPass')?.addEventListener('keypress', e => {
-    if (e.key === 'Enter') doLogin();
-  });
-
-  // Logout
   $('btnLogout')?.addEventListener('click', async () => {
-    await api('/logout', 'POST', {}, true);
-    logoutClient();
+    await api('/logout','POST');
+    showLogin();
   });
 
-  // Admin botón (doble seguridad)
+  // 🔴 BOTÓN ADMIN CORREGIDO
   const btn = $('btnAdminPanel');
-
   if (btn) {
     btn.addEventListener('click', openAdminPanel);
-
-    // respaldo anti-bugs
-    setTimeout(() => {
-      btn.onclick = openAdminPanel;
-    }, 500);
+    btn.onclick = openAdminPanel; // doble seguridad
   }
-
-  // respaldo global
-  document.addEventListener('click', (e) => {
-    if (e.target && e.target.id === 'btnAdminPanel') {
-      openAdminPanel();
-    }
-  });
 
   autoLogin();
 }
