@@ -1,4 +1,4 @@
-// ================= VERSION 21 FIX LOGIN REAL =================
+// ================= VERSION 22 FIX LOGIN REAL =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -70,12 +70,9 @@ async function doLogin() {
     return;
   }
 
-  // 🔹 LOGIN REAL
   const resLogin = await api('/login', 'POST', { email, password });
 
   if (resLogin.ok && resLogin.data?.ok) {
-
-    // 🔹 SESSION
     const resSession = await api('/session');
 
     if (resSession.ok && resSession.data?.user) {
@@ -90,7 +87,6 @@ async function doLogin() {
     }
   }
 
-  // 🔥 FALLBACK SOLO DEMO (SI API FALLA)
   if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
     state.session = {
       name: 'Administrador DEMO',
@@ -178,32 +174,92 @@ function calcularFechaFin() {
 
 // ================= UBIGEO =================
 function normalizar(v) {
-  return String(v || '').toUpperCase();
+  return String(v || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+}
+
+function getUbigeoValue(reg) {
+  return reg?.ubigeo || reg?.UBIGEO || reg?.codigo || reg?.cod_ubigeo || '';
+}
+
+function getLatitud(reg) {
+  return reg?.latitud ?? reg?.lat ?? '';
+}
+
+function getLongitud(reg) {
+  return reg?.longitud ?? reg?.lng ?? reg?.lon ?? '';
+}
+
+function getTerritorioKey(reg) {
+  const ubigeo = getUbigeoValue(reg);
+  if (ubigeo) return String(ubigeo);
+
+  return [
+    normalizar(reg?.departamento),
+    normalizar(reg?.provincia),
+    normalizar(reg?.distrito)
+  ].join('|');
 }
 
 function initUbigeo() {
-  if (!window.ubigeoData) {
-    console.error('ubigeoData no cargó');
+  if (!window.ubigeoData || !Array.isArray(window.ubigeoData)) {
+    console.error('ubigeoData no cargó o no es un arreglo');
     return;
   }
 
   ubigeoCache = window.ubigeoData;
+
   cargarDepartamentos();
+  renderTerritorioSeleccionado();
+  actualizarBotonAgregarDistritos();
 
   if (ubigeoInicializado) return;
   ubigeoInicializado = true;
 
-  $('selDepartamento')?.addEventListener('change', cargarProvincias);
-  $('selProvincia')?.addEventListener('change', cargarDistritos);
+  $('selDepartamento')?.addEventListener('change', () => {
+    cargarProvincias();
+    limpiarDistritosChecklist('Seleccione una provincia.');
+    actualizarBotonAgregarDistritos();
+  });
+
+  $('selProvincia')?.addEventListener('change', () => {
+    cargarDistritos();
+    actualizarBotonAgregarDistritos();
+  });
+
+  $('buscarDistrito')?.addEventListener('input', filtrarDistritos);
+
+  $('btnAgregarDistritos')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    agregarDistritosSeleccionados();
+  });
+
+  $('btnMarcarTodos')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    marcarTodosDistritosVisibles();
+  });
+
+  $('btnLimpiarChecks')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    limpiarChecksDistritos();
+  });
 }
 
 function cargarDepartamentos() {
   const sel = $('selDepartamento');
   if (!sel) return;
 
+  const valorActual = sel.value;
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
-  const deps = [...new Set(ubigeoCache.map(x => x.departamento))];
+  const deps = [...new Set(
+    ubigeoCache
+      .map(x => x.departamento)
+      .filter(Boolean)
+  )].sort((a, b) => String(a).localeCompare(String(b), 'es'));
 
   deps.forEach(d => {
     const opt = document.createElement('option');
@@ -211,52 +267,273 @@ function cargarDepartamentos() {
     opt.textContent = d;
     sel.appendChild(opt);
   });
+
+  if (valorActual && deps.includes(valorActual)) {
+    sel.value = valorActual;
+  }
 }
 
 function cargarProvincias() {
-  const dep = $('selDepartamento')?.value;
+  const dep = $('selDepartamento')?.value || '';
   const sel = $('selProvincia');
 
   if (!sel) return;
 
   sel.innerHTML = '<option value="">Seleccione...</option>';
 
+  if (!dep) {
+    limpiarDistritosChecklist('Seleccione primero departamento y provincia.');
+    actualizarBotonAgregarDistritos();
+    return;
+  }
+
   const provs = ubigeoCache
     .filter(x => normalizar(x.departamento) === normalizar(dep))
-    .map(x => x.provincia);
+    .map(x => x.provincia)
+    .filter(Boolean);
 
-  [...new Set(provs)].forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p;
-    opt.textContent = p;
-    sel.appendChild(opt);
-  });
+  [...new Set(provs)]
+    .sort((a, b) => String(a).localeCompare(String(b), 'es'))
+    .forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      sel.appendChild(opt);
+    });
+
+  actualizarBotonAgregarDistritos();
 }
 
 function cargarDistritos() {
-  const dep = $('selDepartamento')?.value;
-  const prov = $('selProvincia')?.value;
+  const dep = $('selDepartamento')?.value || '';
+  const prov = $('selProvincia')?.value || '';
 
   const cont = $('distritosChecklist');
   if (!cont) return;
 
   cont.innerHTML = '';
 
-  const distritos = ubigeoCache.filter(x =>
-    normalizar(x.departamento) === normalizar(dep) &&
-    normalizar(x.provincia) === normalizar(prov)
-  );
+  if (!dep || !prov) {
+    limpiarDistritosChecklist('Seleccione primero departamento y provincia.');
+    actualizarBotonAgregarDistritos();
+    return;
+  }
+
+  const distritos = ubigeoCache
+    .filter(x =>
+      normalizar(x.departamento) === normalizar(dep) &&
+      normalizar(x.provincia) === normalizar(prov)
+    )
+    .sort((a, b) => String(a.distrito || '').localeCompare(String(b.distrito || ''), 'es'));
+
+  if (!distritos.length) {
+    limpiarDistritosChecklist('No hay distritos para esta selección.');
+    actualizarBotonAgregarDistritos();
+    return;
+  }
 
   distritos.forEach(d => {
+    const key = getTerritorioKey(d);
+    const idSeguro = String(key).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const yaAgregado = state.nuevoDSTerritorios.some(t => String(t.clave) === String(key));
+
     const div = document.createElement('div');
+    div.className = 'form-check distrito-item';
     div.innerHTML = `
-      <label>
-        <input type="checkbox" value="${d.distrito}">
-        ${d.distrito}
+      <input class="form-check-input chk-distrito"
+             type="checkbox"
+             id="dist_${idSeguro}"
+             value="${escapeHtmlAttr(key)}"
+             ${yaAgregado ? 'disabled' : ''}>
+      <label class="form-check-label" for="dist_${idSeguro}">
+        ${escapeHtml(d.distrito || '')}
+        ${yaAgregado ? '<span class="text-success small"> — agregado</span>' : ''}
       </label>
     `;
+
     cont.appendChild(div);
   });
+
+  cont.querySelectorAll('.chk-distrito').forEach(chk => {
+    chk.addEventListener('change', actualizarBotonAgregarDistritos);
+  });
+
+  actualizarBotonAgregarDistritos();
+}
+
+function limpiarDistritosChecklist(mensaje) {
+  const cont = $('distritosChecklist');
+  if (!cont) return;
+
+  cont.innerHTML = `<div class="text-muted small">${escapeHtml(mensaje)}</div>`;
+
+  if ($('buscarDistrito')) $('buscarDistrito').value = '';
+}
+
+function actualizarBotonAgregarDistritos() {
+  const btn = $('btnAgregarDistritos');
+  const cont = $('distritosChecklist');
+
+  if (!btn || !cont) return;
+
+  const haySeleccionados = [...cont.querySelectorAll('.chk-distrito:checked:not(:disabled)')].length > 0;
+
+  btn.disabled = !haySeleccionados;
+  btn.classList.toggle('disabled', !haySeleccionados);
+}
+
+function filtrarDistritos() {
+  const texto = normalizar($('buscarDistrito')?.value || '');
+  const cont = $('distritosChecklist');
+
+  if (!cont) return;
+
+  cont.querySelectorAll('.distrito-item').forEach(div => {
+    const visible = normalizar(div.textContent).includes(texto);
+    div.style.display = visible ? '' : 'none';
+  });
+
+  actualizarBotonAgregarDistritos();
+}
+
+function marcarTodosDistritosVisibles() {
+  const cont = $('distritosChecklist');
+  if (!cont) return;
+
+  cont.querySelectorAll('.distrito-item').forEach(div => {
+    if (div.style.display === 'none') return;
+
+    const chk = div.querySelector('.chk-distrito');
+    if (chk && !chk.disabled) chk.checked = true;
+  });
+
+  actualizarBotonAgregarDistritos();
+}
+
+function limpiarChecksDistritos() {
+  const cont = $('distritosChecklist');
+  if (!cont) return;
+
+  cont.querySelectorAll('.chk-distrito').forEach(chk => {
+    chk.checked = false;
+  });
+
+  if ($('buscarDistrito')) $('buscarDistrito').value = '';
+
+  filtrarDistritos();
+  actualizarBotonAgregarDistritos();
+}
+
+function agregarDistritosSeleccionados() {
+  const cont = $('distritosChecklist');
+  if (!cont) return;
+
+  const checks = [...cont.querySelectorAll('.chk-distrito:checked:not(:disabled)')];
+
+  if (!checks.length) {
+    alert('Seleccione al menos un distrito.');
+    actualizarBotonAgregarDistritos();
+    return;
+  }
+
+  let agregados = 0;
+  let duplicados = 0;
+
+  checks.forEach(chk => {
+    const key = chk.value;
+
+    const data = ubigeoCache.find(x => String(getTerritorioKey(x)) === String(key));
+    if (!data) return;
+
+    const existe = state.nuevoDSTerritorios.some(t => String(t.clave) === String(key));
+
+    if (existe) {
+      duplicados++;
+      return;
+    }
+
+    state.nuevoDSTerritorios.push({
+      clave: key,
+      ubigeo: getUbigeoValue(data),
+      departamento: data.departamento || '',
+      provincia: data.provincia || '',
+      distrito: data.distrito || '',
+      latitud: getLatitud(data),
+      longitud: getLongitud(data)
+    });
+
+    agregados++;
+  });
+
+  renderTerritorioSeleccionado();
+  cargarDistritos();
+  actualizarBotonAgregarDistritos();
+
+  if (agregados > 0) {
+    alert(`${agregados} distrito(s) agregado(s).`);
+    return;
+  }
+
+  if (duplicados > 0) {
+    alert('Los distritos seleccionados ya estaban agregados.');
+  }
+}
+
+function quitarTerritorioSeleccionado(clave) {
+  state.nuevoDSTerritorios = state.nuevoDSTerritorios.filter(
+    t => String(t.clave) !== String(clave)
+  );
+
+  renderTerritorioSeleccionado();
+  cargarDistritos();
+  actualizarBotonAgregarDistritos();
+}
+
+window.quitarTerritorioSeleccionado = quitarTerritorioSeleccionado;
+
+function renderTerritorioSeleccionado() {
+  const cont = $('territorioSeleccionado');
+  if (!cont) return;
+
+  if (!state.nuevoDSTerritorios.length) {
+    cont.innerHTML = '<div class="text-muted small">No hay distritos agregados.</div>';
+    return;
+  }
+
+  cont.innerHTML = state.nuevoDSTerritorios.map(t => `
+    <div class="d-flex justify-content-between align-items-start gap-2 border rounded bg-white px-2 py-2 mb-2">
+      <div>
+        <div>
+          <strong>${escapeHtml(t.departamento)}</strong> /
+          ${escapeHtml(t.provincia)} /
+          ${escapeHtml(t.distrito)}
+        </div>
+        <div class="text-muted small">
+          Ubigeo: ${escapeHtml(t.ubigeo || '-')}
+          ${t.latitud || t.longitud ? ` · Lat/Lon: ${escapeHtml(t.latitud)} / ${escapeHtml(t.longitud)}` : ''}
+        </div>
+      </div>
+      <button type="button"
+              class="btn btn-sm btn-outline-danger"
+              onclick="quitarTerritorioSeleccionado('${String(t.clave).replace(/'/g, "\\'")}')">
+        Quitar
+      </button>
+    </div>
+  `).join('');
+}
+
+// ================= UTILIDADES HTML =================
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function escapeHtmlAttr(value) {
+  return escapeHtml(value);
 }
 
 // ================= INIT =================
