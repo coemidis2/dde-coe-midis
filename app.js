@@ -1,4 +1,4 @@
-// ================= VERSION 30 FIX LOGIN REAL + ADMIN PANEL =================
+// ================= VERSION 31 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -35,6 +35,130 @@ function esAdministrador() {
   return String(state.session?.role || '').trim().toLowerCase() === 'administrador';
 }
 
+
+
+// ================= USUARIOS LOCALES / LOGIN UNIFICADO =================
+const USUARIOS_STORAGE_KEY = 'usuarios';
+const SESSION_STORAGE_KEY = 'sessionUser';
+
+function normalizarEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function normalizarRol(valor) {
+  const rol = String(valor || '').trim();
+  if (!rol) return '';
+  if (rol.includes('|')) return rol.split('|')[0].trim();
+  return rol;
+}
+
+function normalizarPrograma(valor) {
+  const rol = String(valor || '').trim();
+  return rol.includes('|') ? rol.split('|').slice(1).join('|').trim() : '';
+}
+
+function normalizarUsuario(raw) {
+  if (!raw) return null;
+
+  const email = normalizarEmail(raw.email || raw.correo || raw.usuario || raw.user || raw.username);
+  if (!email) return null;
+
+  const rolOriginal = raw.rol || raw.role || 'Consulta';
+  const rol = normalizarRol(rolOriginal);
+  const programa = raw.programa || raw.program || normalizarPrograma(rolOriginal);
+
+  const estadoRaw = raw.estado ?? raw.status ?? raw.active ?? raw.activo ?? 'activo';
+  const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || normalizarTexto(estadoRaw) === 'ACTIVO' || normalizarTexto(estadoRaw) === 'ACTIVE';
+
+  return {
+    nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
+    name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
+    email,
+    password: String(raw.password ?? raw.clave ?? raw.pass ?? ''),
+    rol,
+    role: rol,
+    programa,
+    estado: activo ? 'activo' : 'inactivo',
+    active: activo ? 1 : 0
+  };
+}
+
+function cargarUsuariosLocales() {
+  const fuentes = [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema'];
+  const mapa = new Map();
+
+  fuentes.forEach(key => {
+    try {
+      const lista = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(lista)) return;
+      lista.forEach(item => {
+        const u = normalizarUsuario(item);
+        if (u) mapa.set(u.email, u);
+      });
+    } catch (e) {
+      console.warn('No se pudo leer localStorage.' + key, e);
+    }
+  });
+
+  const usuarios = [...mapa.values()].filter(u => normalizarTexto(u.rol) !== 'EVALUADOR');
+  guardarUsuariosLocales(usuarios);
+  return usuarios;
+}
+
+function guardarUsuariosLocales(lista) {
+  const depurados = [];
+  const vistos = new Set();
+
+  (Array.isArray(lista) ? lista : []).forEach(item => {
+    const u = normalizarUsuario(item);
+    if (!u) return;
+    if (normalizarTexto(u.rol) === 'EVALUADOR') return;
+    if (vistos.has(u.email)) return;
+    vistos.add(u.email);
+    depurados.push(u);
+  });
+
+  localStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(depurados));
+  adminUsuariosLocales = depurados;
+  return depurados;
+}
+
+function buscarUsuarioLocalPorEmail(email) {
+  const usuarios = cargarUsuariosLocales();
+  return usuarios.find(u => u.email === normalizarEmail(email)) || null;
+}
+
+function loginLocal(email, password) {
+  const usuario = buscarUsuarioLocalPorEmail(email);
+  if (!usuario) return { ok: false, reason: 'not_found' };
+  if (usuario.estado !== 'activo') return { ok: false, reason: 'inactive' };
+  if (String(usuario.password ?? '') !== String(password ?? '')) return { ok: false, reason: 'bad_password' };
+
+  const sessionUser = {
+    name: usuario.name || usuario.nombre || usuario.email,
+    nombre: usuario.nombre || usuario.name || usuario.email,
+    email: usuario.email,
+    role: usuario.role || usuario.rol,
+    rol: usuario.rol || usuario.role,
+    programa: usuario.programa || '',
+    estado: usuario.estado
+  };
+
+  state.session = sessionUser;
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+  return { ok: true, user: sessionUser };
+}
+
+function iniciarSistemaConSesion(usuario) {
+  state.session = usuario;
+  showApp();
+  renderSession();
+  initUbigeo();
+  activarEventosDS();
+}
+
+adminUsuariosLocales = cargarUsuariosLocales();
+
 // ================= API =================
 async function api(path, method = 'GET', body = null) {
   try {
@@ -68,11 +192,17 @@ function showApp() {
 
 // ================= LOGIN =================
 async function doLogin() {
-  const email = $('loginUser')?.value.trim();
-  const password = $('loginPass')?.value;
+  const email = normalizarEmail($('loginUser')?.value);
+  const password = $('loginPass')?.value || '';
 
   if (!email || !password) {
     alert('Ingrese usuario y contraseña');
+    return;
+  }
+
+  const local = loginLocal(email, password);
+  if (local.ok) {
+    iniciarSistemaConSesion(local.user);
     return;
   }
 
@@ -80,30 +210,36 @@ async function doLogin() {
 
   if (resLogin.ok && resLogin.data?.ok) {
     const resSession = await api('/session');
+    const userServer = normalizarUsuario(resSession.data?.user || resLogin.data?.user);
 
-    if (resSession.ok && resSession.data?.user) {
-      state.session = resSession.data.user;
-
-      showApp();
-      renderSession();
-      initUbigeo();
-      activarEventosDS();
-
+    if (userServer && userServer.estado === 'activo') {
+      const sessionUser = {
+        name: userServer.name,
+        nombre: userServer.nombre,
+        email: userServer.email,
+        role: userServer.role,
+        rol: userServer.rol,
+        programa: userServer.programa,
+        estado: userServer.estado
+      };
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+      iniciarSistemaConSesion(sessionUser);
       return;
     }
   }
 
   if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
-    state.session = {
+    const demo = {
       name: 'Administrador DEMO',
+      nombre: 'Administrador DEMO',
       email: 'admin@midis.gob.pe',
-      role: 'Administrador'
+      role: 'Administrador',
+      rol: 'Administrador',
+      estado: 'activo'
     };
 
-    showApp();
-    renderSession();
-    initUbigeo();
-    activarEventosDS();
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(demo));
+    iniciarSistemaConSesion(demo);
     return;
   }
 
@@ -112,16 +248,41 @@ async function doLogin() {
 
 // ================= AUTO LOGIN =================
 async function autoLogin() {
+  try {
+    const localSession = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
+    const user = normalizarUsuario(localSession);
+    if (user && user.estado === 'activo') {
+      iniciarSistemaConSesion({
+        name: user.name,
+        nombre: user.nombre,
+        email: user.email,
+        role: user.role,
+        rol: user.rol,
+        programa: user.programa,
+        estado: user.estado
+      });
+      return;
+    }
+  } catch (e) {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  }
+
   const res = await api('/session');
 
   if (res.ok && res.data?.user) {
-    state.session = res.data.user;
-
-    showApp();
-    renderSession();
-    initUbigeo();
-    activarEventosDS();
-    return;
+    const user = normalizarUsuario(res.data.user);
+    if (user && user.estado === 'activo') {
+      iniciarSistemaConSesion({
+        name: user.name,
+        nombre: user.nombre,
+        email: user.email,
+        role: user.role,
+        rol: user.rol,
+        programa: user.programa,
+        estado: user.estado
+      });
+      return;
+    }
   }
 
   showLogin();
@@ -209,7 +370,6 @@ function construirAdminPanel() {
             <select id="adminUserRole" class="form-select">
               <option value="Consulta">Consulta</option>
               <option value="Administrador">Administrador</option>
-              <option value="Evaluador">Evaluador</option>
               <option value="Registrador">Registrador</option>
               <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
               <option value="Registrador|PAE">Registrador - PAE</option>
@@ -427,15 +587,24 @@ async function cargarUsuariosAdmin() {
   if (res.ok && Array.isArray(res.data?.users)) usuarios = res.data.users;
   else if (res.ok && Array.isArray(res.data)) usuarios = res.data;
 
+  const locales = cargarUsuariosLocales();
+
   if (!usuarios.length) {
     usuarios = [
-      { name: 'COE MIDIS', email: 'coemidis@midis.gob.pe', role: 'Consulta', active: 1 },
-      { name: 'Administrador DEMO', email: 'admin@midis.gob.pe', role: 'Administrador', active: 1 },
-      ...adminUsuariosLocales
+      { name: 'COE MIDIS', email: 'coemidis@midis.gob.pe', role: 'Consulta', estado: 'activo', active: 1 },
+      { name: 'Administrador DEMO', email: 'admin@midis.gob.pe', role: 'Administrador', estado: 'activo', active: 1 },
+      ...locales
     ];
   } else {
-    usuarios = [...usuarios, ...adminUsuariosLocales];
+    const mapa = new Map();
+    [...usuarios, ...locales].forEach(item => {
+      const u = normalizarUsuario(item);
+      if (u) mapa.set(u.email, u);
+    });
+    usuarios = [...mapa.values()];
   }
+
+  usuarios = usuarios.filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR');
 
   const filtro = normalizarTexto($('adminBuscarUsuario')?.value || '');
   const filtrados = usuarios.filter(u => {
@@ -451,13 +620,14 @@ async function cargarUsuariosAdmin() {
   }
 
   tbody.innerHTML = filtrados.map(u => {
-    const email = u.email || u.correo || '';
-    const activo = Number(u.active ?? u.activo ?? 1) === 1;
+    const nu = normalizarUsuario(u) || u;
+    const email = nu.email || '';
+    const activo = String(nu.estado || '').toLowerCase() === 'activo';
     return `
       <tr>
-        <td>${escapeHtml(u.name || u.nombre || '')}</td>
+        <td>${escapeHtml(nu.name || nu.nombre || '')}</td>
         <td>${escapeHtml(email)}</td>
-        <td><span class="badge text-bg-secondary">${escapeHtml(u.role || u.rol || '')}</span></td>
+        <td><span class="badge text-bg-secondary">${escapeHtml(nu.role || nu.rol || '')}</span></td>
         <td><span class="badge ${activo ? 'text-bg-success' : 'text-bg-danger'}">${activo ? 'Activo' : 'Inactivo'}</span></td>
         <td>
           <button type="button"
@@ -491,22 +661,45 @@ async function crearUsuarioAdmin() {
   const clave = generarClaveTemporal();
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
 
-  const payload = { name: nombre, email, role: rol, password: clave, active: 1 };
-  const res = await api('/users', 'POST', payload);
+  const usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
+  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
+  lista.push(usuario);
+  guardarUsuariosLocales(lista);
 
-  if (!res.ok) adminUsuariosLocales.push(payload);
+  await api('/users', 'POST', {
+    name: usuario.name,
+    nombre: usuario.nombre,
+    email: usuario.email,
+    password: usuario.password,
+    role: usuario.role,
+    rol: usuario.rol,
+    programa: usuario.programa,
+    estado: usuario.estado,
+    active: usuario.active
+  });
 
   await cargarUsuariosAdmin();
 }
 
 function toggleUsuarioAdmin(email) {
-  const usuario = adminUsuariosLocales.find(u => String(u.email) === String(email));
-  if (usuario) usuario.active = Number(usuario.active ?? 1) === 1 ? 0 : 1;
+  const lista = cargarUsuariosLocales();
+  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  if (usuario) {
+    usuario.estado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    usuario.active = usuario.estado === 'activo' ? 1 : 0;
+    guardarUsuariosLocales(lista);
+  }
   cargarUsuariosAdmin();
 }
 
 function resetClaveUsuarioAdmin(email) {
   const clave = generarClaveTemporal();
+  const lista = cargarUsuariosLocales();
+  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  if (usuario) {
+    usuario.password = clave;
+    guardarUsuariosLocales(lista);
+  }
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
   alert(`Clave temporal generada para ${email}`);
 }
@@ -1053,6 +1246,8 @@ function init() {
 
   $('btnLogout')?.addEventListener('click', async () => {
     await api('/logout', 'POST');
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    state.session = null;
     showLogin();
   });
 
