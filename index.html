@@ -45,7 +45,7 @@
       </div>
 
       <div class="login-version">
-        VERSION 15 · 24/04/2026 17:10 hrs· MIDIS © 2026
+        VERSION 16 · 28/04/2026 14:00 hrs· MIDIS © 2026
       </div>
     </div>
   </div>
@@ -392,7 +392,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">⚙ Panel de Administración</h5>
+          <h5 class="modal-title">Administración de usuarios</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
@@ -403,10 +403,10 @@
               <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button>
             </li>
             <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Auditoría</button>
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Bitácora / Auditoría</button>
             </li>
             <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos</button>
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos Sync</button>
             </li>
           </ul>
 
@@ -414,22 +414,21 @@
 
             <!-- Usuarios -->
             <div class="tab-pane fade show active" id="adminUsuarios">
-              <div class="row g-3 mb-3">
-                <div class="col-md-4">
+              <div class="row g-2 mb-2">
+                <div class="col-md-5">
                   <label class="form-label">Nombre y apellidos</label>
-                  <input id="adminUserName" class="form-control">
+                  <input id="adminUserName" class="form-control" placeholder="Ej.: Juan Pérez Gómez">
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">Correo</label>
+                  <label class="form-label">Correo (usuario)</label>
                   <input id="adminUserEmail" class="form-control" placeholder="usuario@midis.gob.pe">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <label class="form-label">Rol</label>
                   <select id="adminUserRole" class="form-select">
-                    <option value="">Seleccione...</option>
+                    <option value="Consulta">Consulta</option>
                     <option value="Administrador">Administrador</option>
                     <option value="Evaluador">Evaluador</option>
-                    <option value="Consulta">Consulta</option>
                     <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
                     <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
                     <option value="Registrador|JUNTOS">Registrador - Juntos</option>
@@ -439,23 +438,28 @@
                     <option value="Registrador|CONTIGO">Registrador - Contigo</option>
                   </select>
                 </div>
+              </div>
 
-                <div class="col-md-6">
-                  <label class="form-label">Clave generada / reseteada</label>
-                  <input id="adminGeneratedPassword" class="form-control" readonly>
-                </div>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button id="btnCrearUsuarioAdmin" type="button" class="btn btn-primary">Crear usuario</button>
+                <button id="btnCopiarClaveAdmin" type="button" class="btn btn-outline-secondary">Copiar clave temporal</button>
+                <input id="adminGeneratedPassword" class="form-control" style="max-width:220px" readonly>
+              </div>
 
-                <div class="col-md-6 d-flex align-items-end gap-2">
-                  <button id="btnCrearUsuarioAdmin" type="button" class="btn btn-primary">Crear usuario</button>
-                  <button id="btnCopiarClaveAdmin" type="button" class="btn btn-outline-secondary">Copiar clave</button>
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div class="input-group" style="max-width:370px">
+                  <button id="btnBuscarUsuariosAdmin" type="button" class="btn btn-outline-secondary">Buscar</button>
+                  <input id="adminUserSearch" class="form-control" placeholder="Nombre o correo">
+                  <button id="btnActualizarUsuariosAdmin" type="button" class="btn btn-outline-primary">Actualizar</button>
                 </div>
+                <div id="adminUsersCount" class="text-muted small">Mostrando 0 de 0</div>
               </div>
 
               <div class="table-responsive">
                 <table class="table table-sm table-striped" id="tablaAdminUsuarios">
                   <thead class="table-light">
                     <tr>
-                      <th>Nombre</th>
+                      <th>Nombre y apellidos</th>
                       <th>Correo</th>
                       <th>Rol</th>
                       <th>Estado</th>
@@ -467,51 +471,80 @@
               </div>
             </div>
 
-            <!-- Auditoría -->
+            <!-- Bitácora / Auditoría -->
             <div class="tab-pane fade" id="adminAuditoria">
-              <div class="row g-3 mb-3">
-                <div class="col-md-3">
+              <div class="row g-2 mb-2 align-items-end">
+                <div class="col-md-2">
                   <label class="form-label">Desde</label>
                   <input id="auditDesde" type="date" class="form-control">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                   <label class="form-label">Hasta</label>
                   <input id="auditHasta" type="date" class="form-control">
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">Actor</label>
+                  <label class="form-label">Actor (correo)</label>
                   <select id="auditActor" class="form-select">
                     <option value="">Todos</option>
                   </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                  <button id="btnVerAuditoria" type="button" class="btn btn-primary">Ver</button>
-                  <button id="btnLimpiarAuditoria" type="button" class="btn btn-outline-danger">Limpiar</button>
+                <div class="col-md-3">
+                  <label class="form-label">Acción</label>
+                  <select id="auditAccion" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="LOGIN">LOGIN</option>
+                    <option value="LOGOUT">LOGOUT</option>
+                    <option value="CREATE">CREATE</option>
+                    <option value="UPDATE">UPDATE</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
                 </div>
+                <div class="col-md-2 d-flex gap-2">
+                  <button id="btnVerAuditoria" type="button" class="btn btn-primary w-100">Ver</button>
+                  <button id="btnLimpiarAuditoria" type="button" class="btn btn-outline-secondary w-100">Limpiar</button>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between mb-2">
+                <div id="auditServerStatus" class="text-muted small">Servidor: conectado, usando respaldo local (not_found)</div>
+                <div class="text-muted small">Máx. 1000 registros</div>
               </div>
 
               <div class="table-responsive">
                 <table class="table table-sm table-striped" id="tablaAuditoria">
                   <thead class="table-light">
                     <tr>
-                      <th>Fecha</th>
+                      <th>Fecha/Hora</th>
                       <th>Actor</th>
+                      <th>Rol</th>
                       <th>Acción</th>
+                      <th>Entidad</th>
+                      <th>ID</th>
                       <th>Detalle</th>
-                      <th>Ver</th>
+                      <th>Acción</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
                 </table>
               </div>
+
+              <div class="alert alert-info small mt-3 mb-0">
+                <strong>Tip:</strong> Usa “Desde/Hasta” para acotar. El detalle se puede copiar en JSON.
+              </div>
             </div>
 
-            <!-- Conflictos -->
+            <!-- Conflictos Sync -->
             <div class="tab-pane fade" id="adminConflictos">
-              <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
-                <button id="btnConflictosServidor" type="button" class="btn btn-outline-primary">Actualizar desde servidor</button>
-                <button id="btnConflictosLocal" type="button" class="btn btn-outline-secondary">Actualizar local</button>
-                <button id="btnLimpiarConflictos" type="button" class="btn btn-outline-danger">Limpiar</button>
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <div id="conflictosEmptyMsg" class="text-muted small">No hay conflictos de sincronización registrados en este navegador.</div>
+                <div class="d-flex gap-2">
+                  <button id="btnActualizarConflictos" type="button" class="btn btn-outline-primary">Actualizar</button>
+                  <button id="btnLimpiarHistorialConflictos" type="button" class="btn btn-outline-danger">Limpiar historial</button>
+                </div>
+              </div>
+
+              <div class="alert alert-warning small">
+                <strong>Importante:</strong> “Servidor” reemplaza tu copia local por la versión vigente del servidor. “Local” conserva tu edición local e intenta volver a subirla usando la última base del servidor. No fusiona textos automáticamente; resuelve el conflicto eligiendo cuál versión prevalece.
               </div>
 
               <div class="table-responsive">
@@ -522,7 +555,7 @@
                       <th>Código</th>
                       <th>Motivo</th>
                       <th>Fecha del servidor</th>
-                      <th>Estado local/servidor</th>
+                      <th>Estado local / servidor</th>
                       <th>Resolución aplicada</th>
                       <th>Acción</th>
                     </tr>
@@ -534,6 +567,9 @@
 
           </div>
 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>
