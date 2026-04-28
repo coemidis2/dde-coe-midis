@@ -1,4 +1,4 @@
-// ================= VERSION 31 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 32 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11,6 +11,8 @@ let ubigeoCache = [];
 let ubigeoInicializado = false;
 let adminPanelInicializado = false;
 let adminUsuariosLocales = [];
+let dsEventosInicializados = false;
+const DECRETOS_STORAGE_KEY = 'decretos';
 
 // ================= HELPERS =================
 const $ = (id) => document.getElementById(id);
@@ -853,8 +855,31 @@ async function copiarTexto(texto) {
 
 // ================= FECHA =================
 function activarEventosDS() {
+  if (dsEventosInicializados) {
+    cargarDecretosParaOrigen();
+    actualizarProrrogaUI();
+    return;
+  }
+
+  dsEventosInicializados = true;
+
   $('dsFechaInicio')?.addEventListener('change', calcularFechaFin);
   $('dsPlazoDias')?.addEventListener('input', calcularFechaFin);
+
+  const btnGuardar = $('btnGuardarDS');
+  if (btnGuardar) {
+    btnGuardar.type = 'button';
+    btnGuardar.addEventListener('click', (e) => {
+      e.preventDefault();
+      guardarDecreto();
+    });
+  }
+
+  $('dsEsProrroga')?.addEventListener('change', actualizarProrrogaUI);
+  $('dsOrigen')?.addEventListener('change', actualizarDatosProrroga);
+
+  cargarDecretosParaOrigen();
+  actualizarProrrogaUI();
 }
 
 function calcularFechaFin() {
@@ -873,6 +898,345 @@ function calcularFechaFin() {
     $('dsVigencia').value = (new Date(fin) >= new Date()) ? 'Vigente' : 'No vigente';
   }
 }
+
+
+// ================= DECRETOS SUPREMOS / PRÓRROGAS =================
+function cargarDecretosLocales() {
+  try {
+    const data = JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]');
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.warn('No se pudo leer localStorage.decretos', e);
+    return [];
+  }
+}
+
+function guardarDecretosLocales(lista) {
+  const data = Array.isArray(lista) ? lista : [];
+  localStorage.setItem(DECRETOS_STORAGE_KEY, JSON.stringify(data));
+  state.decretos = data;
+  return data;
+}
+
+async function cargarDecretosParaOrigen() {
+  let decretos = cargarDecretosLocales();
+  const res = await api('/decretos');
+  const remotos = extraerListaDecretos(res && res.data);
+
+  if (res.ok && remotos.length) {
+    const mapa = new Map();
+    decretos.concat(remotos).forEach(d => {
+      const nd = normalizarDecreto(d);
+      if (nd) mapa.set(String(nd.id), nd);
+    });
+    decretos = Array.from(mapa.values());
+    guardarDecretosLocales(decretos);
+  } else {
+    state.decretos = decretos.map(normalizarDecreto).filter(Boolean);
+  }
+
+  cargarDSOrigen();
+  actualizarDatosProrroga();
+  renderTablaDecretosBasica();
+}
+
+function extraerListaDecretos(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.decretos)) return data.decretos;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
+
+function normalizarDecreto(raw) {
+  if (!raw) return null;
+  const numero = String(raw.numero || raw.ds || raw.decreto || raw.decreto_supremo || '').trim();
+  const anio = String(raw.anio || raw.año || '').trim();
+  const idBase = raw.id || raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio) || crypto.randomUUID();
+  return {
+    ...raw,
+    id: String(idBase),
+    numero,
+    anio,
+    codigo_registro: raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio),
+    peligro: raw.peligro || '',
+    tipo_peligro: raw.tipo_peligro || raw.tipoPeligro || '',
+    fecha_inicio: raw.fecha_inicio || raw.fechaInicio || '',
+    fecha_fin: raw.fecha_fin || raw.fechaFin || '',
+    vigencia: raw.vigencia || calcularVigencia(raw.fecha_fin || raw.fechaFin || ''),
+    semaforo: raw.semaforo || calcularSemaforo(raw.fecha_fin || raw.fechaFin || ''),
+    motivos: raw.motivos || raw.exposicion_motivos || '',
+    sectores: Array.isArray(raw.sectores) ? raw.sectores : parsearLista(raw.sectores),
+    territorio: Array.isArray(raw.territorio) ? raw.territorio : [],
+    es_prorroga: Boolean(raw.es_prorroga || raw.esProrroga),
+    ds_origen_id: raw.ds_origen_id || raw.dsOrigenId || raw.ds_origen || '',
+    nivel_prorroga: Number(raw.nivel_prorroga || raw.nivelProrroga || 0),
+    cadena: raw.cadena || ''
+  };
+}
+
+function parsearLista(valor) {
+  if (!valor) return [];
+  if (Array.isArray(valor)) return valor;
+  try {
+    const parsed = JSON.parse(valor);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return String(valor).split(',').map(x => x.trim()).filter(Boolean);
+  }
+}
+
+function generarCodigoRegistro(numero, anio) {
+  const n = String(numero || '').trim().padStart(3, '0');
+  const a = String(anio || new Date().getFullYear()).trim();
+  return n && n !== '000' ? `DS-${n}-${a}` : '';
+}
+
+function cargarDSOrigen() {
+  const sel = $('dsOrigen');
+  if (!sel) return;
+
+  const valorActual = sel.value;
+  const decretos = (state.decretos.length ? state.decretos : cargarDecretosLocales())
+    .map(normalizarDecreto)
+    .filter(Boolean)
+    .sort((a, b) => String(`${b.anio}${b.numero}`).localeCompare(String(`${a.anio}${a.numero}`)));
+
+  sel.innerHTML = '<option value="">Seleccione DS origen...</option>';
+
+  decretos.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = `${formatearNumeroDS(d)}${d.tipo_peligro ? ' · ' + d.tipo_peligro : ''}`;
+    opt.dataset.nivel = String(d.nivel_prorroga || 0);
+    opt.dataset.cadena = d.cadena || formatearNumeroDS(d);
+    sel.appendChild(opt);
+  });
+
+  if (valorActual && Array.from(sel.options).some(o => o.value === valorActual)) sel.value = valorActual;
+}
+
+function actualizarProrrogaUI() {
+  const checked = Boolean($('dsEsProrroga')?.checked);
+  const origen = $('dsOrigen');
+  const nivel = $('dsNivelProrroga');
+  const cadena = $('dsCadena');
+
+  if (origen) origen.disabled = !checked;
+  if (nivel) nivel.readOnly = !checked;
+  if (cadena) cadena.readOnly = !checked;
+
+  if (checked) {
+    cargarDSOrigen();
+    actualizarDatosProrroga();
+  } else {
+    if (origen) origen.value = '';
+    if (nivel) nivel.value = '0';
+    if (cadena) cadena.value = '';
+  }
+}
+
+function actualizarDatosProrroga() {
+  if (!$('dsEsProrroga')?.checked) return;
+
+  const idOrigen = $('dsOrigen')?.value || '';
+  const dsOrigen = (state.decretos.length ? state.decretos : cargarDecretosLocales())
+    .map(normalizarDecreto)
+    .find(d => String(d.id) === String(idOrigen));
+
+  if (!idOrigen || !dsOrigen) {
+    if ($('dsNivelProrroga')) $('dsNivelProrroga').value = '';
+    if ($('dsCadena')) $('dsCadena').value = '';
+    return;
+  }
+
+  const nuevoNivel = Number(dsOrigen.nivel_prorroga || 0) + 1;
+  if ($('dsNivelProrroga')) $('dsNivelProrroga').value = String(nuevoNivel);
+
+  const baseCadena = dsOrigen.cadena || formatearNumeroDS(dsOrigen);
+  const actual = formatearNumeroDS({ numero: $('dsNumero')?.value, anio: $('dsAnio')?.value });
+  if ($('dsCadena')) $('dsCadena').value = actual ? `${baseCadena} → ${actual}` : baseCadena;
+}
+
+async function guardarDecreto() {
+  try {
+    const validacion = validarFormularioDecreto();
+    if (!validacion.ok) {
+      alert(validacion.mensaje);
+      return;
+    }
+
+    const decreto = construirObjetoDecreto();
+    const existentes = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
+    const lista = existentes.filter(d => String(d.id) !== String(decreto.id));
+    lista.push(decreto);
+    guardarDecretosLocales(lista);
+
+    cargarDSOrigen();
+    renderTablaDecretosBasica();
+
+    const res = await api('/decretos', 'POST', decreto);
+    if (!res.ok) console.warn('No se confirmó guardado en API; se conservó en localStorage.', res.data);
+
+    alert('Decreto guardado correctamente');
+    limpiarFormularioDecreto();
+  } catch (e) {
+    console.error('Error al guardar Decreto Supremo:', e);
+    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle técnico.');
+  }
+}
+
+function validarFormularioDecreto() {
+  const obligatorios = [
+    ['dsNumero', 'Ingrese el Número DS.'],
+    ['dsAnio', 'Ingrese el Año.'],
+    ['dsPeligro', 'Seleccione el Peligro.'],
+    ['dsTipoPeligro', 'Seleccione el Tipo de peligro.'],
+    ['dsPlazoDias', 'Ingrese el Plazo en días.'],
+    ['dsFechaInicio', 'Ingrese la Fecha inicio.'],
+    ['dsFechaFin', 'Calcule o ingrese la Fecha final.']
+  ];
+
+  for (const [id, mensaje] of obligatorios) {
+    if (!String($(id)?.value || '').trim()) return { ok: false, mensaje };
+  }
+
+  if (!state.nuevoDSTerritorios.length) return { ok: false, mensaje: 'Agregue al menos un distrito al territorio involucrado.' };
+
+  if ($('dsEsProrroga')?.checked) {
+    if (!$('dsOrigen')?.value) return { ok: false, mensaje: 'Seleccione el DS origen de la prórroga.' };
+    if (!String($('dsNivelProrroga')?.value || '').trim()) return { ok: false, mensaje: 'Ingrese el Nivel prórroga.' };
+  }
+
+  return { ok: true, mensaje: '' };
+}
+
+function construirObjetoDecreto() {
+  calcularFechaFin();
+  actualizarDatosProrroga();
+
+  const numero = String($('dsNumero')?.value || '').trim();
+  const anio = String($('dsAnio')?.value || '').trim();
+  const codigo = String($('dsCodigoRegistro')?.value || generarCodigoRegistro(numero, anio)).trim();
+  const fechaFin = $('dsFechaFin')?.value || '';
+  const esProrroga = Boolean($('dsEsProrroga')?.checked);
+
+  return normalizarDecreto({
+    id: codigo || crypto.randomUUID(),
+    numero,
+    anio,
+    codigo_registro: codigo,
+    peligro: $('dsPeligro')?.value || '',
+    tipo_peligro: $('dsTipoPeligro')?.value || '',
+    plazo_dias: Number($('dsPlazoDias')?.value || 0),
+    fecha_inicio: $('dsFechaInicio')?.value || '',
+    fecha_fin: fechaFin,
+    vigencia: calcularVigencia(fechaFin),
+    semaforo: calcularSemaforo(fechaFin),
+    motivos: $('dsMotivos')?.value || '',
+    sectores: obtenerSectoresSeleccionados(),
+    territorio: state.nuevoDSTerritorios.map(t => ({ ...t })),
+    es_prorroga: esProrroga,
+    ds_origen_id: esProrroga ? $('dsOrigen')?.value || '' : '',
+    nivel_prorroga: esProrroga ? Number($('dsNivelProrroga')?.value || 0) : 0,
+    cadena: esProrroga ? $('dsCadena')?.value || '' : '',
+    usuario_registro: state.session?.email || '',
+    fecha_registro: new Date().toISOString()
+  });
+}
+
+function obtenerSectoresSeleccionados() {
+  const cont = $('sectoresContainer');
+  if (!cont) return [];
+  return Array.from(cont.querySelectorAll('input[type="checkbox"]:checked')).map(x => x.value || x.dataset.value || '').filter(Boolean);
+}
+
+function limpiarFormularioDecreto() {
+  ['dsNumero', 'dsPlazoDias', 'dsFechaInicio', 'dsFechaFin', 'dsVigencia', 'dsSemaforo', 'dsMotivos'].forEach(id => {
+    if ($(id)) $(id).value = '';
+  });
+
+  if ($('dsPeligro')) $('dsPeligro').value = '';
+  if ($('dsTipoPeligro')) $('dsTipoPeligro').value = '';
+  if ($('dsCodigoRegistro')) $('dsCodigoRegistro').value = '';
+  if ($('dsEsProrroga')) $('dsEsProrroga').checked = false;
+
+  state.nuevoDSTerritorios = [];
+  renderTerritorioSeleccionado();
+  actualizarProrrogaUI();
+  actualizarBotonAgregarDistritos();
+}
+
+function calcularVigencia(fechaFin) {
+  if (!fechaFin) return '';
+  const hoyLocal = new Date();
+  hoyLocal.setHours(0, 0, 0, 0);
+  const fin = new Date(`${fechaFin}T00:00:00`);
+  return fin >= hoyLocal ? 'Vigente' : 'No vigente';
+}
+
+function calcularSemaforo(fechaFin) {
+  if (!fechaFin) return '';
+  const hoyLocal = new Date();
+  hoyLocal.setHours(0, 0, 0, 0);
+  const fin = new Date(`${fechaFin}T00:00:00`);
+  const dias = Math.ceil((fin - hoyLocal) / 86400000);
+  if (dias < 0) return 'Vencido';
+  if (dias <= 7) return 'Rojo';
+  if (dias <= 15) return 'Ámbar';
+  return 'Verde';
+}
+
+function formatearNumeroDS(d) {
+  const numero = String(d?.numero || '').trim();
+  const anio = String(d?.anio || '').trim();
+  if (!numero && !anio) return '';
+  return `DS N.° ${numero}${anio ? '-' + anio : ''}-PCM`;
+}
+
+function renderTablaDecretosBasica() {
+  const tbody = document.querySelector('#tablaDS tbody');
+  if (!tbody) return;
+
+  const decretos = (state.decretos.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
+
+  if (!decretos.length) {
+    tbody.innerHTML = '<tr><td colspan="17" class="text-muted">No hay Decretos Supremos registrados.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = decretos.map(d => {
+    const territorio = Array.isArray(d.territorio) ? d.territorio : [];
+    const deps = new Set(territorio.map(t => t.departamento).filter(Boolean));
+    const provs = new Set(territorio.map(t => `${t.departamento}|${t.provincia}`).filter(Boolean));
+    const dists = new Set(territorio.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(Boolean));
+
+    return `
+      <tr>
+        <td>${escapeHtml(formatearNumeroDS(d))}</td>
+        <td>${escapeHtml(d.anio)}</td>
+        <td>${escapeHtml(d.peligro)}</td>
+        <td>${escapeHtml(d.tipo_peligro)}</td>
+        <td>${escapeHtml(d.fecha_inicio)}</td>
+        <td>${escapeHtml(d.fecha_fin)}</td>
+        <td>${escapeHtml(d.vigencia)}</td>
+        <td>${escapeHtml(d.semaforo)}</td>
+        <td>${deps.size}</td>
+        <td>${provs.size}</td>
+        <td>${dists.size}</td>
+        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${escapeHtml(d.cadena || '')}</td>
+        <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-primary" disabled>RDS</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-secondary" disabled>PreAprobar</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" disabled>👁</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.guardarDecreto = guardarDecreto;
+window.actualizarProrrogaUI = actualizarProrrogaUI;
 
 // ================= UBIGEO =================
 function normalizarTexto(valor) {
