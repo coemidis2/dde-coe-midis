@@ -1,4 +1,4 @@
-// ================= VERSION 22 FIX LOGIN REAL =================
+// ================= VERSION 23 FIX LOGIN REAL =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -127,27 +127,311 @@ function renderSession() {
 
   const btn = $('btnAdminPanel');
   if (btn) {
-    btn.style.display = 'inline-block';
-    btn.disabled = false;
-    btn.style.pointerEvents = 'auto';
+    const admin = esAdministrador();
+    btn.style.display = admin ? 'inline-block' : 'none';
+    btn.disabled = !admin;
+    btn.style.pointerEvents = admin ? 'auto' : 'none';
   }
 }
 
 // ================= ADMIN =================
 function openAdminPanel() {
-  const modal = $('modalAdminPanel');
-  if (!modal) return;
-
-  if (window.bootstrap && bootstrap.Modal) {
-    bootstrap.Modal.getOrCreateInstance(modal).show();
+  if (!esAdministrador()) {
+    alert('Acceso permitido solo para Administrador.');
     return;
   }
 
-  modal.style.display = 'block';
-  modal.classList.add('show');
+  const modal = $('modalAdminPanel');
+  if (!modal) return;
+
+  initAdminPanel();
+
+  if (window.bootstrap && bootstrap.Modal) {
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+  } else {
+    modal.style.display = 'block';
+    modal.classList.add('show');
+  }
+
+  activarAdminTab('#adminUsuarios');
 }
 
 window.openAdminPanel = openAdminPanel;
+
+// ================= ADMIN PANEL =================
+let adminPanelInicializado = false;
+let adminUsuariosLocales = [];
+
+function esAdministrador() {
+  return String(state.session?.role || '').trim().toLowerCase() === 'administrador';
+}
+
+function initAdminPanel() {
+  if (adminPanelInicializado) return;
+  adminPanelInicializado = true;
+
+  const modal = $('modalAdminPanel');
+  if (!modal) return;
+
+  modal.querySelectorAll('button[data-bs-toggle="tab"][data-bs-target^="#admin"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activarAdminTab(btn.getAttribute('data-bs-target'));
+    });
+  });
+
+  $('btnCrearUsuarioAdmin')?.addEventListener('click', crearUsuarioAdmin);
+  $('btnCopiarClaveAdmin')?.addEventListener('click', copiarClaveAdmin);
+  $('btnVerAuditoria')?.addEventListener('click', cargarAuditoriaAdmin);
+  $('btnLimpiarAuditoria')?.addEventListener('click', limpiarAuditoriaAdmin);
+  $('btnConflictosServidor')?.addEventListener('click', cargarConflictosAdmin);
+  $('btnConflictosLocal')?.addEventListener('click', cargarConflictosAdmin);
+  $('btnLimpiarConflictos')?.addEventListener('click', limpiarConflictosAdmin);
+}
+
+function activarAdminTab(target) {
+  if (!esAdministrador()) {
+    alert('Acceso permitido solo para Administrador.');
+    return;
+  }
+
+  const modal = $('modalAdminPanel');
+  if (!modal || !target) return;
+
+  const targetId = String(target).replace('#', '');
+  const pane = $(targetId);
+  if (!pane) return;
+
+  modal.querySelectorAll('.nav-tabs .nav-link').forEach(btn => {
+    const activo = btn.getAttribute('data-bs-target') === `#${targetId}`;
+    btn.classList.toggle('active', activo);
+    btn.setAttribute('aria-selected', activo ? 'true' : 'false');
+  });
+
+  modal.querySelectorAll('.tab-content > .tab-pane').forEach(tab => {
+    const activo = tab.id === targetId;
+    tab.classList.toggle('show', activo);
+    tab.classList.toggle('active', activo);
+  });
+
+  if (targetId === 'adminUsuarios') cargarUsuariosAdmin();
+  if (targetId === 'adminAuditoria') cargarAuditoriaAdmin();
+  if (targetId === 'adminConflictos') cargarConflictosAdmin();
+}
+
+async function cargarUsuariosAdmin() {
+  if (!esAdministrador()) return;
+
+  const tbody = document.querySelector('#tablaAdminUsuarios tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Cargando usuarios...</td></tr>';
+
+  let usuarios = [];
+
+  const res = await api('/users');
+  if (res.ok && Array.isArray(res.data?.users)) {
+    usuarios = res.data.users;
+  } else if (res.ok && Array.isArray(res.data)) {
+    usuarios = res.data;
+  }
+
+  if (!usuarios.length) {
+    usuarios = [
+      {
+        name: state.session?.name || 'Administrador',
+        email: state.session?.email || 'admin@midis.gob.pe',
+        role: state.session?.role || 'Administrador',
+        active: 1
+      },
+      ...adminUsuariosLocales
+    ];
+  } else {
+    usuarios = [...usuarios, ...adminUsuariosLocales];
+  }
+
+  tbody.innerHTML = usuarios.map(u => `
+    <tr>
+      <td>${escapeHtml(u.name || u.nombre || '')}</td>
+      <td>${escapeHtml(u.email || u.correo || '')}</td>
+      <td>${escapeHtml(u.role || u.rol || '')}</td>
+      <td>${Number(u.active ?? u.activo ?? 1) === 1 ? 'Activo' : 'Inactivo'}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-secondary" disabled>Ver</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="text-muted">Sin usuarios registrados.</td></tr>';
+}
+
+async function crearUsuarioAdmin() {
+  if (!esAdministrador()) {
+    alert('Acceso permitido solo para Administrador.');
+    return;
+  }
+
+  const nombre = $('adminUserName')?.value.trim() || '';
+  const email = $('adminUserEmail')?.value.trim() || '';
+  const rol = $('adminUserRole')?.value || '';
+
+  if (!nombre || !email || !rol) {
+    alert('Complete nombre, correo y rol.');
+    return;
+  }
+
+  const clave = generarClaveTemporal();
+  if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
+
+  const payload = { name: nombre, email, role: rol, password: clave, active: 1 };
+  const res = await api('/users', 'POST', payload);
+
+  if (!res.ok) {
+    adminUsuariosLocales.push(payload);
+  }
+
+  await cargarUsuariosAdmin();
+}
+
+function generarClaveTemporal() {
+  const base = 'MIDIS';
+  const n = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `${base}${n}2026!`;
+}
+
+async function copiarClaveAdmin() {
+  const input = $('adminGeneratedPassword');
+  if (!input || !input.value) {
+    alert('No hay clave generada.');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(input.value);
+    alert('Clave copiada.');
+  } catch {
+    input.select();
+    document.execCommand('copy');
+    alert('Clave copiada.');
+  }
+}
+
+async function cargarAuditoriaAdmin() {
+  if (!esAdministrador()) return;
+
+  const tbody = document.querySelector('#tablaAuditoria tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Cargando auditoría...</td></tr>';
+
+  const desde = $('auditDesde')?.value || '';
+  const hasta = $('auditHasta')?.value || '';
+  const actor = $('auditActor')?.value || '';
+
+  const qs = new URLSearchParams();
+  if (desde) qs.set('desde', desde);
+  if (hasta) qs.set('hasta', hasta);
+  if (actor) qs.set('actor', actor);
+
+  let registros = [];
+  const res = await api(`/audit${qs.toString() ? '?' + qs.toString() : ''}`);
+
+  if (res.ok && Array.isArray(res.data?.items)) {
+    registros = res.data.items;
+  } else if (res.ok && Array.isArray(res.data?.audit)) {
+    registros = res.data.audit;
+  } else if (res.ok && Array.isArray(res.data)) {
+    registros = res.data;
+  }
+
+  if (!registros.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Sin registros de auditoría para mostrar.</td></tr>';
+    cargarActoresAuditoria([]);
+    return;
+  }
+
+  cargarActoresAuditoria(registros);
+
+  tbody.innerHTML = registros.map(r => `
+    <tr>
+      <td>${escapeHtml(r.fecha || r.created_at || r.timestamp || '')}</td>
+      <td>${escapeHtml(r.actor || r.usuario || r.email || '')}</td>
+      <td>${escapeHtml(r.action || r.accion || '')}</td>
+      <td>${escapeHtml(r.detail || r.detalle || '')}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-primary" disabled>Ver</button></td>
+    </tr>
+  `).join('');
+}
+
+function cargarActoresAuditoria(registros) {
+  const sel = $('auditActor');
+  if (!sel) return;
+
+  const actual = sel.value;
+  const actores = [...new Set(registros.map(r => r.actor || r.usuario || r.email).filter(Boolean))];
+
+  sel.innerHTML = '<option value="">Todos</option>';
+  actores.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a;
+    sel.appendChild(opt);
+  });
+
+  if (actual && actores.includes(actual)) sel.value = actual;
+}
+
+function limpiarAuditoriaAdmin() {
+  if (!esAdministrador()) return;
+
+  if ($('auditDesde')) $('auditDesde').value = '';
+  if ($('auditHasta')) $('auditHasta').value = '';
+  if ($('auditActor')) $('auditActor').value = '';
+
+  const tbody = document.querySelector('#tablaAuditoria tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-muted">Filtros limpiados.</td></tr>';
+}
+
+async function cargarConflictosAdmin() {
+  if (!esAdministrador()) return;
+
+  const tbody = document.querySelector('#tablaConflictos tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Cargando conflictos...</td></tr>';
+
+  let conflictos = [];
+  const res = await api('/conflictos');
+
+  if (res.ok && Array.isArray(res.data?.items)) {
+    conflictos = res.data.items;
+  } else if (res.ok && Array.isArray(res.data?.conflictos)) {
+    conflictos = res.data.conflictos;
+  } else if (res.ok && Array.isArray(res.data)) {
+    conflictos = res.data;
+  }
+
+  if (!conflictos.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Sin conflictos registrados.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = conflictos.map(c => `
+    <tr>
+      <td>${escapeHtml(c.fecha || c.created_at || c.timestamp || '')}</td>
+      <td>${escapeHtml(c.codigo || c.entity_id || c.id || '')}</td>
+      <td>${escapeHtml(c.motivo || c.reason || c.tipo || '')}</td>
+      <td>${escapeHtml(c.fecha_servidor || c.server_date || '')}</td>
+      <td>${escapeHtml(c.estado || c.estado_local_servidor || '')}</td>
+      <td>${escapeHtml(c.resolucion || c.resolution || '')}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-primary" disabled>Resolver</button></td>
+    </tr>
+  `).join('');
+}
+
+function limpiarConflictosAdmin() {
+  if (!esAdministrador()) return;
+
+  const tbody = document.querySelector('#tablaConflictos tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Vista de conflictos limpiada.</td></tr>';
+}
 
 // ================= FECHA =================
 function activarEventosDS() {
