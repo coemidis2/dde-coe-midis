@@ -10,8 +10,7 @@ import {
 import {
   requireSession,
   verifyCsrf,
-  sha256,
-  newId
+  sha256
 } from '../_lib/auth.js';
 
 import { writeAudit } from '../_lib/audit.js';
@@ -53,13 +52,13 @@ function normalizeRoleInput(role, programa) {
   }
 
   return {
-    role: rawRole === 'Evaluador' ? 'Revisor' : rawRole,
-    programa: ''
+    role: rawRole,
+    programa: rawPrograma
   };
 }
 
 function isValidRole(role) {
-  return ['Administrador', 'Revisor', 'Registrador', 'Consulta'].includes(role);
+  return ['Administrador', 'Registrador', 'Consulta'].includes(role);
 }
 
 function generateTemporaryPassword(length = 10) {
@@ -151,14 +150,12 @@ export async function onRequestPost(context) {
       return badRequest('email_already_exists');
     }
 
-    const temporaryPassword = generateTemporaryPassword();
+    const temporaryPassword = String(body.password || '').trim() || generateTemporaryPassword();
     const passwordHash = await sha256(temporaryPassword);
     const now = new Date().toISOString();
-    const id = newId();
 
-    await context.env.DB.prepare(`
+    const insertResult = await context.env.DB.prepare(`
       INSERT INTO users (
-        id,
         name,
         email,
         role,
@@ -169,9 +166,8 @@ export async function onRequestPost(context) {
         created_at,
         updated_at,
         last_login_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      id,
       name,
       email,
       role,
@@ -184,6 +180,8 @@ export async function onRequestPost(context) {
       null
     ).run();
 
+    const id = insertResult?.meta?.last_row_id || email;
+
     await writeAudit(context.env, {
       actor: auth.session.email,
       action: 'create_user',
@@ -195,7 +193,8 @@ export async function onRequestPost(context) {
     return json({
       ok: true,
       id,
-      temporaryPassword
+      temporaryPassword,
+      user: { id, name, email, role, programa, active: true }
     });
   } catch (error) {
     return serverError('user_create_failed', String(error?.message || error));

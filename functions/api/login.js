@@ -77,7 +77,7 @@ export async function onRequestPost(context) {
 
     const sessionUser = {
       email: user.email,
-      role: user.role === 'Evaluador' ? 'Revisor' : user.role,
+      role: user.role,
       name: user.name || '',
       programa: user.programa || ''
     };
