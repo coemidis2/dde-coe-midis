@@ -1,4 +1,4 @@
-// ================= VERSION 27 24/04/2026 - 14:15 HRS · FIX ROLES SIN EVALUADOR =================
+// ================= VERSION 28 28/04/2026 - 15:08 HRS · FIX ROLES SIN EVALUADOR =================
 const API_BASE = window.location.origin + '/api';
 const LS_USERS = 'dee_matriz_usuarios_v17';
 
