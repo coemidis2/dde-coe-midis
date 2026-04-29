@@ -1,4 +1,4 @@
-// ================= VERSION 33 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 34 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -1902,6 +1902,372 @@ function renderTablaAcciones() {
 }
 
 window.abrirRDS = abrirRDS;
+
+
+
+// ================= AJUSTE FLUJO RDS / PREAPROBACIÓN / APROBACIÓN =================
+let modoRegistroAcciones = 'registro'; // rds | revision | registro
+let accionEditandoId = null;
+
+function fechaHoraLocalISO() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function initRegistroAcciones() {
+  cargarSelectAccionDS();
+  configurarProgramasAccion();
+  cargarCatalogosAccion();
+  actualizarFechaRegistroAccion();
+  cargarRDSDesdeDSSeleccionado();
+  aplicarRestriccionesAccion();
+  renderTablaAcciones();
+  aplicarVistaRegistroAcciones();
+
+  if (accionesInicializadas) return;
+  accionesInicializadas = true;
+
+  $('accionDs')?.addEventListener('change', () => {
+    cargarRDSDesdeDSSeleccionado();
+    aplicarRestriccionesAccion();
+    renderTablaAcciones();
+    aplicarVistaRegistroAcciones();
+  });
+  $('btnActivarRDS')?.addEventListener('click', activarRDSSeleccionado);
+  $('btnGuardarAccion')?.addEventListener('click', guardarAccionDS);
+  $('btnPreaprobarRDS')?.addEventListener('click', () => cambiarEstadoFlujoRDS('Preaprobado'));
+  $('btnAprobarRDS')?.addEventListener('click', () => cambiarEstadoFlujoRDS('Aprobado'));
+  $('accionPlazo')?.addEventListener('input', calcularFechaFinalAccion);
+  $('accionFechaInicio')?.addEventListener('change', calcularFechaFinalAccion);
+  $('accionMetaProgramada')?.addEventListener('input', calcularAvanceAccion);
+  $('accionMetaEjecutada')?.addEventListener('input', calcularAvanceAccion);
+}
+
+function abrirTabRegistroAcciones(id, modo = 'registro') {
+  if (!puedeUsarRDS() && !esConsulta()) {
+    alert('No tiene permisos para ingresar al Registro de Acciones.');
+    return;
+  }
+  modoRegistroAcciones = modo;
+  initRegistroAcciones();
+  const tabBtn = document.querySelector('[data-bs-target="#tabAcciones"]');
+  if (tabBtn && window.bootstrap?.Tab) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+  else if (tabBtn) tabBtn.click();
+  setTimeout(() => {
+    cargarSelectAccionDS();
+    if ($('accionDs')) $('accionDs').value = id || $('accionDs').value || '';
+    cargarRDSDesdeDSSeleccionado();
+    aplicarRestriccionesAccion();
+    renderTablaAcciones();
+    aplicarVistaRegistroAcciones();
+  }, 0);
+}
+
+function abrirRDS(id) {
+  if (!puedeUsarRDS()) {
+    alert('Solo Administrador o Registrador pueden usar RDS.');
+    return;
+  }
+  abrirTabRegistroAcciones(id, 'rds');
+}
+
+function abrirPreAprobacion(id) {
+  if (!esRegistrador() && !esAdministrador()) {
+    alert('Solo Administrador o Registrador pueden usar este flujo.');
+    return;
+  }
+  abrirTabRegistroAcciones(id, 'revision');
+}
+
+function aplicarVistaRegistroAcciones() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  const esModoRDS = modoRegistroAcciones === 'rds';
+  const esModoRevision = modoRegistroAcciones === 'revision';
+  const puedeRegistrar = (esAdministrador() || esRegistrador()) && Boolean(d?.rdsActivo) && !esModoRDS && !esModoRevision;
+
+  const boxRegistro = $('accionRegistroBox');
+  if (boxRegistro) boxRegistro.style.display = puedeRegistrar ? '' : 'none';
+
+  const tabla = $('tablaAcciones')?.closest('.table-responsive');
+  const tituloTabla = tabla?.previousElementSibling;
+  const botones = $('rdsFlujoBotones');
+
+  const mostrarRevision = esModoRevision || (!esModoRDS && Boolean(d?.rdsActivo));
+  if (tabla) tabla.style.display = mostrarRevision ? '' : 'none';
+  if (tituloTabla) tituloTabla.style.display = mostrarRevision ? '' : 'none';
+  if (botones) botones.style.display = mostrarRevision ? '' : 'none';
+
+  const btnPre = $('btnPreaprobarRDS');
+  const btnApr = $('btnAprobarRDS');
+  if (btnPre) btnPre.style.display = esRegistrador() ? '' : 'none';
+  if (btnApr) btnApr.style.display = esAdministrador() ? '' : 'none';
+
+  if ($('btnActivarRDS')) $('btnActivarRDS').style.display = esModoRDS || esAdministrador() ? '' : 'none';
+}
+
+function cargarRDSDesdeDSSeleccionado() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  if ($('rdsNumeroReunion')) $('rdsNumeroReunion').value = d?.numeroReunion || '';
+  if ($('rdsFechaReunion')) $('rdsFechaReunion').value = d?.fechaReunion || '';
+  if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
+  if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
+  if ($('accionResumenDS')) {
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}</div>` : '';
+  }
+}
+
+function activarRDSSeleccionado() {
+  if (!esAdministrador()) {
+    alert('Solo el Administrador puede activar RDS.');
+    return;
+  }
+  const id = $('accionDs')?.value || '';
+  const numeroReunion = $('rdsNumeroReunion')?.value || '';
+  const fechaReunion = $('rdsFechaReunion')?.value || '';
+  if (!id) return alert('Seleccione un Decreto Supremo.');
+  if (!numeroReunion) return alert('Seleccione el número de reunión.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+
+  const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
+  const idx = lista.findIndex(d => String(d.id) === String(id));
+  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+
+  lista[idx] = {
+    ...lista[idx],
+    rdsActivo: true,
+    numeroReunion,
+    fechaReunion,
+    estadoRDS: 'Activo',
+    fechaRegistroRDS: fechaHoraLocalISO(),
+    usuarioActivaRDS: state.session?.email || '',
+    programasHabilitados: PROGRAMAS_RDS.slice()
+  };
+  guardarDecretosLocales(lista);
+  renderTablaDecretosBasica();
+  cargarSelectAccionDS();
+  if ($('accionDs')) $('accionDs').value = id;
+  cargarRDSDesdeDSSeleccionado();
+  aplicarRestriccionesAccion();
+  renderTablaAcciones();
+  aplicarVistaRegistroAcciones();
+  api('/decretos', 'POST', lista[idx]);
+  alert('Registro de Acciones activado correctamente.');
+}
+
+function aplicarRestriccionesAccion() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  const programaUsuario = programaSesionNormalizado();
+  const habilitadoPorRol = esAdministrador() || (esRegistrador() && d?.rdsActivo && d.programasHabilitados?.includes(programaUsuario));
+  const puedeRegistrar = habilitadoPorRol && !esConsulta() && Boolean(d?.rdsActivo) && modoRegistroAcciones === 'registro';
+  const controlesAccion = ['accionTipo','accionCodigo','accionUnidad','accionMetaProgramada','accionPlazo','accionFechaInicio','accionMetaEjecutada','accionDetalle','accionDescripcion','btnGuardarAccion'];
+  controlesAccion.forEach(id => { if ($(id)) $(id).disabled = !puedeRegistrar; });
+  if ($('btnActivarRDS')) $('btnActivarRDS').disabled = !esAdministrador();
+  if ($('rdsNumeroReunion')) $('rdsNumeroReunion').disabled = !esAdministrador();
+  if ($('rdsFechaReunion')) $('rdsFechaReunion').disabled = !esAdministrador();
+  if ($('accionDs')) $('accionDs').disabled = false;
+  if ($('rdsMensajeRol')) {
+    $('rdsMensajeRol').textContent = esAdministrador()
+      ? 'Administrador: puede activar RDS, revisar todos los programas y aprobar.'
+      : esRegistrador()
+        ? (d?.rdsActivo ? `Registrador habilitado para ${programaUsuario}.` : `Registrador ${programaUsuario || ''}: el RDS aún no está activo.`)
+        : 'Consulta: solo lectura.';
+  }
+  configurarProgramasAccion();
+}
+
+function renderTablaDecretosBasica() {
+  const tbody = document.querySelector('#tablaDS tbody');
+  if (!tbody) return;
+
+  const decretos = (state.decretos.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
+
+  if (!decretos.length) {
+    tbody.innerHTML = '<tr><td colspan="17" class="text-muted">No hay Decretos Supremos registrados.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = decretos.map(d => {
+    const territorio = Array.isArray(d.territorio) ? d.territorio : [];
+    const deps = new Set(territorio.map(t => t.departamento).filter(Boolean));
+    const provs = new Set(territorio.map(t => `${t.departamento}|${t.provincia}`).filter(Boolean));
+    const dists = new Set(territorio.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(Boolean));
+    const textoRevision = esAdministrador() ? 'Aprobar' : 'PreAprobar';
+    const puedeRevision = esAdministrador() || esRegistrador();
+
+    return `
+      <tr>
+        <td>${escapeHtml(formatearNumeroDS(d))}</td>
+        <td>${escapeHtml(d.anio)}</td>
+        <td>${escapeHtml(d.peligro)}</td>
+        <td>${escapeHtml(d.tipo_peligro)}</td>
+        <td>${escapeHtml(d.fecha_inicio)}</td>
+        <td>${escapeHtml(d.fecha_fin)}</td>
+        <td>${escapeHtml(d.vigencia)}</td>
+        <td>${escapeHtml(d.semaforo)}</td>
+        <td>${deps.size}</td>
+        <td>${provs.size}</td>
+        <td>${dists.size}</td>
+        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${escapeHtml(d.cadena || '')}</td>
+        <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
+        <td><button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" ${puedeUsarRDS() ? '' : 'disabled'} onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button></td>
+        <td><button type="button" class="btn btn-sm ${esAdministrador() ? 'btn-success' : 'btn-warning'}" ${puedeRevision ? '' : 'disabled'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">${textoRevision}</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function guardarAccionDS() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  if (!d || !d.rdsActivo) return alert('Seleccione un DS con Registro de Acciones activado.');
+  const programa = normalizarProgramaNombre($('accionPrograma')?.value || '');
+  if (!programa) return alert('Seleccione el Programa Nacional.');
+  if (esRegistrador() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
+  if (!$('accionTipo')?.value || !$('accionDetalle')?.value.trim()) return alert('Complete tipo de acción y acción específica.');
+  calcularFechaFinalAccion();
+  calcularAvanceAccion();
+  const lista = cargarAccionesLocales();
+  const id = accionEditandoId || crypto.randomUUID();
+  const accion = {
+    id,
+    ds_id: d.id,
+    ds: formatearNumeroDS(d),
+    programa,
+    tipo: $('accionTipo')?.value || '',
+    codigo: $('accionCodigo')?.value || '',
+    unidad: $('accionUnidad')?.value || '',
+    meta_programada: Number($('accionMetaProgramada')?.value || 0),
+    plazo: Number($('accionPlazo')?.value || 0),
+    fecha_inicio: $('accionFechaInicio')?.value || '',
+    fecha_final: $('accionFechaFinal')?.value || '',
+    meta_ejecutada: Number($('accionMetaEjecutada')?.value || 0),
+    avance: $('accionAvance')?.value || '0%',
+    detalle: $('accionDetalle')?.value || '',
+    descripcion: $('accionDescripcion')?.value || '',
+    estado: accionEditandoId ? (lista.find(a => a.id === accionEditandoId)?.estado || 'Registrado') : 'Registrado',
+    usuario_registro: accionEditandoId ? (lista.find(a => a.id === accionEditandoId)?.usuario_registro || state.session?.email || '') : (state.session?.email || ''),
+    fecha_registro: accionEditandoId ? (lista.find(a => a.id === accionEditandoId)?.fecha_registro || new Date().toISOString()) : new Date().toISOString(),
+    usuario_actualiza: accionEditandoId ? (state.session?.email || '') : '',
+    fecha_actualiza: accionEditandoId ? new Date().toISOString() : ''
+  };
+  const depurada = lista.filter(a => String(a.id) !== String(id));
+  depurada.push(accion);
+  guardarAccionesLocales(depurada);
+  api('/acciones', 'POST', accion);
+  renderTablaAcciones();
+  limpiarFormularioAccion();
+  accionEditandoId = null;
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acción';
+  alert('Acción guardada correctamente.');
+}
+
+function accionesDelDSSeleccionado() {
+  const dsId = $('accionDs')?.value || '';
+  return cargarAccionesLocales().filter(a => !dsId || String(a.ds_id) === String(dsId));
+}
+
+function puedeEditarAccion(a) {
+  if (esAdministrador()) return true;
+  if (!esRegistrador()) return false;
+  return normalizarProgramaNombre(a.programa) === programaSesionNormalizado();
+}
+
+function renderTablaAcciones() {
+  const tbody = document.querySelector('#tablaAcciones tbody');
+  if (!tbody) return;
+  const base = accionesDelDSSeleccionado();
+  const visibles = esAdministrador() ? base : base;
+  if (!visibles.length) {
+    tbody.innerHTML = '<tr><td colspan="15" class="text-muted">No hay acciones registradas para el Decreto Supremo seleccionado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = visibles.map(a => `
+    <tr>
+      <td>${escapeHtml(a.programa)}</td>
+      <td>${escapeHtml(a.tipo)}</td>
+      <td>${escapeHtml(a.codigo)}</td>
+      <td>${escapeHtml(a.detalle)}</td>
+      <td>${escapeHtml(a.unidad)}</td>
+      <td>${escapeHtml(a.meta_programada)}</td>
+      <td>${escapeHtml(a.fecha_inicio)}</td>
+      <td>${escapeHtml(a.fecha_final)}</td>
+      <td>${escapeHtml(a.meta_ejecutada)}</td>
+      <td>${escapeHtml(a.avance)}</td>
+      <td>${escapeHtml(a.descripcion)}</td>
+      <td>${escapeHtml(a.estado)}</td>
+      <td>${escapeHtml(a.usuario_registro)}</td>
+      <td>${escapeHtml(a.fecha_registro)}</td>
+      <td>${puedeEditarAccion(a) ? `<button type="button" class="btn btn-sm btn-outline-primary" onclick="editarAccionDS('${escapeHtmlAttr(a.id)}')">Editar</button>` : '-'}</td>
+    </tr>
+  `).join('');
+}
+
+function editarAccionDS(id) {
+  const a = cargarAccionesLocales().find(x => String(x.id) === String(id));
+  if (!a) return alert('No se encontró la acción.');
+  if (!puedeEditarAccion(a)) return alert('No puede editar acciones de otro programa.');
+  modoRegistroAcciones = 'registro';
+  aplicarVistaRegistroAcciones();
+  if ($('accionPrograma')) $('accionPrograma').value = a.programa || '';
+  if ($('accionTipo')) $('accionTipo').value = a.tipo || '';
+  if ($('accionCodigo')) $('accionCodigo').value = a.codigo || '';
+  if ($('accionUnidad')) $('accionUnidad').value = a.unidad || '';
+  if ($('accionMetaProgramada')) $('accionMetaProgramada').value = a.meta_programada || 0;
+  if ($('accionPlazo')) $('accionPlazo').value = a.plazo || 0;
+  if ($('accionFechaInicio')) $('accionFechaInicio').value = a.fecha_inicio || '';
+  if ($('accionFechaFinal')) $('accionFechaFinal').value = a.fecha_final || '';
+  if ($('accionMetaEjecutada')) $('accionMetaEjecutada').value = a.meta_ejecutada || 0;
+  if ($('accionAvance')) $('accionAvance').value = a.avance || '0%';
+  if ($('accionDetalle')) $('accionDetalle').value = a.detalle || '';
+  if ($('accionDescripcion')) $('accionDescripcion').value = a.descripcion || '';
+  accionEditandoId = id;
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Actualizar acción';
+  aplicarRestriccionesAccion();
+}
+
+function cambiarEstadoFlujoRDS(nuevoEstado) {
+  const dsId = $('accionDs')?.value || '';
+  if (!dsId) return alert('Seleccione un Decreto Supremo.');
+  if (nuevoEstado === 'Preaprobado' && !esRegistrador()) return alert('Solo el Registrador puede PreAprobar.');
+  if (nuevoEstado === 'Aprobado' && !esAdministrador()) return alert('Solo el Administrador puede Aprobar.');
+  const acciones = cargarAccionesLocales();
+  let tocadas = 0;
+  const programaUsuario = programaSesionNormalizado();
+  const actualizadas = acciones.map(a => {
+    if (String(a.ds_id) !== String(dsId)) return a;
+    if (nuevoEstado === 'Preaprobado' && normalizarProgramaNombre(a.programa) !== programaUsuario) return a;
+    tocadas++;
+    return {
+      ...a,
+      estado: nuevoEstado,
+      usuario_flujo: state.session?.email || '',
+      fecha_flujo: new Date().toISOString()
+    };
+  });
+  if (!tocadas) return alert('No hay acciones registradas para cambiar de estado.');
+  guardarAccionesLocales(actualizadas);
+
+  const decretos = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(d => {
+    if (String(d.id) !== String(dsId)) return d;
+    return {
+      ...d,
+      estadoRDS: nuevoEstado,
+      usuarioEstadoRDS: state.session?.email || '',
+      fechaEstadoRDS: fechaHoraLocalISO()
+    };
+  });
+  guardarDecretosLocales(decretos);
+  cargarRDSDesdeDSSeleccionado();
+  renderTablaAcciones();
+  renderTablaDecretosBasica();
+  alert(`Registro ${nuevoEstado.toLowerCase()} correctamente.`);
+}
+
+window.abrirRDS = abrirRDS;
+window.abrirPreAprobacion = abrirPreAprobacion;
+window.editarAccionDS = editarAccionDS;
 
 // ================= UTILIDADES HTML =================
 function escapeHtml(value) {
