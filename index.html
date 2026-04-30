@@ -45,7 +45,7 @@
       </div>
 
       <div class="login-version">
-        VERSION 38 · 30/04/2026 16:30 hrs · MIDIS © 2026
+        VERSION 39 · 30/04/2026 17:20 hrs · MIDIS © 2026
       </div>
     </div>
   </div>
@@ -433,14 +433,14 @@
             <h4 class="text-primary mb-3">PreAprobar Acciones</h4>
             <div class="border rounded bg-light p-3 mb-3"><div class="row g-3 align-items-end">
               <div class="col-md-3"><label class="form-label">Seleccione DS</label><input id="preDs" class="form-control" readonly></div>
-              <div class="col-md-2"><label class="form-label">Número de reunión</label><select id="preNumeroReunion" class="form-select"><option value="">Seleccione...</option><option>Primera reunión</option><option>Segunda reunión</option><option>Tercera reunión</option><option>Cuarta reunión</option><option>Quinta reunión</option><option>Sexta reunión</option><option>Séptima reunión</option><option>Octava reunión</option><option>Novena reunión</option><option>Décima reunión</option></select></div>
-              <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="preFechaReunion" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Número de reunión</label><input id="preNumeroReunion" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="preFechaReunion" type="date" class="form-control" readonly></div>
               <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="preEstadoRDS" class="form-control" readonly></div>
               <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="preFechaRegistroRDS" class="form-control" readonly></div>
             </div></div>
             <h5 class="text-primary">Acciones registradas por Programas Nacionales</h5>
             <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
-            <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
+            <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnSalirPreAprobar" type="button" class="btn btn-outline-secondary">Salir</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
           </div></div>
         </div>
 
@@ -723,6 +723,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app.js?v=20260430-rds-programas-v37"></script>
+  <script src="app.js?v=20260430-rds-reuniones-v38"></script>
 </body>
 </html>

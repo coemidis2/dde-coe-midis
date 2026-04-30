@@ -1,4 +1,4 @@
-// ================= VERSION 38 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 39 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -3871,6 +3871,490 @@ function guardarAccionPrograma() {
   renderTablaAccionesProgramas();
   renderTablaDecretosBasica();
   alert('Acción registrada correctamente.');
+}
+
+window.abrirRDS = abrirRDS;
+window.abrirRegistrarAcciones = abrirRegistrarAcciones;
+window.abrirPreAprobacion = abrirPreAprobacion;
+window.abrirModalEditarAccion = abrirModalEditarAccion;
+
+// ================= AJUSTE QUIRÚRGICO RDS POR REUNIÓN v38 =================
+const REUNIONES_RDS_V38 = [
+  'Primera reunión','Segunda reunión','Tercera reunión','Cuarta reunión','Quinta reunión',
+  'Sexta reunión','Séptima reunión','Octava reunión','Novena reunión','Décima reunión'
+];
+
+function reunionKeyV38(numeroReunion, fechaReunion) {
+  return `${normalizarTexto(numeroReunion)}|${String(fechaReunion || '').trim()}`;
+}
+
+function reunionActualV38(d) {
+  if (!d) return { numeroReunion: '', fechaReunion: '', key: '' };
+  const numeroReunion = d.numeroReunion || '';
+  const fechaReunion = d.fechaReunion || '';
+  return { numeroReunion, fechaReunion, key: reunionKeyV38(numeroReunion, fechaReunion) };
+}
+
+function obtenerReunionesDSV38(d) {
+  if (!d) return [];
+  const base = Array.isArray(d.rdsReuniones) ? d.rdsReuniones.slice() : [];
+  if (d.numeroReunion && d.fechaReunion && !base.some(r => reunionKeyV38(r.numeroReunion, r.fechaReunion) === reunionKeyV38(d.numeroReunion, d.fechaReunion))) {
+    base.push({
+      numeroReunion: d.numeroReunion,
+      fechaReunion: d.fechaReunion,
+      estadoRDS: d.estadoRDS || (d.rdsActivo ? 'Activo' : 'No activado'),
+      fechaRegistroRDS: d.fechaRegistroRDS || '',
+      activadoPor: d.activadoPor || d.usuarioActivaRDS || ''
+    });
+  }
+  return base.filter(r => r.numeroReunion && r.fechaReunion);
+}
+
+function migrarReunionesEnDecretoV38(d) {
+  const reuniones = obtenerReunionesDSV38(d);
+  return { ...d, rdsReuniones: reuniones };
+}
+
+function accionCoincideReunionV38(a, d) {
+  if (!a || !d) return false;
+  const actual = reunionActualV38(d);
+  if (!actual.numeroReunion || !actual.fechaReunion) return String(a.dsId || a.ds_id) === String(d.id);
+  const aNumero = a.numeroReunion || '';
+  const aFecha = a.fechaReunion || '';
+  return String(a.dsId || a.ds_id) === String(d.id) && reunionKeyV38(aNumero, aFecha) === actual.key;
+}
+
+function accionesPorDSReunionActualV38(dsId) {
+  const d = buscarDecretoPorId(dsId);
+  return cargarAccionesLocales().filter(a => accionCoincideReunionV38(a, d));
+}
+
+function accionesPorProgramaReunionActualV38(dsId, programa) {
+  const p = normalizarProgramaNombre(programa);
+  return accionesPorDSReunionActualV38(dsId).filter(a => normalizarProgramaNombre(a.programaNacional || a.programa) === p);
+}
+
+function dsTieneAccionesRegistradas(dsId) {
+  return accionesPorDSReunionActualV38(dsId).length > 0;
+}
+
+function dsTieneAccionesDelPrograma(dsId, programa) {
+  return accionesPorProgramaReunionActualV38(dsId, programa).length > 0;
+}
+
+function dsTieneAccionesDeTodosLosProgramas(dsId) {
+  const acciones = accionesPorDSReunionActualV38(dsId);
+  const programasConAccion = new Set(acciones.map(a => normalizarProgramaNombre(a.programaNacional || a.programa)).filter(Boolean));
+  return obtenerProgramasObligatoriosRDS().every(p => programasConAccion.has(p));
+}
+
+function cierreKeyProgramaV38(d, programa) {
+  const actual = reunionActualV38(d);
+  return `${normalizarProgramaNombre(programa)}__${actual.key}`;
+}
+
+function dsProgramaCerroRegistro(d, programa) {
+  if (!d) return false;
+  const key = cierreKeyProgramaV38(d, programa);
+  return Boolean((d.programasRegistroCerrado || {})[key]) || dsTieneAccionesDelPrograma(d.id, programa);
+}
+
+function setDsProgramaCerrado(dsId, programa) {
+  const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
+  const idx = lista.findIndex(d => String(d.id) === String(dsId));
+  if (idx < 0) return;
+  const key = cierreKeyProgramaV38(lista[idx], programa);
+  lista[idx] = {
+    ...lista[idx],
+    programasRegistroCerrado: { ...(lista[idx].programasRegistroCerrado || {}), [key]: true },
+    estadoRegistroProgramas: 'Acciones Registradas',
+    usuarioCierrePrograma: state.session?.email || '',
+    fechaCierrePrograma: fechaHoraLocalISO()
+  };
+  guardarDecretosLocales(lista);
+  api('/decretos', 'POST', lista[idx]);
+}
+
+function cargarOpcionesReunionRDSV38(d, limpiar = true) {
+  const sel = $('rdsNumeroReunion');
+  if (!sel) return;
+  const usadas = new Set(obtenerReunionesDSV38(d).map(r => normalizarTexto(r.numeroReunion)));
+  sel.innerHTML = '<option value="">Seleccione...</option>' + REUNIONES_RDS_V38.map(r => {
+    const disabled = usadas.has(normalizarTexto(r)) ? ' disabled' : '';
+    return `<option value="${escapeHtmlAttr(r)}"${disabled}>${escapeHtml(r)}${disabled ? ' — usada' : ''}</option>`;
+  }).join('');
+  if (limpiar) sel.value = '';
+}
+
+function abrirRDS(id) {
+  if (!puedeActivarRDS()) {
+    alert('Solo Administrador o Registrador pueden activar RDS.');
+    return;
+  }
+  const d = buscarDecretoPorId(id);
+  modoRegistroAcciones = 'rds';
+  abrirTabBootstrap('#tabAcciones');
+  initRegistroAcciones();
+  setTimeout(() => {
+    cargarSelectAccionDS();
+    if ($('accionDs')) $('accionDs').value = id || '';
+    cargarOpcionesReunionRDSV38(d, true);
+    if ($('rdsFechaReunion')) $('rdsFechaReunion').value = '';
+    if ($('rdsEstado')) $('rdsEstado').value = 'Nuevo RDS por activar';
+    if ($('accionFechaRegistro')) $('accionFechaRegistro').value = fechaHoraLocalISO();
+    aplicarRestriccionesAccion();
+    aplicarVistaRegistroAcciones();
+  }, 0);
+}
+
+function cargarRDSDesdeDSSeleccionado() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  if (modoRegistroAcciones === 'rds') {
+    cargarOpcionesReunionRDSV38(d, false);
+  }
+  if ($('rdsNumeroReunion') && modoRegistroAcciones !== 'rds') $('rdsNumeroReunion').value = d?.numeroReunion || '';
+  if ($('rdsFechaReunion') && modoRegistroAcciones !== 'rds') $('rdsFechaReunion').value = d?.fechaReunion || '';
+  if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
+  if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
+  if ($('accionResumenDS')) {
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}${d.numeroReunion ? ' · ' + escapeHtml(d.numeroReunion) + ' · ' + escapeHtml(d.fechaReunion || '') : ''}</div>` : '';
+  }
+}
+
+function activarRDSSeleccionado() {
+  if (!puedeActivarRDS()) return alert('Solo el Administrador o Registrador puede activar RDS.');
+  const id = $('accionDs')?.value || '';
+  const numeroReunion = $('rdsNumeroReunion')?.value || '';
+  const fechaReunion = $('rdsFechaReunion')?.value || '';
+  if (!id) return alert('Seleccione un Decreto Supremo.');
+  if (!numeroReunion) return alert('Seleccione el número de reunión.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+
+  const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
+  const idx = lista.findIndex(d => String(d.id) === String(id));
+  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+
+  const usadas = obtenerReunionesDSV38(lista[idx]);
+  if (usadas.some(r => normalizarTexto(r.numeroReunion) === normalizarTexto(numeroReunion))) {
+    return alert('Ese número de reunión ya fue usado para este Decreto Supremo. Seleccione otra reunión.');
+  }
+
+  const fechaRegistroRDS = fechaHoraLocalISO();
+  const nuevaReunion = { numeroReunion, fechaReunion, estadoRDS: 'Activo', fechaRegistroRDS, activadoPor: state.session?.email || '' };
+  lista[idx] = {
+    ...lista[idx],
+    rdsActivo: true,
+    numeroReunion,
+    fechaReunion,
+    estadoRDS: 'Activo',
+    fechaRegistroRDS,
+    activadoPor: state.session?.email || '',
+    usuarioActivaRDS: state.session?.email || '',
+    programasHabilitados: PROGRAMAS_RDS.slice(),
+    rdsReuniones: [...usadas, nuevaReunion]
+  };
+  guardarDecretosLocales(lista);
+  renderTablaDecretosBasica();
+  cargarSelectAccionDS();
+  if ($('accionDs')) $('accionDs').value = id;
+  cargarRDSDesdeDSSeleccionado();
+  aplicarRestriccionesAccion();
+  aplicarVistaRegistroAcciones();
+  api('/decretos', 'POST', lista[idx]);
+  alert('RDS activado correctamente para la reunión seleccionada.');
+}
+
+function accionesDelDSSeleccionado() {
+  const dsId = $('accionDs')?.value || dsPreAprobarSeleccionadoId || '';
+  return accionesPorDSReunionActualV38(dsId);
+}
+
+function accionesPorDS(dsId) {
+  return accionesPorDSReunionActualV38(dsId);
+}
+
+function accionesPorDSYPrograma(dsId, programa) {
+  return accionesPorProgramaReunionActualV38(dsId, programa);
+}
+
+function cargarVistaAccionesPrograma(id) {
+  const d = buscarDecretoPorId(id);
+  const programa = programaSesionNormalizado();
+  if ($('progDs')) $('progDs').value = d ? formatearNumeroDS(d) : '';
+  if ($('progNumeroReunion')) $('progNumeroReunion').value = d?.numeroReunion || '';
+  if ($('progFechaReunion')) $('progFechaReunion').value = d?.fechaReunion || '';
+  if ($('progEstadoRDS')) $('progEstadoRDS').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
+  if ($('progFechaRegistroRDS')) $('progFechaRegistroRDS').value = d?.fechaRegistroRDS || '';
+  if ($('progProgramaNacional')) $('progProgramaNacional').value = programa;
+  actualizarFechaRegistroPrograma();
+  limpiarFormularioAccionPrograma(false);
+  renderTablaAccionesProgramas();
+}
+
+function guardarAccionPrograma() {
+  const d = buscarDecretoPorId(dsProgramaSeleccionadoId);
+  if (!esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede guardar acciones en esta vista.');
+  if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+  if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+
+  const programa = programaSesionNormalizado();
+  const tipoAccion = $('progTipoAccion')?.value || '';
+  const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
+  const detalle = String($('progDetalle')?.value || '').trim();
+
+  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
+  if (!codigoAccion) return alert('Ingrese el Código de acción.');
+  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
+  if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
+
+  calcularFechaFinalPrograma();
+  calcularAvancePrograma();
+
+  const lista = cargarAccionesLocales();
+  const keyActual = reunionKeyV38(d.numeroReunion, d.fechaReunion);
+  const duplicada = lista.some(a =>
+    String(a.dsId || a.ds_id) === String(d.id) &&
+    reunionKeyV38(a.numeroReunion, a.fechaReunion) === keyActual &&
+    normalizarProgramaNombre(a.programaNacional || a.programa) === programa &&
+    normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion)
+  );
+  if (duplicada) return alert('Ya existe una acción con el mismo DS, Número de reunión, Fecha de reunión, Programa Nacional y Código de acción.');
+
+  const fechaRegistro = fechaHoraLocalISO();
+  const accion = {
+    id: crypto.randomUUID(),
+    dsId: d.id,
+    ds_id: d.id,
+    numeroDS: formatearNumeroDS(d),
+    ds: formatearNumeroDS(d),
+    numeroReunion: d.numeroReunion || '',
+    fechaReunion: d.fechaReunion || '',
+    rdsKey: keyActual,
+    estadoRDS: d.estadoRDS || 'Activo',
+    programaNacional: programa,
+    programa,
+    tipoAccion,
+    tipo: tipoAccion,
+    codigoAccion,
+    codigo: codigoAccion,
+    detalle,
+    unidadMedida: $('progUnidadMedida')?.value || '',
+    unidad: $('progUnidadMedida')?.value || '',
+    metaProgramada: Number($('progMetaProgramada')?.value || 0),
+    meta_programada: Number($('progMetaProgramada')?.value || 0),
+    plazoDias: Number($('progPlazoDias')?.value || 0),
+    plazo: Number($('progPlazoDias')?.value || 0),
+    fechaInicio: $('progFechaInicio')?.value || '',
+    fecha_inicio: $('progFechaInicio')?.value || '',
+    fechaFinal: $('progFechaFinal')?.value || '',
+    fecha_final: $('progFechaFinal')?.value || '',
+    metaEjecutada: Number($('progMetaEjecutada')?.value || 0),
+    meta_ejecutada: Number($('progMetaEjecutada')?.value || 0),
+    avance: $('progAvance')?.value || '0%',
+    descripcionActividades: $('progDescripcionActividades')?.value || '',
+    descripcion: $('progDescripcionActividades')?.value || '',
+    fechaRegistro,
+    fecha_registro: fechaRegistro,
+    usuarioRegistro: state.session?.email || '',
+    usuario_registro: state.session?.email || '',
+    estado: 'Registrado'
+  };
+
+  lista.push(accion);
+  guardarAccionesLocales(lista);
+  api('/acciones', 'POST', accion);
+  limpiarFormularioAccionPrograma(true);
+  renderTablaAccionesProgramas();
+  renderTablaDecretosBasica();
+  alert('Acción registrada correctamente.');
+}
+
+function renderTablaAccionesProgramas() {
+  const tbody = document.querySelector('#tablaAccionesProgramas tbody');
+  if (!tbody) return;
+  const programa = programaSesionNormalizado();
+  const visibles = accionesPorProgramaReunionActualV38(dsProgramaSeleccionadoId, programa);
+  if (!visibles.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-muted">No hay acciones registradas para su programa en esta reunión.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = visibles.map(a => `
+    <tr>
+      <td>${escapeHtml(a.numeroDS || a.ds || '')}</td>
+      <td>${escapeHtml(a.programaNacional || a.programa || '')}</td>
+      <td>${escapeHtml(a.tipoAccion || a.tipo || '')}</td>
+      <td>${escapeHtml(a.codigoAccion || a.codigo || '')}</td>
+      <td>${escapeHtml(a.detalle || '')}</td>
+      <td>${escapeHtml(a.estado || 'Registrado')}</td>
+      <td>${escapeHtml(a.usuarioRegistro || a.usuario_registro || '')}</td>
+      <td>${escapeHtml(a.fechaRegistro || a.fecha_registro || '')}</td>
+      <td><span class="badge text-bg-success">Registrado</span></td>
+    </tr>`).join('');
+}
+
+function cargarVistaPreAprobar(id) {
+  const d = buscarDecretoPorId(id);
+  if ($('preDs')) $('preDs').value = d ? formatearNumeroDS(d) : '';
+  if ($('preNumeroReunion')) {
+    $('preNumeroReunion').value = d?.numeroReunion || '';
+    $('preNumeroReunion').readOnly = true;
+    $('preNumeroReunion').disabled = false;
+  }
+  if ($('preFechaReunion')) {
+    $('preFechaReunion').value = d?.fechaReunion || '';
+    $('preFechaReunion').readOnly = true;
+    $('preFechaReunion').disabled = false;
+  }
+  if ($('preEstadoRDS')) $('preEstadoRDS').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
+  if ($('preFechaRegistroRDS')) $('preFechaRegistroRDS').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
+  if ($('btnPreAprobarFinal')) $('btnPreAprobarFinal').style.display = puedePreaprobar() ? '' : 'none';
+  if ($('btnAprobarFinal')) $('btnAprobarFinal').style.display = puedeAprobar() ? '' : 'none';
+  if ($('btnSalirPreAprobar')) $('btnSalirPreAprobar').style.display = puedePreaprobar() ? '' : 'none';
+  renderTablaPreAprobarAcciones();
+}
+
+function renderTablaPreAprobarAcciones() {
+  const tbody = document.querySelector('#tablaPreAprobarAcciones tbody');
+  if (!tbody) return;
+  const acciones = accionesPorDSReunionActualV38(dsPreAprobarSeleccionadoId);
+  if (!acciones.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-muted">No hay acciones registradas para este Decreto Supremo, número de reunión y fecha de reunión.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = acciones.map(a => `
+    <tr>
+      <td>${escapeHtml(accionValor(a,'programaNacional','programa'))}</td>
+      <td>${escapeHtml(accionValor(a,'tipoAccion','tipo'))}</td>
+      <td>${escapeHtml(accionValor(a,'codigoAccion','codigo'))}</td>
+      <td>${escapeHtml(accionValor(a,'detalle'))}</td>
+      <td>${escapeHtml(accionValor(a,'metaProgramada','meta_programada'))}</td>
+      <td>${escapeHtml(accionValor(a,'metaEjecutada','meta_ejecutada'))}</td>
+      <td>${escapeHtml(accionValor(a,'avance'))}</td>
+      <td>${escapeHtml(accionValor(a,'usuarioRegistro','usuario_registro'))}</td>
+      <td>${escapeHtml(accionValor(a,'fechaRegistro','fecha_registro'))}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirModalEditarAccion('${escapeHtmlAttr(a.id)}')">Ver / Editar</button></td>
+    </tr>`).join('');
+}
+
+function guardarDatosDSPreAprobar(estadoFinal) {
+  const dsId = dsPreAprobarSeleccionadoId;
+  const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
+  const idx = lista.findIndex(d => String(d.id) === String(dsId));
+  if (idx < 0) return null;
+  const numeroReunion = lista[idx].numeroReunion || '';
+  const fechaReunion = lista[idx].fechaReunion || '';
+  const key = reunionKeyV38(numeroReunion, fechaReunion);
+  const extra = estadoFinal === 'Preaprobado'
+    ? { usuarioPreaprueba: state.session?.email || '', fechaPreaprueba: fechaHoraLocalISO() }
+    : { usuarioAprueba: state.session?.email || '', fechaAprueba: fechaHoraLocalISO() };
+  const reuniones = obtenerReunionesDSV38(lista[idx]).map(r => reunionKeyV38(r.numeroReunion, r.fechaReunion) === key ? { ...r, estadoRDS: estadoFinal, fechaEstadoRDS: fechaHoraLocalISO(), usuarioEstadoRDS: state.session?.email || '', ...extra } : r);
+  lista[idx] = { ...lista[idx], estadoRDS: estadoFinal, fechaEstadoRDS: fechaHoraLocalISO(), usuarioEstadoRDS: state.session?.email || '', rdsReuniones: reuniones, ...extra };
+  guardarDecretosLocales(lista);
+  api('/decretos', 'POST', lista[idx]);
+  return lista[idx];
+}
+
+function preaprobarAccionesDS() {
+  const dsId = dsPreAprobarSeleccionadoId;
+  if (!puedePreaprobar()) return alert('Solo el usuario Registrador puede PreAprobar.');
+  if (!dsId) return alert('Seleccione un Decreto Supremo.');
+  if (!dsTieneAccionesRegistradas(dsId)) return alert('No se puede PreAprobar: no existen acciones registradas para esta reunión.');
+  const acciones = cargarAccionesLocales().map(a => accionCoincideReunionV38(a, buscarDecretoPorId(dsId))
+    ? { ...a, estado: 'Preaprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
+    : a
+  );
+  guardarAccionesLocales(acciones);
+  guardarDatosDSPreAprobar('Preaprobado');
+  renderTablaPreAprobarAcciones();
+  renderTablaDecretosBasica();
+  cargarVistaPreAprobar(dsId);
+  alert('DS PreAprobado correctamente para la reunión seleccionada.');
+}
+
+function aprobarAccionesDS() {
+  const dsId = dsPreAprobarSeleccionadoId;
+  const d = buscarDecretoPorId(dsId);
+  if (!puedeAprobar()) return alert('Solo el Administrador puede Aprobar.');
+  if (!dsId) return alert('Seleccione un Decreto Supremo.');
+  if (normalizarTexto(d?.estadoRDS) !== 'PREAPROBADO') return alert('Solo se puede aprobar un DS en estado PreAprobado.');
+  const acciones = cargarAccionesLocales().map(a => accionCoincideReunionV38(a, d)
+    ? { ...a, estado: 'Aprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
+    : a
+  );
+  guardarAccionesLocales(acciones);
+  guardarDatosDSPreAprobar('Aprobado');
+  renderTablaPreAprobarAcciones();
+  renderTablaDecretosBasica();
+  cargarVistaPreAprobar(dsId);
+  alert('DS Aprobado correctamente para la reunión seleccionada.');
+}
+
+function salirPreAprobarAcciones() {
+  mostrarTabPreAprobar(false);
+  abrirTabBootstrap('#tabListado');
+}
+
+function initPreAprobarAcciones() {
+  cargarCatalogosEditarAccion();
+  $('btnPreAprobarFinal')?.removeEventListener?.('click', preaprobarAccionesDS);
+  $('btnAprobarFinal')?.removeEventListener?.('click', aprobarAccionesDS);
+  $('btnSalirPreAprobar')?.removeEventListener?.('click', salirPreAprobarAcciones);
+  $('btnGrabarModalAccion')?.removeEventListener?.('click', grabarModalAccion);
+  $('editPlazoDias')?.removeEventListener?.('input', calcularFechaFinalModal);
+  $('editFechaInicio')?.removeEventListener?.('change', calcularFechaFinalModal);
+  $('editMetaProgramada')?.removeEventListener?.('input', calcularAvanceModal);
+  $('editMetaEjecutada')?.removeEventListener?.('input', calcularAvanceModal);
+  $('btnPreAprobarFinal')?.addEventListener('click', preaprobarAccionesDS);
+  $('btnAprobarFinal')?.addEventListener('click', aprobarAccionesDS);
+  $('btnSalirPreAprobar')?.addEventListener('click', salirPreAprobarAcciones);
+  $('btnGrabarModalAccion')?.addEventListener('click', grabarModalAccion);
+  $('editPlazoDias')?.addEventListener('input', calcularFechaFinalModal);
+  $('editFechaInicio')?.addEventListener('change', calcularFechaFinalModal);
+  $('editMetaProgramada')?.addEventListener('input', calcularAvanceModal);
+  $('editMetaEjecutada')?.addEventListener('input', calcularAvanceModal);
+}
+
+function renderTablaDecretosBasica() {
+  const tbody = document.querySelector('#tablaDS tbody');
+  if (!tbody) return;
+  const decretos = (state.decretos.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
+  if (!decretos.length) {
+    tbody.innerHTML = '<tr><td colspan="17" class="text-muted">No hay Decretos Supremos registrados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = decretos.map(d => {
+    const territorio = Array.isArray(d.territorio) ? d.territorio : [];
+    const deps = new Set(territorio.map(t => t.departamento).filter(Boolean));
+    const provs = new Set(territorio.map(t => `${t.departamento}|${t.provincia}`).filter(Boolean));
+    const dists = new Set(territorio.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(Boolean));
+    const estado = normalizarTexto(d.estadoRDS || '');
+    let botonRDS = '';
+    let botonRevision = '';
+    if (puedeActivarRDS()) {
+      botonRDS = `<button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button>`;
+      if (puedePreaprobar()) {
+        const habilitado = d.rdsActivo && dsTieneAccionesRegistradas(d.id) && estado !== 'PREAPROBADO' && estado !== 'APROBADO';
+        botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas para la reunión activa o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
+      } else if (puedeAprobar()) {
+        const habilitado = estado === 'PREAPROBADO';
+        botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+      }
+    } else if (esRegistradorPrograma()) {
+      const programa = programaSesionNormalizado();
+      const cerrado = dsProgramaCerroRegistro(d, programa);
+      botonRDS = d.rdsActivo
+        ? (cerrado ? `<button type="button" class="btn btn-sm btn-secondary" disabled>Acciones Registradas</button>` : `<button type="button" class="btn btn-sm btn-primary" onclick="abrirRegistrarAcciones('${escapeHtmlAttr(d.id)}')">Registrar Acciones</button>`)
+        : `<span class="badge text-bg-secondary">No activado</span>`;
+      botonRevision = '';
+    } else {
+      botonRDS = '<span class="text-muted small">Solo lectura</span>';
+      botonRevision = '';
+    }
+    return `<tr>
+      <td>${escapeHtml(formatearNumeroDS(d))}</td><td>${escapeHtml(d.anio)}</td><td>${escapeHtml(d.peligro)}</td><td>${escapeHtml(d.tipo_peligro)}</td><td>${escapeHtml(d.fecha_inicio)}</td><td>${escapeHtml(d.fecha_fin)}</td><td>${escapeHtml(d.vigencia)}</td><td>${escapeHtml(d.semaforo)}</td><td>${deps.size}</td><td>${provs.size}</td><td>${dists.size}</td><td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td><td>${escapeHtml(d.cadena || '')}</td><td>${escapeHtml(d.nivel_prorroga || 0)}</td><td>${botonRDS}</td><td>${botonRevision}</td><td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+    </tr>`;
+  }).join('');
 }
 
 window.abrirRDS = abrirRDS;
