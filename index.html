@@ -45,7 +45,7 @@
       </div>
 
       <div class="login-version">
-        VERSION 37 · 30/04/2026 12:06 hrs · MIDIS © 2026
+        VERSION 38 · 30/04/2026 16:30 hrs · MIDIS © 2026
       </div>
     </div>
   </div>
@@ -85,6 +85,7 @@
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabNuevo">Nuevo DS</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAcciones">Registro de Acciones</button></li>
         <li class="nav-item" id="navAccionesProgramasItem" style="display:none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAccionesProgramas">Registro Acciones Programas</button></li>
+        <li class="nav-item" id="navPreAprobarItem" style="display:none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPreAprobarAcciones">PreAprobar Acciones</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDashboard">Dashboard</button></li>
         <li class="nav-item"><button class="nav-link admin-only" data-bs-toggle="tab" data-bs-target="#tabSeg">Seguimiento</button></li>
       </ul>
@@ -418,7 +419,7 @@
                   <div class="col-12"><label class="form-label">Acciones específicas programadas y ejecutadas</label><textarea id="progDetalle" class="form-control" rows="2"></textarea></div>
                   <div class="col-12"><label class="form-label">Descripción de actividades</label><textarea id="progDescripcionActividades" class="form-control" rows="2"></textarea></div>
                 </div>
-                <button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary mt-3">Guardar Acción</button>
+                <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar Acción</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
               </div>
               <hr><h5 class="text-primary">Acciones registradas</h5>
               <div class="table-responsive"><table class="table table-sm table-striped" id="tablaAccionesProgramas">
@@ -426,6 +427,23 @@
             </div>
           </div>
         </div>
+        <!-- PREAPROBAR ACCIONES -->
+        <div class="tab-pane fade" id="tabPreAprobarAcciones">
+          <div class="card shadow-sm"><div class="card-body">
+            <h4 class="text-primary mb-3">PreAprobar Acciones</h4>
+            <div class="border rounded bg-light p-3 mb-3"><div class="row g-3 align-items-end">
+              <div class="col-md-3"><label class="form-label">Seleccione DS</label><input id="preDs" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Número de reunión</label><select id="preNumeroReunion" class="form-select"><option value="">Seleccione...</option><option>Primera reunión</option><option>Segunda reunión</option><option>Tercera reunión</option><option>Cuarta reunión</option><option>Quinta reunión</option><option>Sexta reunión</option><option>Séptima reunión</option><option>Octava reunión</option><option>Novena reunión</option><option>Décima reunión</option></select></div>
+              <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="preFechaReunion" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="preEstadoRDS" class="form-control" readonly></div>
+              <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="preFechaRegistroRDS" class="form-control" readonly></div>
+            </div></div>
+            <h5 class="text-primary">Acciones registradas por Programas Nacionales</h5>
+            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
+            <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
+          </div></div>
+        </div>
+
         <!-- DASHBOARD -->
         <div class="tab-pane fade" id="tabDashboard">
           <div class="card shadow-sm">
@@ -679,10 +697,32 @@
     </div>
   </div>
 
+
+  <!-- MODAL VER / EDITAR ACCION -->
+  <div class="modal fade" id="modalEditarAccion" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Ver / Editar Acción Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><input id="editAccionId" type="hidden"><div class="row g-3">
+      <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="editTipoAccion" class="form-select"></select></div>
+      <div class="col-md-3"><label class="form-label">Código de acción</label><input id="editCodigoAccion" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="editUnidadMedida" class="form-select"></select></div>
+      <div class="col-md-3"><label class="form-label">Meta programada</label><input id="editMetaProgramada" type="number" min="0" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Plazo</label><input id="editPlazoDias" type="number" min="0" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Fecha inicio</label><input id="editFechaInicio" type="date" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Fecha final</label><input id="editFechaFinal" type="date" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Meta ejecutada</label><input id="editMetaEjecutada" type="number" min="0" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">% Avance</label><input id="editAvance" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Fecha registro</label><input id="editFechaRegistro" class="form-control" readonly></div>
+      <div class="col-md-6"><label class="form-label">Usuario</label><input id="editUsuario" class="form-control" readonly></div>
+      <div class="col-12"><label class="form-label">Acciones específicas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
+      <div class="col-12"><label class="form-label">Descripción</label><textarea id="editDescripcion" class="form-control" rows="2"></textarea></div>
+    </div></div>
+    <div class="modal-footer"><button id="btnGrabarModalAccion" type="button" class="btn btn-primary">Grabar</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Salir</button></div>
+  </div></div></div>
+
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app.js?v=20260430-rds-programas-v36"></script>
+  <script src="app.js?v=20260430-rds-programas-v37"></script>
 </body>
 </html>
