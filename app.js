@@ -1,4 +1,4 @@
-// ================= VERSION 39 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 40 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -4361,3 +4361,334 @@ window.abrirRDS = abrirRDS;
 window.abrirRegistrarAcciones = abrirRegistrarAcciones;
 window.abrirPreAprobacion = abrirPreAprobacion;
 window.abrirModalEditarAccion = abrirModalEditarAccion;
+
+// ================= CIERRE FINAL v39 - DASHBOARD EJECUTIVO Y CONTROL PREAPROBAR =================
+(function cierreFinalDashboardEjecutivoV39(){
+  const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0'];
+  let mapaDashboardDEE = null;
+  let capaDashboardDEE = null;
+
+  function inyectarEstilosDashboardDEE() {
+    if (document.getElementById('dashboardDEEStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'dashboardDEEStyles';
+    style.textContent = `
+      .dee-kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 3px 12px rgba(15,23,42,.06);height:100%}
+      .dee-kpi-number{font-size:2.15rem;font-weight:800;line-height:1;color:#1F4E79}
+      .dee-kpi-label{font-size:.86rem;color:#475569;margin-top:8px;font-weight:600}
+      .dee-kpi-note{font-size:.74rem;color:#64748b;margin-top:4px}
+      .dee-badge-rojo{background:#dc3545;color:#fff}
+      .dee-badge-ambar{background:#ffc107;color:#111}
+      .dee-badge-verde{background:#198754;color:#fff}
+      .dee-dashboard-empty{color:#64748b;font-size:.88rem;padding:10px}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function fechaLocalCero(valor) {
+    if (!valor) return null;
+    const s = String(valor).slice(0, 10);
+    const d = new Date(`${s}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function hoyLocalCeroDEE() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function esDSVigenteDEE(d) {
+    const hoy = hoyLocalCeroDEE();
+    const inicio = fechaLocalCero(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCero(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (inicio && hoy < inicio) return false;
+    return hoy <= fin;
+  }
+
+  function diasRestantesDEE(d) {
+    const fin = fechaLocalCero(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return 0;
+    return Math.max(0, Math.ceil((fin - hoyLocalCeroDEE()) / 86400000));
+  }
+
+  function avanceTiempoDEE(d) {
+    const inicio = fechaLocalCero(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCero(d?.fecha_fin || d?.fechaFin);
+    const hoy = hoyLocalCeroDEE();
+    if (!inicio || !fin || fin <= inicio) return 0;
+    const total = fin - inicio;
+    const usado = Math.min(Math.max(hoy - inicio, 0), total);
+    return Math.round((usado / total) * 100);
+  }
+
+  function semaforoEjecutivoDEE(d) {
+    const inicio = fechaLocalCero(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCero(d?.fecha_fin || d?.fechaFin);
+    const hoy = hoyLocalCeroDEE();
+    if (!inicio || !fin || fin <= inicio) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
+    const restante = Math.max(fin - hoy, 0);
+    const total = fin - inicio;
+    const pctRestante = (restante / total) * 100;
+    if (pctRestante < 20) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
+    if (pctRestante <= 50) return { texto: 'Ámbar', clase: 'dee-badge-ambar', orden: 2 };
+    return { texto: 'Verde', clase: 'dee-badge-verde', orden: 3 };
+  }
+
+  function territorioDSDEE(d) {
+    return Array.isArray(d?.territorio) ? d.territorio : [];
+  }
+
+  function keyDepartamentoDEE(t) {
+    return normalizarTexto(t?.departamento || '');
+  }
+
+  function keyProvinciaDEE(t) {
+    return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}`;
+  }
+
+  function keyDistritoDEE(t) {
+    const ub = getUbigeoValue(t);
+    if (ub) return String(ub);
+    return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}|${normalizarTexto(t?.distrito || '')}`;
+  }
+
+  function latLngTerritorioDEE(t) {
+    const lat = Number(String(getLatitud(t)).replace(',', '.'));
+    const lng = Number(String(getLongitud(t)).replace(',', '.'));
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
+    return null;
+  }
+
+  function construirDatosDashboardDEE() {
+    const decretos = (state.decretos?.length ? state.decretos : cargarDecretosLocales())
+      .map(normalizarDecreto)
+      .filter(Boolean);
+    const vigentes = decretos.filter(esDSVigenteDEE);
+    const departamentos = new Set();
+    const provincias = new Set();
+    const distritos = new Map();
+    const departamentosConteo = new Map();
+
+    vigentes.forEach((d, i) => {
+      territorioDSDEE(d).forEach(t => {
+        const depKey = keyDepartamentoDEE(t);
+        const provKey = keyProvinciaDEE(t);
+        const distKey = keyDistritoDEE(t);
+        if (!depKey || !provKey || !distKey) return;
+        departamentos.add(depKey);
+        provincias.add(provKey);
+        departamentosConteo.set(depKey, (departamentosConteo.get(depKey) || 0) + 1);
+        if (!distritos.has(distKey)) {
+          distritos.set(distKey, {
+            key: distKey,
+            departamento: t.departamento || '',
+            provincia: t.provincia || '',
+            distrito: t.distrito || '',
+            latlng: latLngTerritorioDEE(t),
+            decretos: [],
+            fechasInicio: [],
+            fechasFin: []
+          });
+        }
+        const item = distritos.get(distKey);
+        item.decretos.push({ id: d.id, nombre: formatearNumeroDS(d), color: DASH_COLORS[i % DASH_COLORS.length] });
+        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+      });
+    });
+
+    return { decretos, vigentes, departamentos, provincias, distritos, departamentosConteo };
+  }
+
+  function renderKPIsDEE(datos) {
+    const cont = $('dashboardMetricas');
+    if (!cont) return;
+    const repetidos = [...datos.distritos.values()].filter(x => new Set(x.decretos.map(d => d.id)).size > 1).length;
+    const cards = [
+      ['Declaratorias vigentes', datos.vigentes.length, 'Solo DS con fecha actual dentro del rango'],
+      ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
+      ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
+      ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
+      ['Distritos en más de una declaratoria', repetidos, 'Duplicidad entre DS vigentes']
+    ];
+    cont.innerHTML = cards.map(([label, value, note]) => `
+      <div class="col-12 col-md-6">
+        <div class="dee-kpi-card">
+          <div class="dee-kpi-number">${escapeHtml(value)}</div>
+          <div class="dee-kpi-label">${escapeHtml(label)}</div>
+          <div class="dee-kpi-note">${escapeHtml(note)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderMapaDEE(datos) {
+    const el = $('mapaDS');
+    if (!el || !window.L) return;
+    if (!mapaDashboardDEE) {
+      mapaDashboardDEE = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(mapaDashboardDEE);
+      capaDashboardDEE = L.layerGroup().addTo(mapaDashboardDEE);
+    }
+    capaDashboardDEE.clearLayers();
+    const bounds = [];
+    [...datos.distritos.values()].forEach(item => {
+      if (!item.latlng) return;
+      const dsUnicos = [...new Map(item.decretos.map(d => [d.id, d])).values()];
+      const repetido = dsUnicos.length > 1;
+      const color = repetido ? '#111827' : (dsUnicos[0]?.color || '#0d6efd');
+      const marker = L.circleMarker(item.latlng, {
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? 0.95 : 0.75
+      });
+      marker.bindTooltip(`
+        <strong>${escapeHtml(item.distrito)}</strong><br>
+        Provincia: ${escapeHtml(item.provincia)}<br>
+        Departamento: ${escapeHtml(item.departamento)}<br>
+        DS: ${escapeHtml(dsUnicos.map(d => d.nombre).join(', '))}
+      `, { sticky: true });
+      marker.addTo(capaDashboardDEE);
+      bounds.push(item.latlng);
+    });
+    if (bounds.length) mapaDashboardDEE.fitBounds(bounds, { padding: [20, 20] });
+    setTimeout(() => mapaDashboardDEE?.invalidateSize(), 150);
+  }
+
+  function renderResumenDSDEE(datos) {
+    const tbody = document.querySelector('#tablaResumenDS tbody');
+    if (!tbody) return;
+    const filas = datos.vigentes.map(d => {
+      const territorio = territorioDSDEE(d);
+      const deps = new Set(territorio.map(keyDepartamentoDEE).filter(Boolean));
+      const provs = new Set(territorio.map(keyProvinciaDEE).filter(Boolean));
+      const dists = new Set(territorio.map(keyDistritoDEE).filter(Boolean));
+      const sem = semaforoEjecutivoDEE(d);
+      return { d, deps, provs, dists, sem };
+    }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantesDEE(a.d) - diasRestantesDEE(b.d));
+    tbody.innerHTML = filas.length ? filas.map(x => `
+      <tr>
+        <td>${escapeHtml(formatearNumeroDS(x.d))}</td>
+        <td>${escapeHtml(x.d.fecha_inicio || '')}</td>
+        <td>${escapeHtml(x.d.fecha_fin || '')}</td>
+        <td>${diasRestantesDEE(x.d)}</td>
+        <td>${avanceTiempoDEE(x.d)}%</td>
+        <td><span class="badge ${x.sem.clase}">${x.sem.texto}</span></td>
+        <td>${x.deps.size}</td>
+        <td>${x.provs.size}</td>
+        <td>${x.dists.size}</td>
+      </tr>`).join('') : '<tr><td colspan="9" class="dee-dashboard-empty">No hay declaratorias vigentes registradas.</td></tr>';
+  }
+
+  function renderDepartamentosDEE(datos) {
+    const tbody = document.querySelector('#tablaDeptos tbody');
+    if (!tbody) return;
+    const filas = [...datos.departamentosConteo.entries()]
+      .map(([key, count]) => ({ departamento: key, count }))
+      .sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento, 'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `
+      <tr><td>${escapeHtml(f.departamento)}</td><td>${f.count}</td><td><span class="badge text-bg-success">Vigente</span></td></tr>
+    `).join('') : '<tr><td colspan="3" class="dee-dashboard-empty">No hay departamentos vigentes registrados.</td></tr>';
+  }
+
+  function renderRepetidosDEE(datos) {
+    const tbody = document.querySelector('#tablaRepetidos tbody');
+    if (!tbody) return;
+    const filas = [...datos.distritos.values()]
+      .map(item => ({ ...item, veces: new Set(item.decretos.map(d => d.id)).size }))
+      .filter(item => item.veces > 1)
+      .sort((a,b) => b.veces - a.veces || String(a.departamento).localeCompare(String(b.departamento), 'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `
+      <tr>
+        <td>${escapeHtml(f.departamento)}</td>
+        <td>${escapeHtml(f.provincia)}</td>
+        <td>${escapeHtml(f.distrito)}</td>
+        <td>${f.veces}</td>
+        <td>${escapeHtml(f.fechasInicio.sort()[0] || '')}</td>
+        <td>${escapeHtml(f.fechasFin.sort().slice(-1)[0] || '')}</td>
+      </tr>`).join('') : '<tr><td colspan="6" class="dee-dashboard-empty">No hay distritos repetidos en declaratorias vigentes.</td></tr>';
+  }
+
+  function renderDashboardEjecutivoDEE() {
+    try {
+      inyectarEstilosDashboardDEE();
+      const datos = construirDatosDashboardDEE();
+      renderKPIsDEE(datos);
+      renderResumenDSDEE(datos);
+      renderDepartamentosDEE(datos);
+      renderRepetidosDEE(datos);
+      renderMapaDEE(datos);
+    } catch (e) {
+      console.error('Error renderizando Dashboard Ejecutivo:', e);
+    }
+  }
+
+  function removerPreAprobarLegacyDEE() {
+    const btn = $('btnPreaprobarRDS');
+    if (btn) btn.remove();
+  }
+
+  const apiOriginalDEE = typeof api === 'function' ? api : null;
+  if (apiOriginalDEE && !window.__apiControlPreAprobarV39) {
+    window.__apiControlPreAprobarV39 = true;
+    window.api = async function(path, method = 'GET', body = null) {
+      const p = String(path || '').toLowerCase();
+      const b = JSON.stringify(body || {}).toLowerCase();
+      const intentaPreaprobarLegacy = p.includes('preaprobar') || b.includes('preaprobado') || b.includes('preaprobar');
+      if (intentaPreaprobarLegacy && (esAdministrador() || esRegistrador()) && !p.includes('decretos') && !p.includes('acciones')) {
+        return { ok: false, data: { ok: false, error: 'forbidden_by_role' } };
+      }
+      return apiOriginalDEE(path, method, body);
+    };
+  }
+
+  const aplicarVistaOriginalDEE = typeof aplicarVistaRegistroAcciones === 'function' ? aplicarVistaRegistroAcciones : null;
+  if (aplicarVistaOriginalDEE && !window.__vistaRegistroControlPreV39) {
+    window.__vistaRegistroControlPreV39 = true;
+    window.aplicarVistaRegistroAcciones = function() {
+      const r = aplicarVistaOriginalDEE.apply(this, arguments);
+      removerPreAprobarLegacyDEE();
+      const btnApr = $('btnAprobarRDS');
+      if (btnApr) btnApr.style.display = esAdministrador() ? '' : 'none';
+      return r;
+    };
+  }
+
+  const cambiarEstadoOriginalDEE = typeof cambiarEstadoFlujoRDS === 'function' ? cambiarEstadoFlujoRDS : null;
+  if (cambiarEstadoOriginalDEE && !window.__estadoControlPreV39) {
+    window.__estadoControlPreV39 = true;
+    window.cambiarEstadoFlujoRDS = function(nuevoEstado) {
+      if (normalizarTexto(nuevoEstado) === 'PREAPROBADO') {
+        return alert('La acción PreAprobar no se ejecuta desde la pestaña Registro de Acciones. Use la pestaña PreAprobar Acciones cuando corresponda.');
+      }
+      return cambiarEstadoOriginalDEE.apply(this, arguments);
+    };
+  }
+
+  const renderTablaOriginalDEE = typeof renderTablaDecretosBasica === 'function' ? renderTablaDecretosBasica : null;
+  if (renderTablaOriginalDEE && !window.__renderDSDashboardV39) {
+    window.__renderDSDashboardV39 = true;
+    window.renderTablaDecretosBasica = function() {
+      const r = renderTablaOriginalDEE.apply(this, arguments);
+      removerPreAprobarLegacyDEE();
+      renderDashboardEjecutivoDEE();
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    removerPreAprobarLegacyDEE();
+    $('btnActualizarDashboard')?.addEventListener('click', renderDashboardEjecutivoDEE);
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', renderDashboardEjecutivoDEE);
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(renderDashboardEjecutivoDEE, 150));
+    setTimeout(renderDashboardEjecutivoDEE, 800);
+  });
+
+  window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoDEE;
+})();

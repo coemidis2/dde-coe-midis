@@ -45,7 +45,7 @@
       </div>
 
       <div class="login-version">
-        VERSION 39 · 30/04/2026 17:20 hrs · MIDIS © 2026
+        VERSION 04 · 04/05/2026 17:15 hrs · MIDIS © 2026
       </div>
     </div>
   </div>
@@ -448,24 +448,82 @@
         <div class="tab-pane fade" id="tabDashboard">
           <div class="card shadow-sm">
             <div class="card-body">
-              <h4 class="text-primary mb-3">Dashboard</h4>
-              <div class="d-flex flex-wrap gap-2 mb-3">
-                <button id="btnDashTodos" type="button" class="btn btn-sm btn-outline-dark">Todos</button>
-                <button id="btnDashVigentes" type="button" class="btn btn-sm btn-danger">Vigentes</button>
-                <button id="btnDashNoVigentes" type="button" class="btn btn-sm btn-success">No vigentes</button>
-                <div id="dashDsToggles" class="d-flex flex-wrap gap-2"></div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h4 class="text-primary mb-1">Dashboard Ejecutivo</h4>
+                  <div class="text-muted small">Declaratorias de Estado de Emergencia vigentes · Control territorial sin duplicidades</div>
+                </div>
+                <button id="btnActualizarDashboard" type="button" class="btn btn-sm btn-outline-primary">Actualizar</button>
               </div>
-              <div id="mapaDS" class="border rounded mb-3" style="height:420px; min-height:420px;"></div>
-              <div class="row g-3 mb-3" id="dashboardMetricas"></div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-lg-7">
+                  <div class="border rounded bg-light p-2 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h5 class="text-primary mb-0">Mapa del Perú</h5>
+                      <span class="text-muted small">Puntos georreferenciados por distrito</span>
+                    </div>
+                    <div id="mapaDS" class="border rounded bg-white" style="height:520px; min-height:520px;"></div>
+                  </div>
+                </div>
+                <div class="col-lg-5">
+                  <div class="border rounded bg-light p-3 h-100">
+                    <h5 class="text-primary mb-3">Indicadores ejecutivos</h5>
+                    <div class="row g-3" id="dashboardMetricas"></div>
+                  </div>
+                </div>
+              </div>
 
               <h5 class="text-primary">Resumen ejecutivo por Decreto Supremo</h5>
-              <div class="table-responsive"><table class="table table-sm table-striped" id="tablaResumenDS"><thead class="table-primary"><tr><th>Decreto Supremo</th><th>Fecha Inicio</th><th>Fecha Final</th><th>Días restantes</th><th>Semáforo</th><th>N.° departamentos</th><th>N.° provincias</th><th>N.° distritos</th></tr></thead><tbody></tbody></table></div>
+              <div class="table-responsive mb-3">
+                <table class="table table-sm table-striped align-middle" id="tablaResumenDS">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>Decreto Supremo</th>
+                      <th>Fecha inicio</th>
+                      <th>Fecha fin</th>
+                      <th>Días restantes</th>
+                      <th>Avance %</th>
+                      <th>Semáforo</th>
+                      <th>N.° departamentos</th>
+                      <th>N.° provincias</th>
+                      <th>N.° distritos</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
 
               <h5 class="text-primary">Departamentos declarados en estado de emergencia</h5>
-              <div class="table-responsive"><table class="table table-sm table-striped" id="tablaDeptos"><thead class="table-primary"><tr><th>Departamento</th><th>Número de provincias únicas</th><th>Número de distritos únicos</th></tr></thead><tbody></tbody></table></div>
+              <div class="table-responsive mb-3">
+                <table class="table table-sm table-striped align-middle" id="tablaDeptos">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>Departamento</th>
+                      <th>Número de registros</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
 
-              <h5 class="text-primary">Distritos comprendidos en las declaratorias de estado de emergencia vigente que se repiten</h5>
-              <div class="table-responsive"><table class="table table-sm table-striped" id="tablaRepetidos"><thead class="table-primary"><tr><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Veces que se repite</th><th>Decretos Supremos</th></tr></thead><tbody></tbody></table></div>
+              <h5 class="text-primary">Distritos repetidos en declaratorias vigentes</h5>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle" id="tablaRepetidos">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>Departamento</th>
+                      <th>Provincia</th>
+                      <th>Distrito</th>
+                      <th>Número de veces</th>
+                      <th>Fecha inicio más antigua</th>
+                      <th>Fecha final más lejana</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -723,6 +781,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app.js?v=20260430-rds-reuniones-v38"></script>
+  <script src="app.js?v=20260504-dashboard-ejecutivo-v39"></script>
 </body>
 </html>
