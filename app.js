@@ -1,4 +1,4 @@
-// ================= VERSION 40 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 41 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -4691,4 +4691,289 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   });
 
   window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoDEE;
+})();
+
+// ================= CIERRE FINAL TIPO DE ACCIÓN v40 - 05/05/2026 =================
+(function(){
+  const TIPO_PREPARACION = 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+  const TIPO_RESPUESTA = 'Acciones de Respuesta';
+  const TIPO_REHABILITACION = 'Acciones de Rehabilitación';
+  const TIPOS_ACCION_OFICIALES = [TIPO_PREPARACION, TIPO_RESPUESTA, TIPO_REHABILITACION];
+  const SUBTIPOS_REHABILITACION_OFICIALES = [
+    'RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA',
+    'NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA'
+  ];
+
+  function setSelectOptionsDEE(sel, opciones, placeholder = 'Seleccione...') {
+    if (!sel) return;
+    const actual = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>` + opciones.map(v => `<option value="${escapeHtmlAttr(v)}">${escapeHtml(v)}</option>`).join('');
+    if (opciones.includes(actual)) sel.value = actual;
+  }
+
+  function inyectarSubtipoSiFaltaDEE(tipoId, boxId, selectId, claseCol = 'col-md-4') {
+    if ($(selectId)) return;
+    const tipo = $(tipoId);
+    if (!tipo) return;
+    const tipoBox = tipo.closest('.col-md-3, .col-md-4, .col-12') || tipo.parentElement;
+    if (!tipoBox || !tipoBox.parentElement) return;
+    const div = document.createElement('div');
+    div.className = claseCol;
+    div.id = boxId;
+    div.style.display = 'none';
+    div.innerHTML = `<label class="form-label">Subtipo de Rehabilitación</label><select id="${selectId}" class="form-select"></select>`;
+    tipoBox.insertAdjacentElement('afterend', div);
+  }
+
+  function asegurarCamposSubtipoDEE() {
+    inyectarSubtipoSiFaltaDEE('accionTipo', 'accionSubtipoRehabBox', 'accionSubtipoRehabilitacion', 'col-md-4');
+    inyectarSubtipoSiFaltaDEE('progTipoAccion', 'progSubtipoRehabBox', 'progSubtipoRehabilitacion', 'col-md-4');
+    inyectarSubtipoSiFaltaDEE('editTipoAccion', 'editSubtipoRehabBox', 'editSubtipoRehabilitacion', 'col-md-5');
+  }
+
+  function cargarCatalogoTiposDEE() {
+    asegurarCamposSubtipoDEE();
+    setSelectOptionsDEE($('accionTipo'), TIPOS_ACCION_OFICIALES);
+    setSelectOptionsDEE($('progTipoAccion'), TIPOS_ACCION_OFICIALES);
+    setSelectOptionsDEE($('editTipoAccion'), TIPOS_ACCION_OFICIALES);
+    setSelectOptionsDEE($('accionSubtipoRehabilitacion'), SUBTIPOS_REHABILITACION_OFICIALES);
+    setSelectOptionsDEE($('progSubtipoRehabilitacion'), SUBTIPOS_REHABILITACION_OFICIALES);
+    setSelectOptionsDEE($('editSubtipoRehabilitacion'), SUBTIPOS_REHABILITACION_OFICIALES);
+    actualizarVisibilidadSubtipoDEE('accion');
+    actualizarVisibilidadSubtipoDEE('prog');
+    actualizarVisibilidadSubtipoDEE('edit');
+  }
+
+  function normalTipoDEE(valor) { return String(valor || '').trim(); }
+  function esTipoRehabilitacionDEE(valor) { return normalTipoDEE(valor) === TIPO_REHABILITACION; }
+  function esTipoPreparacionDEE(valor) { return normalTipoDEE(valor) === TIPO_PREPARACION; }
+
+  function actualizarVisibilidadSubtipoDEE(prefix) {
+    const tipo = $(prefix + 'TipoAccion') || (prefix === 'accion' ? $('accionTipo') : prefix === 'prog' ? $('progTipoAccion') : $('editTipoAccion'));
+    const box = $(prefix + 'SubtipoRehabBox');
+    const sel = $(prefix + 'SubtipoRehabilitacion');
+    const visible = esTipoRehabilitacionDEE(tipo?.value || '');
+    if (box) box.style.display = visible ? '' : 'none';
+    if (sel) {
+      sel.disabled = !visible;
+      if (!visible) sel.value = '';
+    }
+  }
+
+  function dsEsPeligroInminenteDEE(d) {
+    const texto = normalizarTexto(`${d?.peligro || ''} ${d?.tipo_peligro || ''} ${d?.tipoPeligro || ''}`);
+    return texto.includes('PELIGRO INMINENTE');
+  }
+
+  function dsActualFormularioAccionDEE() {
+    return buscarDecretoPorId($('accionDs')?.value || '') || buscarDecretoPorId(dsProgramaSeleccionadoId || '') || buscarDecretoPorId(dsPreAprobarSeleccionadoId || '');
+  }
+
+  function validarTipoAccionDEE({ tipo, subtipo, decreto }) {
+    tipo = normalTipoDEE(tipo);
+    subtipo = String(subtipo || '').trim();
+    if (!TIPOS_ACCION_OFICIALES.includes(tipo)) {
+      return { ok:false, msg:'Seleccione un Tipo de Acción válido del catálogo oficial.' };
+    }
+    if (esTipoPreparacionDEE(tipo) && !dsEsPeligroInminenteDEE(decreto)) {
+      return { ok:false, msg:'Las Acciones de Preparación solo pueden registrarse para DEE por Peligro Inminente.' };
+    }
+    if (esTipoRehabilitacionDEE(tipo)) {
+      if (!subtipo) return { ok:false, msg:'Seleccione el Subtipo de Rehabilitación.' };
+      if (!SUBTIPOS_REHABILITACION_OFICIALES.includes(subtipo)) {
+        return { ok:false, msg:'Seleccione un Subtipo de Rehabilitación válido del catálogo oficial.' };
+      }
+    }
+    if (!esTipoRehabilitacionDEE(tipo) && subtipo) {
+      return { ok:false, msg:'El Subtipo de Rehabilitación solo corresponde a Acciones de Rehabilitación.' };
+    }
+    return { ok:true };
+  }
+
+  function validarBodyAccionBackendDEE(body) {
+    const tipo = body?.tipoAccion || body?.tipo || body?.tipo_accion || '';
+    const subtipo = body?.subtipoRehabilitacion || body?.subtipo_rehabilitacion || '';
+    const dsId = body?.dsId || body?.ds_id || dsProgramaSeleccionadoId || dsPreAprobarSeleccionadoId || $('accionDs')?.value || '';
+    const decreto = buscarDecretoPorId(dsId);
+    return validarTipoAccionDEE({ tipo, subtipo, decreto });
+  }
+
+  function marcarPreparacionNoPermitidaDEE(selectId, ds) {
+    const sel = $(selectId);
+    if (!sel) return;
+    const opt = Array.from(sel.options).find(o => o.value === TIPO_PREPARACION);
+    if (opt) opt.disabled = !!ds && !dsEsPeligroInminenteDEE(ds);
+    if (sel.value === TIPO_PREPARACION && opt?.disabled) {
+      sel.value = '';
+      alert('Este DS no corresponde a Peligro Inminente. No se puede seleccionar Acciones de Preparación.');
+    }
+  }
+
+  function refrescarReglasTipoPorDSDEE() {
+    cargarCatalogoTiposDEE();
+    marcarPreparacionNoPermitidaDEE('accionTipo', buscarDecretoPorId($('accionDs')?.value || ''));
+    marcarPreparacionNoPermitidaDEE('progTipoAccion', buscarDecretoPorId(dsProgramaSeleccionadoId || ''));
+    marcarPreparacionNoPermitidaDEE('editTipoAccion', buscarDecretoPorId(dsPreAprobarSeleccionadoId || dsProgramaSeleccionadoId || $('accionDs')?.value || ''));
+  }
+
+  function attachEventosTipoDEE() {
+    if (window.__tipoAccionEventosV40) return;
+    window.__tipoAccionEventosV40 = true;
+    document.addEventListener('change', (e) => {
+      if (e.target?.id === 'accionTipo') { marcarPreparacionNoPermitidaDEE('accionTipo', buscarDecretoPorId($('accionDs')?.value || '')); actualizarVisibilidadSubtipoDEE('accion'); }
+      if (e.target?.id === 'progTipoAccion') { marcarPreparacionNoPermitidaDEE('progTipoAccion', buscarDecretoPorId(dsProgramaSeleccionadoId || '')); actualizarVisibilidadSubtipoDEE('prog'); }
+      if (e.target?.id === 'editTipoAccion') { marcarPreparacionNoPermitidaDEE('editTipoAccion', buscarDecretoPorId(dsPreAprobarSeleccionadoId || dsProgramaSeleccionadoId || $('accionDs')?.value || '')); actualizarVisibilidadSubtipoDEE('edit'); }
+      if (e.target?.id === 'accionDs') setTimeout(refrescarReglasTipoPorDSDEE, 0);
+    });
+  }
+
+  const cargarCatalogosAccionOriginalV40 = typeof cargarCatalogosAccion === 'function' ? cargarCatalogosAccion : null;
+  cargarCatalogosAccion = function() {
+    if (cargarCatalogosAccionOriginalV40) cargarCatalogosAccionOriginalV40.apply(this, arguments);
+    cargarCatalogoTiposDEE();
+  };
+
+  const cargarCatalogosAccionProgramaOriginalV40 = typeof cargarCatalogosAccionPrograma === 'function' ? cargarCatalogosAccionPrograma : null;
+  cargarCatalogosAccionPrograma = function() {
+    if (cargarCatalogosAccionProgramaOriginalV40) cargarCatalogosAccionProgramaOriginalV40.apply(this, arguments);
+    cargarCatalogoTiposDEE();
+  };
+
+  const cargarCatalogosEditarAccionOriginalV40 = typeof cargarCatalogosEditarAccion === 'function' ? cargarCatalogosEditarAccion : null;
+  cargarCatalogosEditarAccion = function() {
+    if (cargarCatalogosEditarAccionOriginalV40) cargarCatalogosEditarAccionOriginalV40.apply(this, arguments);
+    cargarCatalogoTiposDEE();
+  };
+
+  const limpiarFormularioAccionOriginalV40 = typeof limpiarFormularioAccion === 'function' ? limpiarFormularioAccion : null;
+  limpiarFormularioAccion = function() {
+    if (limpiarFormularioAccionOriginalV40) limpiarFormularioAccionOriginalV40.apply(this, arguments);
+    if ($('accionSubtipoRehabilitacion')) $('accionSubtipoRehabilitacion').value = '';
+    actualizarVisibilidadSubtipoDEE('accion');
+  };
+
+  const limpiarFormularioAccionProgramaOriginalV40 = typeof limpiarFormularioAccionPrograma === 'function' ? limpiarFormularioAccionPrograma : null;
+  limpiarFormularioAccionPrograma = function() {
+    if (limpiarFormularioAccionProgramaOriginalV40) limpiarFormularioAccionProgramaOriginalV40.apply(this, arguments);
+    if ($('progSubtipoRehabilitacion')) $('progSubtipoRehabilitacion').value = '';
+    actualizarVisibilidadSubtipoDEE('prog');
+  };
+
+  const abrirModalEditarAccionOriginalV40 = typeof abrirModalEditarAccion === 'function' ? abrirModalEditarAccion : null;
+  abrirModalEditarAccion = function(id) {
+    const r = abrirModalEditarAccionOriginalV40 ? abrirModalEditarAccionOriginalV40.apply(this, arguments) : undefined;
+    const a = cargarAccionesLocales().find(x => String(x.id) === String(id));
+    cargarCatalogoTiposDEE();
+    if ($('editTipoAccion')) $('editTipoAccion').value = accionValor(a,'tipoAccion','tipo') || '';
+    if ($('editSubtipoRehabilitacion')) $('editSubtipoRehabilitacion').value = accionValor(a,'subtipoRehabilitacion','subtipo_rehabilitacion') || '';
+    actualizarVisibilidadSubtipoDEE('edit');
+    return r;
+  };
+  window.abrirModalEditarAccion = abrirModalEditarAccion;
+
+  const guardarAccionDSOriginalV40 = typeof guardarAccionDS === 'function' ? guardarAccionDS : null;
+  guardarAccionDS = function() {
+    const decreto = buscarDecretoPorId($('accionDs')?.value || '');
+    const tipo = $('accionTipo')?.value || '';
+    const subtipo = $('accionSubtipoRehabilitacion')?.value || '';
+    const v = validarTipoAccionDEE({ tipo, subtipo, decreto });
+    if (!v.ok) return alert(v.msg);
+    const before = cargarAccionesLocales().map(a => a.id).join('|');
+    const r = guardarAccionDSOriginalV40 ? guardarAccionDSOriginalV40.apply(this, arguments) : undefined;
+    const lista = cargarAccionesLocales();
+    const after = lista.map(a => a.id).join('|');
+    if (after !== before) {
+      const ultimo = lista[lista.length - 1];
+      if (ultimo && String(ultimo.ds_id || ultimo.dsId) === String(decreto?.id || '')) {
+        ultimo.tipo = tipo; ultimo.tipoAccion = tipo;
+        ultimo.subtipoRehabilitacion = esTipoRehabilitacionDEE(tipo) ? subtipo : '';
+        ultimo.subtipo_rehabilitacion = ultimo.subtipoRehabilitacion;
+        guardarAccionesLocales(lista);
+        api('/acciones', 'POST', ultimo);
+      }
+    }
+    return r;
+  };
+
+  const guardarAccionProgramaOriginalV40 = typeof guardarAccionPrograma === 'function' ? guardarAccionPrograma : null;
+  guardarAccionPrograma = function() {
+    const decreto = buscarDecretoPorId(dsProgramaSeleccionadoId || '');
+    const tipo = $('progTipoAccion')?.value || '';
+    const subtipo = $('progSubtipoRehabilitacion')?.value || '';
+    const v = validarTipoAccionDEE({ tipo, subtipo, decreto });
+    if (!v.ok) return alert(v.msg);
+    const before = cargarAccionesLocales().map(a => a.id).join('|');
+    const r = guardarAccionProgramaOriginalV40 ? guardarAccionProgramaOriginalV40.apply(this, arguments) : undefined;
+    const lista = cargarAccionesLocales();
+    const after = lista.map(a => a.id).join('|');
+    if (after !== before) {
+      const ultimo = lista[lista.length - 1];
+      if (ultimo && String(ultimo.dsId || ultimo.ds_id) === String(decreto?.id || '')) {
+        ultimo.tipo = tipo; ultimo.tipoAccion = tipo;
+        ultimo.subtipoRehabilitacion = esTipoRehabilitacionDEE(tipo) ? subtipo : '';
+        ultimo.subtipo_rehabilitacion = ultimo.subtipoRehabilitacion;
+        guardarAccionesLocales(lista);
+        api('/acciones', 'POST', ultimo);
+      }
+    }
+    return r;
+  };
+
+  const grabarModalAccionOriginalV40 = typeof grabarModalAccion === 'function' ? grabarModalAccion : null;
+  grabarModalAccion = function() {
+    const id = $('editAccionId')?.value || '';
+    const original = cargarAccionesLocales().find(a => String(a.id) === String(id));
+    const decreto = buscarDecretoPorId(original?.dsId || original?.ds_id || dsPreAprobarSeleccionadoId || '');
+    const tipo = $('editTipoAccion')?.value || '';
+    const subtipo = $('editSubtipoRehabilitacion')?.value || '';
+    const v = validarTipoAccionDEE({ tipo, subtipo, decreto });
+    if (!v.ok) return alert(v.msg);
+    const r = grabarModalAccionOriginalV40 ? grabarModalAccionOriginalV40.apply(this, arguments) : undefined;
+    const lista = cargarAccionesLocales();
+    const idx = lista.findIndex(a => String(a.id) === String(id));
+    if (idx >= 0) {
+      lista[idx].tipo = tipo; lista[idx].tipoAccion = tipo;
+      lista[idx].subtipoRehabilitacion = esTipoRehabilitacionDEE(tipo) ? subtipo : '';
+      lista[idx].subtipo_rehabilitacion = lista[idx].subtipoRehabilitacion;
+      guardarAccionesLocales(lista);
+      api('/acciones', 'POST', lista[idx]);
+      if (typeof renderTablaPreAprobarAcciones === 'function') renderTablaPreAprobarAcciones();
+      if (typeof renderTablaAcciones === 'function') renderTablaAcciones();
+    }
+    return r;
+  };
+
+  const apiOriginalTipoV40 = typeof api === 'function' ? api : null;
+  if (apiOriginalTipoV40 && !window.__apiCatalogoTipoAccionV40) {
+    window.__apiCatalogoTipoAccionV40 = true;
+    api = async function(path, method = 'GET', body = null) {
+      const p = String(path || '').toLowerCase();
+      const m = String(method || 'GET').toUpperCase();
+      if (p.includes('/acciones') && ['POST','PUT','PATCH'].includes(m)) {
+        const v = validarBodyAccionBackendDEE(body || {});
+        if (!v.ok) {
+          alert(v.msg);
+          return { ok:false, data:{ ok:false, error:'catalogo_tipo_accion_invalido', message:v.msg } };
+        }
+      }
+      return apiOriginalTipoV40(path, method, body);
+    };
+    window.api = api;
+  }
+
+  const initRegistroAccionesOriginalV40 = typeof initRegistroAcciones === 'function' ? initRegistroAcciones : null;
+  initRegistroAcciones = function() {
+    const r = initRegistroAccionesOriginalV40 ? initRegistroAccionesOriginalV40.apply(this, arguments) : undefined;
+    attachEventosTipoDEE();
+    refrescarReglasTipoPorDSDEE();
+    return r;
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    attachEventosTipoDEE();
+    setTimeout(refrescarReglasTipoPorDSDEE, 300);
+  });
+
+  window.TIPOS_ACCION_OFICIALES = TIPOS_ACCION_OFICIALES.slice();
+  window.SUBTIPOS_REHABILITACION_OFICIALES = SUBTIPOS_REHABILITACION_OFICIALES.slice();
 })();
