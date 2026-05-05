@@ -1,4 +1,4 @@
-// ================= VERSION 42 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 43 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -5316,6 +5316,478 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       }
       if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
     }, 500);
+  });
+
+  window.exportarDSExcel = exportarDSExcel;
+  window.exportarDSPDF = exportarDSPDF;
+})();
+
+
+// ================= CIERRE FINAL EXPORTAR DS v42 - MAPEO POR TIPO DE ACCION =================
+(function(){
+  const TEMPLATE_EXCEL_DS_V42 = 'DS.xlsx';
+  const MODELO_HOJA_DS_V42 = 'D.S. NRO';
+  const TIPO_PREPARACION_V42 = 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+  const TIPO_RESPUESTA_V42 = 'Acciones de Respuesta';
+  const TIPO_REHABILITACION_V42 = 'Acciones de Rehabilitación';
+  const SUBTIPO_RESTABLECIMIENTO_V42 = 'RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA';
+  const SUBTIPO_MEDIOS_V42 = 'NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA';
+
+  function ntextoV42(v){
+    return typeof normalizarTexto === 'function'
+      ? normalizarTexto(v)
+      : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+  }
+
+  function numeroDSLimpioV42(d) {
+    const numero = String(d?.numero || '').trim().padStart(3, '0');
+    const anio = String(d?.anio || new Date().getFullYear()).trim();
+    return `${numero}-${anio}-PCM`;
+  }
+
+  function nombreBaseDSV42(d) {
+    return `DS_${numeroDSLimpioV42(d)}`.replace(/[\\/:*?"<>|\[\]]/g, '_').slice(0, 31);
+  }
+
+  function nombreArchivoDSV42(d, ext) {
+    return `${nombreBaseDSV42(d)}.${ext}`;
+  }
+
+  function textoFechaPeruV42(value) {
+    if (!value) return '';
+    const s = String(value);
+    const base = s.includes('T') ? s.slice(0, 10) : s.slice(0, 10);
+    const d = new Date(`${base}T00:00:00`);
+    if (isNaN(d.getTime())) return value;
+    return d.toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+
+  function fechaReporteCortaV42() {
+    return new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'2-digit', year:'2-digit' });
+  }
+
+  function excelDateLocalV42(value) {
+    if (!value) return '';
+    const s = String(value).slice(0, 10);
+    const d = new Date(`${s}T00:00:00`);
+    return isNaN(d.getTime()) ? value : d;
+  }
+
+  function descargarBlobV42(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function territoriosDecretoV42(d) {
+    return Array.isArray(d?.territorio) ? d.territorio : [];
+  }
+
+  function resumenTerritorialDSV42(d) {
+    const territorio = territoriosDecretoV42(d);
+    const departamentos = [...new Set(territorio.map(t => t.departamento).filter(Boolean))];
+    const provincias = [...new Set(territorio.map(t => `${t.departamento || ''}|${t.provincia || ''}`).filter(x => x.split('|')[1]))].map(x => x.split('|')[1]);
+    const distritos = [...new Set(territorio.map(t => `${t.departamento || ''}|${t.provincia || ''}|${t.distrito || ''}`).filter(x => x.split('|')[2]))].map(x => x.split('|')[2]);
+    return { departamentos, provincias, distritos };
+  }
+
+  function accionValorV42(a, ...keys) {
+    for (const k of keys) {
+      const val = a?.[k];
+      if (val !== undefined && val !== null && String(val) !== '') return val;
+    }
+    return '';
+  }
+
+  function tipoAccionV42(a) {
+    return String(accionValorV42(a, 'tipoAccion', 'tipo', 'tipo_accion') || '').trim();
+  }
+
+  function subtipoAccionV42(a) {
+    return String(accionValorV42(a, 'subtipoRehabilitacion', 'subtipo_rehabilitacion', 'subtipo') || '').trim();
+  }
+
+  function clasificarAccionV42(a) {
+    const t = ntextoV42(tipoAccionV42(a));
+    if (t === ntextoV42(TIPO_PREPARACION_V42)) return 'preparacion';
+    if (t === ntextoV42(TIPO_RESPUESTA_V42)) return 'respuesta';
+    if (t === ntextoV42(TIPO_REHABILITACION_V42)) {
+      const st = ntextoV42(subtipoAccionV42(a));
+      if (st.includes('MEDIOS DE VIDA') || st === ntextoV42(SUBTIPO_MEDIOS_V42)) return 'rehabMedios';
+      return 'rehabRestablecimiento';
+    }
+    return '';
+  }
+
+  function accionesDelDSParaExportarV42(d) {
+    const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
+    const id = String(d?.id || '');
+    const dsTexto = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : '';
+    const vistos = new Set();
+    return lista.filter(a => {
+      const aid = String(a?.dsId || a?.ds_id || '');
+      const ads = String(a?.numeroDS || a?.ds || '');
+      const coincide = (aid && aid === id) || (ads && dsTexto && ads === dsTexto);
+      if (!coincide) return false;
+      const clave = [aid || id, ntextoV42(accionValorV42(a,'programaNacional','programa')), ntextoV42(accionValorV42(a,'codigoAccion','codigo')), ntextoV42(tipoAccionV42(a))].join('|');
+      if (vistos.has(clave)) return false;
+      vistos.add(clave);
+      return true;
+    });
+  }
+
+  function normalizarAvanceV42(a) {
+    const meta = Number(accionValorV42(a, 'metaProgramada', 'meta_programada') || 0);
+    const eje = Number(accionValorV42(a, 'metaEjecutada', 'meta_ejecutada') || 0);
+    const avance = String(accionValorV42(a, 'avance', 'porcentajeAvance') || '').trim();
+    if (avance) return avance;
+    if (meta > 0) return `${Math.min(100, Math.round((eje / meta) * 100))}%`;
+    return '';
+  }
+
+  function filaDesdeAccionV42(a, d) {
+    return {
+      organo: accionValorV42(a, 'programaNacional', 'programa'),
+      codigo: accionValorV42(a, 'codigoAccion', 'codigo'),
+      detalle: accionValorV42(a, 'detalle', 'accionDetalle'),
+      unidad: accionValorV42(a, 'unidadMedida', 'unidad'),
+      meta: accionValorV42(a, 'metaProgramada', 'meta_programada'),
+      plazo: accionValorV42(a, 'plazoDias', 'plazo'),
+      inicio: accionValorV42(a, 'fechaInicio', 'fecha_inicio'),
+      fin: accionValorV42(a, 'fechaFinal', 'fecha_final'),
+      ejecutada: accionValorV42(a, 'metaEjecutada', 'meta_ejecutada'),
+      avance: normalizarAvanceV42(a),
+      comentario: accionValorV42(a, 'descripcionActividades', 'descripcion'),
+      motivos: d?.motivos || d?.exposicion_motivos || ''
+    };
+  }
+
+  function validarFilaFechasV42(f) {
+    if (!f.inicio || !f.fin) return true;
+    const ini = new Date(`${String(f.inicio).slice(0,10)}T00:00:00`);
+    const fin = new Date(`${String(f.fin).slice(0,10)}T00:00:00`);
+    if (isNaN(ini.getTime()) || isNaN(fin.getTime())) return true;
+    return ini <= fin;
+  }
+
+  function clonarV42(obj) {
+    if (!obj) return obj;
+    try { return JSON.parse(JSON.stringify(obj)); } catch { return obj; }
+  }
+
+  function copiarEstiloFilaV42(ws, filaOrigen, filaDestino) {
+    const src = ws.getRow(filaOrigen);
+    const dst = ws.getRow(filaDestino);
+    dst.height = src.height;
+    for (let c = 1; c <= 11; c++) {
+      const sc = src.getCell(c);
+      const dc = dst.getCell(c);
+      dc.style = clonarV42(sc.style || {});
+      if (sc.numFmt) dc.numFmt = sc.numFmt;
+      dc.alignment = clonarV42(sc.alignment || dc.alignment || {});
+      dc.border = clonarV42(sc.border || dc.border || {});
+      dc.fill = clonarV42(sc.fill || dc.fill || {});
+      dc.font = clonarV42(sc.font || dc.font || {});
+    }
+  }
+
+  function limpiarFilaDatosV42(ws, row) {
+    for (let c = 1; c <= 11; c++) ws.getRow(row).getCell(c).value = null;
+  }
+
+  function setValorSeguroV42(ws, celda, valor) {
+    const cell = ws.getCell(celda);
+    cell.value = valor ?? '';
+  }
+
+  function escribirFilaAccionV42(ws, row, f) {
+    copiarEstiloFilaV42(ws, row, row);
+    ws.getCell(`A${row}`).value = f.organo || '';
+    ws.getCell(`B${row}`).value = f.codigo || '';
+    ws.getCell(`C${row}`).value = f.detalle || '';
+    ws.getCell(`D${row}`).value = f.unidad || '';
+    ws.getCell(`E${row}`).value = f.meta === undefined || f.meta === null ? '' : f.meta;
+    ws.getCell(`F${row}`).value = f.plazo === undefined || f.plazo === null ? '' : f.plazo;
+    ws.getCell(`G${row}`).value = excelDateLocalV42(f.inicio);
+    ws.getCell(`H${row}`).value = excelDateLocalV42(f.fin);
+    ws.getCell(`I${row}`).value = f.ejecutada === undefined || f.ejecutada === null ? '' : f.ejecutada;
+    ws.getCell(`J${row}`).value = f.avance || '';
+    ws.getCell(`K${row}`).value = f.comentario || '';
+    ['C','K'].forEach(col => ws.getCell(`${col}${row}`).alignment = { ...(ws.getCell(`${col}${row}`).alignment || {}), wrapText: true, vertical:'top' });
+    ['G','H'].forEach(col => { ws.getCell(`${col}${row}`).numFmt = 'dd/mm/yyyy'; });
+  }
+
+  function buscarFilaPorTextoV42(ws, texto) {
+    const objetivo = ntextoV42(texto);
+    for (let r = 1; r <= Math.max(200, ws.rowCount || 0); r++) {
+      for (let c = 1; c <= 11; c++) {
+        const v = ws.getRow(r).getCell(c).value;
+        const s = typeof v === 'object' && v?.richText ? v.richText.map(x => x.text).join('') : String(v || '');
+        if (ntextoV42(s).includes(objetivo)) return r;
+      }
+    }
+    return 0;
+  }
+
+  function insertarFilasSiFaltanV42(ws, start, capacity, needed, styleRow) {
+    if (needed <= capacity) return;
+    const faltan = needed - capacity;
+    ws.spliceRows(start + capacity, 0, ...Array.from({ length: faltan }, () => []));
+    for (let i = 0; i < faltan; i++) copiarEstiloFilaV42(ws, styleRow, start + capacity + i);
+  }
+
+  function escribirSeccionV42(ws, start, capacity, filas, styleRow) {
+    insertarFilasSiFaltanV42(ws, start, capacity, filas.length, styleRow);
+    const total = Math.max(capacity, filas.length);
+    for (let i = 0; i < total; i++) {
+      const row = start + i;
+      copiarEstiloFilaV42(ws, styleRow, row);
+      limpiarFilaDatosV42(ws, row);
+      if (filas[i]) escribirFilaAccionV42(ws, row, filas[i]);
+    }
+  }
+
+  async function cargarWorkbookDesdePlantillaV42() {
+    if (!window.ExcelJS) throw new Error('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    const wb = new ExcelJS.Workbook();
+    const res = await fetch(TEMPLATE_EXCEL_DS_V42, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Plantilla DS.xlsx no disponible');
+    const buffer = await res.arrayBuffer();
+    await wb.xlsx.load(buffer);
+    return wb;
+  }
+
+  function prepararHojaV42(wb, d) {
+    const ws = wb.getWorksheet(MODELO_HOJA_DS_V42) || wb.worksheets[0];
+    ws.name = nombreBaseDSV42(d);
+    ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1, horizontalCentered: true };
+    ws.pageMargins = { left: 0.25, right: 0.25, top: 0.35, bottom: 0.35, header: 0.15, footer: 0.15 };
+    return ws;
+  }
+
+  function llenarCabeceraV42(ws, d) {
+    const res = resumenTerritorialDSV42(d);
+    setValorSeguroV42(ws, 'A4', `D.S. N°${numeroDSLimpioV42(d)}:`);
+    setValorSeguroV42(ws, 'A5', 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL');
+    setValorSeguroV42(ws, 'A6', `FECHA DE REPORTE: ${fechaReporteCortaV42()}`);
+    setValorSeguroV42(ws, 'A7', `VIGENCIA DE LA DEE: ${textoFechaPeruV42(d.fecha_inicio)} AL ${textoFechaPeruV42(d.fecha_fin)}`);
+    setValorSeguroV42(ws, 'A9', `ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS\n${d.motivos || d.exposicion_motivos || ''}\n\nPeligro/evento: ${d.tipo_peligro || d.peligro || ''}\nDepartamentos: ${res.departamentos.join(', ')}\nProvincias: ${res.provincias.join(', ')}\nDistritos: ${res.distritos.join(', ')}\nEstado de vigencia: ${d.vigencia || ''}`);
+    ws.getCell('A9').alignment = { ...(ws.getCell('A9').alignment || {}), wrapText: true, vertical: 'top' };
+  }
+
+  function agruparFilasAccionesV42(d) {
+    const grupos = { preparacion: [], respuesta: [], rehabRestablecimiento: [], rehabMedios: [] };
+    const advertencias = [];
+    accionesDelDSParaExportarV42(d).forEach(a => {
+      const grupo = clasificarAccionV42(a);
+      if (!grupo) return;
+      const fila = filaDesdeAccionV42(a, d);
+      if (!validarFilaFechasV42(fila)) advertencias.push(`La acción ${fila.codigo || ''} tiene F. inicio mayor que F. final.`);
+      grupos[grupo].push(fila);
+    });
+    return { grupos, advertencias };
+  }
+
+  function escribirAccionesPorTipoV42(ws, d) {
+    const prepHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE PREPARACIÓN') || 13;
+    const respHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE RESPUESTA') || 20;
+    const rehabHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÓN') || 23;
+    const restHeader = buscarFilaPorTextoV42(ws, 'RESTABLECIMIENTO DE SERVICIOS') || 24;
+    const mediosHeader = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || 26;
+
+    const { grupos, advertencias } = agruparFilasAccionesV42(d);
+    const prepStart = prepHeader + 1;
+    const prepCapacity = Math.max(1, respHeader - prepStart);
+    escribirSeccionV42(ws, prepStart, prepCapacity, grupos.preparacion, prepStart);
+
+    const respHeader2 = buscarFilaPorTextoV42(ws, 'ACCIONES DE RESPUESTA') || respHeader;
+    const rehabHeader2 = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÓN') || rehabHeader;
+    const respStart = respHeader2 + 1;
+    const respCapacity = Math.max(1, rehabHeader2 - respStart);
+    escribirSeccionV42(ws, respStart, respCapacity, grupos.respuesta, respStart);
+
+    const restHeader2 = buscarFilaPorTextoV42(ws, 'RESTABLECIMIENTO DE SERVICIOS') || restHeader;
+    const mediosHeader2 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || mediosHeader;
+    const restStart = restHeader2 + 1;
+    const restCapacity = Math.max(1, mediosHeader2 - restStart);
+    escribirSeccionV42(ws, restStart, restCapacity, grupos.rehabRestablecimiento, restStart);
+
+    const mediosHeader3 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || mediosHeader2;
+    const mediosStart = mediosHeader3 + 1;
+    const mediosCapacity = Math.max(1, (ws.rowCount || mediosStart) - mediosStart + 1);
+    escribirSeccionV42(ws, mediosStart, mediosCapacity, grupos.rehabMedios, mediosStart);
+
+    if (advertencias.length) console.warn('Advertencias de exportación DS:', advertencias);
+  }
+
+  async function exportarDSExcel(id) {
+    const d = buscarDecretoPorId(id);
+    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    try {
+      const wb = await cargarWorkbookDesdePlantillaV42();
+      const ws = prepararHojaV42(wb, d);
+      llenarCabeceraV42(ws, d);
+      escribirAccionesPorTipoV42(ws, d);
+      ws.views = [{ state: 'frozen', ySplit: 12 }];
+      const buf = await wb.xlsx.writeBuffer();
+      descargarBlobV42(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivoDSV42(d, 'xlsx'));
+    } catch (err) {
+      console.error('Error exportando Excel DS v42:', err);
+      alert('No se pudo exportar el Excel. Verifique que DS.xlsx esté en la misma carpeta que index.html.');
+    }
+  }
+
+  function exportarDSPDF(id) {
+    const d = buscarDecretoPorId(id);
+    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const azul = [31, 78, 121];
+      const res = resumenTerritorialDSV42(d);
+      const { grupos } = agruparFilasAccionesV42(d);
+      const bodyFor = filas => filas.map(f => [f.organo, f.codigo, f.detalle, f.unidad, f.meta, f.plazo, textoFechaPeruV42(f.inicio), textoFechaPeruV42(f.fin), f.ejecutada, f.avance, f.comentario]);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...azul);
+      doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE LAS ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 14, { align: 'center' });
+      doc.setFontSize(11);
+      doc.text(`D.S. N°${numeroDSLimpioV42(d)}:`, 148.5, 22, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setTextColor(0,0,0);
+      doc.text('SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 29, { align: 'center' });
+      doc.text(`FECHA DE REPORTE: ${fechaReporteCortaV42()}`, 148.5, 35, { align: 'center' });
+      doc.text(`VIGENCIA DE LA DEE: ${textoFechaPeruV42(d.fecha_inicio)} AL ${textoFechaPeruV42(d.fecha_fin)}`, 148.5, 41, { align: 'center' });
+
+      doc.autoTable({
+        startY: 48,
+        body: [
+          ['ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS', d.motivos || ''],
+          ['Peligro / evento', d.tipo_peligro || d.peligro || ''],
+          ['Departamentos', res.departamentos.join(', ')],
+          ['Provincias', res.provincias.join(', ')],
+          ['Distritos', res.distritos.join(', ')]
+        ],
+        theme: 'grid',
+        styles: { fontSize: 7, cellPadding: 1.1, valign: 'top', overflow: 'linebreak' },
+        columnStyles: { 0: { fontStyle: 'bold', fillColor: [221,235,247], cellWidth: 76 }, 1: { cellWidth: 198 } },
+        margin: { left: 11, right: 11 }
+      });
+
+      let y = doc.lastAutoTable.finalY + 4;
+      const secciones = [
+        ['ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', grupos.preparacion],
+        ['ACCIONES DE RESPUESTA', grupos.respuesta],
+        ['ACCIONES DE REHABILITACIÓN - I). RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA', grupos.rehabRestablecimiento],
+        ['ACCIONES DE REHABILITACIÓN - II). NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA', grupos.rehabMedios]
+      ];
+      const head = [['Órgano / unidad', 'Código', 'Acciones específicas', 'Unidad', 'Meta prog.', 'Plazo', 'F. inicio', 'F. fin', 'Meta ejec.', '% avance', 'Comentarios']];
+      secciones.forEach(([titulo, filas]) => {
+        if (y > 178) { doc.addPage(); y = 12; }
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(titulo, 11, y); y += 2;
+        doc.autoTable({
+          startY: y,
+          head,
+          body: bodyFor(filas),
+          theme: 'grid',
+          headStyles: { fillColor: azul, textColor: [255,255,255], halign: 'center', valign: 'middle', fontSize: 6 },
+          styles: { fontSize: 5.8, cellPadding: 0.8, overflow: 'linebreak', valign: 'top', lineColor: [90,90,90], lineWidth: 0.1 },
+          columnStyles: { 0:{cellWidth:25}, 1:{cellWidth:17}, 2:{cellWidth:74}, 3:{cellWidth:18}, 4:{cellWidth:14, halign:'center'}, 5:{cellWidth:12, halign:'center'}, 6:{cellWidth:17}, 7:{cellWidth:17}, 8:{cellWidth:15}, 9:{cellWidth:13}, 10:{cellWidth:43} },
+          margin: { left: 8, right: 8 },
+          didDrawPage: () => {
+            doc.setFontSize(7); doc.setTextColor(100);
+            doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocalISO()}`, 8, 204);
+          }
+        });
+        y = doc.lastAutoTable.finalY + 5;
+      });
+      doc.save(nombreArchivoDSV42(d, 'pdf'));
+    } catch (err) {
+      console.error('Error exportando PDF DS v42:', err);
+      alert('No se pudo exportar el PDF.');
+    }
+  }
+
+  function botonesExportarV42(d) {
+    return `<div class="d-flex flex-wrap gap-1"><button type="button" class="btn btn-sm btn-outline-success" onclick="exportarDSExcel('${escapeHtmlAttr(d.id)}')">Excel</button><button type="button" class="btn btn-sm btn-outline-danger" onclick="exportarDSPDF('${escapeHtmlAttr(d.id)}')">PDF</button></div>`;
+  }
+
+  const renderTablaBaseAnteriorV42 = typeof renderTablaDecretosBasica === 'function' ? renderTablaDecretosBasica : null;
+  renderTablaDecretosBasica = function() {
+    const tbody = document.querySelector('#tablaDS tbody');
+    if (!tbody) return renderTablaBaseAnteriorV42?.apply(this, arguments);
+    const decretos = (state.decretos.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
+    if (!decretos.length) {
+      tbody.innerHTML = '<tr><td colspan="18" class="text-muted">No hay Decretos Supremos registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = decretos.map(d => {
+      const territorio = Array.isArray(d.territorio) ? d.territorio : [];
+      const deps = new Set(territorio.map(t => t.departamento).filter(Boolean));
+      const provs = new Set(territorio.map(t => `${t.departamento}|${t.provincia}`).filter(Boolean));
+      const dists = new Set(territorio.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(Boolean));
+      const estado = ntextoV42(d.estadoRDS || '');
+      let botonRDS = '';
+      let botonRevision = '';
+      if (puedeActivarRDS()) {
+        botonRDS = `<button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button>`;
+        if (puedePreaprobar()) {
+          const habilitado = d.rdsActivo && typeof dsTieneAccionesRegistradas === 'function' && dsTieneAccionesRegistradas(d.id) && estado !== 'PREAPROBADO' && estado !== 'APROBADO';
+          botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
+        } else if (puedeAprobar()) {
+          const habilitado = estado === 'PREAPROBADO';
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+        }
+      } else if (esRegistradorPrograma()) {
+        const programa = programaSesionNormalizado();
+        const cerrado = typeof dsProgramaCerroRegistro === 'function' ? dsProgramaCerroRegistro(d, programa) : false;
+        botonRDS = d.rdsActivo
+          ? (cerrado ? `<button type="button" class="btn btn-sm btn-secondary" disabled>Acciones Registradas</button>` : `<button type="button" class="btn btn-sm btn-primary" onclick="abrirRegistrarAcciones('${escapeHtmlAttr(d.id)}')">Registrar Acciones</button>`)
+          : `<span class="badge text-bg-secondary">No activado</span>`;
+        botonRevision = '';
+      } else {
+        botonRDS = '<span class="text-muted small">Solo lectura</span>';
+        botonRevision = '';
+      }
+      return `
+        <tr>
+          <td>${escapeHtml(formatearNumeroDS(d))}</td>
+          <td>${escapeHtml(d.anio)}</td>
+          <td>${escapeHtml(d.peligro)}</td>
+          <td>${escapeHtml(d.tipo_peligro)}</td>
+          <td>${escapeHtml(d.fecha_inicio)}</td>
+          <td>${escapeHtml(d.fecha_fin)}</td>
+          <td>${escapeHtml(d.vigencia)}</td>
+          <td>${escapeHtml(d.semaforo)}</td>
+          <td>${deps.size}</td>
+          <td>${provs.size}</td>
+          <td>${dists.size}</td>
+          <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+          <td>${escapeHtml(d.cadena || '')}</td>
+          <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
+          <td>${botonRDS}</td>
+          <td>${botonRevision}</td>
+          <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+          <td>${botonesExportarV42(d)}</td>
+        </tr>`;
+    }).join('');
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const head = document.querySelector('#tablaDS thead tr');
+      if (head && ![...head.children].some(th => ntextoV42(th.textContent) === 'EXPORTAR')) {
+        const th = document.createElement('th'); th.textContent = 'Exportar'; head.appendChild(th);
+      }
+      if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
+    }, 600);
   });
 
   window.exportarDSExcel = exportarDSExcel;
