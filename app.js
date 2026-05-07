@@ -1,4 +1,4 @@
-// ================= VERSION 46 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 47 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -6570,7 +6570,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
 // ================= CIERRE FINAL v45.1 - EXPORTACIÓN SIN CAMPOS INTERNOS =================
 (function(){
-  const VERSION_CIERRE = 'v45.1-exportacion-sin-campos-internos';
+  const VERSION_CIERRE = 'v46-exportacion-tipo-accion-clasificada';
   const $id = (id) => document.getElementById(id);
   const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? ''));
   const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
@@ -6649,10 +6649,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function clasificarTipo(tipo){
     const t = norm(tipo);
-    if (t.includes('PREPARACION')) return 'preparacion';
-    if (t.includes('RESPUESTA')) return 'respuesta';
-    if (t.includes('REHABILITACION')) return 'rehabilitacion';
-    return 'otros';
+    if (t.includes('PREPARACION') || t.includes('PREVENCION')) return 'preparacion';
+    if (t.includes('RESPUESTA') || t.includes('ATENCION')) return 'respuesta';
+    if (t.includes('REHABILITACION') || t.includes('RESTABLECIMIENTO') || t.includes('NORMALIZACION')) return 'rehabilitacion';
+    return '';
   }
   function filaAccion(a){
     const metaProg = Number(valor(a,'metaProgramada','meta_programada') || 0);
@@ -6677,12 +6677,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function datosReporteLimpio(d, reunion){
     const acciones = accionesDeReunion(d, reunion).map(filaAccion);
     const secciones = [
-      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', filas:[] },
-      { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
-      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] },
-      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÓN', filas:[] }
+      { key:'preparacion', titulo:'Acciones de Preparación (Solo en DEE por Peligro Inminente)', filas:[] },
+      { key:'respuesta', titulo:'Acciones de Respuesta', filas:[] },
+      { key:'rehabilitacion', titulo:'Acciones de Rehabilitación', filas:[] }
     ];
-    acciones.forEach(f => (secciones.find(s => s.key === clasificarTipo(f.tipo)) || secciones[3]).filas.push(f));
+    acciones.forEach(f => {
+      const key = clasificarTipo(f.tipo);
+      const sec = secciones.find(s => s.key === key);
+      if (sec) sec.filas.push(f);
+    });
     return {
       titulo: tituloDS(d),
       fechaReporte: fechaMostrar(new Date().toISOString()),
@@ -6690,7 +6693,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       peligroEvento: d?.tipo_peligro || '',
       motivos: d?.motivos || d?.exposicion_motivos || '',
       secciones: secciones.filter(s => s.filas.length > 0),
-      totalAcciones: acciones.length
+      totalAcciones: secciones.reduce((total, s) => total + s.filas.length, 0)
     };
   }
   function crearModalExportacionLimpia(){
