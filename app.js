@@ -1,4 +1,4 @@
-// ================= VERSION 44 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 45 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -6208,5 +6208,362 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
       console.info('DEE MIDIS cierre aplicado:', VERSION_CIERRE);
     }, 700);
+  });
+})();
+
+// ================= CIERRE FINAL v44 - EXPORTACIÓN POR REUNIÓN =================
+(function(){
+  const VERSION_CIERRE = 'v44-exportacion-previa-por-reunion';
+  let exportacionPendienteV44 = { dsId: '', tipo: '' };
+
+  function q(id){ return document.getElementById(id); }
+  function txt(v){ return String(v ?? ''); }
+  function norm(v){
+    return txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
+  }
+  function esc(v){
+    return txt(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+  function escAttr(v){ return esc(v); }
+  function getAcciones(){
+    try {
+      if (typeof cargarAccionesLocales === 'function') return cargarAccionesLocales();
+      const data = JSON.parse(localStorage.getItem('accionesDS') || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch { return []; }
+  }
+  function getDecreto(id){
+    try { if (typeof buscarDecretoPorId === 'function') return buscarDecretoPorId(id); } catch {}
+    try {
+      const decretos = JSON.parse(localStorage.getItem('decretos') || '[]');
+      return (Array.isArray(decretos) ? decretos : []).find(d => String(d.id) === String(id)) || null;
+    } catch { return null; }
+  }
+  function valor(a, ...keys){
+    for (const k of keys) {
+      const v = a?.[k];
+      if (v !== undefined && v !== null && txt(v).trim() !== '') return v;
+    }
+    return '';
+  }
+  function fechaSimple(v){
+    const s = txt(v).trim();
+    if (!s) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+    return s;
+  }
+  function fechaMostrar(v){
+    const s = fechaSimple(v);
+    if (!s) return '';
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
+  }
+  function fechaHora(){
+    const d = new Date();
+    const p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+  function reunionKey(numero, fecha){
+    return `${norm(numero)}|${fechaSimple(fecha)}`;
+  }
+  function numeroDSLimpio(d){
+    let n = txt(d?.numero || d?.ds || d?.decreto || d?.decreto_supremo || '').trim();
+    n = n.replace(/^D\.?\s*S\.?\s*N[°.º]?\s*/i, '').trim();
+    n = n.replace(/^DS\s*N[°.º]?\s*/i, '').trim();
+    n = n.replace(/^-+/, '').trim();
+    const m = n.match(/(\d{1,4})\s*-\s*(\d{4})\s*-\s*PCM/i);
+    if (m) return `${m[1].padStart(3,'0')}-${m[2]}-PCM`;
+    const anio = txt(d?.anio || d?.año || '').trim();
+    n = n.replace(/-?\d{4}-PCM$/i, '').replace(/-?PCM$/i, '').trim();
+    n = n.padStart(3,'0');
+    return anio ? `${n}-${anio}-PCM` : n;
+  }
+  function tituloDS(d){ return `D.S. N°${numeroDSLimpio(d)}`; }
+  function nombreArchivo(d, ext, reunion){
+    const base = `DS_${numeroDSLimpio(d)}`.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const reu = norm(reunion?.numeroReunion || '').replace(/\s+/g,'_').replace(/[^A-Z0-9_]/g,'');
+    return `${base}${reu ? '_' + reu : ''}.${ext}`;
+  }
+  function territorios(d){
+    const arr = Array.isArray(d?.territorio) ? d.territorio : [];
+    return arr.map(t => ({
+      departamento: valor(t,'departamento','Departamento'),
+      provincia: valor(t,'provincia','Provincia'),
+      distrito: valor(t,'distrito','Distrito'),
+      ubigeo: valor(t,'ubigeo','UBIGEO')
+    }));
+  }
+  function resumenTerritorio(d){
+    const terr = territorios(d);
+    return {
+      departamentos: [...new Set(terr.map(t => t.departamento).filter(Boolean))],
+      provincias: [...new Set(terr.map(t => `${t.departamento}|${t.provincia}`).filter(x => !x.endsWith('|')))].map(x => x.split('|')[1]),
+      distritos: [...new Set(terr.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(x => !x.endsWith('|')))].map(x => x.split('|')[2])
+    };
+  }
+  function accionesDelDS(d){
+    const id = txt(d?.id);
+    const dsTxt = tituloDS(d);
+    const dsAlt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : dsTxt;
+    return getAcciones().filter(a =>
+      txt(valor(a,'dsId','ds_id')) === id ||
+      txt(valor(a,'numeroDS','ds')) === dsTxt ||
+      txt(valor(a,'numeroDS','ds')) === dsAlt
+    );
+  }
+  function reunionesDelDS(d){
+    const mapa = new Map();
+    const agregar = (numero, fecha, fuente) => {
+      numero = txt(numero).trim(); fecha = fechaSimple(fecha);
+      if (!numero || !fecha) return;
+      const key = reunionKey(numero, fecha);
+      if (!mapa.has(key)) mapa.set(key, { key, numeroReunion: numero, fechaReunion: fecha, fuente });
+    };
+    if (Array.isArray(d?.rdsReuniones)) d.rdsReuniones.forEach(r => agregar(r.numeroReunion || r.numero_reunion, r.fechaReunion || r.fecha_reunion, 'RDS'));
+    agregar(d?.numeroReunion || d?.numero_reunion, d?.fechaReunion || d?.fecha_reunion, 'RDS');
+    accionesDelDS(d).forEach(a => agregar(valor(a,'numeroReunion','numero_reunion'), valor(a,'fechaReunion','fecha_reunion'), 'Acción'));
+    return [...mapa.values()].sort((a,b) => {
+      const ia = (window.REUNIONES_RDS_V38 || []).indexOf(a.numeroReunion);
+      const ib = (window.REUNIONES_RDS_V38 || []).indexOf(b.numeroReunion);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      return a.numeroReunion.localeCompare(b.numeroReunion, 'es') || a.fechaReunion.localeCompare(b.fechaReunion);
+    });
+  }
+  function accionesDeReunion(d, reunion){
+    const key = reunionKey(reunion.numeroReunion, reunion.fechaReunion);
+    return accionesDelDS(d).filter(a => reunionKey(valor(a,'numeroReunion','numero_reunion'), valor(a,'fechaReunion','fecha_reunion')) === key);
+  }
+  function filaAccion(a){
+    const metaProg = Number(valor(a,'metaProgramada','meta_programada') || 0);
+    const metaEjec = Number(valor(a,'metaEjecutada','meta_ejecutada') || 0);
+    let avance = txt(valor(a,'avance'));
+    if (!avance && metaProg > 0) avance = `${Math.min(100, Math.round((metaEjec/metaProg)*100))}%`;
+    return {
+      programa: valor(a,'programaNacional','programa'),
+      tipo: valor(a,'tipoAccion','tipo'),
+      codigo: valor(a,'codigoAccion','codigo'),
+      detalle: valor(a,'detalle','accion','acciones'),
+      unidad: valor(a,'unidadMedida','unidad'),
+      metaProgramada: valor(a,'metaProgramada','meta_programada'),
+      plazo: valor(a,'plazoDias','plazo'),
+      inicio: valor(a,'fechaInicio','fecha_inicio'),
+      fin: valor(a,'fechaFinal','fecha_final'),
+      metaEjecutada: valor(a,'metaEjecutada','meta_ejecutada'),
+      avance,
+      descripcion: valor(a,'descripcionActividades','descripcion'),
+      usuario: valor(a,'usuarioRegistro','usuario_registro'),
+      fechaRegistro: valor(a,'fechaRegistro','fecha_registro')
+    };
+  }
+  function clasificarTipo(tipo){
+    const t = norm(tipo);
+    if (t.includes('PREPARACION')) return 'preparacion';
+    if (t.includes('RESPUESTA')) return 'respuesta';
+    if (t.includes('REHABILITACION')) return 'rehabilitacion';
+    return 'otros';
+  }
+  function datosReporte(d, reunion){
+    const res = resumenTerritorio(d);
+    const acciones = accionesDeReunion(d, reunion).map(filaAccion);
+    const secciones = [
+      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', filas:[] },
+      { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
+      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] },
+      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÓN', filas:[] }
+    ];
+    acciones.forEach(f => (secciones.find(s => s.key === clasificarTipo(f.tipo)) || secciones[3]).filas.push(f));
+    return {
+      titulo: tituloDS(d),
+      fechaReporte: fechaMostrar(new Date().toISOString()),
+      vigencia: `${fechaMostrar(d?.fecha_inicio)} al ${fechaMostrar(d?.fecha_fin)}`,
+      tipo: d?.peligro || '',
+      peligroEvento: d?.tipo_peligro || '',
+      estadoVigencia: d?.vigencia || '',
+      semaforo: d?.semaforo || '',
+      departamentos: res.departamentos.join(', '),
+      provincias: res.provincias.join(', '),
+      distritos: res.distritos.join(', '),
+      motivos: d?.motivos || d?.exposicion_motivos || '',
+      relacion: d?.es_prorroga ? 'Prórroga' : 'Original',
+      cadena: d?.cadena || '',
+      nivelProrroga: d?.nivel_prorroga || 0,
+      rds: d?.rdsActivo ? 'Activo' : 'No activado',
+      reunion,
+      secciones,
+      totalAcciones: acciones.length
+    };
+  }
+  function crearModal(){
+    if (q('modalExportarReunionDS')) return;
+    const div = document.createElement('div');
+    div.className = 'modal fade';
+    div.id = 'modalExportarReunionDS';
+    div.tabIndex = -1;
+    div.setAttribute('aria-hidden','true');
+    div.innerHTML = `
+      <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Seleccionar reunión para exportar</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div id="exportReunionInfo" class="alert alert-info py-2 small mb-3"></div>
+            <label class="form-label">Número de reunión</label>
+            <select id="exportReunionSelect" class="form-select"></select>
+            <div class="form-text">Solo se muestran reuniones registradas para el Decreto Supremo seleccionado.</div>
+          </div>
+          <div class="modal-footer">
+            <button id="btnGenerarExportReunion" type="button" class="btn btn-primary">Generar</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(div);
+    q('btnGenerarExportReunion')?.addEventListener('click', confirmarExportacionReunion);
+  }
+  function abrirModalExportacion(id, tipo){
+    const d = getDecreto(id);
+    if (!d) return alert('Seleccione un Decreto Supremo válido para exportar.');
+    const reuniones = reunionesDelDS(d);
+    if (!reuniones.length) return alert('El Decreto Supremo seleccionado no tiene reuniones registradas para exportar.');
+    crearModal();
+    exportacionPendienteV44 = { dsId: String(id), tipo };
+    const sel = q('exportReunionSelect');
+    const info = q('exportReunionInfo');
+    if (info) info.innerHTML = `<strong>${esc(tituloDS(d))}</strong><br>Tiene ${reuniones.length} reunión${reuniones.length === 1 ? '' : 'es'} registrada${reuniones.length === 1 ? '' : 's'}. Seleccione la reunión que desea visualizar/exportar.`;
+    if (sel) {
+      sel.innerHTML = reuniones.map(r => `<option value="${escAttr(r.key)}">${esc(r.numeroReunion)} · ${esc(fechaMostrar(r.fechaReunion))}</option>`).join('');
+      sel.dataset.reuniones = JSON.stringify(reuniones);
+    }
+    const btn = q('btnGenerarExportReunion');
+    if (btn) btn.textContent = tipo === 'excel' ? 'Generar Excel' : 'Generar PDF';
+    const modal = q('modalExportarReunionDS');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+  }
+  async function confirmarExportacionReunion(){
+    const d = getDecreto(exportacionPendienteV44.dsId);
+    const sel = q('exportReunionSelect');
+    if (!d || !sel) return;
+    let reuniones = [];
+    try { reuniones = JSON.parse(sel.dataset.reuniones || '[]'); } catch {}
+    const reunion = reuniones.find(r => r.key === sel.value);
+    if (!reunion) return alert('Seleccione una reunión registrada válida.');
+    const acciones = accionesDeReunion(d, reunion);
+    if (!acciones.length) return alert('La reunión seleccionada no tiene acciones registradas para exportar.');
+    const modal = q('modalExportarReunionDS');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+    if (exportacionPendienteV44.tipo === 'excel') await generarExcelReunion(d, reunion);
+    else generarPDFReunion(d, reunion);
+  }
+  function descargarBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function estiloTituloExcel(cell){
+    cell.font = { bold:true, size:12, color:{ argb:'FF1F4E79' } };
+    cell.alignment = { horizontal:'center', vertical:'middle', wrapText:true };
+  }
+  function estiloHeaderExcel(row){
+    row.eachCell(cell => {
+      cell.font = { bold:true, color:{ argb:'FFFFFFFF' }, size:9 };
+      cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF1F4E79' } };
+      cell.alignment = { horizontal:'center', vertical:'middle', wrapText:true };
+      cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
+    });
+  }
+  function estiloCeldaExcel(cell){
+    cell.alignment = { vertical:'top', wrapText:true };
+    cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
+  }
+  async function generarExcelReunion(d, reunion){
+    if (!window.ExcelJS) return alert('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    const info = datosReporte(d, reunion);
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'DEE MIDIS'; wb.created = new Date();
+    const ws = wb.addWorksheet(`DS_${numeroDSLimpio(d)}`.replace(/[\\/*?:\[\]]/g,'_').slice(0,31));
+    ws.pageSetup = { paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true };
+    ws.pageMargins = { left:0.25, right:0.25, top:0.35, bottom:0.35, header:0.15, footer:0.15 };
+    ws.columns = [{width:22},{width:18},{width:24},{width:18},{width:18},{width:58},{width:16},{width:14},{width:12},{width:16},{width:16},{width:14},{width:12},{width:42}];
+    let r = 1;
+    [['MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA'],[info.titulo],[`REUNIÓN: ${reunion.numeroReunion} · ${fechaMostrar(reunion.fechaReunion)}`],['SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL'],[`FECHA DE REPORTE: ${info.fechaReporte}`],[`VIGENCIA DE LA DEE: ${info.vigencia}`]].forEach(v => { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = v[0]; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
+    r++;
+    const generales = [
+      ['Número de Decreto Supremo', info.titulo], ['Número de reunión', reunion.numeroReunion], ['Fecha de reunión', fechaMostrar(reunion.fechaReunion)],
+      ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento], ['Fecha inicio', fechaMostrar(d.fecha_inicio)], ['Fecha final', fechaMostrar(d.fecha_fin)],
+      ['Estado de vigencia', info.estadoVigencia], ['Semáforo', info.semaforo], ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos],
+      ['Relación', info.relacion], ['Cadena', info.cadena], ['Prórrogas', info.nivelProrroga], ['RDS', info.rds]
+    ];
+    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
+    generales.forEach(([k,v]) => { ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v || ''; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; r++; });
+    ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos || ''; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
+    const headers = ['Número de reunión','Fecha reunión','Programa Nacional','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
+    info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
+      ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = sec.titulo; estiloHeaderExcel(ws.getRow(r)); r++;
+      ws.getRow(r).values = headers; estiloHeaderExcel(ws.getRow(r)); r++;
+      if (!sec.filas.length) { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'Sin acciones registradas para esta sección.'; estiloCeldaExcel(ws.getCell(`A${r}`)); r++; }
+      else sec.filas.forEach(f => { ws.getRow(r).values = [reunion.numeroReunion, fechaMostrar(reunion.fechaReunion), f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]; ws.getRow(r).eachCell(estiloCeldaExcel); r++; });
+      r++;
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    descargarBlob(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivo(d,'xlsx',reunion));
+  }
+  function generarPDFReunion(d, reunion){
+    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    const info = datosReporte(d, reunion);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    const azul = [31,78,121];
+    doc.setFont('helvetica','bold'); doc.setTextColor(...azul); doc.setFontSize(12);
+    doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
+    doc.setFontSize(11); doc.text(info.titulo, 148.5, 19, { align:'center' });
+    doc.setFontSize(9); doc.text(`REUNIÓN: ${reunion.numeroReunion} · ${fechaMostrar(reunion.fechaReunion)}`, 148.5, 25, { align:'center' });
+    doc.setTextColor(0,0,0); doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 31, { align:'center' });
+    doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 37, { align:'center' });
+    doc.text(`VIGENCIA DE LA DEE: ${info.vigencia}`, 148.5, 43, { align:'center' });
+    const generales = [
+      ['Número de Decreto Supremo', info.titulo], ['Número de reunión', reunion.numeroReunion], ['Fecha de reunión', fechaMostrar(reunion.fechaReunion)], ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento],
+      ['Fecha inicio', fechaMostrar(d.fecha_inicio)], ['Fecha final', fechaMostrar(d.fecha_fin)], ['Estado de vigencia', info.estadoVigencia], ['Semáforo', info.semaforo],
+      ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos], ['Relación', info.relacion], ['Cadena', info.cadena], ['Prórrogas', txt(info.nivelProrroga || '')], ['RDS', info.rds],
+      ['Acciones a realizar según exposición de motivos', info.motivos || '']
+    ];
+    doc.autoTable({ startY:49, body:generales, theme:'grid', styles:{ fontSize:6.5, cellPadding:1, overflow:'linebreak', valign:'top' }, columnStyles:{ 0:{ fontStyle:'bold', fillColor:[221,235,247], cellWidth:58 }, 1:{ cellWidth:214 } }, margin:{ left:11, right:11 } });
+    let y = doc.lastAutoTable.finalY + 4;
+    const head = [['N° reunión','Fecha reunión','Programa','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
+    info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
+      if (y > 175) { doc.addPage(); y = 12; }
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(sec.titulo, 8, y); y += 2;
+      const body = sec.filas.length ? sec.filas.map(f => [reunion.numeroReunion, fechaMostrar(reunion.fechaReunion), f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]) : [['Sin acciones registradas para esta sección.','','','','','','','','','','','','','']];
+      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.3 }, styles:{ fontSize:5.1, cellPadding:0.55, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:17},1:{cellWidth:16},2:{cellWidth:21},3:{cellWidth:24},4:{cellWidth:16},5:{cellWidth:50},6:{cellWidth:14},7:{cellWidth:12},8:{cellWidth:10},9:{cellWidth:14},10:{cellWidth:14},11:{cellWidth:12},12:{cellWidth:10},13:{cellWidth:38} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHora()}`, 8, 204); } });
+      y = doc.lastAutoTable.finalY + 5;
+    });
+    doc.save(nombreArchivo(d,'pdf',reunion));
+  }
+
+  const exportExcelAnterior = window.exportarDSExcel;
+  const exportPDFAnterior = window.exportarDSPDF;
+  window.exportarDSExcel = function(id){ return abrirModalExportacion(id, 'excel'); };
+  window.exportarDSPDF = function(id){ return abrirModalExportacion(id, 'pdf'); };
+  try { exportarDSExcel = window.exportarDSExcel; exportarDSPDF = window.exportarDSPDF; } catch {}
+
+  document.addEventListener('click', function(e){
+    const excelBtn = e.target.closest('#btnExportListadoExcel');
+    const pdfBtn = e.target.closest('#btnPrintListado');
+    if (!excelBtn && !pdfBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    const dsId = q('exportDs')?.value || q('accionDs')?.value || '';
+    if (!dsId) return alert('Seleccione un Decreto Supremo para exportar.');
+    abrirModalExportacion(dsId, excelBtn ? 'excel' : 'pdf');
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      crearModal();
+      console.info('DEE MIDIS cierre aplicado:', VERSION_CIERRE);
+    }, 300);
   });
 })();
