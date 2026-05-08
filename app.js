@@ -1,4 +1,4 @@
-// ================= VERSION 55 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 56 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -7545,4 +7545,237 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   window.verDetalleDS = verDetalleDSV541;
   window.exportarDetalleDSPDFV541 = exportarDetalleDSPDFV541;
+})();
+
+// ================= CIERRE FINAL v55.1 - FILTROS LISTADO DS Y PAGINACIÓN =================
+(function(){
+  const VERSION_CIERRE = 'v55.1-filtros-listado-ds';
+  let paginaDS = 1;
+
+  function q(id){ return document.getElementById(id); }
+  function txt(v){ return String(v ?? '').trim(); }
+  function norm(v){
+    return txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  }
+  function esc(v){
+    if (typeof escapeHtml === 'function') return escapeHtml(v);
+    return txt(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+  function escAttr(v){ return esc(v); }
+  function listaDecretosV551(){
+    try {
+      const base = (state?.decretos?.length ? state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
+      return (Array.isArray(base) ? base : []).map(d => typeof normalizarDecreto === 'function' ? normalizarDecreto(d) : d).filter(Boolean);
+    } catch { return []; }
+  }
+  function territorioDSV551(d){
+    const t = d?.territorio;
+    return Array.isArray(t) ? t : [];
+  }
+  function tituloDSV551(d){
+    try { if (typeof formatearNumeroDSFinal === 'function') return formatearNumeroDSFinal(d); } catch {}
+    try { if (typeof formatearNumeroDS === 'function') return formatearNumeroDS(d); } catch {}
+    const n = txt(d?.numero || d?.ds || d?.decreto).replace(/^0+/, '') || txt(d?.numero || d?.ds || d?.decreto);
+    const npad = txt(d?.numero || d?.ds || d?.decreto).padStart(3,'0');
+    const anio = txt(d?.anio || d?.año || '');
+    return `DS N.° ${npad || n}${anio ? '-' + anio : ''}-PCM`;
+  }
+  function vigenciaActualV551(d){
+    try { if (typeof calcularVigencia === 'function') return calcularVigencia(d?.fecha_fin || d?.fechaFin || ''); } catch {}
+    return txt(d?.vigencia || '');
+  }
+  function semaforoActualV551(d){
+    try { if (typeof calcularSemaforo === 'function') return calcularSemaforo(d?.fecha_fin || d?.fechaFin || ''); } catch {}
+    return txt(d?.semaforo || '');
+  }
+  function valorFiltro(id){ return txt(q(id)?.value || ''); }
+  function fechaOk(valor, filtro, modo){
+    if (!filtro) return true;
+    if (!valor) return false;
+    const v = new Date(`${valor}T00:00:00`).getTime();
+    const f = new Date(`${filtro}T00:00:00`).getTime();
+    if (Number.isNaN(v) || Number.isNaN(f)) return false;
+    return modo === 'desde' ? v >= f : v <= f;
+  }
+  function cumpleTexto(haystack, needle){
+    return !needle || norm(haystack).includes(norm(needle));
+  }
+  function aplicarFiltrosListadoDSV551(decretos){
+    const fDS = valorFiltro('filtroDsTexto');
+    const fEstado = valorFiltro('filtroDsEstado');
+    const fDep = valorFiltro('filtroDsDepartamento');
+    const fProv = valorFiltro('filtroDsProvincia');
+    const fDist = valorFiltro('filtroDsDistrito');
+    const fPeligro = valorFiltro('filtroDsPeligro');
+    const fInicio = valorFiltro('filtroDsFechaInicio');
+    const fFinal = valorFiltro('filtroDsFechaFinal');
+
+    return decretos.filter(d => {
+      const terr = territorioDSV551(d);
+      const titulo = tituloDSV551(d);
+      const dsTexto = `${titulo} ${d?.numero || ''} ${d?.anio || ''} ${d?.codigo_registro || d?.codigoRegistro || ''}`;
+      const peligroTexto = `${d?.peligro || ''} ${d?.tipo_peligro || d?.tipoPeligro || ''}`;
+      const estado = vigenciaActualV551(d);
+      const territorioTexto = terr.map(t => `${t.departamento || ''} ${t.provincia || ''} ${t.distrito || ''}`).join(' ');
+      const depOk = !fDep || terr.some(t => cumpleTexto(t?.departamento || '', fDep));
+      const provOk = !fProv || terr.some(t => cumpleTexto(t?.provincia || '', fProv));
+      const distOk = !fDist || terr.some(t => cumpleTexto(t?.distrito || '', fDist));
+
+      return cumpleTexto(dsTexto, fDS)
+        && (!fEstado || norm(estado) === norm(fEstado))
+        && depOk
+        && provOk
+        && distOk
+        && cumpleTexto(peligroTexto || territorioTexto, fPeligro)
+        && fechaOk(d?.fecha_inicio || d?.fechaInicio || '', fInicio, 'desde')
+        && fechaOk(d?.fecha_fin || d?.fechaFin || '', fFinal, 'hasta');
+    });
+  }
+  function botonesRDSV551(d){
+    let botonRDS = '';
+    let botonRevision = '';
+    try {
+      if (typeof puedeActivarRDS === 'function' && puedeActivarRDS()) {
+        botonRDS = `<button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" onclick="abrirRDS('${escAttr(d.id)}')">RDS</button>`;
+        if (typeof puedePreaprobar === 'function' && puedePreaprobar()) {
+          const estado = norm(d.estadoRDS || '');
+          const habilitado = Boolean(d.rdsActivo) && (typeof dsTieneAccionesRegistradas !== 'function' || dsTieneAccionesRegistradas(d.id)) && estado !== 'PREAPROBADO' && estado !== 'APROBADO';
+          botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escAttr(d.id)}')">PreAprobar</button>`;
+        } else if (typeof puedeAprobar === 'function' && puedeAprobar()) {
+          const habilitado = norm(d.estadoRDS || '') === 'PREAPROBADO';
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escAttr(d.id)}')">Aprobar</button>`;
+        }
+      } else if (typeof esRegistradorPrograma === 'function' && esRegistradorPrograma()) {
+        const programa = typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '';
+        const cerrado = typeof dsProgramaCerroRegistro === 'function' ? dsProgramaCerroRegistro(d, programa) : false;
+        botonRDS = d.rdsActivo
+          ? (cerrado ? `<button type="button" class="btn btn-sm btn-secondary" disabled>Acciones Registradas</button>` : `<button type="button" class="btn btn-sm btn-primary" onclick="abrirRegistrarAcciones('${escAttr(d.id)}')">Registrar Acciones</button>`)
+          : `<span class="badge text-bg-secondary">No activado</span>`;
+      } else {
+        botonRDS = '<span class="text-muted small">Solo lectura</span>';
+      }
+    } catch {
+      botonRDS = '<span class="text-muted small">Solo lectura</span>';
+    }
+    return { botonRDS, botonRevision };
+  }
+  function botonesExportarV551(d){
+    return `<div class="d-flex flex-wrap gap-1"><button type="button" class="btn btn-sm btn-outline-success" onclick="exportarDSExcel('${escAttr(d.id)}')">Excel</button><button type="button" class="btn btn-sm btn-outline-danger" onclick="exportarDSPDF('${escAttr(d.id)}')">PDF</button></div>`;
+  }
+  function asegurarFiltrosListadoDSV551(){
+    const panel = q('filtrosListadoDS');
+    if (!panel) return;
+    panel.querySelectorAll('input, select').forEach(el => {
+      if (el.dataset.filtroDsInit === '1') return;
+      el.dataset.filtroDsInit = '1';
+      el.addEventListener('input', () => { paginaDS = 1; renderTablaDecretosBasicaV551(); });
+      el.addEventListener('change', () => { paginaDS = 1; renderTablaDecretosBasicaV551(); });
+    });
+    const btnBuscar = q('btnAplicarFiltrosDS');
+    if (btnBuscar && btnBuscar.dataset.filtroDsInit !== '1') {
+      btnBuscar.dataset.filtroDsInit = '1';
+      btnBuscar.addEventListener('click', () => { paginaDS = 1; renderTablaDecretosBasicaV551(); });
+    }
+    const btnLimpiar = q('btnLimpiarFiltrosDS');
+    if (btnLimpiar && btnLimpiar.dataset.filtroDsInit !== '1') {
+      btnLimpiar.dataset.filtroDsInit = '1';
+      btnLimpiar.addEventListener('click', () => {
+        ['filtroDsTexto','filtroDsEstado','filtroDsDepartamento','filtroDsProvincia','filtroDsDistrito','filtroDsPeligro','filtroDsFechaInicio','filtroDsFechaFinal'].forEach(id => { if(q(id)) q(id).value = ''; });
+        if(q('filtroDsPageSize')) q('filtroDsPageSize').value = '10';
+        paginaDS = 1;
+        renderTablaDecretosBasicaV551();
+      });
+    }
+    const anterior = q('btnDsPaginaAnterior');
+    if (anterior && anterior.dataset.filtroDsInit !== '1') {
+      anterior.dataset.filtroDsInit = '1';
+      anterior.addEventListener('click', () => { if (paginaDS > 1) { paginaDS--; renderTablaDecretosBasicaV551(); } });
+    }
+    const siguiente = q('btnDsPaginaSiguiente');
+    if (siguiente && siguiente.dataset.filtroDsInit !== '1') {
+      siguiente.dataset.filtroDsInit = '1';
+      siguiente.addEventListener('click', () => { paginaDS++; renderTablaDecretosBasicaV551(); });
+    }
+  }
+  function renderTablaDecretosBasicaV551(){
+    asegurarFiltrosListadoDSV551();
+    const tbody = document.querySelector('#tablaDS tbody');
+    if (!tbody) return;
+    const todos = listaDecretosV551();
+    const filtrados = aplicarFiltrosListadoDSV551(todos);
+    const pageSize = Math.max(10, Number(q('filtroDsPageSize')?.value || 10));
+    const totalPaginas = Math.max(1, Math.ceil(filtrados.length / pageSize));
+    if (paginaDS > totalPaginas) paginaDS = totalPaginas;
+    if (paginaDS < 1) paginaDS = 1;
+    const desde = (paginaDS - 1) * pageSize;
+    const visibles = filtrados.slice(desde, desde + pageSize);
+
+    const contador = q('contadorListadoDS');
+    if (contador) contador.textContent = `Mostrando ${visibles.length ? desde + 1 : 0}-${desde + visibles.length} de ${filtrados.length} registro(s) filtrados · Total: ${todos.length}`;
+    const pag = q('paginacionListadoDS');
+    if (pag) pag.style.setProperty('display', filtrados.length > pageSize ? 'flex' : 'none', 'important');
+    const info = q('dsPaginaInfo');
+    if (info) info.textContent = `Página ${paginaDS} de ${totalPaginas}`;
+    if (q('btnDsPaginaAnterior')) q('btnDsPaginaAnterior').disabled = paginaDS <= 1;
+    if (q('btnDsPaginaSiguiente')) q('btnDsPaginaSiguiente').disabled = paginaDS >= totalPaginas;
+
+    if (!todos.length) {
+      tbody.innerHTML = '<tr><td colspan="18" class="text-muted">No hay Decretos Supremos registrados.</td></tr>';
+      return;
+    }
+    if (!filtrados.length) {
+      tbody.innerHTML = '<tr><td colspan="18" class="text-muted">No se encontraron Decretos Supremos con los filtros aplicados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = visibles.map(d => {
+      const terr = territorioDSV551(d);
+      const deps = new Set(terr.map(t => t.departamento).filter(Boolean));
+      const provs = new Set(terr.map(t => `${t.departamento}|${t.provincia}`).filter(Boolean));
+      const dists = new Set(terr.map(t => `${t.departamento}|${t.provincia}|${t.distrito}`).filter(Boolean));
+      const { botonRDS, botonRevision } = botonesRDSV551(d);
+      return `<tr>
+        <td>${esc(tituloDSV551(d))}</td>
+        <td>${esc(d.anio)}</td>
+        <td>${esc(d.peligro)}</td>
+        <td>${esc(d.tipo_peligro || d.tipoPeligro || '')}</td>
+        <td>${esc(d.fecha_inicio || d.fechaInicio || '')}</td>
+        <td>${esc(d.fecha_fin || d.fechaFin || '')}</td>
+        <td>${esc(vigenciaActualV551(d))}</td>
+        <td>${esc(semaforoActualV551(d))}</td>
+        <td>${deps.size}</td>
+        <td>${provs.size}</td>
+        <td>${dists.size}</td>
+        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${esc(d.cadena || '')}</td>
+        <td>${esc(d.nivel_prorroga || 0)}</td>
+        <td>${botonRDS}</td>
+        <td>${botonRevision}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escAttr(d.id)}')">👁</button></td>
+        <td>${botonesExportarV551(d)}</td>
+      </tr>`;
+    }).join('');
+  }
+  function inyectarEstilosListadoV551(){
+    if (document.getElementById('deeListadoDSV551Styles')) return;
+    const st = document.createElement('style');
+    st.id = 'deeListadoDSV551Styles';
+    st.textContent = `
+      #filtrosListadoDS{border-color:#d9e2ef!important;background:#f8fbff!important;}
+      #filtrosListadoDS label{font-size:11px;font-weight:700;color:#344054;}
+      #filtrosListadoDS .form-control,#filtrosListadoDS .form-select{font-size:12px;min-height:31px;}
+      #exportDs,#exportFechaElaboracion,#btnExportListadoExcel,#btnPrintListado{display:none!important;}
+    `;
+    document.head.appendChild(st);
+  }
+  window.renderTablaDecretosBasica = renderTablaDecretosBasicaV551;
+  try { renderTablaDecretosBasica = renderTablaDecretosBasicaV551; } catch {}
+  document.addEventListener('DOMContentLoaded', () => {
+    inyectarEstilosListadoV551();
+    setTimeout(() => {
+      asegurarFiltrosListadoDSV551();
+      renderTablaDecretosBasicaV551();
+      console.info('DEE MIDIS cierre aplicado:', VERSION_CIERRE);
+    }, 900);
+  });
 })();

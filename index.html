@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v55: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v56: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v55: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v56: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v55 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v56 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v55: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v56: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 55 · 08/05/2026 - 14:00 hrs· MIDIS © 2026
+            VERSION 56 · 08/05/2026 - 17:00 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -1533,12 +1533,68 @@
             <div class="card-body">
               <div class="d-flex justify-content-between mb-3">
                 <h4 class="text-primary">Listado de Decretos Supremos</h4>
-                <div>
-                  <select id="exportDs" class="form-select form-select-sm d-inline-block" style="width:220px"></select>
-                  <input id="exportFechaElaboracion" type="date" class="form-control form-control-sm d-inline-block" style="width:160px">
-                  <button id="btnExportListadoExcel" class="btn btn-sm btn-outline-success">Excel</button>
-                  <button id="btnPrintListado" class="btn btn-sm btn-outline-danger">PDF</button>
+              </div>
+
+              <div id="filtrosListadoDS" class="border rounded bg-light p-3 mb-3">
+                <div class="row g-2 align-items-end">
+                  <div class="col-md-2">
+                    <label class="form-label">Decreto Supremo / DS</label>
+                    <input id="filtroDsTexto" class="form-control form-control-sm" placeholder="Ej.: 003-2026-PCM">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <select id="filtroDsEstado" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      <option value="Vigente">Vigente</option>
+                      <option value="No vigente">No vigente</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Departamento</label>
+                    <input id="filtroDsDepartamento" class="form-control form-control-sm" placeholder="Departamento">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Provincia</label>
+                    <input id="filtroDsProvincia" class="form-control form-control-sm" placeholder="Provincia">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Distrito</label>
+                    <input id="filtroDsDistrito" class="form-control form-control-sm" placeholder="Distrito">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Peligro</label>
+                    <input id="filtroDsPeligro" class="form-control form-control-sm" placeholder="Peligro / evento">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Fecha inicio</label>
+                    <input id="filtroDsFechaInicio" type="date" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Fecha final</label>
+                    <input id="filtroDsFechaFinal" type="date" class="form-control form-control-sm">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Mostrar</label>
+                    <select id="filtroDsPageSize" class="form-select form-select-sm">
+                      <option value="10">10 registros</option>
+                      <option value="25">25 registros</option>
+                      <option value="50">50 registros</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3 d-flex gap-2">
+                    <button id="btnAplicarFiltrosDS" type="button" class="btn btn-sm btn-primary">Buscar</button>
+                    <button id="btnLimpiarFiltrosDS" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button>
+                  </div>
+                  <div class="col-md-3 text-end">
+                    <span id="contadorListadoDS" class="text-muted small">Mostrando 0 de 0 registros</span>
+                  </div>
                 </div>
+              </div>
+
+              <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="paginacionListadoDS" style="display:none!important">
+                <button id="btnDsPaginaAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
+                <span id="dsPaginaInfo" class="small text-muted">Página 1 de 1</span>
+                <button id="btnDsPaginaSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
               </div>
 
               <div class="table-responsive">
