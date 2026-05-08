@@ -406,6 +406,235 @@
         gap: 10px;
       }
     }
+
+
+    /* ================= AJUSTE LOGIN v50: reducción visual 30% =================
+       Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
+    .login-wrap {
+      padding: 20px;
+    }
+
+    .login-shell {
+      width: min(756px, 100%);
+      min-height: 448px;
+      grid-template-columns: 1.02fr .98fr;
+      border-radius: 20px;
+      box-shadow: 0 17px 49px rgba(6, 43, 96, .15);
+    }
+
+    .login-hero-panel {
+      padding: 39px 36px;
+    }
+
+    .login-hero-panel::before {
+      width: 224px;
+      height: 224px;
+      right: -84px;
+      top: -63px;
+    }
+
+    .login-hero-panel::after {
+      width: 168px;
+      height: 168px;
+      left: -63px;
+      bottom: -56px;
+    }
+
+    .login-brand-mark {
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 12px;
+      margin-bottom: 36px;
+      font-size: .82rem;
+    }
+
+    .login-brand-mark span:first-child {
+      width: 27px;
+      height: 27px;
+      border-radius: 9px;
+      font-size: 15px;
+    }
+
+    .login-hero-title {
+      font-size: clamp(1.58rem, 2.8vw, 2.8rem);
+      margin-bottom: 12px;
+    }
+
+    .login-hero-subtitle {
+      font-size: .98rem;
+      margin-bottom: 12px;
+    }
+
+    .login-hero-text {
+      max-width: 330px;
+      font-size: .78rem;
+      line-height: 1.55;
+    }
+
+    .login-hero-badges {
+      gap: 7px;
+      margin-top: 20px;
+    }
+
+    .login-hero-badges span {
+      padding: 6px 9px;
+      font-size: .66rem;
+    }
+
+    .login-hero-footer {
+      font-size: .64rem;
+    }
+
+    .login-form-panel {
+      padding: 34px 30px;
+    }
+
+    .login-card {
+      max-width: 305px;
+      border-radius: 17px;
+      padding: 24px;
+      box-shadow: 0 11px 28px rgba(13, 64, 138, .10);
+    }
+
+    .login-logo-row {
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .login-shield {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .login-brand-text {
+      font-size: .86rem;
+    }
+
+    .login-brand-text small {
+      font-size: .58rem;
+      margin-top: 3px;
+    }
+
+    .login-title {
+      font-size: 1.26rem;
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: .72rem;
+      margin-bottom: 17px;
+      line-height: 1.4;
+    }
+
+    .form-label-custom {
+      font-size: .70rem;
+      margin-bottom: 6px;
+    }
+
+    .input-custom {
+      height: 34px;
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-size: .76rem;
+    }
+
+    .input-custom:focus {
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, .11);
+    }
+
+    .input-password-with-toggle {
+      padding-right: 70px;
+    }
+
+    .btn-toggle-password {
+      right: 6px;
+      border-radius: 8px;
+      padding: 5px 7px;
+      font-size: .62rem;
+    }
+
+    .login-options-row {
+      gap: 8px;
+      margin: 2px 0 14px;
+      font-size: .66rem;
+    }
+
+    .login-options-row label {
+      gap: 6px;
+    }
+
+    .btn-login {
+      height: 35px;
+      border-radius: 9px;
+      font-size: .78rem;
+      box-shadow: 0 8px 17px rgba(13, 110, 253, .22);
+    }
+
+    .btn-login:hover {
+      box-shadow: 0 11px 21px rgba(13, 110, 253, .24);
+    }
+
+    .loginMsg, #loginMsg {
+      min-height: 13px;
+      font-size: .68rem;
+    }
+
+    .login-security-note {
+      margin-top: 11px;
+      padding-top: 10px;
+      font-size: .61rem;
+      line-height: 1.35;
+    }
+
+    .login-version {
+      margin-top: 10px;
+      font-size: .58rem;
+    }
+
+    @media (max-width: 900px) {
+      .login-shell {
+        width: min(620px, 100%);
+      }
+      .login-hero-panel {
+        min-height: 185px;
+        padding: 24px 22px;
+      }
+      .login-brand-mark {
+        margin-bottom: 18px;
+      }
+      .login-hero-title {
+        font-size: 1.7rem;
+      }
+      .login-form-panel {
+        padding: 24px 18px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .login-wrap {
+        padding: 0;
+      }
+      .login-shell {
+        width: 100%;
+      }
+      .login-card {
+        max-width: 330px;
+        padding: 22px 18px;
+        border-radius: 18px;
+      }
+      .login-title {
+        font-size: 1.22rem;
+      }
+      .input-custom {
+        height: 38px;
+        font-size: .82rem;
+      }
+      .btn-login {
+        height: 38px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -422,16 +651,16 @@
           <h1 class="login-hero-title">Bienvenido</h1>
           <div class="login-hero-subtitle">Registro de DEE - MIDIS</div>
           <p class="login-hero-text">
-            Gestione, registre y monitoree información de emergencias de manera segura, ordenada y oportuna.
+            Gestione, registre las acciones de intervención del sector de manera ordenada y oportuna.
           </p>
           <div class="login-hero-badges">
             <span>Gestión de información</span>
             <span>Seguridad institucional</span>
-            <span>Monitoreo oportuno</span>
+            <span>Acciones de intervención</span>
           </div>
         </div>
         <div class="login-hero-footer">
-          Ministerio de Desarrollo e Inclusión Social · Centro de Operaciones de Emergencia
+          Centro de Operaciones de Emergencia Sectorial · Ministerio de Desarrollo e Inclusión Social
         </div>
       </section>
 
@@ -479,7 +708,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 49 · 08/05/2026 11:20 hrs · MIDIS © 2026
+            VERSION 50 · 08/05/2026 11:40 hrs · MIDIS © 2026
           </div>
         </div>
       </section>

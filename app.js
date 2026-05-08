@@ -1,4 +1,4 @@
-// ================= VERSION 49 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 50 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
