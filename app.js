@@ -1,4 +1,4 @@
-// ================= VERSION 53 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 54 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -6910,4 +6910,302 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   document.addEventListener('DOMContentLoaded', initLoginVisualHelpers);
   setTimeout(initLoginVisualHelpers, 300);
+})();
+
+// ================= CIERRE FINAL DASHBOARD v53.1 - MAPA CENTRADO Y FILTROS VIGENCIA =================
+(function cierreFinalDashboardCentradoFiltrosV531(){
+  const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0'];
+  const PERU_CENTER = [-9.19, -75.02];
+  const PERU_ZOOM = 5;
+  let mostrarVigentesDEE = true;
+  let mostrarNoVigentesDEE = false;
+  let mapaDashboardV531 = null;
+  let capaDashboardV531 = null;
+
+  function fechaLocalCeroV531(valor) {
+    if (!valor) return null;
+    const s = String(valor).slice(0, 10);
+    const d = new Date(`${s}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function hoyLocalCeroV531() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function esDSVigenteV531(d) {
+    const hoy = hoyLocalCeroV531();
+    const inicio = fechaLocalCeroV531(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCeroV531(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (inicio && hoy < inicio) return false;
+    return hoy <= fin;
+  }
+
+  function territorioDSV531(d) {
+    return Array.isArray(d?.territorio) ? d.territorio : [];
+  }
+
+  function keyDepartamentoV531(t) {
+    return normalizarTexto(t?.departamento || '');
+  }
+
+  function keyProvinciaV531(t) {
+    return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}`;
+  }
+
+  function keyDistritoV531(t) {
+    const ub = getUbigeoValue(t);
+    if (ub) return String(ub);
+    return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}|${normalizarTexto(t?.distrito || '')}`;
+  }
+
+  function latLngTerritorioV531(t) {
+    const lat = Number(String(getLatitud(t)).replace(',', '.'));
+    const lng = Number(String(getLongitud(t)).replace(',', '.'));
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
+    return null;
+  }
+
+  function diasRestantesV531(d) {
+    const fin = fechaLocalCeroV531(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return 0;
+    return Math.ceil((fin - hoyLocalCeroV531()) / 86400000);
+  }
+
+  function avanceTiempoV531(d) {
+    const inicio = fechaLocalCeroV531(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCeroV531(d?.fecha_fin || d?.fechaFin);
+    const hoy = hoyLocalCeroV531();
+    if (!inicio || !fin || fin <= inicio) return 0;
+    const total = fin - inicio;
+    const usado = Math.min(Math.max(hoy - inicio, 0), total);
+    return Math.round((usado / total) * 100);
+  }
+
+  function semaforoEjecutivoV531(d) {
+    if (!esDSVigenteV531(d)) return { texto: 'No vigente', clase: 'text-bg-secondary', orden: 4 };
+    const inicio = fechaLocalCeroV531(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocalCeroV531(d?.fecha_fin || d?.fechaFin);
+    const hoy = hoyLocalCeroV531();
+    if (!inicio || !fin || fin <= inicio) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
+    const restante = Math.max(fin - hoy, 0);
+    const total = fin - inicio;
+    const pctRestante = (restante / total) * 100;
+    if (pctRestante < 20) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
+    if (pctRestante <= 50) return { texto: 'Ámbar', clase: 'dee-badge-ambar', orden: 2 };
+    return { texto: 'Verde', clase: 'dee-badge-verde', orden: 3 };
+  }
+
+  function asegurarControlesDashboardV531() {
+    const btnActualizar = $('btnActualizarDashboard');
+    if (!btnActualizar || $('btnToggleDSVigentes')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'd-flex gap-2 align-items-center flex-wrap justify-content-end';
+    btnActualizar.parentNode.insertBefore(wrap, btnActualizar);
+    wrap.appendChild(btnActualizar);
+    const btnVig = document.createElement('button');
+    btnVig.id = 'btnToggleDSVigentes';
+    btnVig.type = 'button';
+    btnVig.className = 'btn btn-sm btn-primary';
+    btnVig.textContent = 'Vigentes: ON';
+    const btnNoVig = document.createElement('button');
+    btnNoVig.id = 'btnToggleDSNoVigentes';
+    btnNoVig.type = 'button';
+    btnNoVig.className = 'btn btn-sm btn-outline-secondary';
+    btnNoVig.textContent = 'No vigentes: OFF';
+    wrap.insertBefore(btnVig, btnActualizar);
+    wrap.insertBefore(btnNoVig, btnActualizar);
+    btnVig.addEventListener('click', () => {
+      mostrarVigentesDEE = !mostrarVigentesDEE;
+      if (!mostrarVigentesDEE && !mostrarNoVigentesDEE) mostrarNoVigentesDEE = true;
+      renderDashboardEjecutivoDEE();
+    });
+    btnNoVig.addEventListener('click', () => {
+      mostrarNoVigentesDEE = !mostrarNoVigentesDEE;
+      if (!mostrarVigentesDEE && !mostrarNoVigentesDEE) mostrarVigentesDEE = true;
+      renderDashboardEjecutivoDEE();
+    });
+  }
+
+  function actualizarEstadoBotonesV531() {
+    const btnVig = $('btnToggleDSVigentes');
+    const btnNoVig = $('btnToggleDSNoVigentes');
+    if (btnVig) {
+      btnVig.textContent = mostrarVigentesDEE ? 'Vigentes: ON' : 'Vigentes: OFF';
+      btnVig.className = mostrarVigentesDEE ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
+    }
+    if (btnNoVig) {
+      btnNoVig.textContent = mostrarNoVigentesDEE ? 'No vigentes: ON' : 'No vigentes: OFF';
+      btnNoVig.className = mostrarNoVigentesDEE ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-outline-secondary';
+    }
+  }
+
+  function construirDatosDashboardV531() {
+    const decretos = (state.decretos?.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
+    const filtrados = decretos.filter(d => esDSVigenteV531(d) ? mostrarVigentesDEE : mostrarNoVigentesDEE);
+    const departamentos = new Set();
+    const provincias = new Set();
+    const distritos = new Map();
+    const departamentosConteo = new Map();
+
+    filtrados.forEach((d, i) => {
+      territorioDSV531(d).forEach(t => {
+        const depKey = keyDepartamentoV531(t);
+        const provKey = keyProvinciaV531(t);
+        const distKey = keyDistritoV531(t);
+        if (!depKey || !provKey || !distKey) return;
+        departamentos.add(depKey);
+        provincias.add(provKey);
+        departamentosConteo.set(depKey, (departamentosConteo.get(depKey) || 0) + 1);
+        if (!distritos.has(distKey)) {
+          distritos.set(distKey, { key: distKey, departamento: t.departamento || '', provincia: t.provincia || '', distrito: t.distrito || '', latlng: latLngTerritorioV531(t), decretos: [], fechasInicio: [], fechasFin: [] });
+        }
+        const item = distritos.get(distKey);
+        item.decretos.push({ id: d.id, nombre: formatearNumeroDS(d), color: DASH_COLORS[i % DASH_COLORS.length], vigente: esDSVigenteV531(d) });
+        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+      });
+    });
+    return { decretos, filtrados, departamentos, provincias, distritos, departamentosConteo };
+  }
+
+  function renderKPIsV531(datos) {
+    const cont = $('dashboardMetricas');
+    if (!cont) return;
+    const repetidos = [...datos.distritos.values()].filter(x => new Set(x.decretos.map(d => d.id)).size > 1).length;
+    const cards = [
+      ['Declaratorias mostradas', datos.filtrados.length, mostrarVigentesDEE && mostrarNoVigentesDEE ? 'Vigentes y no vigentes' : (mostrarVigentesDEE ? 'Solo vigentes' : 'Solo no vigentes')],
+      ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
+      ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
+      ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
+      ['Distritos en más de una declaratoria', repetidos, 'Duplicidad entre DS filtrados']
+    ];
+    cont.innerHTML = cards.map(([label, value, note]) => `
+      <div class="col-12 col-md-6">
+        <div class="dee-kpi-card">
+          <div class="dee-kpi-number">${escapeHtml(value)}</div>
+          <div class="dee-kpi-label">${escapeHtml(label)}</div>
+          <div class="dee-kpi-note">${escapeHtml(note)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function reiniciarMapaSiCorrespondeV531() {
+    const el = $('mapaDS');
+    if (!el || !window.L) return null;
+    if (el.dataset.mapaV531 === '1') return el;
+    const nuevo = el.cloneNode(false);
+    nuevo.id = 'mapaDS';
+    nuevo.className = el.className;
+    nuevo.style.cssText = el.style.cssText;
+    nuevo.dataset.mapaV531 = '1';
+    el.parentNode.replaceChild(nuevo, el);
+    mapaDashboardV531 = null;
+    capaDashboardV531 = null;
+    return nuevo;
+  }
+
+  function renderMapaV531(datos) {
+    const el = reiniciarMapaSiCorrespondeV531();
+    if (!el || !window.L) return;
+    if (!mapaDashboardV531) {
+      mapaDashboardV531 = L.map(el, { scrollWheelZoom: true, zoomControl: true }).setView(PERU_CENTER, PERU_ZOOM);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap' }).addTo(mapaDashboardV531);
+      capaDashboardV531 = L.layerGroup().addTo(mapaDashboardV531);
+    }
+    capaDashboardV531.clearLayers();
+    [...datos.distritos.values()].forEach(item => {
+      if (!item.latlng) return;
+      const dsUnicos = [...new Map(item.decretos.map(d => [d.id, d])).values()];
+      const repetido = dsUnicos.length > 1;
+      const color = repetido ? '#111827' : (dsUnicos[0]?.color || '#0d6efd');
+      const marker = L.circleMarker(item.latlng, {
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? 0.95 : 0.78
+      });
+      marker.bindTooltip(`
+        <strong>${escapeHtml(item.distrito)}</strong><br>
+        Provincia: ${escapeHtml(item.provincia)}<br>
+        Departamento: ${escapeHtml(item.departamento)}<br>
+        Decreto(s): ${escapeHtml(dsUnicos.map(d => d.nombre).join(', '))}
+      `, { sticky: true });
+      marker.addTo(capaDashboardV531);
+    });
+    mapaDashboardV531.setView(PERU_CENTER, PERU_ZOOM);
+    setTimeout(() => {
+      mapaDashboardV531?.invalidateSize();
+      mapaDashboardV531?.setView(PERU_CENTER, PERU_ZOOM);
+    }, 180);
+  }
+
+  function renderResumenDSV531(datos) {
+    const tbody = document.querySelector('#tablaResumenDS tbody');
+    if (!tbody) return;
+    const filas = datos.filtrados.map(d => {
+      const territorio = territorioDSV531(d);
+      const deps = new Set(territorio.map(keyDepartamentoV531).filter(Boolean));
+      const provs = new Set(territorio.map(keyProvinciaV531).filter(Boolean));
+      const dists = new Set(territorio.map(keyDistritoV531).filter(Boolean));
+      const sem = semaforoEjecutivoV531(d);
+      return { d, deps, provs, dists, sem };
+    }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantesV531(a.d) - diasRestantesV531(b.d));
+    tbody.innerHTML = filas.length ? filas.map(x => `
+      <tr>
+        <td>${escapeHtml(formatearNumeroDS(x.d))}</td>
+        <td>${escapeHtml(x.d.fecha_inicio || '')}</td>
+        <td>${escapeHtml(x.d.fecha_fin || '')}</td>
+        <td>${diasRestantesV531(x.d)}</td>
+        <td>${avanceTiempoV531(x.d)}%</td>
+        <td><span class="badge ${x.sem.clase}">${x.sem.texto}</span></td>
+        <td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td>
+      </tr>`).join('') : '<tr><td colspan="9" class="dee-dashboard-empty">No hay declaratorias para los filtros seleccionados.</td></tr>';
+  }
+
+  function renderDepartamentosV531(datos) {
+    const tbody = document.querySelector('#tablaDeptos tbody');
+    if (!tbody) return;
+    const estado = mostrarVigentesDEE && mostrarNoVigentesDEE ? 'Filtrado' : (mostrarVigentesDEE ? 'Vigente' : 'No vigente');
+    const badge = mostrarVigentesDEE && !mostrarNoVigentesDEE ? 'text-bg-success' : (mostrarNoVigentesDEE && !mostrarVigentesDEE ? 'text-bg-secondary' : 'text-bg-primary');
+    const filas = [...datos.departamentosConteo.entries()].map(([key, count]) => ({ departamento: key, count })).sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento, 'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${escapeHtml(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${badge}">${estado}</span></td></tr>`).join('') : '<tr><td colspan="3" class="dee-dashboard-empty">No hay departamentos para los filtros seleccionados.</td></tr>';
+  }
+
+  function renderRepetidosV531(datos) {
+    const tbody = document.querySelector('#tablaRepetidos tbody');
+    if (!tbody) return;
+    const filas = [...datos.distritos.values()].map(item => ({ ...item, veces: new Set(item.decretos.map(d => d.id)).size })).filter(item => item.veces > 1).sort((a,b) => b.veces - a.veces || String(a.departamento).localeCompare(String(b.departamento), 'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `
+      <tr><td>${escapeHtml(f.departamento)}</td><td>${escapeHtml(f.provincia)}</td><td>${escapeHtml(f.distrito)}</td><td>${f.veces}</td><td>${escapeHtml(f.fechasInicio.sort()[0] || '')}</td><td>${escapeHtml(f.fechasFin.sort().slice(-1)[0] || '')}</td></tr>`).join('') : '<tr><td colspan="6" class="dee-dashboard-empty">No hay distritos repetidos para los filtros seleccionados.</td></tr>';
+  }
+
+  function renderDashboardEjecutivoDEE() {
+    try {
+      asegurarControlesDashboardV531();
+      actualizarEstadoBotonesV531();
+      const datos = construirDatosDashboardV531();
+      renderKPIsV531(datos);
+      renderResumenDSV531(datos);
+      renderDepartamentosV531(datos);
+      renderRepetidosV531(datos);
+      renderMapaV531(datos);
+    } catch (e) {
+      console.error('Error renderizando Dashboard v53.1:', e);
+    }
+  }
+
+  window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoDEE;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    asegurarControlesDashboardV531();
+    $('btnActualizarDashboard')?.addEventListener('click', renderDashboardEjecutivoDEE);
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', () => setTimeout(renderDashboardEjecutivoDEE, 120));
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(renderDashboardEjecutivoDEE, 180));
+    setTimeout(renderDashboardEjecutivoDEE, 1000);
+  });
 })();
