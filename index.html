@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v52: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v53: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v52: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v53: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v52 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v53 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1144,6 +1144,267 @@
       }
     }
 
+
+    /* ================= AJUSTE LOGIN v53: aumento visual 10% =================
+       Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
+       autenticación, usuarios, roles ni navegación posterior al login. */
+    #loginView.login-wrap {
+      padding: 15px;
+    }
+
+    #loginView .login-shell {
+      width: min(594px, 100%);
+      min-height: 352px;
+      grid-template-columns: 1.02fr .98fr;
+      border-radius: 15px;
+      box-shadow: 0 13px 39px rgba(6, 43, 96, .15);
+    }
+
+    #loginView .login-hero-panel {
+      padding: 31px 29px;
+    }
+
+    #loginView .login-hero-panel::before {
+      width: 176px;
+      height: 176px;
+      right: -66px;
+      top: -50px;
+    }
+
+    #loginView .login-hero-panel::after {
+      width: 132px;
+      height: 132px;
+      left: -50px;
+      bottom: -44px;
+    }
+
+    #loginView .login-brand-mark {
+      gap: 7px;
+      padding: 6px 8px;
+      border-radius: 9px;
+      margin-bottom: 26px;
+      font-size: .73rem;
+    }
+
+    #loginView .login-brand-mark span:first-child {
+      width: 21px;
+      height: 21px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    #loginView .login-hero-title {
+      font-size: clamp(1.24rem, 2.2vw, 2.2rem);
+      margin-bottom: 10px;
+      letter-spacing: -.03em;
+    }
+
+    #loginView .login-hero-subtitle {
+      font-size: .75rem;
+      margin-bottom: 10px;
+    }
+
+    #loginView .login-hero-text {
+      max-width: 259px;
+      font-size: .64rem;
+      line-height: 1.48;
+    }
+
+    #loginView .login-hero-badges {
+      gap: 6px;
+      margin-top: 15px;
+    }
+
+    #loginView .login-hero-badges span {
+      padding: 5px 7px;
+      font-size: .55rem;
+      border-radius: 999px;
+    }
+
+    #loginView .login-hero-footer {
+      font-size: .57rem;
+      line-height: 1.38;
+    }
+
+    #loginView .login-form-panel {
+      padding: 26px 24px;
+    }
+
+    #loginView .login-card {
+      max-width: 237px;
+      border-radius: 13px;
+      padding: 19px;
+      box-shadow: 0 9px 22px rgba(13, 64, 138, .10);
+    }
+
+    #loginView .login-logo-row {
+      gap: 7px;
+      margin-bottom: 13px;
+    }
+
+    #loginView .login-shield {
+      width: 25px;
+      height: 25px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    #loginView .login-brand-text {
+      font-size: .68rem;
+    }
+
+    #loginView .login-brand-text small {
+      font-size: .50rem;
+      margin-top: 2px;
+    }
+
+    #loginView .login-title {
+      font-size: .99rem;
+      margin-bottom: 4px;
+    }
+
+    #loginView .login-subtitle {
+      font-size: .59rem;
+      margin-bottom: 13px;
+      line-height: 1.38;
+    }
+
+    #loginView .form-label-custom {
+      font-size: .61rem;
+      margin-bottom: 5px;
+    }
+
+    #loginView .login-card .mb-3 {
+      margin-bottom: .61rem !important;
+    }
+
+    #loginView .login-card .mb-2 {
+      margin-bottom: .50rem !important;
+    }
+
+    #loginView .input-custom {
+      height: 28px;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: .64rem;
+    }
+
+    #loginView .input-custom:focus {
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, .11);
+    }
+
+    #loginView .input-password-with-toggle {
+      padding-right: 59px;
+    }
+
+    #loginView .btn-toggle-password {
+      right: 5px;
+      border-radius: 7px;
+      padding: 4px 6px;
+      font-size: .53rem;
+    }
+
+    #loginView .login-options-row {
+      gap: 7px;
+      margin: 2px 0 11px;
+      font-size: .55rem;
+    }
+
+    #loginView .login-options-row label {
+      gap: 5px;
+    }
+
+    #loginView .login-options-row input[type="checkbox"] {
+      width: 12px;
+      height: 12px;
+    }
+
+    #loginView .btn-login {
+      height: 29px;
+      border-radius: 8px;
+      font-size: .64rem;
+      box-shadow: 0 7px 13px rgba(13, 110, 253, .22);
+    }
+
+    #loginView .btn-login:hover {
+      box-shadow: 0 9px 17px rgba(13, 110, 253, .24);
+    }
+
+    #loginView .loginMsg,
+    #loginView #loginMsg {
+      min-height: 11px;
+      font-size: .57rem;
+      margin-top: .50rem !important;
+    }
+
+    #loginView .login-security-note {
+      margin-top: 9px;
+      padding-top: 8px;
+      font-size: .53rem;
+      line-height: 1.33;
+    }
+
+    #loginView .login-version {
+      margin-top: 8px;
+      font-size: .50rem;
+    }
+
+    @media (max-width: 900px) {
+      #loginView .login-shell {
+        width: min(594px, 100%);
+      }
+      #loginView .login-hero-panel {
+        min-height: 143px;
+        padding: 20px 18px;
+      }
+      #loginView .login-brand-mark {
+        margin-bottom: 13px;
+      }
+      #loginView .login-hero-title {
+        font-size: 1.38rem;
+      }
+      #loginView .login-form-panel {
+        padding: 20px 15px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      #loginView.login-wrap {
+        padding: 0;
+      }
+      #loginView .login-shell {
+        width: 100%;
+        min-height: 100vh;
+      }
+      #loginView .login-card {
+        max-width: 308px;
+        padding: 20px 18px;
+        border-radius: 18px;
+      }
+      #loginView .login-title {
+        font-size: 1.19rem;
+      }
+      #loginView .login-subtitle,
+      #loginView .form-label-custom,
+      #loginView .login-options-row,
+      #loginView .login-security-note,
+      #loginView .login-version {
+        font-size: .79rem;
+      }
+      #loginView .input-custom {
+        height: 40px;
+        font-size: .90rem;
+      }
+      #loginView .btn-login {
+        height: 40px;
+        font-size: .90rem;
+      }
+      #loginView .btn-toggle-password {
+        font-size: .68rem;
+        padding: 6px 8px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1217,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 52 · 08/05/2026 · MIDIS © 2026
+            VERSION 53 · 08/05/2026 - 12:20 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
