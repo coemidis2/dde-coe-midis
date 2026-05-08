@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v50: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v51: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -635,6 +635,266 @@
         height: 38px;
       }
     }
+
+
+    /* ================= AJUSTE LOGIN v51: reducción visual 50% =================
+       Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
+    .login-wrap {
+      padding: 14px;
+    }
+
+    .login-shell {
+      width: min(540px, 100%);
+      min-height: 320px;
+      grid-template-columns: 1.02fr .98fr;
+      border-radius: 14px;
+      box-shadow: 0 12px 35px rgba(6, 43, 96, .14);
+    }
+
+    .login-hero-panel {
+      padding: 28px 26px;
+    }
+
+    .login-hero-panel::before {
+      width: 160px;
+      height: 160px;
+      right: -60px;
+      top: -45px;
+    }
+
+    .login-hero-panel::after {
+      width: 120px;
+      height: 120px;
+      left: -45px;
+      bottom: -40px;
+    }
+
+    .login-brand-mark {
+      gap: 6px;
+      padding: 5px 7px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-size: .66rem;
+    }
+
+    .login-brand-mark span:first-child {
+      width: 19px;
+      height: 19px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .login-hero-title {
+      font-size: clamp(1.13rem, 2vw, 2rem);
+      margin-bottom: 9px;
+      letter-spacing: -.03em;
+    }
+
+    .login-hero-subtitle {
+      font-size: .68rem;
+      margin-bottom: 9px;
+    }
+
+    .login-hero-text {
+      max-width: 235px;
+      font-size: .58rem;
+      line-height: 1.45;
+    }
+
+    .login-hero-badges {
+      gap: 5px;
+      margin-top: 14px;
+    }
+
+    .login-hero-badges span {
+      padding: 4px 6px;
+      font-size: .50rem;
+      border-radius: 999px;
+    }
+
+    .login-hero-footer {
+      font-size: .52rem;
+      line-height: 1.35;
+    }
+
+    .login-form-panel {
+      padding: 24px 22px;
+    }
+
+    .login-card {
+      max-width: 215px;
+      border-radius: 12px;
+      padding: 17px;
+      box-shadow: 0 8px 20px rgba(13, 64, 138, .10);
+    }
+
+    .login-logo-row {
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .login-shield {
+      width: 23px;
+      height: 23px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
+
+    .login-brand-text {
+      font-size: .62rem;
+    }
+
+    .login-brand-text small {
+      font-size: .45rem;
+      margin-top: 2px;
+    }
+
+    .login-title {
+      font-size: .90rem;
+      margin-bottom: 3px;
+    }
+
+    .login-subtitle {
+      font-size: .54rem;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .form-label-custom {
+      font-size: .55rem;
+      margin-bottom: 4px;
+    }
+
+    .login-card .mb-3 {
+      margin-bottom: .55rem !important;
+    }
+
+    .login-card .mb-2 {
+      margin-bottom: .45rem !important;
+    }
+
+    .input-custom {
+      height: 25px;
+      border-radius: 7px;
+      padding: 5px 7px;
+      font-size: .58rem;
+    }
+
+    .input-custom:focus {
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, .10);
+    }
+
+    .input-password-with-toggle {
+      padding-right: 54px;
+    }
+
+    .btn-toggle-password {
+      right: 4px;
+      border-radius: 6px;
+      padding: 4px 5px;
+      font-size: .48rem;
+    }
+
+    .login-options-row {
+      gap: 6px;
+      margin: 1px 0 10px;
+      font-size: .50rem;
+    }
+
+    .login-options-row label {
+      gap: 4px;
+    }
+
+    .login-options-row input[type="checkbox"] {
+      width: 11px;
+      height: 11px;
+    }
+
+    .btn-login {
+      height: 26px;
+      border-radius: 7px;
+      font-size: .58rem;
+      box-shadow: 0 6px 12px rgba(13, 110, 253, .21);
+    }
+
+    .btn-login:hover {
+      box-shadow: 0 8px 15px rgba(13, 110, 253, .23);
+    }
+
+    .loginMsg, #loginMsg {
+      min-height: 10px;
+      font-size: .52rem;
+      margin-top: .45rem !important;
+    }
+
+    .login-security-note {
+      margin-top: 8px;
+      padding-top: 7px;
+      font-size: .48rem;
+      line-height: 1.3;
+    }
+
+    .login-version {
+      margin-top: 7px;
+      font-size: .45rem;
+    }
+
+    @media (max-width: 900px) {
+      .login-shell {
+        width: min(540px, 100%);
+      }
+      .login-hero-panel {
+        min-height: 130px;
+        padding: 18px 16px;
+      }
+      .login-brand-mark {
+        margin-bottom: 12px;
+      }
+      .login-hero-title {
+        font-size: 1.25rem;
+      }
+      .login-form-panel {
+        padding: 18px 14px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .login-wrap {
+        padding: 0;
+      }
+      .login-shell {
+        width: 100%;
+        min-height: 100vh;
+      }
+      .login-card {
+        max-width: 280px;
+        padding: 18px 16px;
+        border-radius: 16px;
+      }
+      .login-title {
+        font-size: 1.08rem;
+      }
+      .login-subtitle,
+      .form-label-custom,
+      .login-options-row,
+      .login-security-note,
+      .login-version {
+        font-size: .72rem;
+      }
+      .input-custom {
+        height: 36px;
+        font-size: .82rem;
+      }
+      .btn-login {
+        height: 36px;
+        font-size: .82rem;
+      }
+      .btn-toggle-password {
+        font-size: .62rem;
+        padding: 5px 7px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -649,7 +909,7 @@
             <strong>DEE MIDIS</strong>
           </div>
           <h1 class="login-hero-title">Bienvenido</h1>
-          <div class="login-hero-subtitle">Registro de DEE - MIDIS</div>
+          <div class="login-hero-subtitle">Registro de DEE - COE MIDIS</div>
           <p class="login-hero-text">
             Gestione, registre las acciones de intervención del sector de manera ordenada y oportuna.
           </p>
@@ -708,7 +968,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 50 · 08/05/2026 11:40 hrs · MIDIS © 2026
+            VERSION 51 · 08/05/2026 12:00 hrs · MIDIS © 2026
           </div>
         </div>
       </section>
