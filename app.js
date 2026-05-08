@@ -1,4 +1,4 @@
-// ================= VERSION 47 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 48 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -6065,7 +6065,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const azul = [31,78,121];
     doc.setFont('helvetica','bold'); doc.setTextColor(...azul); doc.setFontSize(12);
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
-    doc.setFontSize(11); doc.text(info.titulo, 148.5, 19, { align:'center' });
+    doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
     doc.setFontSize(9); doc.setTextColor(0,0,0);
     doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 25, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 31, { align:'center' });
@@ -6372,8 +6372,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÓN', filas:[] }
     ];
     acciones.forEach(f => (secciones.find(s => s.key === clasificarTipo(f.tipo)) || secciones[3]).filas.push(f));
+    const numeroReunionTitulo = txt(reunion?.numeroReunion || '');
+    const tituloBaseDS = tituloDS(d);
     return {
-      titulo: tituloDS(d),
+      titulo: tituloBaseDS,
+      tituloConReunion: numeroReunionTitulo ? `${numeroReunionTitulo} - ${tituloBaseDS}` : tituloBaseDS,
+      numeroReunion: numeroReunionTitulo,
+      fechaReunion: reunion?.fechaReunion || '',
       fechaReporte: fechaMostrar(new Date().toISOString()),
       vigencia: `${fechaMostrar(d?.fecha_inicio)} al ${fechaMostrar(d?.fecha_fin)}`,
       tipo: d?.peligro || '',
@@ -6518,7 +6523,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const azul = [31,78,121];
     doc.setFont('helvetica','bold'); doc.setTextColor(...azul); doc.setFontSize(12);
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
-    doc.setFontSize(11); doc.text(info.titulo, 148.5, 19, { align:'center' });
+    doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
     doc.setFontSize(9); doc.text(`REUNIÓN: ${reunion.numeroReunion} · ${fechaMostrar(reunion.fechaReunion)}`, 148.5, 25, { align:'center' });
     doc.setTextColor(0,0,0); doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 31, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 37, { align:'center' });
@@ -6677,17 +6682,22 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function datosReporteLimpio(d, reunion){
     const acciones = accionesDeReunion(d, reunion).map(filaAccion);
     const secciones = [
-      { key:'preparacion', titulo:'Acciones de Preparación (Solo en DEE por Peligro Inminente)', filas:[] },
-      { key:'respuesta', titulo:'Acciones de Respuesta', filas:[] },
-      { key:'rehabilitacion', titulo:'Acciones de Rehabilitación', filas:[] }
+      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (Solo DEE por peligro inminente)', filas:[] },
+      { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
+      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] }
     ];
     acciones.forEach(f => {
       const key = clasificarTipo(f.tipo);
       const sec = secciones.find(s => s.key === key);
       if (sec) sec.filas.push(f);
     });
+    const numeroReunionTitulo = txt(reunion?.numeroReunion || '');
+    const tituloBaseDS = tituloDS(d);
     return {
-      titulo: tituloDS(d),
+      titulo: tituloBaseDS,
+      tituloConReunion: numeroReunionTitulo ? `${numeroReunionTitulo} - ${tituloBaseDS}` : tituloBaseDS,
+      numeroReunion: numeroReunionTitulo,
+      fechaReunion: reunion?.fechaReunion || '',
       fechaReporte: fechaMostrar(new Date().toISOString()),
       tipo: d?.peligro || '',
       peligroEvento: d?.tipo_peligro || '',
@@ -6792,7 +6802,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     let r = 1;
     [
       'MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA',
-      info.titulo,
+      info.tituloConReunion || info.titulo,
       'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL',
       `FECHA DE REPORTE: ${info.fechaReporte}`
     ].forEach(v => { ws.mergeCells(`A${r}:L${r}`); ws.getCell(`A${r}`).value = v; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
@@ -6829,7 +6839,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const azul = [31,78,121];
     doc.setFont('helvetica','bold'); doc.setTextColor(...azul); doc.setFontSize(12);
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
-    doc.setFontSize(11); doc.text(info.titulo, 148.5, 19, { align:'center' });
+    doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
     doc.setTextColor(0,0,0); doc.setFontSize(9);
     doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 26, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 32, { align:'center' });
