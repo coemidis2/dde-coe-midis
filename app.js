@@ -1,4 +1,4 @@
-// ================= VERSION 48 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 49 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -6888,4 +6888,26 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     crearModalExportacionLimpia();
     console.info('DEE MIDIS cierre aplicado:', VERSION_CIERRE);
   }, 300));
+})();
+
+
+// ================= CIERRE FINAL LOGIN EJECUTIVO v48 =================
+(function () {
+  function initLoginVisualHelpers() {
+    const pass = document.getElementById('loginPass');
+    const toggle = document.getElementById('btnToggleLoginPassword');
+    if (!pass || !toggle || toggle.dataset.bound === '1') return;
+
+    toggle.dataset.bound = '1';
+    toggle.addEventListener('click', function () {
+      const mostrar = pass.type === 'password';
+      pass.type = mostrar ? 'text' : 'password';
+      toggle.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+      toggle.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      pass.focus();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initLoginVisualHelpers);
+  setTimeout(initLoginVisualHelpers, 300);
 })();

@@ -8,45 +8,481 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="app.css?v=20260423-02" />
+
+  <style>
+    :root {
+      --dee-azul: #0d6efd;
+      --dee-azul-oscuro: #0b3f8a;
+      --dee-azul-profundo: #062b60;
+      --dee-gris-fondo: #f3f6fb;
+      --dee-texto: #24364b;
+      --dee-borde: #d9e2ef;
+    }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 8% 10%, rgba(13, 110, 253, .13), transparent 26%),
+        radial-gradient(circle at 90% 85%, rgba(11, 94, 215, .10), transparent 30%),
+        linear-gradient(135deg, #eef3f9 0%, #f8fafc 100%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--dee-texto);
+    }
+
+    .login-shell {
+      width: min(1080px, 100%);
+      min-height: 640px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(6, 43, 96, .16);
+      border: 1px solid rgba(217, 226, 239, .85);
+    }
+
+    .login-hero-panel {
+      position: relative;
+      padding: 56px 52px;
+      color: #fff;
+      background:
+        linear-gradient(145deg, rgba(6, 43, 96, .96), rgba(11, 94, 215, .92)),
+        linear-gradient(135deg, #0b3f8a, #0d6efd);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .login-hero-panel::before,
+    .login-hero-panel::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .10);
+      pointer-events: none;
+    }
+
+    .login-hero-panel::before {
+      width: 320px;
+      height: 320px;
+      right: -120px;
+      top: -90px;
+    }
+
+    .login-hero-panel::after {
+      width: 240px;
+      height: 240px;
+      left: -90px;
+      bottom: -80px;
+    }
+
+    .login-hero-content,
+    .login-hero-footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-brand-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .18);
+      backdrop-filter: blur(8px);
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 58px;
+    }
+
+    .login-brand-mark span:first-child {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .18);
+      font-size: 21px;
+    }
+
+    .login-hero-title {
+      font-size: clamp(2.25rem, 4vw, 4rem);
+      font-weight: 800;
+      line-height: 1;
+      margin: 0 0 18px;
+      letter-spacing: -.04em;
+    }
+
+    .login-hero-subtitle {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .login-hero-text {
+      max-width: 470px;
+      color: rgba(255, 255, 255, .86);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .login-hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .login-hero-badges span {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .13);
+      border: 1px solid rgba(255, 255, 255, .18);
+      font-size: .84rem;
+      color: rgba(255, 255, 255, .92);
+    }
+
+    .login-hero-footer {
+      color: rgba(255, 255, 255, .72);
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+
+    .login-form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 46px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255, 255, 255, .98);
+      border: 1px solid var(--dee-borde);
+      border-radius: 24px;
+      padding: 34px;
+      box-shadow: 0 16px 40px rgba(13, 64, 138, .10);
+    }
+
+    .login-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .login-shield {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #eef5ff;
+      color: var(--dee-azul);
+      font-size: 23px;
+      border: 1px solid #d7e7ff;
+    }
+
+    .login-brand-text {
+      color: var(--dee-azul-profundo);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: .01em;
+    }
+
+    .login-brand-text small {
+      display: block;
+      color: #64748b;
+      font-size: .74rem;
+      font-weight: 600;
+      margin-top: 4px;
+      letter-spacing: 0;
+    }
+
+    .login-title {
+      color: var(--dee-azul-profundo);
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      color: #667085;
+      font-size: .94rem;
+      margin-bottom: 26px;
+      line-height: 1.55;
+    }
+
+    .form-label-custom {
+      display: block;
+      color: #344054;
+      font-size: .88rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .login-input-wrap {
+      position: relative;
+    }
+
+    .input-custom {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      border: 1px solid #d0d7e2;
+      background: #fff;
+      color: #1f2937;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      font-size: .96rem;
+    }
+
+    .input-custom:focus {
+      border-color: rgba(13, 110, 253, .72);
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
+      background: #fff;
+    }
+
+    .input-password-with-toggle {
+      padding-right: 86px;
+    }
+
+    .btn-toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      border: 0;
+      background: #eef5ff;
+      color: var(--dee-azul-oscuro);
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: .78rem;
+      line-height: 1;
+    }
+
+    .btn-toggle-password:hover {
+      background: #dbeafe;
+    }
+
+    .login-options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0 20px;
+      font-size: .86rem;
+    }
+
+    .login-options-row label {
+      color: #475569;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .login-options-row a {
+      color: var(--dee-azul-oscuro);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .login-options-row a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-login {
+      width: 100%;
+      height: 48px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--dee-azul), #0b5ed7);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: .01em;
+      box-shadow: 0 12px 24px rgba(13, 110, 253, .24);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(13, 110, 253, .28);
+      filter: brightness(.98);
+    }
+
+    .loginMsg, #loginMsg {
+      min-height: 18px;
+    }
+
+    .login-demo-creds {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: .78rem;
+      border: 1px dashed #cbd5e1;
+    }
+
+    .login-security-note {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #eef2f7;
+      color: #64748b;
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
+    .login-version {
+      margin-top: 14px;
+      color: #94a3b8;
+      font-size: .75rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .login-wrap {
+        padding: 18px;
+      }
+      .login-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .login-hero-panel {
+        min-height: 260px;
+        padding: 34px 30px;
+      }
+      .login-brand-mark {
+        margin-bottom: 28px;
+      }
+      .login-hero-title {
+        font-size: 2.4rem;
+      }
+      .login-form-panel {
+        padding: 28px 22px 32px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .login-wrap {
+        padding: 0;
+        align-items: stretch;
+      }
+      .login-shell {
+        border-radius: 0;
+        border: 0;
+        min-height: 100vh;
+      }
+      .login-hero-panel {
+        display: none;
+      }
+      .login-form-panel {
+        padding: 22px 16px;
+        align-items: center;
+      }
+      .login-card {
+        padding: 24px 20px;
+        border-radius: 20px;
+      }
+      .login-title {
+        font-size: 1.55rem;
+      }
+      .login-options-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="loginView" class="login-wrap">
-    <div class="login-card">
-      <div class="login-logo-row">
-        <div class="login-shield">🛡️</div>
-        <div class="login-brand-text">
-          DEE MIDIS
-          <small>Sistema de Declaratorias de Estado de Emergencia</small>
+    <div class="login-shell" role="main" aria-label="Inicio de sesión DEE MIDIS">
+      <section class="login-hero-panel" aria-label="Información institucional">
+        <div class="login-hero-content">
+          <div class="login-brand-mark">
+            <span>🛡️</span>
+            <strong>DEE MIDIS</strong>
+          </div>
+          <h1 class="login-hero-title">Bienvenido</h1>
+          <div class="login-hero-subtitle">Registro de DEE - MIDIS</div>
+          <p class="login-hero-text">
+            Gestione, registre y monitoree información de emergencias de manera segura, ordenada y oportuna.
+          </p>
+          <div class="login-hero-badges">
+            <span>Gestión de información</span>
+            <span>Seguridad institucional</span>
+            <span>Monitoreo oportuno</span>
+          </div>
         </div>
-      </div>
+        <div class="login-hero-footer">
+          Ministerio de Desarrollo e Inclusión Social · Centro de Operaciones de Emergencia
+        </div>
+      </section>
 
-      <div class="login-title">Acceso al Sistema</div>
-      <div class="login-subtitle">
-        Ministerio de Desarrollo e Inclusión Social · República del Perú
-      </div>
+      <section class="login-form-panel" aria-label="Formulario de acceso">
+        <div class="login-card">
+          <div class="login-logo-row">
+            <div class="login-shield">🛡️</div>
+            <div class="login-brand-text">
+              COE MIDIS
+              <small>Sistema de Declaratorias de Estado de Emergencia</small>
+            </div>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label-custom">Usuario institucional</label>
-        <input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe">
-      </div>
+          <div class="login-title">Iniciar sesión</div>
+          <div class="login-subtitle">
+            Acceso seguro para usuarios autorizados del sistema DEE MIDIS.
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label-custom">Contraseña</label>
-        <input id="loginPass" type="password" class="input-custom">
-      </div>
+          <div class="mb-3">
+            <label class="form-label-custom" for="loginUser">Correo electrónico</label>
+            <input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe" autocomplete="username">
+          </div>
 
-      <button id="btnLogin" class="btn-login">Ingresar al Sistema →</button>
-      <div id="loginMsg" class="text-danger small mt-3"></div>
+          <div class="mb-2">
+            <label class="form-label-custom" for="loginPass">Contraseña</label>
+            <div class="login-input-wrap">
+              <input id="loginPass" type="password" class="input-custom input-password-with-toggle" autocomplete="current-password">
+              <button id="btnToggleLoginPassword" class="btn-toggle-password" type="button" aria-label="Mostrar u ocultar contraseña">Mostrar</button>
+            </div>
+          </div>
 
-      <div class="login-demo-creds">
-        <strong>Demo:</strong> admin@midis.gob.pe / AdminMIDIS2026!
-      </div>
+          <div class="login-options-row">
+            <label for="loginRemember">
+              <input id="loginRemember" type="checkbox">
+              Recordarme
+            </label>
+            <a href="#" onclick="alert('Solicite el restablecimiento de contraseña al Administrador del sistema.'); return false;">¿Olvidó su contraseña?</a>
+          </div>
 
-      <div class="login-version">
-        VERSION 48 · 08/05/2026 10:00 hrs · MIDIS © 2026
-      </div>
+          <button id="btnLogin" class="btn-login">Ingresar</button>
+          <div id="loginMsg" class="text-danger small mt-3"></div>
+
+          <div class="login-security-note">
+            Acceso restringido a usuarios autorizados. Sistema de uso institucional. Toda actividad puede ser monitoreada.
+          </div>
+
+          <div class="login-version">
+            VERSION 49 · 08/05/2026 11:20 hrs · MIDIS © 2026
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -788,6 +1224,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app.js?v=20260508-v47-reunion-titulo"></script>
+  <script src="app.js?v=20260508-v48-login-ejecutivo"></script>
 </body>
 </html>
