@@ -1,4 +1,4 @@
-// ================= VERSION 54 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 55 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -7208,4 +7208,341 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(renderDashboardEjecutivoDEE, 180));
     setTimeout(renderDashboardEjecutivoDEE, 1000);
   });
+})();
+
+// ================= AJUSTE FINAL v54.1 - OJITO LISTADO DS EN HOJAS + PDF HORIZONTAL =================
+// Alcance: solo detalle visual del Decreto Supremo desde Listado DS y exportación PDF del detalle.
+(function(){
+  'use strict';
+
+  function q(id){ return document.getElementById(id); }
+  function txt(v){ return String(v ?? '').trim(); }
+  function esc(v){
+    return String(v ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+  function norm(v){
+    return txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  }
+  function fecha(v){
+    if(!v) return '';
+    const s = txt(v).slice(0,10);
+    const d = new Date(`${s}T00:00:00`);
+    return isNaN(d.getTime()) ? txt(v) : d.toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  }
+  function fechaHora(){
+    const d = new Date();
+    const p = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+  function valor(obj, keys){
+    for(const k of keys){
+      const v = obj && obj[k];
+      if(v !== undefined && v !== null && String(v) !== '') return v;
+    }
+    return '';
+  }
+  function numeroDSLimpioV541(d){
+    let n = txt(valor(d, ['numero','ds','decreto','decreto_supremo']));
+    const anio = txt(valor(d, ['anio','año']));
+    n = n.replace(/^D\.?\s*S\.?\s*N[°.º]?\s*/i,'')
+         .replace(/^DS\s*N[°.º]?\s*/i,'')
+         .replace(/^N[°.º]?\s*/i,'')
+         .trim();
+    const m = n.match(/(\d{1,4})\s*-\s*(\d{4})\s*-\s*PCM/i);
+    if(m) return `${m[1].padStart(3,'0')}-${m[2]}-PCM`;
+    n = n.replace(/-?\d{4}-PCM$/i,'').replace(/-?PCM$/i,'').replace(/[^0-9]/g,'').trim();
+    if(n) n = n.padStart(3,'0');
+    return anio && n ? `${n}-${anio}-PCM` : (n || anio || 'DS');
+  }
+  function tituloDSV541(d){ return `D.S. N°${numeroDSLimpioV541(d)}`; }
+  function getDecretoV541(id){
+    try {
+      if(typeof buscarDecretoPorId === 'function') {
+        const d = buscarDecretoPorId(id);
+        if(d) return d;
+      }
+    } catch {}
+    try {
+      const lista = (state && Array.isArray(state.decretos) && state.decretos.length)
+        ? state.decretos
+        : JSON.parse(localStorage.getItem('decretos') || '[]');
+      return (lista || []).find(d => String(d.id) === String(id)) || null;
+    } catch { return null; }
+  }
+  function territorioV541(d){
+    const arr = Array.isArray(d?.territorio) ? d.territorio : [];
+    return arr.map(t => ({
+      departamento: valor(t, ['departamento','Departamento']),
+      provincia: valor(t, ['provincia','Provincia']),
+      distrito: valor(t, ['distrito','Distrito']),
+      ubigeo: valor(t, ['ubigeo','UBIGEO','codigo','cod_ubigeo']),
+      latitud: valor(t, ['latitud','lat']),
+      longitud: valor(t, ['longitud','lng','lon'])
+    }));
+  }
+  function getAccionesV541(){
+    try {
+      if(typeof cargarAccionesLocales === 'function') {
+        const a = cargarAccionesLocales();
+        return Array.isArray(a) ? a : [];
+      }
+    } catch {}
+    try { return JSON.parse(localStorage.getItem('accionesDS') || '[]') || []; } catch { return []; }
+  }
+  function accionesDSV541(d){
+    const id = txt(d?.id);
+    const t1 = tituloDSV541(d);
+    let t2 = '';
+    try { t2 = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : ''; } catch {}
+    return getAccionesV541().filter(a =>
+      txt(valor(a,['dsId','ds_id'])) === id ||
+      txt(valor(a,['numeroDS','ds'])) === t1 ||
+      (t2 && txt(valor(a,['numeroDS','ds'])) === t2)
+    );
+  }
+  function filaAccionV541(a,d){
+    const metaProg = Number(valor(a,['metaProgramada','meta_programada']) || 0);
+    const metaEjec = Number(valor(a,['metaEjecutada','meta_ejecutada']) || 0);
+    let avance = txt(valor(a,['avance']));
+    if(!avance && metaProg > 0) avance = `${Math.min(100, Math.round((metaEjec/metaProg)*100))}%`;
+    return {
+      reunion: txt(valor(a,['numeroReunion','numero_reunion'])) || txt(d?.numeroReunion),
+      fechaReunion: txt(valor(a,['fechaReunion','fecha_reunion'])) || txt(d?.fechaReunion),
+      programa: valor(a,['programaNacional','programa']),
+      tipo: valor(a,['tipoAccion','tipo']),
+      codigo: valor(a,['codigoAccion','codigo']),
+      detalle: valor(a,['detalle','accion','acciones']),
+      unidad: valor(a,['unidadMedida','unidad']),
+      metaProgramada: valor(a,['metaProgramada','meta_programada']),
+      plazo: valor(a,['plazoDias','plazo']),
+      inicio: valor(a,['fechaInicio','fecha_inicio']),
+      fin: valor(a,['fechaFinal','fecha_final']),
+      metaEjecutada: valor(a,['metaEjecutada','meta_ejecutada']),
+      avance,
+      descripcion: valor(a,['descripcionActividades','descripcion','observaciones']),
+      usuario: valor(a,['usuarioRegistro','usuario_registro']),
+      fechaRegistro: valor(a,['fechaRegistro','fecha_registro']),
+      estado: valor(a,['estado']) || 'Registrado'
+    };
+  }
+  function gruposAccionesV541(d){
+    const mapa = new Map();
+    accionesDSV541(d).map(a => filaAccionV541(a,d)).forEach(f => {
+      const key = `${f.reunion || 'Sin reunión registrada'}|${f.fechaReunion || ''}`;
+      if(!mapa.has(key)) mapa.set(key, []);
+      mapa.get(key).push(f);
+    });
+    return mapa;
+  }
+  function resumenGeneralV541(d){
+    const sectores = Array.isArray(d?.sectores) ? d.sectores.join(', ') : txt(d?.sectores || '');
+    return [
+      ['Número de Decreto Supremo', tituloDSV541(d)],
+      ['Fecha', fecha(valor(d,['fecha_registro','created_at','fecha_inicio']))],
+      ['Tipo', valor(d,['peligro']) || '-'],
+      ['Peligro o evento', valor(d,['tipo_peligro','tipoPeligro']) || '-'],
+      ['Sectores que firman', sectores || 'No registrado'],
+      ['Exposición de motivos', valor(d,['motivos','exposicion_motivos']) || 'No registrado']
+    ];
+  }
+
+  function inyectarEstilosV541(){
+    if(document.getElementById('deeDetalleDSV541Styles')) return;
+    const st = document.createElement('style');
+    st.id = 'deeDetalleDSV541Styles';
+    st.textContent = `
+      .dee-ds-toolbar{display:flex;justify-content:space-between;gap:.75rem;align-items:center;margin-bottom:.75rem;}
+      .dee-ds-page-tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem;border-bottom:1px solid #d9e2ef;padding-bottom:.5rem;}
+      .dee-ds-page-tabs button{border:1px solid #cbd5e1;background:#f8fafc;color:#0b3f8a;border-radius:6px;padding:.35rem .7rem;font-weight:700;font-size:12px;}
+      .dee-ds-page-tabs button.active{background:#0d6efd;color:#fff;border-color:#0d6efd;}
+      .dee-detalle-hoja{display:none;border:1px solid #d9e2ef;border-radius:10px;background:#fff;padding:14px;min-height:420px;}
+      .dee-detalle-hoja.active{display:block;}
+      .dee-hoja-title{font-size:15px;font-weight:800;color:#062b60;margin-bottom:10px;text-transform:uppercase;letter-spacing:.02em;}
+      .dee-ds-meta-table{width:100%;border-collapse:collapse;font-size:12px;}
+      .dee-ds-meta-table th{width:210px;background:#eaf2ff;color:#062b60;border:1px solid #cbd5e1;padding:8px;vertical-align:top;}
+      .dee-ds-meta-table td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;}
+      .dee-ds-action-title{background:#062b60;color:#fff;font-weight:800;padding:7px 9px;border-radius:6px;margin:10px 0 6px;font-size:12px;}
+      .dee-ds-action-table{width:100%;border-collapse:collapse;font-size:11px;}
+      .dee-ds-action-table th{background:#dbeafe;color:#0b2545;border:1px solid #b9cbe3;padding:6px;text-align:center;vertical-align:middle;}
+      .dee-ds-action-table td{border:1px solid #d1d9e6;padding:6px;vertical-align:top;}
+      .dee-anexo-table{width:100%;border-collapse:collapse;font-size:11px;}
+      .dee-anexo-table th{background:#0b3f8a;color:#fff;border:1px solid #9eb4d4;padding:6px;text-align:center;}
+      .dee-anexo-table td{border:1px solid #d1d9e6;padding:6px;}
+      @media print{.dee-ds-toolbar,.dee-ds-page-tabs{display:none}.dee-detalle-hoja{display:block;page-break-after:always;border:0}.modal-footer,.modal-header .btn-close{display:none!important}}
+    `;
+    document.head.appendChild(st);
+  }
+  function activarHojaDetalleV541(n){
+    document.querySelectorAll('#modalDSBody .dee-ds-page-tabs button').forEach(b => b.classList.toggle('active', b.dataset.hoja === String(n)));
+    document.querySelectorAll('#modalDSBody .dee-detalle-hoja').forEach(p => p.classList.toggle('active', p.dataset.hoja === String(n)));
+  }
+  window.activarHojaDetalleV541 = activarHojaDetalleV541;
+
+  function htmlAccionesV541(d){
+    const grupos = gruposAccionesV541(d);
+    if(!grupos.size) return '<div class="alert alert-secondary py-2">No hay acciones registradas por Programas Nacionales para este Decreto Supremo.</div>';
+    let html = '';
+    grupos.forEach((items, key) => {
+      const [reunion, freunion] = key.split('|');
+      html += `<div class="dee-ds-action-title">${esc(reunion)}${freunion ? ' · ' + esc(fecha(freunion)) : ''}</div>`;
+      html += `<div class="table-responsive"><table class="dee-ds-action-table"><thead><tr><th>Programa Nacional</th><th>Tipo de acción</th><th>Código</th><th>Acción registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
+      html += items.map(a => `<tr><td>${esc(a.programa)}</td><td>${esc(a.tipo)}</td><td>${esc(a.codigo)}</td><td>${esc(a.detalle)}</td><td>${esc(a.metaProgramada)}</td><td>${esc(a.metaEjecutada)}</td><td>${esc(a.avance)}</td><td>${esc(a.descripcion)}</td><td>${esc(a.usuario)}</td><td>${esc(fecha(a.fechaRegistro) || a.fechaRegistro)}</td></tr>`).join('');
+      html += '</tbody></table></div>';
+    });
+    return html;
+  }
+  function htmlTerritorioV541(d){
+    const t = territorioV541(d);
+    if(!t.length) return '<div class="alert alert-secondary py-2">No hay territorio registrado.</div>';
+    return `<table class="dee-anexo-table"><thead><tr><th>N°</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Ubigeo</th><th>Latitud</th><th>Longitud</th></tr></thead><tbody>${t.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.departamento)}</td><td>${esc(x.provincia)}</td><td>${esc(x.distrito)}</td><td>${esc(x.ubigeo)}</td><td>${esc(x.latitud)}</td><td>${esc(x.longitud)}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  function asegurarFooterModalV541(id){
+    const modal = q('modalDS');
+    const content = modal?.querySelector('.modal-content');
+    if(!content) return;
+    let footer = modal.querySelector('.modal-footer');
+    if(!footer){
+      footer = document.createElement('div');
+      footer.className = 'modal-footer';
+      content.appendChild(footer);
+    }
+    footer.innerHTML = `
+      <button type="button" class="btn btn-outline-danger" onclick="exportarDetalleDSPDFV541('${esc(id)}')">Exportar PDF</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+    `;
+  }
+
+  function verDetalleDSV541(id){
+    const d = getDecretoV541(id);
+    if(!d) return alert('No se encontró el Decreto Supremo.');
+    inyectarEstilosV541();
+    const body = q('modalDSBody');
+    if(body){
+      const filas = resumenGeneralV541(d).map(([k,v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('');
+      body.innerHTML = `
+        <div class="dee-ds-toolbar">
+          <div><strong>${esc(tituloDSV541(d))}</strong><div class="text-muted small">Detalle institucional del Decreto Supremo</div></div>
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="exportarDetalleDSPDFV541('${esc(id)}')">Exportar PDF</button>
+        </div>
+        <div class="dee-ds-page-tabs" role="tablist">
+          <button type="button" class="active" data-hoja="1" onclick="activarHojaDetalleV541(1)">Hoja 1 · Datos generales</button>
+          <button type="button" data-hoja="2" onclick="activarHojaDetalleV541(2)">Hoja 2 · Acciones registradas</button>
+          <button type="button" data-hoja="3" onclick="activarHojaDetalleV541(3)">Anexo · Territorio involucrado</button>
+        </div>
+        <section class="dee-detalle-hoja active" data-hoja="1">
+          <div class="dee-hoja-title">Hoja 1: Datos generales del Decreto Supremo</div>
+          <table class="dee-ds-meta-table"><tbody>${filas}</tbody></table>
+        </section>
+        <section class="dee-detalle-hoja" data-hoja="2">
+          <div class="dee-hoja-title">Hoja 2: Acciones registradas por Programas Nacionales</div>
+          ${htmlAccionesV541(d)}
+        </section>
+        <section class="dee-detalle-hoja" data-hoja="3">
+          <div class="dee-hoja-title">Anexo: Territorio involucrado</div>
+          ${htmlTerritorioV541(d)}
+        </section>
+      `;
+    }
+    asegurarFooterModalV541(id);
+    const modal = q('modalDS');
+    if(modal){
+      modal.querySelector('.modal-dialog')?.classList.remove('modal-lg');
+      modal.querySelector('.modal-dialog')?.classList.add('modal-xl','modal-dialog-scrollable');
+      if(window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+  }
+
+  function exportarDetalleDSPDFV541(id){
+    const d = getDecretoV541(id);
+    if(!d) return alert('No se encontró el Decreto Supremo.');
+    if(!window.jspdf?.jsPDF) return alert('No se encontró la librería jsPDF para generar el PDF.');
+    const doc = new window.jspdf.jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    const azul = [6,43,96];
+    const celeste = [221,235,247];
+    const margen = 8;
+    const ancho = 297 - margen*2;
+    const titulo = tituloDSV541(d);
+
+    function encabezado(sub){
+      doc.setFillColor(...azul);
+      doc.rect(0,0,297,14,'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(11);
+      doc.text('Detalle del Decreto Supremo', margen, 9);
+      doc.setFontSize(9);
+      doc.text(titulo, 289, 9, { align:'right' });
+      doc.setTextColor(...azul);
+      doc.setFontSize(10);
+      doc.text(sub, margen, 22);
+      doc.setTextColor(80,80,80);
+      doc.setFontSize(7);
+      doc.text(`Generado: ${fechaHora()}`, 289, 22, { align:'right' });
+    }
+    function pie(){
+      const p = doc.internal.getNumberOfPages();
+      doc.setFontSize(7); doc.setTextColor(120);
+      doc.text(`DEE MIDIS · Página ${p}`, 289, 204, { align:'right' });
+    }
+
+    encabezado('Hoja 1: Datos generales');
+    doc.autoTable({
+      startY: 27,
+      body: resumenGeneralV541(d),
+      theme: 'grid',
+      styles: { fontSize: 8.2, cellPadding: 2.2, overflow:'linebreak', valign:'top', lineColor:[160,174,192], lineWidth:.15 },
+      columnStyles: { 0:{ cellWidth:58, fontStyle:'bold', fillColor:celeste, textColor:azul }, 1:{ cellWidth: ancho-58 } },
+      margin: { left:margen, right:margen }
+    });
+    pie();
+
+    doc.addPage('a4','landscape');
+    encabezado('Hoja 2: Acciones registradas por Programas Nacionales');
+    const acciones = accionesDSV541(d).map(a => filaAccionV541(a,d));
+    if(acciones.length){
+      doc.autoTable({
+        startY: 27,
+        head: [['N°','Reunión','Fecha reunión','Programa','Tipo de acción','Código','Acción registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
+        body: acciones.map((a,i) => [i+1, a.reunion, fecha(a.fechaReunion), a.programa, a.tipo, a.codigo, a.detalle, a.unidad, a.metaProgramada, a.metaEjecutada, a.avance, a.descripcion, a.usuario, fecha(a.fechaRegistro) || a.fechaRegistro]),
+        theme:'grid',
+        headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:6.2, halign:'center', valign:'middle' },
+        styles:{ fontSize:5.8, cellPadding:.85, overflow:'linebreak', valign:'top', lineColor:[120,120,120], lineWidth:.1 },
+        columnStyles:{ 0:{cellWidth:8},1:{cellWidth:18},2:{cellWidth:17},3:{cellWidth:21},4:{cellWidth:30},5:{cellWidth:15},6:{cellWidth:50},7:{cellWidth:14},8:{cellWidth:13},9:{cellWidth:13},10:{cellWidth:13},11:{cellWidth:42},12:{cellWidth:22},13:{cellWidth:16} },
+        margin:{ left:margen, right:margen }
+      });
+    } else {
+      doc.setFontSize(9); doc.setTextColor(80); doc.text('No hay acciones registradas por Programas Nacionales para este Decreto Supremo.', margen, 34);
+    }
+    pie();
+
+    doc.addPage('a4','landscape');
+    encabezado('Anexo: Territorio involucrado');
+    const terr = territorioV541(d);
+    if(terr.length){
+      doc.autoTable({
+        startY: 27,
+        head: [['N°','Departamento','Provincia','Distrito','Ubigeo','Latitud','Longitud']],
+        body: terr.map((t,i)=>[i+1,t.departamento,t.provincia,t.distrito,t.ubigeo,t.latitud,t.longitud]),
+        theme:'grid',
+        headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:7.5, halign:'center' },
+        styles:{ fontSize:7.2, cellPadding:1.4, overflow:'linebreak', lineColor:[120,120,120], lineWidth:.1 },
+        columnStyles:{ 0:{cellWidth:12},1:{cellWidth:48},2:{cellWidth:52},3:{cellWidth:58},4:{cellWidth:28},5:{cellWidth:38},6:{cellWidth:38} },
+        margin:{ left:margen, right:margen }
+      });
+    } else {
+      doc.setFontSize(9); doc.setTextColor(80); doc.text('No hay territorio registrado.', margen, 34);
+    }
+    pie();
+
+    doc.save(`Detalle_${numeroDSLimpioV541(d)}.pdf`.replace(/[^a-zA-Z0-9._-]/g,'_'));
+  }
+
+  window.verDetalleDS = verDetalleDSV541;
+  window.exportarDetalleDSPDFV541 = exportarDetalleDSPDFV541;
 })();
