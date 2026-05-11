@@ -23,6 +23,61 @@ function normalizeRow(row) {
   };
 }
 
+
+function valueOf(body, ...keys) {
+  for (const key of keys) {
+    const value = body?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+
+function toNumber(value, fallback = 0) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const cleaned = String(value).replace('%', '').replace(',', '.').trim();
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizePrograma(value) {
+  return String(value || '').trim().toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace('CUNA MAS', 'CUNA MÁS')
+    .replace('PENSION 65', 'PENSIÓN 65');
+}
+
+function normalizeAccionPayload(body, auth) {
+  const avanceRaw = valueOf(body, 'avance', 'porcentajeAvance', 'porcentaje_avance');
+  const fechaRegistro = valueOf(body, 'fecha_registro', 'fechaRegistro') || new Date().toISOString();
+
+  return {
+    id: valueOf(body, 'id') || newId(),
+    ds_id: valueOf(body, 'ds_id', 'dsId'),
+    numero_reunion: valueOf(body, 'numero_reunion', 'numeroReunion', 'reunion'),
+    fecha_reunion: valueOf(body, 'fecha_reunion', 'fechaReunion'),
+    departamento: valueOf(body, 'departamento'),
+    provincia: valueOf(body, 'provincia'),
+    distrito: valueOf(body, 'distrito'),
+    programa: normalizePrograma(valueOf(body, 'programa', 'programaNacional')),
+    tipo: valueOf(body, 'tipo', 'tipoAccion', 'tipo_accion'),
+    subtipo_rehabilitacion: valueOf(body, 'subtipo_rehabilitacion', 'subtipoRehabilitacion'),
+    codigo: valueOf(body, 'codigo', 'codigoAccion', 'codigo_accion'),
+    detalle: valueOf(body, 'detalle', 'accion_registrada', 'accionRegistrada'),
+    unidad: valueOf(body, 'unidad', 'unidadMedida', 'unidad_medida'),
+    meta_programada: toNumber(valueOf(body, 'meta_programada', 'metaProgramada')),
+    plazo_dias: toNumber(valueOf(body, 'plazo_dias', 'plazoDias', 'plazo')),
+    fecha_inicio: valueOf(body, 'fecha_inicio', 'fechaInicio'),
+    fecha_final: valueOf(body, 'fecha_final', 'fechaFinal'),
+    meta_ejecutada: toNumber(valueOf(body, 'meta_ejecutada', 'metaEjecutada')),
+    avance: avanceRaw === '' ? 0 : toNumber(avanceRaw),
+    descripcion: valueOf(body, 'descripcion', 'descripcionActividades', 'observaciones'),
+    estado: valueOf(body, 'estado') || 'Registrado',
+    usuario_registro: valueOf(body, 'usuario_registro', 'usuarioRegistro', 'usuario') || auth.session.email || '',
+    fecha_registro: fechaRegistro
+  };
+}
+
 function buildConflictPayload(current, body, sessionEmail) {
   return {
     entidad: 'acciones',
@@ -55,9 +110,9 @@ export async function onRequestGet(context) {
       binds.push(dsId);
     }
 
-    if (auth.session.role === 'Registrador') {
+    if (auth.session.role === 'Registrador' && auth.session.programa) {
       sql += ' AND programa = ?';
-      binds.push(auth.session.programa || '');
+      binds.push(normalizePrograma(auth.session.programa || ''));
     }
 
     sql += ' ORDER BY fecha_registro DESC';
@@ -79,54 +134,132 @@ export async function onRequestPost(context) {
 
   try {
     const body = await readJson(context.request);
+    const accion = normalizeAccionPayload(body, auth);
 
-    if (!body.ds_id || !body.programa || !body.codigo) {
+    if (!accion.ds_id || !accion.programa || !accion.codigo) {
       return badRequest('ds_id_programa_codigo_required');
     }
 
-    if (auth.session.role === 'Registrador') {
-      if ((auth.session.programa || '') !== (body.programa || '')) {
+    if (auth.session.role === 'Registrador' && auth.session.programa) {
+      if (normalizePrograma(auth.session.programa || '') !== accion.programa) {
         return forbidden('programa_not_allowed');
       }
     }
 
     const ds = await context.env.DB
       .prepare('SELECT id, numero, locked FROM decretos WHERE id = ? AND deleted_at IS NULL')
-      .bind(body.ds_id)
+      .bind(accion.ds_id)
       .first();
 
     if (!ds) return badRequest('decreto_not_available');
     if (Number(ds.locked) === 1) return badRequest('decreto_locked');
 
-    const id = body.id || newId();
     const now = new Date().toISOString();
+
+    const existente = await context.env.DB.prepare(`
+      SELECT id, version
+      FROM acciones
+      WHERE deleted_at IS NULL
+        AND ds_id = ?
+        AND COALESCE(numero_reunion, '') = ?
+        AND COALESCE(programa, '') = ?
+        AND COALESCE(departamento, '') = ?
+        AND COALESCE(provincia, '') = ?
+        AND COALESCE(distrito, '') = ?
+        AND COALESCE(tipo, '') = ?
+        AND COALESCE(codigo, '') = ?
+      LIMIT 1
+    `).bind(
+      accion.ds_id,
+      accion.numero_reunion || '',
+      accion.programa || '',
+      accion.departamento || '',
+      accion.provincia || '',
+      accion.distrito || '',
+      accion.tipo || '',
+      accion.codigo || ''
+    ).first();
+
+    if (existente) {
+      const nextVersion = Number(existente.version || 1) + 1;
+      await context.env.DB.prepare(`
+        UPDATE acciones
+        SET numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
+            subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
+            meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
+            avance = ?, descripcion = ?, estado = ?, usuario_registro = ?, fecha_registro = ?,
+            version = ?, updated_at = ?
+        WHERE id = ?
+      `).bind(
+        accion.numero_reunion,
+        accion.fecha_reunion,
+        accion.departamento,
+        accion.provincia,
+        accion.distrito,
+        accion.subtipo_rehabilitacion,
+        accion.programa,
+        accion.tipo,
+        accion.codigo,
+        accion.detalle,
+        accion.unidad,
+        accion.meta_programada,
+        accion.plazo_dias,
+        accion.fecha_inicio,
+        accion.fecha_final,
+        accion.meta_ejecutada,
+        accion.avance,
+        accion.descripcion,
+        accion.estado,
+        accion.usuario_registro,
+        accion.fecha_registro,
+        nextVersion,
+        now,
+        existente.id
+      ).run();
+
+      await writeAudit(context.env, {
+        actor: auth.session.email,
+        action: 'update_accion',
+        detail: `${accion.programa} | ${accion.codigo}`,
+        entity_type: 'accion',
+        entity_id: existente.id
+      });
+
+      return json({ ok: true, id: existente.id, version: nextVersion, updated: true });
+    }
 
     await context.env.DB.prepare(`
       INSERT INTO acciones (
-        id, ds_id, reunion, fecha_reunion, programa, tipo, codigo,
-        detalle, unidad, meta_programada, plazo, fecha_inicio, fecha_final,
-        meta_ejecutada, avance, descripcion, estado, usuario_registro,
-        fecha_registro, version, locked, deleted_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?)
+        id, ds_id, numero_reunion, fecha_reunion, departamento, provincia, distrito,
+        subtipo_rehabilitacion, programa, tipo, codigo, detalle, unidad,
+        meta_programada, plazo_dias, fecha_inicio, fecha_final, meta_ejecutada,
+        avance, descripcion, estado, usuario_registro, fecha_registro,
+        version, locked, deleted_at, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?, ?)
     `).bind(
-      id,
-      body.ds_id,
-      body.reunion || '',
-      body.fecha_reunion || '',
-      body.programa || '',
-      body.tipo || '',
-      body.codigo || '',
-      body.detalle || '',
-      body.unidad || '',
-      Number(body.meta_programada || 0),
-      Number(body.plazo || 0),
-      body.fecha_inicio || '',
-      body.fecha_final || '',
-      Number(body.meta_ejecutada || 0),
-      Number(body.avance || 0),
-      body.descripcion || '',
-      body.estado || 'Registrado',
-      auth.session.email,
+      accion.id,
+      accion.ds_id,
+      accion.numero_reunion,
+      accion.fecha_reunion,
+      accion.departamento,
+      accion.provincia,
+      accion.distrito,
+      accion.subtipo_rehabilitacion,
+      accion.programa,
+      accion.tipo,
+      accion.codigo,
+      accion.detalle,
+      accion.unidad,
+      accion.meta_programada,
+      accion.plazo_dias,
+      accion.fecha_inicio,
+      accion.fecha_final,
+      accion.meta_ejecutada,
+      accion.avance,
+      accion.descripcion,
+      accion.estado,
+      accion.usuario_registro,
+      accion.fecha_registro,
       now,
       now
     ).run();
@@ -134,12 +267,12 @@ export async function onRequestPost(context) {
     await writeAudit(context.env, {
       actor: auth.session.email,
       action: 'create_accion',
-      detail: `${body.programa} | ${body.codigo}`,
+      detail: `${accion.programa} | ${accion.codigo}`,
       entity_type: 'accion',
-      entity_id: id
+      entity_id: accion.id
     });
 
-    return json({ ok: true, id, version: 1 });
+    return json({ ok: true, id: accion.id, version: 1 });
   } catch (error) {
     return serverError('accion_create_failed', String(error?.message || error));
   }
@@ -170,11 +303,13 @@ export async function onRequestPut(context) {
     if (current.deleted_at) return badRequest('accion_deleted');
     if (Number(current.locked) === 1) return badRequest('accion_locked');
 
-    if (auth.session.role === 'Registrador') {
-      if ((auth.session.programa || '') !== (current.programa || '')) {
+    const accion = normalizeAccionPayload({ ...body, id: body.id }, auth);
+
+    if (auth.session.role === 'Registrador' && auth.session.programa) {
+      if (normalizePrograma(auth.session.programa || '') !== normalizePrograma(current.programa || '')) {
         return forbidden('programa_not_allowed');
       }
-      if ((auth.session.programa || '') !== (body.programa || current.programa || '')) {
+      if (normalizePrograma(auth.session.programa || '') !== accion.programa) {
         return forbidden('programa_not_allowed');
       }
     }
@@ -196,26 +331,31 @@ export async function onRequestPut(context) {
 
     await context.env.DB.prepare(`
       UPDATE acciones
-      SET reunion = ?, fecha_reunion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
-          meta_programada = ?, plazo = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
+      SET numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
+          subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
+          meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
           avance = ?, descripcion = ?, estado = ?, version = ?, updated_at = ?
       WHERE id = ?
     `).bind(
-      body.reunion || '',
-      body.fecha_reunion || '',
-      body.programa || '',
-      body.tipo || '',
-      body.codigo || '',
-      body.detalle || '',
-      body.unidad || '',
-      Number(body.meta_programada || 0),
-      Number(body.plazo || 0),
-      body.fecha_inicio || '',
-      body.fecha_final || '',
-      Number(body.meta_ejecutada || 0),
-      Number(body.avance || 0),
-      body.descripcion || '',
-      body.estado || 'Registrado',
+      accion.numero_reunion,
+      accion.fecha_reunion,
+      accion.departamento,
+      accion.provincia,
+      accion.distrito,
+      accion.subtipo_rehabilitacion,
+      accion.programa,
+      accion.tipo,
+      accion.codigo,
+      accion.detalle,
+      accion.unidad,
+      accion.meta_programada,
+      accion.plazo_dias,
+      accion.fecha_inicio,
+      accion.fecha_final,
+      accion.meta_ejecutada,
+      accion.avance,
+      accion.descripcion,
+      accion.estado,
       nextVersion,
       now,
       body.id
@@ -224,7 +364,7 @@ export async function onRequestPut(context) {
     await writeAudit(context.env, {
       actor: auth.session.email,
       action: 'update_accion',
-      detail: body.codigo || body.id,
+      detail: accion.codigo || body.id,
       entity_type: 'accion',
       entity_id: body.id
     });
