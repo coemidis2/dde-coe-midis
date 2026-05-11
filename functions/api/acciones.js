@@ -202,20 +202,29 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
 
+    // v62.1: si se edita una acción desde PreAprobar y cambia código/tipo,
+    // debe actualizarse por ID antes de evaluar la clave lógica para no duplicar.
     const existente = await context.env.DB.prepare(`
       SELECT id, version
       FROM acciones
       WHERE deleted_at IS NULL
-        AND ds_id = ?
-        AND COALESCE(numero_reunion, '') = ?
-        AND COALESCE(programa, '') = ?
-        AND COALESCE(departamento, '') = ?
-        AND COALESCE(provincia, '') = ?
-        AND COALESCE(distrito, '') = ?
-        AND COALESCE(tipo, '') = ?
-        AND COALESCE(codigo, '') = ?
+        AND (
+          id = ?
+          OR (
+            ds_id = ?
+            AND COALESCE(numero_reunion, '') = ?
+            AND COALESCE(programa, '') = ?
+            AND COALESCE(departamento, '') = ?
+            AND COALESCE(provincia, '') = ?
+            AND COALESCE(distrito, '') = ?
+            AND COALESCE(tipo, '') = ?
+            AND COALESCE(codigo, '') = ?
+          )
+        )
+      ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END
       LIMIT 1
     `).bind(
+      accion.id || '',
       accion.ds_id,
       accion.numero_reunion || '',
       accion.programa || '',
@@ -223,7 +232,8 @@ export async function onRequestPost(context) {
       accion.provincia || '',
       accion.distrito || '',
       accion.tipo || '',
-      accion.codigo || ''
+      accion.codigo || '',
+      accion.id || ''
     ).first();
 
     if (existente) {
