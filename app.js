@@ -1,4 +1,4 @@
-// ================= VERSION 57 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 58 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -8088,5 +8088,344 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       try { initRegistroAccionesProgramasV561(); } catch {}
       console.info('DEE MIDIS cierre aplicado:', VERSION_GRUPAL);
     }, 1200);
+  });
+})();
+
+// ================= AJUSTE FINAL v57.1 - DISTRITOS POR PÁGINA Y LIMPIEZA CAMPOS =================
+(function () {
+  'use strict';
+
+  const VERSION_V571 = 'v57.1 Distritos por página sin campos redundantes';
+  const seleccionV571 = new Set();
+  let paginaV571 = 1;
+  let eventosV571 = false;
+
+  const q = (id) => document.getElementById(id);
+  const normV571 = (v) => (typeof normalizarTexto === 'function'
+    ? normalizarTexto(v)
+    : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase());
+  const escV571 = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? ''));
+  const escAttrV571 = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : escV571(v));
+  const progV571 = () => (typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '');
+
+  function keyTerritorioV571(t) {
+    const ubigeo = String(t?.ubigeo || t?.UBIGEO || t?.codigo || '').trim();
+    if (ubigeo) return `UBIGEO:${ubigeo}`;
+    return [t?.departamento, t?.provincia, t?.distrito].map(normV571).join('|');
+  }
+
+  function ordenTerritorioV571(t) {
+    return [t?.departamento || '', t?.provincia || '', t?.distrito || ''].map(x => String(x).trim()).join('|');
+  }
+
+  function territorioDSProgramaV571() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    const territorio = Array.isArray(d?.territorio) ? d.territorio : [];
+    const mapa = new Map();
+    territorio.forEach(t => {
+      const dep = t?.departamento || '';
+      const prov = t?.provincia || '';
+      const dist = t?.distrito || '';
+      if (!dep && !prov && !dist) return;
+      const key = keyTerritorioV571(t);
+      if (!mapa.has(key)) {
+        mapa.set(key, {
+          key,
+          ubigeo: t?.ubigeo || t?.UBIGEO || t?.codigo || '',
+          departamento: dep,
+          provincia: prov,
+          distrito: dist
+        });
+      }
+    });
+    return [...mapa.values()].sort((a, b) => ordenTerritorioV571(a).localeCompare(ordenTerritorioV571(b), 'es'));
+  }
+
+  function rdsKeyV571(obj) {
+    if (typeof reunionKeyV38 === 'function') return reunionKeyV38(obj?.numeroReunion || '', obj?.fechaReunion || '');
+    return `${normV571(obj?.numeroReunion || '')}|${String(obj?.fechaReunion || '').trim()}`;
+  }
+
+  function accionesProgramaDistritoV571() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (!d || typeof cargarAccionesLocales !== 'function') return [];
+    const keyR = rdsKeyV571(d);
+    const programa = progV571();
+    return cargarAccionesLocales().filter(a =>
+      String(a.dsId || a.ds_id || '') === String(d.id) &&
+      (!keyR || rdsKeyV571(a) === keyR) &&
+      normalizarProgramaNombre(a.programaNacional || a.programa || '') === programa &&
+      (a.departamento || a.provincia || a.distrito || a.ubigeo)
+    );
+  }
+
+  function accionesDeTerritorioV571(t) {
+    const keyT = keyTerritorioV571(t);
+    return accionesProgramaDistritoV571().filter(a => {
+      const keyA = a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(normV571).join('|');
+      return keyA === keyT;
+    });
+  }
+
+  function resumenV571(acciones, k1, k2) {
+    const vals = acciones.map(a => String(a?.[k1] || a?.[k2] || '').trim()).filter(Boolean);
+    return [...new Set(vals)].join('<hr class="my-1">');
+  }
+
+  function pageSizeV571() {
+    const n = parseInt(q('progDistritosPageSize')?.value || '10', 10);
+    return [10, 25, 50, 100].includes(n) ? n : 10;
+  }
+
+  function paginasV571(total) {
+    return Math.max(1, Math.ceil(total / pageSizeV571()));
+  }
+
+  function distritosVisiblesPaginaV571() {
+    const distritos = territorioDSProgramaV571();
+    const totalPaginas = paginasV571(distritos.length);
+    if (paginaV571 > totalPaginas) paginaV571 = totalPaginas;
+    if (paginaV571 < 1) paginaV571 = 1;
+    const desde = (paginaV571 - 1) * pageSizeV571();
+    return distritos.slice(desde, desde + pageSizeV571());
+  }
+
+  function actualizarControlesPaginaV571(total) {
+    const totalPaginas = paginasV571(total);
+    const desde = total ? ((paginaV571 - 1) * pageSizeV571()) + 1 : 0;
+    const hasta = Math.min(total, paginaV571 * pageSizeV571());
+    if (q('progDistritosContador')) q('progDistritosContador').textContent = `Mostrando ${desde}-${hasta} de ${total} registros`;
+    if (q('progDistritosPaginaInfo')) q('progDistritosPaginaInfo').textContent = `Página ${paginaV571} de ${totalPaginas}`;
+    if (q('btnProgDistritosAnterior')) q('btnProgDistritosAnterior').disabled = paginaV571 <= 1;
+    if (q('btnProgDistritosSiguiente')) q('btnProgDistritosSiguiente').disabled = paginaV571 >= totalPaginas;
+  }
+
+  function ocultarCamposRedundantesV571() {
+    ['progDetalle', 'progDescripcionActividades'].forEach(id => {
+      const el = q(id);
+      if (!el) return;
+      el.classList.add('d-none');
+      el.setAttribute('aria-hidden', 'true');
+      const col = el.closest('.col-12');
+      if (col) col.style.display = 'none';
+    });
+  }
+
+  function renderDistritosAccionesProgramaV571() {
+    const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
+    if (!tbody) return;
+    ocultarCamposRedundantesV571();
+
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (!d) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Seleccione un Decreto Supremo activado.</td></tr>';
+      actualizarControlesPaginaV571(0);
+      return;
+    }
+
+    const distritos = territorioDSProgramaV571();
+    if (!distritos.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>';
+      actualizarControlesPaginaV571(0);
+      return;
+    }
+
+    const visibles = distritosVisiblesPaginaV571();
+    tbody.innerHTML = visibles.map(t => {
+      const acciones = accionesDeTerritorioV571(t);
+      const detalle = resumenV571(acciones, 'detalle', 'accionesEspecificas');
+      const descripcion = resumenV571(acciones, 'descripcionActividades', 'descripcion');
+      const checked = seleccionV571.has(t.key) ? 'checked' : '';
+      const estadoFila = acciones.length ? '<span class="badge text-bg-success">Registrado</span>' : '<span class="badge text-bg-secondary">Pendiente</span>';
+      return `<tr data-territorio-key="${escAttrV571(t.key)}">
+        <td class="text-center"><input class="form-check-input chk-distrito-programa-v571" type="checkbox" value="${escAttrV571(t.key)}" ${checked}></td>
+        <td>${escV571(t.departamento)}</td>
+        <td>${escV571(t.provincia)}</td>
+        <td><strong>${escV571(t.distrito)}</strong><div class="small text-muted">${estadoFila}</div></td>
+        <td>${detalle || '<span class="text-muted">Pendiente</span>'}</td>
+        <td>${descripcion || '<span class="text-muted">Pendiente</span>'}</td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('.chk-distrito-programa-v571').forEach(chk => {
+      chk.addEventListener('change', () => {
+        if (chk.checked) seleccionV571.add(chk.value);
+        else seleccionV571.delete(chk.value);
+      });
+    });
+    actualizarControlesPaginaV571(distritos.length);
+  }
+
+  function seleccionarTodosVisiblesV571() {
+    distritosVisiblesPaginaV571().forEach(t => seleccionV571.add(t.key));
+    renderDistritosAccionesProgramaV571();
+  }
+
+  function limpiarSeleccionV571() {
+    seleccionV571.clear();
+    renderDistritosAccionesProgramaV571();
+  }
+
+  function abrirModalGrupalV571() {
+    if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) {
+      alert('Esta opción corresponde a Registradores de Programas Nacionales.');
+      return;
+    }
+    if (!dsProgramaSeleccionadoId) return alert('Seleccione un Decreto Supremo activado.');
+    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
+    if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
+    const modal = q('modalAccionGrupalPrograma');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+    else alert('No se encontró el modal de registro grupal.');
+  }
+
+  function guardarGrupalV571() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.');
+    if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+
+    const detalle = String(q('grupoDetallePrograma')?.value || '').trim();
+    const descripcion = String(q('grupoDescripcionPrograma')?.value || '').trim();
+    if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+
+    const programa = progV571();
+    const keyR = rdsKeyV571(d);
+    const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
+    const territorios = territorioDSProgramaV571().filter(t => seleccionV571.has(t.key));
+    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+
+    const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
+    territorios.forEach(t => {
+      const idx = lista.findIndex(a =>
+        String(a.dsId || a.ds_id || '') === String(d.id) &&
+        rdsKeyV571(a) === keyR &&
+        normalizarProgramaNombre(a.programaNacional || a.programa || '') === programa &&
+        (a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(normV571).join('|')) === t.key
+      );
+      const base = idx >= 0 ? lista[idx] : {};
+      const codigoBase = `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`;
+      const accion = {
+        ...base,
+        id: base.id || crypto.randomUUID(),
+        dsId: d.id,
+        ds_id: d.id,
+        numeroDS: (typeof formatearNumeroDS === 'function') ? formatearNumeroDS(d) : (d.numero || ''),
+        ds: (typeof formatearNumeroDS === 'function') ? formatearNumeroDS(d) : (d.numero || ''),
+        numeroReunion: d.numeroReunion || '',
+        fechaReunion: d.fechaReunion || '',
+        rdsKey: keyR,
+        estadoRDS: d.estadoRDS || 'Activo',
+        programaNacional: programa,
+        programa,
+        tipoAccion: base.tipoAccion || base.tipo || 'Acción grupal territorial',
+        tipo: base.tipo || base.tipoAccion || 'Acción grupal territorial',
+        codigoAccion: base.codigoAccion || base.codigo || codigoBase,
+        codigo: base.codigo || base.codigoAccion || codigoBase,
+        detalle,
+        accionesEspecificas: detalle,
+        descripcionActividades: descripcion,
+        descripcion,
+        departamento: t.departamento || '',
+        provincia: t.provincia || '',
+        distrito: t.distrito || '',
+        ubigeo: t.ubigeo || '',
+        unidadMedida: base.unidadMedida || base.unidad || 'Distrito',
+        unidad: base.unidad || base.unidadMedida || 'Distrito',
+        metaProgramada: base.metaProgramada ?? base.meta_programada ?? 0,
+        meta_programada: base.meta_programada ?? base.metaProgramada ?? 0,
+        plazoDias: base.plazoDias ?? base.plazo ?? 0,
+        plazo: base.plazo ?? base.plazoDias ?? 0,
+        fechaInicio: base.fechaInicio || base.fecha_inicio || '',
+        fecha_inicio: base.fecha_inicio || base.fechaInicio || '',
+        fechaFinal: base.fechaFinal || base.fecha_final || '',
+        fecha_final: base.fecha_final || base.fechaFinal || '',
+        metaEjecutada: base.metaEjecutada ?? base.meta_ejecutada ?? 0,
+        meta_ejecutada: base.meta_ejecutada ?? base.metaEjecutada ?? 0,
+        avance: base.avance || '0%',
+        fechaRegistro: base.fechaRegistro || base.fecha_registro || fechaRegistro,
+        fecha_registro: base.fecha_registro || base.fechaRegistro || fechaRegistro,
+        usuarioRegistro: base.usuarioRegistro || base.usuario_registro || state.session?.email || '',
+        usuario_registro: base.usuario_registro || base.usuarioRegistro || state.session?.email || '',
+        usuario_actualiza: base.id ? (state.session?.email || '') : '',
+        fecha_actualiza: base.id ? fechaRegistro : '',
+        estado: 'Registrado'
+      };
+      if (idx >= 0) lista[idx] = accion;
+      else lista.push(accion);
+      if (typeof api === 'function') api('/acciones', 'POST', accion);
+    });
+
+    if (typeof guardarAccionesLocales === 'function') guardarAccionesLocales(lista);
+    const modal = q('modalAccionGrupalPrograma');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+    seleccionV571.clear();
+    renderDistritosAccionesProgramaV571();
+    if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas();
+    if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
+    alert('Acción registrada correctamente en los distritos seleccionados.');
+  }
+
+  const cargarVistaOriginalV571 = window.cargarVistaAccionesPrograma || (typeof cargarVistaAccionesPrograma === 'function' ? cargarVistaAccionesPrograma : null);
+  const initOriginalV571 = window.initRegistroAccionesProgramas || (typeof initRegistroAccionesProgramas === 'function' ? initRegistroAccionesProgramas : null);
+  const renderTablaOriginalV571 = window.renderTablaAccionesProgramas || (typeof renderTablaAccionesProgramas === 'function' ? renderTablaAccionesProgramas : null);
+
+  function initRegistroAccionesProgramasV571() {
+    if (initOriginalV571) {
+      try { initOriginalV571(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completó:', e); }
+    }
+    ocultarCamposRedundantesV571();
+    renderDistritosAccionesProgramaV571();
+    if (eventosV571) return;
+    eventosV571 = true;
+
+    q('progDistritosPageSize')?.addEventListener('change', () => { paginaV571 = 1; renderDistritosAccionesProgramaV571(); });
+    q('btnProgDistritosAnterior')?.addEventListener('click', () => { paginaV571 = Math.max(1, paginaV571 - 1); renderDistritosAccionesProgramaV571(); });
+    q('btnProgDistritosSiguiente')?.addEventListener('click', () => { paginaV571 += 1; renderDistritosAccionesProgramaV571(); });
+
+    q('btnSeleccionarTodosDistritosPrograma')?.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopImmediatePropagation(); seleccionarTodosVisiblesV571();
+    }, true);
+    q('btnLimpiarSeleccionDistritosPrograma')?.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopImmediatePropagation(); limpiarSeleccionV571();
+    }, true);
+    q('btnRegistrarAccionGrupalPrograma')?.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopImmediatePropagation(); abrirModalGrupalV571();
+    }, true);
+    q('btnGuardarAccionGrupalPrograma')?.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopImmediatePropagation(); guardarGrupalV571();
+    }, true);
+  }
+
+  function cargarVistaAccionesProgramaV571(id) {
+    seleccionV571.clear();
+    paginaV571 = 1;
+    if (cargarVistaOriginalV571) cargarVistaOriginalV571(id);
+    ocultarCamposRedundantesV571();
+    renderDistritosAccionesProgramaV571();
+  }
+
+  function renderTablaAccionesProgramasV571() {
+    if (renderTablaOriginalV571) renderTablaOriginalV571();
+    ocultarCamposRedundantesV571();
+    renderDistritosAccionesProgramaV571();
+  }
+
+  window.initRegistroAccionesProgramas = initRegistroAccionesProgramasV571;
+  window.cargarVistaAccionesPrograma = cargarVistaAccionesProgramaV571;
+  window.renderTablaAccionesProgramas = renderTablaAccionesProgramasV571;
+  window.renderDistritosAccionesPrograma = renderDistritosAccionesProgramaV571;
+
+  try { initRegistroAccionesProgramas = initRegistroAccionesProgramasV571; } catch {}
+  try { cargarVistaAccionesPrograma = cargarVistaAccionesProgramaV571; } catch {}
+  try { renderTablaAccionesProgramas = renderTablaAccionesProgramasV571; } catch {}
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      try { initRegistroAccionesProgramasV571(); } catch (e) { console.warn('No se pudo inicializar v57.1:', e); }
+      console.info('DEE MIDIS cierre aplicado:', VERSION_V571);
+    }, 1400);
   });
 })();

@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v57: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v58: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v57: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v58: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v57 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v58 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v57: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v58: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 57 · 11/05/2026 - 11:10 hrs· MIDIS © 2026
+            VERSION 58 · 11/05/2026 - 11:40 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -1917,10 +1917,27 @@
                           <h5 class="text-primary mb-1">Distritos declarados y acciones por territorio</h5>
                           <div class="text-muted small">Seleccione uno o varios distritos para registrar acciones en grupo.</div>
                         </div>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex flex-wrap align-items-end gap-2">
+                          <div>
+                            <label class="form-label small mb-1" for="progDistritosPageSize">Mostrar</label>
+                            <select id="progDistritosPageSize" class="form-select form-select-sm" style="min-width:110px">
+                              <option value="10">10 registros</option>
+                              <option value="25">25 registros</option>
+                              <option value="50">50 registros</option>
+                              <option value="100">100 registros</option>
+                            </select>
+                          </div>
                           <button id="btnSeleccionarTodosDistritosPrograma" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
                           <button id="btnLimpiarSeleccionDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
                           <button id="btnRegistrarAccionGrupalPrograma" type="button" class="btn btn-sm btn-primary">Registrar acción grupal</button>
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span id="progDistritosContador" class="text-muted small">Mostrando 0 de 0 registros</span>
+                        <div class="d-flex align-items-center gap-2">
+                          <button id="btnProgDistritosAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
+                          <span id="progDistritosPaginaInfo" class="text-muted small">Página 1 de 1</span>
+                          <button id="btnProgDistritosSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
                         </div>
                       </div>
                       <div class="table-responsive">
@@ -1942,8 +1959,8 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-12"><label class="form-label">Acciones específicas programadas y ejecutadas</label><textarea id="progDetalle" class="form-control" rows="2"></textarea></div>
-                  <div class="col-12"><label class="form-label">Descripción de actividades</label><textarea id="progDescripcionActividades" class="form-control" rows="2"></textarea></div>
+                  <textarea id="progDetalle" class="d-none" rows="1" aria-hidden="true"></textarea>
+                  <textarea id="progDescripcionActividades" class="d-none" rows="1" aria-hidden="true"></textarea>
                 </div>
                 <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar Acción</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
               </div>
