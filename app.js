@@ -1,4 +1,4 @@
-// ================= VERSION 58 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 59 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -4744,7 +4744,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     actualizarVisibilidadSubtipoDEE('edit');
   }
 
-  function normalTipoDEE(valor) { return String(valor || '').trim(); }
+  function normalTipoDEE(valor) {
+    const raw = String(valor || '').trim();
+    const n = normalizarTexto(raw);
+    if (n.includes('PREPARACION')) return TIPO_PREPARACION;
+    if (n.includes('RESPUESTA')) return TIPO_RESPUESTA;
+    if (n.includes('REHABILITACION')) return TIPO_REHABILITACION;
+    return raw;
+  }
   function esTipoRehabilitacionDEE(valor) { return normalTipoDEE(valor) === TIPO_REHABILITACION; }
   function esTipoPreparacionDEE(valor) { return normalTipoDEE(valor) === TIPO_PREPARACION; }
 
@@ -6342,7 +6349,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       programa: valor(a,'programaNacional','programa'),
       tipo: valor(a,'tipoAccion','tipo'),
       codigo: valor(a,'codigoAccion','codigo'),
-      detalle: valor(a,'detalle','accion','acciones'),
+      detalle: valor(a,'detalle','accionesEspecificas','accion','acciones'),
       unidad: valor(a,'unidadMedida','unidad'),
       metaProgramada: valor(a,'metaProgramada','meta_programada'),
       plazo: valor(a,'plazoDias','plazo'),
@@ -6632,6 +6639,20 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function reunionKey(numero, fecha){
     return `${norm(numero)}|${String(fecha || '').slice(0,10)}`;
   }
+  function reunionTextoBase(numero){
+    return norm(String(numero || '').replace(/\s*-\s*\d{1,2}\/\d{1,2}\/\d{2,4}.*$/,'').replace(/\s*-\s*\d{4}-\d{2}-\d{2}.*$/,''));
+  }
+  function fechaSoloISO(valor){
+    const s = String(valor || '').trim();
+    if (!s) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+    return s.slice(0,10);
+  }
+  function reunionKeyFlexible(numero, fecha){
+    return `${reunionTextoBase(numero)}|${fechaSoloISO(fecha)}`;
+  }
   function accionesDelDS(d){
     return getAcciones().filter(a => String(valor(a,'dsId','ds_id')) === String(d?.id));
   }
@@ -6650,7 +6671,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function accionesDeReunion(d, reunion){
     const k = reunionKey(reunion.numeroReunion, reunion.fechaReunion);
-    return accionesDelDS(d).filter(a => reunionKey(valor(a,'numeroReunion','numero_reunion'), valor(a,'fechaReunion','fecha_reunion')) === k);
+    const kFlex = reunionKeyFlexible(reunion.numeroReunion, reunion.fechaReunion);
+    const nBase = reunionTextoBase(reunion.numeroReunion);
+    const fBase = fechaSoloISO(reunion.fechaReunion);
+    return accionesDelDS(d).filter(a => {
+      const n = valor(a,'numeroReunion','numero_reunion');
+      const f = valor(a,'fechaReunion','fecha_reunion');
+      if (reunionKey(n, f) === k) return true;
+      if (reunionKeyFlexible(n, f) === kFlex) return true;
+      if (valor(a,'rdsKey','rds_key') && norm(valor(a,'rdsKey','rds_key')) === norm(k)) return true;
+      if (valor(a,'rdsKey','rds_key') && norm(valor(a,'rdsKey','rds_key')) === norm(kFlex)) return true;
+      return reunionTextoBase(n) === nBase && fechaSoloISO(f) === fBase;
+    });
   }
   function clasificarTipo(tipo){
     const t = norm(tipo);
@@ -7992,19 +8024,19 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         provincia: t.provincia || '',
         distrito: t.distrito || '',
         ubigeo: t.ubigeo || '',
-        unidadMedida: base.unidadMedida || base.unidad || 'Distrito',
-        unidad: base.unidad || base.unidadMedida || 'Distrito',
-        metaProgramada: base.metaProgramada ?? base.meta_programada ?? 0,
-        meta_programada: base.meta_programada ?? base.metaProgramada ?? 0,
-        plazoDias: base.plazoDias ?? base.plazo ?? 0,
-        plazo: base.plazo ?? base.plazoDias ?? 0,
-        fechaInicio: base.fechaInicio || base.fecha_inicio || '',
-        fecha_inicio: base.fecha_inicio || base.fechaInicio || '',
-        fechaFinal: base.fechaFinal || base.fecha_final || '',
-        fecha_final: base.fecha_final || base.fechaFinal || '',
-        metaEjecutada: base.metaEjecutada ?? base.meta_ejecutada ?? 0,
-        meta_ejecutada: base.meta_ejecutada ?? base.metaEjecutada ?? 0,
-        avance: base.avance || '0%',
+        unidadMedida: q('progUnidadMedida')?.value || base.unidadMedida || base.unidad || 'Distrito',
+        unidad: q('progUnidadMedida')?.value || base.unidad || base.unidadMedida || 'Distrito',
+        metaProgramada: Number(q('progMetaProgramada')?.value || base.metaProgramada || base.meta_programada || 0),
+        meta_programada: Number(q('progMetaProgramada')?.value || base.meta_programada || base.metaProgramada || 0),
+        plazoDias: Number(q('progPlazoDias')?.value || base.plazoDias || base.plazo || 0),
+        plazo: Number(q('progPlazoDias')?.value || base.plazo || base.plazoDias || 0),
+        fechaInicio: q('progFechaInicio')?.value || base.fechaInicio || base.fecha_inicio || '',
+        fecha_inicio: q('progFechaInicio')?.value || base.fecha_inicio || base.fechaInicio || '',
+        fechaFinal: q('progFechaFinal')?.value || base.fechaFinal || base.fecha_final || '',
+        fecha_final: q('progFechaFinal')?.value || base.fecha_final || base.fechaFinal || '',
+        metaEjecutada: Number(q('progMetaEjecutada')?.value || base.metaEjecutada || base.meta_ejecutada || 0),
+        meta_ejecutada: Number(q('progMetaEjecutada')?.value || base.meta_ejecutada || base.metaEjecutada || 0),
+        avance: q('progAvance')?.value || base.avance || '0%',
         fechaRegistro: base.fechaRegistro || base.fecha_registro || fechaRegistro,
         fecha_registro: base.fecha_registro || base.fechaRegistro || fechaRegistro,
         usuarioRegistro: base.usuarioRegistro || base.usuario_registro || state.session?.email || '',
@@ -8266,6 +8298,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     renderDistritosAccionesProgramaV571();
   }
 
+  function normalizarTipoAccionGrupalV58(valor) {
+    const raw = String(valor || '').trim();
+    const n = normV571(raw);
+    if (!n) return '';
+    if (n.includes('PREPARACION')) return 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+    if (n.includes('RESPUESTA')) return 'Acciones de Respuesta';
+    if (n.includes('REHABILITACION')) return 'Acciones de Rehabilitación';
+    return '';
+  }
+
   function abrirModalGrupalV571() {
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) {
       alert('Esta opción corresponde a Registradores de Programas Nacionales.');
@@ -8291,6 +8333,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const descripcion = String(q('grupoDescripcionPrograma')?.value || '').trim();
     if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
 
+    const tipoFormulario = normalizarTipoAccionGrupalV58(q('progTipoAccion')?.value || '');
+    const subtipoFormulario = String(q('progSubtipoRehabilitacion')?.value || '').trim();
+    if (!tipoFormulario) return alert('Seleccione un Tipo de Acción válido del catálogo oficial.');
+    if (normalizarTexto(tipoFormulario).includes('REHABILITACION') && !subtipoFormulario) return alert('Seleccione el Subtipo de Rehabilitación.');
+
     const programa = progV571();
     const keyR = rdsKeyV571(d);
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
@@ -8299,14 +8346,17 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     territorios.forEach(t => {
+      const codigoBase = `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`;
+      const codigoFormulario = String(q('progCodigoAccion')?.value || '').trim() || codigoBase;
       const idx = lista.findIndex(a =>
         String(a.dsId || a.ds_id || '') === String(d.id) &&
         rdsKeyV571(a) === keyR &&
         normalizarProgramaNombre(a.programaNacional || a.programa || '') === programa &&
-        (a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(normV571).join('|')) === t.key
+        (a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(normV571).join('|')) === t.key &&
+        normalizarTipoAccionGrupalV58(a.tipoAccion || a.tipo || '') === tipoFormulario &&
+        normalizarTexto(a.codigoAccion || a.codigo || '') === normalizarTexto(codigoFormulario)
       );
       const base = idx >= 0 ? lista[idx] : {};
-      const codigoBase = `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`;
       const accion = {
         ...base,
         id: base.id || crypto.randomUUID(),
@@ -8320,10 +8370,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         estadoRDS: d.estadoRDS || 'Activo',
         programaNacional: programa,
         programa,
-        tipoAccion: base.tipoAccion || base.tipo || 'Acción grupal territorial',
-        tipo: base.tipo || base.tipoAccion || 'Acción grupal territorial',
-        codigoAccion: base.codigoAccion || base.codigo || codigoBase,
-        codigo: base.codigo || base.codigoAccion || codigoBase,
+        tipoAccion: tipoFormulario,
+        tipo: tipoFormulario,
+        subtipoRehabilitacion: normalizarTexto(tipoFormulario).includes('REHABILITACION') ? subtipoFormulario : '',
+        subtipo_rehabilitacion: normalizarTexto(tipoFormulario).includes('REHABILITACION') ? subtipoFormulario : '',
+        codigoAccion: codigoFormulario,
+        codigo: codigoFormulario,
         detalle,
         accionesEspecificas: detalle,
         descripcionActividades: descripcion,
