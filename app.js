@@ -1,4 +1,4 @@
-// ================= VERSION 63 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 64 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -9195,321 +9195,187 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   else arranqueV611();
 })();
 
-// ================= CORRECCIÓN v62.1 PREAPROBAR VER/EDITAR =================
-// Alcance: solo mejora el modal Ver/Editar de la pestaña PreAprobar Acciones
-// para Administrador y Registrador. No altera login, roles, dashboard ni flujos base.
-(function(){
-  const VERSION = 'v62.1-preaprobar-ver-editar-completo';
-  const TIPOS = [
-    'Acciones de Preparación (Solo DEE por Peligro Inminente)',
-    'Acciones de Respuesta',
-    'Acciones de Rehabilitación'
-  ];
-  const SUBTIPOS = [
-    'RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA',
-    'NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA'
-  ];
-  const UNIDADES = ['Persona','Usuario','Servicio','Distrito','Acción','Informe','Coordinación','Familia','Hogar','Local','Institución','Unidad'];
+// ================= AJUSTE v62.1 - PREAPROBAR: FILTROS Y TERRITORIO =================
+// Alcance quirúrgico: solo pestaña "PreAprobar Acciones" / tabla "Acciones registradas por Programas Nacionales".
+(function cierrePreAprobarTerritorioV621(){
+  const VERSION = 'v62.1-preaprobar-filtros-territorio';
 
-  const q = (id) => document.getElementById(id);
-  const txt = (v) => String(v ?? '').trim();
-  const val = (o, ...keys) => {
+  function q(id){ return document.getElementById(id); }
+  function txt(v){ return String(v ?? ''); }
+  function norm(v){
+    return txt(v)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
+  }
+  function esc(v){
+    return txt(v)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+  function escAttr(v){ return esc(v); }
+  function valor(a, ...keys){
+    if (typeof accionValor === 'function') return accionValor(a, ...keys);
     for (const k of keys) {
-      const v = o?.[k];
-      if (v !== undefined && v !== null && txt(v) !== '') return v;
+      if (a && a[k] !== undefined && a[k] !== null && txt(a[k]).trim() !== '') return a[k];
     }
     return '';
-  };
-  const n = (v) => {
-    if (v === undefined || v === null || txt(v) === '') return 0;
-    const num = Number(String(v).replace('%','').replace(',','.').trim());
-    return Number.isFinite(num) ? num : 0;
-  };
-  const html = (v) => String(v ?? '')
-    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-    .replaceAll('"','&quot;').replaceAll("'",'&#39;');
-  const attr = html;
-  const norm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
-  const progNorm = (v) => {
-    const t = norm(v);
-    if (['CUNA MAS','CUNA MÁS','CUNAMAS'].includes(t)) return 'CUNA MÁS';
-    if (['PENSION 65','PENSIÓN 65'].includes(t)) return 'PENSIÓN 65';
-    if (['PAIS','PAÍS'].includes(t)) return 'PAIS';
-    return t;
-  };
+  }
 
-  function getLocalAcciones(){
+  function programaNormal(v){
+    if (typeof normalizarProgramaNombre === 'function') return normalizarProgramaNombre(v);
+    return norm(v);
+  }
+
+  function accionesPreAprobarBase(){
+    const dsId = (typeof dsPreAprobarSeleccionadoId !== 'undefined' && dsPreAprobarSeleccionadoId) ? dsPreAprobarSeleccionadoId : '';
     try {
-      if (typeof window.cargarAccionesLocales === 'function') return window.cargarAccionesLocales() || [];
-      if (typeof cargarAccionesLocales === 'function') return cargarAccionesLocales() || [];
+      if (typeof accionesPorDSReunionActualV38 === 'function') return accionesPorDSReunionActualV38(dsId) || [];
     } catch {}
-    try { return JSON.parse(localStorage.getItem('accionesDS') || '[]'); } catch { return []; }
-  }
-
-  function saveLocalAcciones(lista){
     try {
-      if (typeof window.guardarAccionesLocales === 'function') { window.guardarAccionesLocales(lista); return; }
-      if (typeof guardarAccionesLocales === 'function') { guardarAccionesLocales(lista); return; }
+      if (typeof accionesPorDS === 'function') return accionesPorDS(dsId) || [];
     } catch {}
-    localStorage.setItem('accionesDS', JSON.stringify(Array.isArray(lista) ? lista : []));
-  }
-
-  async function syncAccionesD1(){
     try {
-      if (typeof window.cargarAccionesDesdeD1V611 === 'function') return await window.cargarAccionesDesdeD1V611();
-    } catch {}
-    return getLocalAcciones();
-  }
-
-  function setOptions(select, values, placeholder = 'Seleccione...'){
-    if (!select) return;
-    const actual = select.value;
-    select.innerHTML = `<option value="">${placeholder}</option>` + values.map(v => `<option value="${attr(v)}">${html(v)}</option>`).join('');
-    if (actual && values.some(v => String(v) === String(actual))) select.value = actual;
-  }
-
-  function cargarCatalogosModalV621(){
-    setOptions(q('editTipoAccion'), TIPOS);
-    setOptions(q('editSubtipoRehabilitacion'), SUBTIPOS);
-    setOptions(q('editUnidadMedida'), UNIDADES);
-    actualizarSubtipoModalV621();
-  }
-
-  function esRehabilitacion(tipo){ return norm(tipo) === norm('Acciones de Rehabilitación'); }
-
-  function actualizarSubtipoModalV621(){
-    const box = q('editSubtipoRehabBox');
-    const subtipo = q('editSubtipoRehabilitacion');
-    const visible = esRehabilitacion(q('editTipoAccion')?.value || '');
-    if (box) box.style.display = visible ? '' : 'none';
-    if (subtipo) {
-      subtipo.disabled = !visible;
-      if (!visible) subtipo.value = '';
-    }
-  }
-
-  function calcularFechaFinalModalV621(){
-    const inicio = q('editFechaInicio')?.value || '';
-    const plazo = parseInt(q('editPlazoDias')?.value || '0', 10);
-    if (!inicio || !Number.isFinite(plazo)) return;
-    const f = new Date(`${inicio}T00:00:00`);
-    f.setDate(f.getDate() + plazo);
-    if (q('editFechaFinal')) q('editFechaFinal').value = f.toISOString().slice(0,10);
-  }
-
-  function calcularAvanceModalV621(){
-    const meta = n(q('editMetaProgramada')?.value);
-    const ejec = n(q('editMetaEjecutada')?.value);
-    if (q('editAvance')) q('editAvance').value = meta > 0 ? `${Math.min(100, Math.round((ejec/meta)*100))}%` : '0%';
-  }
-
-  function puedeEditarModalV621(a){
-    try {
-      if (typeof esAdministrador === 'function' && esAdministrador()) return true;
-      if (typeof esRegistradorGeneral === 'function' && esRegistradorGeneral()) return true;
-      if (typeof esRegistradorPrograma === 'function' && esRegistradorPrograma()) {
-        const p = typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '';
-        return progNorm(val(a,'programaNacional','programa')) === progNorm(p);
+      if (typeof cargarAccionesLocales === 'function') {
+        return cargarAccionesLocales().filter(a => !dsId || String(a.dsId || a.ds_id) === String(dsId));
       }
     } catch {}
-    return false;
+    return [];
   }
 
-  async function abrirModalEditarAccionV621(id){
-    await syncAccionesD1();
-    const lista = getLocalAcciones();
-    const a = lista.find(x => String(x.id) === String(id));
-    if (!a) return alert('No se encontró la acción seleccionada.');
-    if (!puedeEditarModalV621(a)) return alert('No tiene permisos para editar esta acción.');
-
-    cargarCatalogosModalV621();
-
-    if (q('editAccionId')) q('editAccionId').value = a.id || '';
-    if (q('editProgramaNacional')) q('editProgramaNacional').value = val(a,'programaNacional','programa');
-    if (q('editDepartamento')) q('editDepartamento').value = val(a,'departamento');
-    if (q('editProvincia')) q('editProvincia').value = val(a,'provincia');
-    if (q('editDistrito')) q('editDistrito').value = val(a,'distrito');
-    if (q('editTipoAccion')) q('editTipoAccion').value = val(a,'tipoAccion','tipo','tipo_accion');
-    if (q('editSubtipoRehabilitacion')) q('editSubtipoRehabilitacion').value = val(a,'subtipoRehabilitacion','subtipo_rehabilitacion');
-    if (q('editCodigoAccion')) q('editCodigoAccion').value = val(a,'codigoAccion','codigo','codigo_accion');
-    if (q('editUnidadMedida')) q('editUnidadMedida').value = val(a,'unidadMedida','unidad','unidad_medida');
-    if (q('editMetaProgramada')) q('editMetaProgramada').value = val(a,'metaProgramada','meta_programada');
-    if (q('editPlazoDias')) q('editPlazoDias').value = val(a,'plazoDias','plazo_dias','plazo');
-    if (q('editFechaInicio')) q('editFechaInicio').value = val(a,'fechaInicio','fecha_inicio');
-    if (q('editFechaFinal')) q('editFechaFinal').value = val(a,'fechaFinal','fecha_final');
-    if (q('editMetaEjecutada')) q('editMetaEjecutada').value = val(a,'metaEjecutada','meta_ejecutada');
-    const av = val(a,'avance');
-    if (q('editAvance')) q('editAvance').value = av === '' ? '0%' : (String(av).includes('%') ? av : `${av}%`);
-    if (q('editDetalle')) q('editDetalle').value = val(a,'detalle','accion_registrada','accionRegistrada');
-    if (q('editDescripcion')) q('editDescripcion').value = val(a,'descripcionActividades','descripcion','observaciones');
-    if (q('editFechaRegistro')) q('editFechaRegistro').value = val(a,'fechaRegistro','fecha_registro');
-    if (q('editUsuario')) q('editUsuario').value = val(a,'usuarioRegistro','usuario_registro','usuario');
-
-    actualizarSubtipoModalV621();
-    const modal = q('modalEditarAccion');
-    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
-  }
-
-  async function grabarModalAccionV621(){
-    const id = q('editAccionId')?.value || '';
-    if (!id) return alert('No hay acción seleccionada.');
-
-    const lista = getLocalAcciones();
-    const idx = lista.findIndex(a => String(a.id) === String(id));
-    if (idx < 0) return alert('No se encontró la acción.');
-
-    const original = lista[idx];
-    if (!puedeEditarModalV621(original)) return alert('No tiene permisos para editar esta acción.');
-
-    const tipo = q('editTipoAccion')?.value || '';
-    const codigo = txt(q('editCodigoAccion')?.value || '');
-    const unidad = q('editUnidadMedida')?.value || '';
-    const detalle = txt(q('editDetalle')?.value || '');
-    const subtipo = q('editSubtipoRehabilitacion')?.value || '';
-
-    if (!TIPOS.includes(tipo)) return alert('Seleccione un Tipo de Acción válido del catálogo oficial.');
-    if (esRehabilitacion(tipo) && !subtipo) return alert('Seleccione el Subtipo de Rehabilitación.');
-    if (!codigo) return alert('Ingrese el Código de acción.');
-    if (!unidad) return alert('Seleccione la Unidad de medida.');
-    if (!detalle) return alert('Ingrese las Acciones específicas programadas y ejecutadas.');
-
-    // Mantener la lógica de no duplicar: para edición se actualiza por ID.
-    const dsId = val(original,'dsId','ds_id');
-    const numeroReunion = val(original,'numeroReunion','numero_reunion');
-    const programa = progNorm(val(original,'programaNacional','programa'));
-    const depto = norm(val(original,'departamento'));
-    const prov = norm(val(original,'provincia'));
-    const dist = norm(val(original,'distrito'));
-    const duplicada = lista.some(a => String(a.id) !== String(id)
-      && String(val(a,'dsId','ds_id')) === String(dsId)
-      && norm(val(a,'numeroReunion','numero_reunion')) === norm(numeroReunion)
-      && progNorm(val(a,'programaNacional','programa')) === programa
-      && norm(val(a,'departamento')) === depto
-      && norm(val(a,'provincia')) === prov
-      && norm(val(a,'distrito')) === dist
-      && norm(val(a,'tipoAccion','tipo','tipo_accion')) === norm(tipo)
-      && norm(val(a,'codigoAccion','codigo','codigo_accion')) === norm(codigo));
-    if (duplicada) return alert('Ya existe otra acción con el mismo DS, reunión, programa, territorio, tipo y código.');
-
-    const updated = {
-      ...original,
-      id,
-      tipoAccion: tipo,
-      tipo,
-      tipo_accion: tipo,
-      subtipoRehabilitacion: esRehabilitacion(tipo) ? subtipo : '',
-      subtipo_rehabilitacion: esRehabilitacion(tipo) ? subtipo : '',
-      codigoAccion: codigo,
-      codigo,
-      codigo_accion: codigo,
-      detalle,
-      accionRegistrada: detalle,
-      accion_registrada: detalle,
-      unidadMedida: unidad,
-      unidad,
-      unidad_medida: unidad,
-      metaProgramada: n(q('editMetaProgramada')?.value),
-      meta_programada: n(q('editMetaProgramada')?.value),
-      plazoDias: n(q('editPlazoDias')?.value),
-      plazo_dias: n(q('editPlazoDias')?.value),
-      plazo: n(q('editPlazoDias')?.value),
-      fechaInicio: q('editFechaInicio')?.value || '',
-      fecha_inicio: q('editFechaInicio')?.value || '',
-      fechaFinal: q('editFechaFinal')?.value || '',
-      fecha_final: q('editFechaFinal')?.value || '',
-      metaEjecutada: n(q('editMetaEjecutada')?.value),
-      meta_ejecutada: n(q('editMetaEjecutada')?.value),
-      avance: txt(q('editAvance')?.value || '0').replace('%',''),
-      descripcionActividades: q('editDescripcion')?.value || '',
-      descripcion: q('editDescripcion')?.value || '',
-      observaciones: q('editDescripcion')?.value || '',
-      usuario_actualiza: (typeof state !== 'undefined' ? state.session?.email : '') || '',
-      fecha_actualiza: new Date().toISOString()
+  function filtrosPreAprobar(){
+    return {
+      programa: programaNormal(q('filtroPrePrograma')?.value || ''),
+      departamento: norm(q('filtroPreDepartamento')?.value || ''),
+      provincia: norm(q('filtroPreProvincia')?.value || ''),
+      distrito: norm(q('filtroPreDistrito')?.value || '')
     };
-
-    lista[idx] = updated;
-    saveLocalAcciones(lista);
-    let res = { ok: true };
-    try { if (typeof api === 'function') res = await api('/acciones', 'POST', updated); } catch {}
-    if (res && res.ok === false) return alert('No se pudo actualizar en D1. Revise sesión o conexión.');
-
-    try { await syncAccionesD1(); } catch {}
-    try { if (typeof renderTablaPreAprobarAcciones === 'function') renderTablaPreAprobarAcciones(); } catch {}
-    try { if (typeof renderTablaAcciones === 'function') renderTablaAcciones(); } catch {}
-    try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
-
-    const modal = q('modalEditarAccion');
-    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
-    alert('Acción actualizada correctamente.');
   }
 
-  function renderTablaPreAprobarAccionesV621(){
-    const tbody = document.querySelector('#tablaPreAprobarAcciones tbody');
-    if (!tbody) return;
-    const dsId = (typeof dsPreAprobarSeleccionadoId !== 'undefined' ? dsPreAprobarSeleccionadoId : '') || q('accionDs')?.value || '';
-    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsId) : null;
-    const numero = val(d,'numeroReunion','numero_reunion');
-    const fecha = val(d,'fechaReunion','fecha_reunion');
-    const acciones = getLocalAcciones().filter(a => {
-      if (String(val(a,'dsId','ds_id')) !== String(dsId)) return false;
-      if (numero && norm(val(a,'numeroReunion','numero_reunion')) !== norm(numero)) return false;
-      if (fecha && String(val(a,'fechaReunion','fecha_reunion')).slice(0,10) !== String(fecha).slice(0,10)) return false;
-      return true;
+  function aplicaFiltros(a, f){
+    const programa = programaNormal(valor(a,'programaNacional','programa'));
+    const departamento = norm(valor(a,'departamento'));
+    const provincia = norm(valor(a,'provincia'));
+    const distrito = norm(valor(a,'distrito'));
+    if (f.programa && programa !== f.programa) return false;
+    if (f.departamento && !departamento.includes(f.departamento)) return false;
+    if (f.provincia && !provincia.includes(f.provincia)) return false;
+    if (f.distrito && !distrito.includes(f.distrito)) return false;
+    return true;
+  }
+
+  function actualizarEncabezadoTabla(){
+    const head = document.querySelector('#tablaPreAprobarAcciones thead tr');
+    if (!head) return;
+    const requerido = ['Programa','Departamento','Provincia','Distrito','Tipo de acción','Código','Detalle','Meta programada','Meta ejecutada','Avance','Usuario','Fecha registro','Gestión'];
+    const actual = Array.from(head.children).map(th => norm(th.textContent));
+    if (actual.includes('DEPARTAMENTO') && actual.includes('PROVINCIA') && actual.includes('DISTRITO')) return;
+    head.innerHTML = requerido.map(h => `<th>${esc(h)}</th>`).join('');
+  }
+
+  function actualizarOpcionesProgramaDesdeDatos(){
+    const sel = q('filtroPrePrograma');
+    if (!sel) return;
+    const actual = sel.value;
+    const programas = [...new Set(accionesPreAprobarBase().map(a => txt(valor(a,'programaNacional','programa')).trim()).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,'es'));
+    const base = ['','CUNA MÁS','PAE','JUNTOS','CONTIGO','PENSIÓN 65','FONCODES','PAIS'];
+    const todos = [...new Set(base.concat(programas))];
+    sel.innerHTML = todos.map(p => p ? `<option>${esc(p)}</option>` : '<option value="">Todos</option>').join('');
+    if (actual && Array.from(sel.options).some(o => programaNormal(o.value) === programaNormal(actual))) sel.value = actual;
+  }
+
+  function limpiarFiltrosPreAprobar(){
+    if (q('filtroPrePrograma')) q('filtroPrePrograma').value = '';
+    if (q('filtroPreDepartamento')) q('filtroPreDepartamento').value = '';
+    if (q('filtroPreProvincia')) q('filtroPreProvincia').value = '';
+    if (q('filtroPreDistrito')) q('filtroPreDistrito').value = '';
+    renderTablaPreAprobarAcciones();
+  }
+
+  function instalarFiltrosPreAprobar(){
+    actualizarEncabezadoTabla();
+    actualizarOpcionesProgramaDesdeDatos();
+    const btnBuscar = q('btnBuscarPreAprobar');
+    const btnLimpiar = q('btnLimpiarPreAprobar');
+    if (btnBuscar && btnBuscar.dataset.v621 !== '1') {
+      btnBuscar.dataset.v621 = '1';
+      btnBuscar.addEventListener('click', (e) => { e.preventDefault(); renderTablaPreAprobarAcciones(); });
+    }
+    if (btnLimpiar && btnLimpiar.dataset.v621 !== '1') {
+      btnLimpiar.dataset.v621 = '1';
+      btnLimpiar.addEventListener('click', (e) => { e.preventDefault(); limpiarFiltrosPreAprobar(); });
+    }
+    ['filtroPrePrograma','filtroPreDepartamento','filtroPreProvincia','filtroPreDistrito'].forEach(id => {
+      const el = q(id);
+      if (!el || el.dataset.v621 === '1') return;
+      el.dataset.v621 = '1';
+      el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); renderTablaPreAprobarAcciones(); } });
     });
+  }
+
+  const renderAnteriorV621 = typeof renderTablaPreAprobarAcciones === 'function' ? renderTablaPreAprobarAcciones : null;
+  renderTablaPreAprobarAcciones = function renderTablaPreAprobarAccionesV621(){
+    const tbody = document.querySelector('#tablaPreAprobarAcciones tbody');
+    if (!tbody) return renderAnteriorV621?.apply(this, arguments);
+    instalarFiltrosPreAprobar();
+    const todas = accionesPreAprobarBase();
+    const f = filtrosPreAprobar();
+    const acciones = todas.filter(a => aplicaFiltros(a, f));
+    const contador = q('contadorPreAprobarAcciones');
+    if (contador) contador.textContent = `Mostrando ${acciones.length} de ${todas.length} registro(s)`;
+
     if (!acciones.length) {
-      tbody.innerHTML = '<tr><td colspan="10" class="text-muted">No hay acciones registradas para este Decreto Supremo, número de reunión y fecha de reunión.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" class="text-muted">No hay acciones registradas para los filtros aplicados.</td></tr>';
       return;
     }
+
     tbody.innerHTML = acciones.map(a => {
-      const av = val(a,'avance');
+      const id = valor(a,'id');
       return `<tr>
-        <td>${html(val(a,'programaNacional','programa'))}</td>
-        <td>${html(val(a,'tipoAccion','tipo','tipo_accion'))}</td>
-        <td>${html(val(a,'codigoAccion','codigo','codigo_accion'))}</td>
-        <td>${html(val(a,'detalle','accion_registrada','accionRegistrada'))}</td>
-        <td>${html(val(a,'metaProgramada','meta_programada'))}</td>
-        <td>${html(val(a,'metaEjecutada','meta_ejecutada'))}</td>
-        <td>${html(av === '' ? '' : (String(av).includes('%') ? av : av + '%'))}</td>
-        <td>${html(val(a,'usuarioRegistro','usuario_registro','usuario'))}</td>
-        <td>${html(val(a,'fechaRegistro','fecha_registro'))}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirModalEditarAccion('${attr(a.id)}')">Ver / Editar</button></td>
+        <td>${esc(valor(a,'programaNacional','programa'))}</td>
+        <td>${esc(valor(a,'departamento'))}</td>
+        <td>${esc(valor(a,'provincia'))}</td>
+        <td>${esc(valor(a,'distrito'))}</td>
+        <td>${esc(valor(a,'tipoAccion','tipo'))}</td>
+        <td>${esc(valor(a,'codigoAccion','codigo'))}</td>
+        <td>${esc(valor(a,'detalle'))}</td>
+        <td>${esc(valor(a,'metaProgramada','meta_programada'))}</td>
+        <td>${esc(valor(a,'metaEjecutada','meta_ejecutada'))}</td>
+        <td>${esc(valor(a,'avance'))}</td>
+        <td>${esc(valor(a,'usuarioRegistro','usuario_registro'))}</td>
+        <td>${esc(valor(a,'fechaRegistro','fecha_registro'))}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirModalEditarAccion('${escAttr(id)}')">Ver / Editar</button></td>
       </tr>`;
     }).join('');
-  }
+  };
 
-  const cargarVistaPreAprobarPrev = typeof cargarVistaPreAprobar === 'function' ? cargarVistaPreAprobar : null;
-  if (cargarVistaPreAprobarPrev) {
-    cargarVistaPreAprobar = function(id){
-      const r = cargarVistaPreAprobarPrev.apply(this, arguments);
-      setTimeout(async () => { await syncAccionesD1(); renderTablaPreAprobarAccionesV621(); }, 250);
+  const cargarVistaAnteriorV621 = typeof cargarVistaPreAprobar === 'function' ? cargarVistaPreAprobar : null;
+  if (cargarVistaAnteriorV621) {
+    cargarVistaPreAprobar = function cargarVistaPreAprobarV621(){
+      const r = cargarVistaAnteriorV621.apply(this, arguments);
+      setTimeout(() => { instalarFiltrosPreAprobar(); renderTablaPreAprobarAcciones(); }, 0);
       return r;
     };
   }
 
-  function instalarEventosModalV621(){
-    cargarCatalogosModalV621();
-    const btn = q('btnGrabarModalAccion');
-    if (btn && btn.dataset.v621 !== '1') {
-      const nuevo = btn.cloneNode(true);
-      nuevo.dataset.v621 = '1';
-      btn.parentNode.replaceChild(nuevo, btn);
-      nuevo.addEventListener('click', (e) => { e.preventDefault(); grabarModalAccionV621(); });
-    }
-    ['editPlazoDias','editFechaInicio'].forEach(id => q(id)?.addEventListener('input', calcularFechaFinalModalV621));
-    ['editMetaProgramada','editMetaEjecutada'].forEach(id => q(id)?.addEventListener('input', calcularAvanceModalV621));
-    q('editTipoAccion')?.addEventListener('change', actualizarSubtipoModalV621);
+  const initAnteriorV621 = typeof initPreAprobarAcciones === 'function' ? initPreAprobarAcciones : null;
+  if (initAnteriorV621) {
+    initPreAprobarAcciones = function initPreAprobarAccionesV621(){
+      const r = initAnteriorV621.apply(this, arguments);
+      instalarFiltrosPreAprobar();
+      return r;
+    };
   }
 
-  window.abrirModalEditarAccion = abrirModalEditarAccionV621;
-  window.grabarModalAccion = grabarModalAccionV621;
-  try { abrirModalEditarAccion = abrirModalEditarAccionV621; } catch {}
-  try { grabarModalAccion = grabarModalAccionV621; } catch {}
-  try { renderTablaPreAprobarAcciones = renderTablaPreAprobarAccionesV621; } catch {}
+  window.renderTablaPreAprobarAcciones = renderTablaPreAprobarAcciones;
+  window.cargarVistaPreAprobar = typeof cargarVistaPreAprobar === 'function' ? cargarVistaPreAprobar : window.cargarVistaPreAprobar;
+  window.initPreAprobarAcciones = typeof initPreAprobarAcciones === 'function' ? initPreAprobarAcciones : window.initPreAprobarAcciones;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', instalarEventosModalV621);
-  } else {
-    instalarEventosModalV621();
-  }
+  document.addEventListener('DOMContentLoaded', () => setTimeout(instalarFiltrosPreAprobar, 500));
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
