@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v61: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v63: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v62: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v63: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v62 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v63 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v62: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v63: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 62 · 11/05/2026 - 16:30 hrs· MIDIS © 2026
+            VERSION 63 · 11/05/2026 - 17:00 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -2303,6 +2303,10 @@
   <div class="modal fade" id="modalEditarAccion" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header"><h5 class="modal-title">Ver / Editar Acción Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body"><input id="editAccionId" type="hidden"><div class="row g-3">
+      <div class="col-md-3"><label class="form-label">Programa Nacional</label><input id="editProgramaNacional" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Departamento</label><input id="editDepartamento" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Provincia</label><input id="editProvincia" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Distrito</label><input id="editDistrito" class="form-control" readonly></div>
       <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="editTipoAccion" class="form-select"></select></div>
       <div class="col-md-5" id="editSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de Rehabilitación</label><select id="editSubtipoRehabilitacion" class="form-select"></select></div>
       <div class="col-md-3"><label class="form-label">Código de acción</label><input id="editCodigoAccion" class="form-control"></div>
@@ -2310,9 +2314,9 @@
       <div class="col-md-3"><label class="form-label">Meta programada</label><input id="editMetaProgramada" type="number" min="0" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Plazo</label><input id="editPlazoDias" type="number" min="0" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Fecha inicio</label><input id="editFechaInicio" type="date" class="form-control"></div>
-      <div class="col-md-3"><label class="form-label">Fecha final</label><input id="editFechaFinal" type="date" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">Fecha final</label><input id="editFechaFinal" type="date" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Meta ejecutada</label><input id="editMetaEjecutada" type="number" min="0" class="form-control"></div>
-      <div class="col-md-3"><label class="form-label">% Avance</label><input id="editAvance" class="form-control" readonly></div>
+      <div class="col-md-3"><label class="form-label">% Avance</label><input id="editAvance" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Fecha registro</label><input id="editFechaRegistro" class="form-control" readonly></div>
       <div class="col-md-6"><label class="form-label">Usuario</label><input id="editUsuario" class="form-control" readonly></div>
       <div class="col-12"><label class="form-label">Acciones específicas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
