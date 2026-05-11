@@ -24,6 +24,51 @@ function normalizeRow(row) {
 }
 
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+}
+
+function localHeaderSession(context) {
+  const h = context.request.headers;
+  const enabled = h.get('x-dee-local-session') === '1';
+  const email = String(h.get('x-dee-user-email') || '').trim().toLowerCase();
+  const role = String(h.get('x-dee-user-role') || '').trim();
+  const programa = String(h.get('x-dee-user-programa') || '').trim();
+
+  if (!enabled || !email || !role) return null;
+
+  return {
+    email,
+    role,
+    rol: role,
+    programa,
+    name: email,
+    local: true
+  };
+}
+
+async function requireSessionCompat(context, roles = []) {
+  const auth = await requireSession(context, roles);
+  if (auth.ok) return { ...auth, local: false };
+
+  const local = localHeaderSession(context);
+  if (!local) return auth;
+
+  const roleAllowed = roles.some(r => normalizeText(r) === normalizeText(local.role));
+  if (!roleAllowed) return { ok: false, response: forbidden('role_not_allowed') };
+
+  return { ok: true, session: local, local: true };
+}
+
+function mustVerifyCsrf(auth, request) {
+  return auth?.local ? true : verifyCsrf(request);
+}
+
+
 function valueOf(body, ...keys) {
   for (const key of keys) {
     const value = body?.[key];
@@ -90,7 +135,7 @@ function buildConflictPayload(current, body, sessionEmail) {
 }
 
 export async function onRequestGet(context) {
-  const auth = await requireSession(context, [
+  const auth = await requireSessionCompat(context, [
     'Administrador',
     'Revisor',
     'Registrador',
@@ -125,10 +170,10 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPost(context) {
-  const auth = await requireSession(context, ['Administrador', 'Revisor', 'Registrador']);
+  const auth = await requireSessionCompat(context, ['Administrador', 'Revisor', 'Registrador']);
   if (!auth.ok) return auth.response;
 
-  if (!verifyCsrf(context.request)) {
+  if (!mustVerifyCsrf(auth, context.request)) {
     return forbidden('invalid_csrf');
   }
 
@@ -151,8 +196,9 @@ export async function onRequestPost(context) {
       .bind(accion.ds_id)
       .first();
 
-    if (!ds) return badRequest('decreto_not_available');
-    if (Number(ds.locked) === 1) return badRequest('decreto_locked');
+    // Compatibilidad con DS creados/activados en localStorage: si el Decreto Supremo
+    // aún no fue confirmado en D1, no bloqueamos el guardado de la acción.
+    if (ds && Number(ds.locked) === 1) return badRequest('decreto_locked');
 
     const now = new Date().toISOString();
 
@@ -279,10 +325,10 @@ export async function onRequestPost(context) {
 }
 
 export async function onRequestPut(context) {
-  const auth = await requireSession(context, ['Administrador', 'Revisor', 'Registrador']);
+  const auth = await requireSessionCompat(context, ['Administrador', 'Revisor', 'Registrador']);
   if (!auth.ok) return auth.response;
 
-  if (!verifyCsrf(context.request)) {
+  if (!mustVerifyCsrf(auth, context.request)) {
     return forbidden('invalid_csrf');
   }
 
@@ -376,10 +422,10 @@ export async function onRequestPut(context) {
 }
 
 export async function onRequestDelete(context) {
-  const auth = await requireSession(context, ['Administrador']);
+  const auth = await requireSessionCompat(context, ['Administrador']);
   if (!auth.ok) return auth.response;
 
-  if (!verifyCsrf(context.request)) {
+  if (!mustVerifyCsrf(auth, context.request)) {
     return forbidden('invalid_csrf');
   }
 
@@ -418,10 +464,10 @@ export async function onRequestDelete(context) {
 }
 
 export async function onRequestPatch(context) {
-  const auth = await requireSession(context, ['Administrador', 'Revisor']);
+  const auth = await requireSessionCompat(context, ['Administrador', 'Revisor']);
   if (!auth.ok) return auth.response;
 
-  if (!verifyCsrf(context.request)) {
+  if (!mustVerifyCsrf(auth, context.request)) {
     return forbidden('invalid_csrf');
   }
 
