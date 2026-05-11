@@ -1,4 +1,4 @@
-// ================= VERSION 56 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 57 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -7777,5 +7777,316 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       renderTablaDecretosBasicaV551();
       console.info('DEE MIDIS cierre aplicado:', VERSION_CIERRE);
     }, 900);
+  });
+})();
+
+// ================= AJUSTE FINAL v56.1 - REGISTRO GRUPAL POR DISTRITOS =================
+(function () {
+  'use strict';
+
+  const VERSION_GRUPAL = 'v56.1 Registro grupal por distritos';
+  const seleccionDistritosPrograma = new Set();
+  let eventosGrupalesInicializados = false;
+
+  const qg = (id) => document.getElementById(id);
+  const norm = (v) => (typeof normalizarTexto === 'function' ? normalizarTexto(v) : String(v || '').trim().toUpperCase());
+  const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? ''));
+  const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
+  const programaActual = () => (typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '');
+
+  function keyTerritorioPrograma(t) {
+    const ubigeo = String(t?.ubigeo || t?.UBIGEO || t?.codigo || '').trim();
+    if (ubigeo) return `UBIGEO:${ubigeo}`;
+    return [t?.departamento, t?.provincia, t?.distrito].map(norm).join('|');
+  }
+
+  function distritoOrdenKey(t) {
+    return [t?.departamento || '', t?.provincia || '', t?.distrito || ''].map(x => String(x).trim()).join('|');
+  }
+
+  function territorioDecretoSeleccionadoPrograma() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    const territorio = Array.isArray(d?.territorio) ? d.territorio : [];
+    const mapa = new Map();
+
+    territorio.forEach(t => {
+      const dep = t?.departamento || '';
+      const prov = t?.provincia || '';
+      const dist = t?.distrito || '';
+      if (!dep && !prov && !dist) return;
+      const key = keyTerritorioPrograma(t);
+      if (!mapa.has(key)) {
+        mapa.set(key, {
+          key,
+          ubigeo: t?.ubigeo || t?.UBIGEO || t?.codigo || '',
+          departamento: dep,
+          provincia: prov,
+          distrito: dist,
+          latitud: t?.latitud || t?.lat || '',
+          longitud: t?.longitud || t?.lng || t?.lon || ''
+        });
+      }
+    });
+
+    return [...mapa.values()].sort((a, b) => distritoOrdenKey(a).localeCompare(distritoOrdenKey(b), 'es'));
+  }
+
+  function rdsKeyPrograma(d) {
+    if (typeof reunionKeyV38 === 'function') return reunionKeyV38(d?.numeroReunion || '', d?.fechaReunion || '');
+    return `${norm(d?.numeroReunion || '')}|${String(d?.fechaReunion || '').trim()}`;
+  }
+
+  function accionesProgramaActualPorDistrito() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (!d || typeof cargarAccionesLocales !== 'function') return [];
+    const keyR = rdsKeyPrograma(d);
+    const programa = programaActual();
+    return cargarAccionesLocales().filter(a =>
+      String(a.dsId || a.ds_id || '') === String(d.id) &&
+      (!keyR || rdsKeyPrograma(a) === keyR) &&
+      normalizarProgramaNombre(a.programaNacional || a.programa || '') === programa &&
+      (a.departamento || a.provincia || a.distrito || a.ubigeo)
+    );
+  }
+
+  function accionesDeDistrito(t) {
+    const keyT = keyTerritorioPrograma(t);
+    return accionesProgramaActualPorDistrito().filter(a => {
+      const keyA = a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(norm).join('|');
+      return keyA === keyT;
+    });
+  }
+
+  function resumenCampoDistrito(acciones, campo1, campo2) {
+    const valores = acciones.map(a => String(a?.[campo1] || a?.[campo2] || '').trim()).filter(Boolean);
+    return [...new Set(valores)].join('<hr class="my-1">');
+  }
+
+  function renderDistritosAccionesPrograma() {
+    const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
+    if (!tbody) return;
+
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (!d) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Seleccione un Decreto Supremo activado.</td></tr>';
+      return;
+    }
+
+    const distritos = territorioDecretoSeleccionadoPrograma();
+    if (!distritos.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = distritos.map(t => {
+      const acciones = accionesDeDistrito(t);
+      const detalle = resumenCampoDistrito(acciones, 'detalle', 'accionesEspecificas');
+      const descripcion = resumenCampoDistrito(acciones, 'descripcionActividades', 'descripcion');
+      const checked = seleccionDistritosPrograma.has(t.key) ? 'checked' : '';
+      const estadoFila = acciones.length ? '<span class="badge text-bg-success">Registrado</span>' : '<span class="badge text-bg-secondary">Pendiente</span>';
+      return `<tr data-territorio-key="${escAttr(t.key)}">
+        <td class="text-center">
+          <input class="form-check-input chk-distrito-programa" type="checkbox" value="${escAttr(t.key)}" ${checked}>
+        </td>
+        <td>${esc(t.departamento)}</td>
+        <td>${esc(t.provincia)}</td>
+        <td><strong>${esc(t.distrito)}</strong><div class="small text-muted">${estadoFila}</div></td>
+        <td>${detalle || '<span class="text-muted">Pendiente</span>'}</td>
+        <td>${descripcion || '<span class="text-muted">Pendiente</span>'}</td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('.chk-distrito-programa').forEach(chk => {
+      chk.addEventListener('change', () => {
+        if (chk.checked) seleccionDistritosPrograma.add(chk.value);
+        else seleccionDistritosPrograma.delete(chk.value);
+      });
+    });
+  }
+
+  function seleccionarTodosDistritosPrograma() {
+    territorioDecretoSeleccionadoPrograma().forEach(t => seleccionDistritosPrograma.add(t.key));
+    renderDistritosAccionesPrograma();
+  }
+
+  function limpiarSeleccionDistritosPrograma() {
+    seleccionDistritosPrograma.clear();
+    renderDistritosAccionesPrograma();
+  }
+
+  function abrirModalAccionGrupalPrograma() {
+    if (!esRegistradorPrograma || !esRegistradorPrograma()) {
+      alert('Esta opción corresponde a Registradores de Programas Nacionales.');
+      return;
+    }
+    if (!dsProgramaSeleccionadoId) {
+      alert('Seleccione un Decreto Supremo activado.');
+      return;
+    }
+    if (!seleccionDistritosPrograma.size) {
+      alert('Debe seleccionar al menos un distrito para registrar la acción.');
+      return;
+    }
+    if (qg('grupoDetallePrograma')) qg('grupoDetallePrograma').value = '';
+    if (qg('grupoDescripcionPrograma')) qg('grupoDescripcionPrograma').value = '';
+    const modal = qg('modalAccionGrupalPrograma');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+    else alert('No se encontró el modal de registro grupal.');
+  }
+
+  function guardarAccionGrupalPrograma() {
+    const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
+    if (!esRegistradorPrograma || !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.');
+    if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+    if (!seleccionDistritosPrograma.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+
+    const detalle = String(qg('grupoDetallePrograma')?.value || '').trim();
+    const descripcion = String(qg('grupoDescripcionPrograma')?.value || '').trim();
+    if (!detalle || !descripcion) {
+      alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+      return;
+    }
+
+    const programa = programaActual();
+    const keyR = rdsKeyPrograma(d);
+    const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
+    const territorios = territorioDecretoSeleccionadoPrograma().filter(t => seleccionDistritosPrograma.has(t.key));
+    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+
+    const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
+    let actualizados = 0;
+    let creados = 0;
+
+    territorios.forEach(t => {
+      const idx = lista.findIndex(a =>
+        String(a.dsId || a.ds_id || '') === String(d.id) &&
+        rdsKeyPrograma(a) === keyR &&
+        normalizarProgramaNombre(a.programaNacional || a.programa || '') === programa &&
+        (a.ubigeo ? `UBIGEO:${a.ubigeo}` : [a.departamento, a.provincia, a.distrito].map(norm).join('|')) === t.key
+      );
+
+      const base = idx >= 0 ? lista[idx] : {};
+      const accion = {
+        ...base,
+        id: base.id || crypto.randomUUID(),
+        dsId: d.id,
+        ds_id: d.id,
+        numeroDS: (typeof formatearNumeroDS === 'function') ? formatearNumeroDS(d) : (d.numero || ''),
+        ds: (typeof formatearNumeroDS === 'function') ? formatearNumeroDS(d) : (d.numero || ''),
+        numeroReunion: d.numeroReunion || '',
+        fechaReunion: d.fechaReunion || '',
+        rdsKey: keyR,
+        estadoRDS: d.estadoRDS || 'Activo',
+        programaNacional: programa,
+        programa,
+        tipoAccion: base.tipoAccion || base.tipo || 'Acción grupal territorial',
+        tipo: base.tipo || base.tipoAccion || 'Acción grupal territorial',
+        codigoAccion: base.codigoAccion || base.codigo || `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`,
+        codigo: base.codigo || base.codigoAccion || `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`,
+        detalle,
+        accionesEspecificas: detalle,
+        descripcionActividades: descripcion,
+        descripcion,
+        departamento: t.departamento || '',
+        provincia: t.provincia || '',
+        distrito: t.distrito || '',
+        ubigeo: t.ubigeo || '',
+        unidadMedida: base.unidadMedida || base.unidad || 'Distrito',
+        unidad: base.unidad || base.unidadMedida || 'Distrito',
+        metaProgramada: base.metaProgramada ?? base.meta_programada ?? 0,
+        meta_programada: base.meta_programada ?? base.metaProgramada ?? 0,
+        plazoDias: base.plazoDias ?? base.plazo ?? 0,
+        plazo: base.plazo ?? base.plazoDias ?? 0,
+        fechaInicio: base.fechaInicio || base.fecha_inicio || '',
+        fecha_inicio: base.fecha_inicio || base.fechaInicio || '',
+        fechaFinal: base.fechaFinal || base.fecha_final || '',
+        fecha_final: base.fecha_final || base.fechaFinal || '',
+        metaEjecutada: base.metaEjecutada ?? base.meta_ejecutada ?? 0,
+        meta_ejecutada: base.meta_ejecutada ?? base.metaEjecutada ?? 0,
+        avance: base.avance || '0%',
+        fechaRegistro: base.fechaRegistro || base.fecha_registro || fechaRegistro,
+        fecha_registro: base.fecha_registro || base.fechaRegistro || fechaRegistro,
+        usuarioRegistro: base.usuarioRegistro || base.usuario_registro || state.session?.email || '',
+        usuario_registro: base.usuario_registro || base.usuarioRegistro || state.session?.email || '',
+        usuario_actualiza: base.id ? (state.session?.email || '') : '',
+        fecha_actualiza: base.id ? fechaRegistro : '',
+        estado: 'Registrado'
+      };
+
+      if (idx >= 0) {
+        lista[idx] = accion;
+        actualizados++;
+      } else {
+        lista.push(accion);
+        creados++;
+      }
+      if (typeof api === 'function') api('/acciones', 'POST', accion);
+    });
+
+    if (typeof guardarAccionesLocales === 'function') guardarAccionesLocales(lista);
+    const modal = qg('modalAccionGrupalPrograma');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+    seleccionDistritosPrograma.clear();
+    renderDistritosAccionesPrograma();
+    if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas();
+    if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
+    alert('Acción registrada correctamente en los distritos seleccionados.');
+  }
+
+  const initOriginal = window.initRegistroAccionesProgramas || (typeof initRegistroAccionesProgramas === 'function' ? initRegistroAccionesProgramas : null);
+  const cargarVistaOriginal = window.cargarVistaAccionesPrograma || (typeof cargarVistaAccionesPrograma === 'function' ? cargarVistaAccionesPrograma : null);
+  const renderTablaOriginal = window.renderTablaAccionesProgramas || (typeof renderTablaAccionesProgramas === 'function' ? renderTablaAccionesProgramas : null);
+  const guardarProgramaOriginal = window.guardarAccionPrograma || (typeof guardarAccionPrograma === 'function' ? guardarAccionPrograma : null);
+
+  function initRegistroAccionesProgramasV561() {
+    if (initOriginal) {
+      try { initOriginal(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completó:', e); }
+    }
+    renderDistritosAccionesPrograma();
+
+    if (eventosGrupalesInicializados) return;
+    eventosGrupalesInicializados = true;
+    qg('btnSeleccionarTodosDistritosPrograma')?.addEventListener('click', seleccionarTodosDistritosPrograma);
+    qg('btnLimpiarSeleccionDistritosPrograma')?.addEventListener('click', limpiarSeleccionDistritosPrograma);
+    qg('btnRegistrarAccionGrupalPrograma')?.addEventListener('click', abrirModalAccionGrupalPrograma);
+    qg('btnGuardarAccionGrupalPrograma')?.addEventListener('click', guardarAccionGrupalPrograma);
+  }
+
+  function cargarVistaAccionesProgramaV561(id) {
+    seleccionDistritosPrograma.clear();
+    if (cargarVistaOriginal) cargarVistaOriginal(id);
+    renderDistritosAccionesPrograma();
+  }
+
+  function renderTablaAccionesProgramasV561() {
+    if (renderTablaOriginal) renderTablaOriginal();
+    renderDistritosAccionesPrograma();
+  }
+
+  function guardarAccionProgramaV561() {
+    if (guardarProgramaOriginal) guardarProgramaOriginal();
+    setTimeout(() => {
+      renderDistritosAccionesPrograma();
+      if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
+    }, 50);
+  }
+
+  window.initRegistroAccionesProgramas = initRegistroAccionesProgramasV561;
+  window.cargarVistaAccionesPrograma = cargarVistaAccionesProgramaV561;
+  window.renderTablaAccionesProgramas = renderTablaAccionesProgramasV561;
+  window.guardarAccionPrograma = guardarAccionProgramaV561;
+  window.renderDistritosAccionesPrograma = renderDistritosAccionesPrograma;
+
+  try { initRegistroAccionesProgramas = initRegistroAccionesProgramasV561; } catch {}
+  try { cargarVistaAccionesPrograma = cargarVistaAccionesProgramaV561; } catch {}
+  try { renderTablaAccionesProgramas = renderTablaAccionesProgramasV561; } catch {}
+  try { guardarAccionPrograma = guardarAccionProgramaV561; } catch {}
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      try { initRegistroAccionesProgramasV561(); } catch {}
+      console.info('DEE MIDIS cierre aplicado:', VERSION_GRUPAL);
+    }, 1200);
   });
 })();

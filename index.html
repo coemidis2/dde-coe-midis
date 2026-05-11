@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v56: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v57: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v56: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v57: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v56 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v57 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v56: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v57: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 56 · 08/05/2026 - 17:00 hrs· MIDIS © 2026
+            VERSION 57 · 11/05/2026 - 11:10 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -1910,6 +1910,38 @@
                   <div class="col-md-3"><label class="form-label">Meta ejecutada</label><input id="progMetaEjecutada" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">% Avance</label><input id="progAvance" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Fecha de registro</label><input id="progFechaRegistro" class="form-control" readonly></div>
+                  <div class="col-12">
+                    <div id="progDistritosAccionesBox" class="border rounded bg-white p-3 mt-2">
+                      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <div>
+                          <h5 class="text-primary mb-1">Distritos declarados y acciones por territorio</h5>
+                          <div class="text-muted small">Seleccione uno o varios distritos para registrar acciones en grupo.</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                          <button id="btnSeleccionarTodosDistritosPrograma" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
+                          <button id="btnLimpiarSeleccionDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
+                          <button id="btnRegistrarAccionGrupalPrograma" type="button" class="btn btn-sm btn-primary">Registrar acción grupal</button>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle" id="tablaDistritosAccionesPrograma">
+                          <thead class="table-light">
+                            <tr>
+                              <th style="width:42px">Sel.</th>
+                              <th>Departamento</th>
+                              <th>Provincia</th>
+                              <th>Distrito</th>
+                              <th>Acciones específicas programadas y ejecutadas</th>
+                              <th>Descripción de actividades</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr><td colspan="6" class="text-muted">Seleccione un Decreto Supremo activado.</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
                   <div class="col-12"><label class="form-label">Acciones específicas programadas y ejecutadas</label><textarea id="progDetalle" class="form-control" rows="2"></textarea></div>
                   <div class="col-12"><label class="form-label">Descripción de actividades</label><textarea id="progDescripcionActividades" class="form-control" rows="2"></textarea></div>
                 </div>
@@ -2271,6 +2303,37 @@
     </div></div>
     <div class="modal-footer"><button id="btnGrabarModalAccion" type="button" class="btn btn-primary">Grabar</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Salir</button></div>
   </div></div></div>
+
+
+
+  <!-- MODAL REGISTRO GRUPAL DE ACCIONES POR DISTRITO -->
+  <div class="modal fade" id="modalAccionGrupalPrograma" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Registro grupal de acciones</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info small mb-3">
+            Las acciones registradas se aplicarán a todos los distritos seleccionados.
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Acciones específicas programadas y ejecutadas</label>
+            <textarea id="grupoDetallePrograma" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Descripción de actividades</label>
+            <textarea id="grupoDescripcionPrograma" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnGuardarAccionGrupalPrograma" type="button" class="btn btn-primary">Guardar acción</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
