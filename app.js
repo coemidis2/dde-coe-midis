@@ -1,4 +1,4 @@
-// ================= VERSION 60 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 61 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -33,6 +33,19 @@ function getHeaders() {
   const h = { 'Content-Type': 'application/json' };
   const csrf = getCookie('dee_csrf');
   if (csrf) h['x-csrf-token'] = csrf;
+
+  // Compatibilidad con usuarios locales: permite que el Worker identifique la sesión
+  // cuando el login fue validado desde localStorage y no existe cookie dee_session.
+  const localEmail = state.session?.email || '';
+  const localRole = state.session?.role || state.session?.rol || '';
+  const localPrograma = state.session?.programa || '';
+  if (localEmail && localRole) {
+    h['x-dee-local-session'] = '1';
+    h['x-dee-user-email'] = String(localEmail).trim().toLowerCase();
+    h['x-dee-user-role'] = String(localRole).trim();
+    h['x-dee-user-programa'] = String(localPrograma || '').trim();
+  }
+
   return h;
 }
 
