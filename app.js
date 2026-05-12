@@ -1,4 +1,4 @@
-// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 69 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10101,7 +10101,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 // Mejora exclusiva de la pestaña Dashboard: filtro Vigentes/No vigentes/Todos,
 // leyenda por DS con checkboxes, tablas con DS involucrados y exportación JPG/PDF.
 (function cierreDashboardEjecutivoV661(){
-  const VERSION = 'Dashboard v67.1 - leyenda DS corregida';
+  const VERSION = 'Dashboard v68.1 - mapa DS y checks corregidos';
   const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
   let mapaDashboard = null;
   let capaDashboard = null;
@@ -10208,9 +10208,32 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function keyProv(t){ return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}`; }
   function keyDist(t){ const ub = getUbigeoValue(t); return ub ? String(ub) : `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}|${normalizarTexto(t?.distrito || '')}`; }
   function latLng(t){
-    const lat = Number(String(getLatitud(t)).replace(',', '.'));
-    const lng = Number(String(getLongitud(t)).replace(',', '.'));
+    // v68.1: algunos territorios guardados desde D1/localStorage llegan sin latitud/longitud.
+    // Se recuperan desde ubigeoData usando UBIGEO o Departamento/Provincia/Distrito.
+    const leerLat = (x) => x?.latitud ?? x?.Latitud ?? x?.LATITUD ?? x?.lat ?? x?.LAT ?? x?.y ?? x?.Y ?? '';
+    const leerLng = (x) => x?.longitud ?? x?.Longitud ?? x?.LONGITUD ?? x?.lng ?? x?.LNG ?? x?.lon ?? x?.LON ?? x?.x ?? x?.X ?? '';
+    const parseCoord = (v) => Number(String(v ?? '').replace(',', '.').trim());
+    let lat = parseCoord(leerLat(t));
+    let lng = parseCoord(leerLng(t));
     if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
+
+    const ub = String(getUbigeoValue(t) || '').trim();
+    const dep = normalizarTexto(t?.departamento || '');
+    const prov = normalizarTexto(t?.provincia || '');
+    const dist = normalizarTexto(t?.distrito || '');
+    const fuente = Array.isArray(window.ubigeoData) ? window.ubigeoData : (Array.isArray(ubigeoCache) ? ubigeoCache : []);
+    const ref = fuente.find(u => {
+      const uUb = String(getUbigeoValue(u) || '').trim();
+      if (ub && uUb && ub === uUb) return true;
+      return normalizarTexto(u?.departamento || '') === dep &&
+             normalizarTexto(u?.provincia || '') === prov &&
+             normalizarTexto(u?.distrito || '') === dist;
+    });
+    if (ref) {
+      lat = parseCoord(leerLat(ref));
+      lng = parseCoord(leerLng(ref));
+      if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
+    }
     return null;
   }
   function nombreDS(d){ return formatearNumeroDS(d).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°'); }
@@ -10407,17 +10430,42 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
     capaDashboard.clearLayers();
     const bounds = [];
-    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
-      if (!item.latlng) return;
-      const ds = [...item.decretos.values()];
-      const repetido = ds.length > 1;
-      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
-      const marker = L.circleMarker(item.latlng, { radius: repetido ? 7 : 5, color: repetido ? '#000' : color, weight: repetido ? 3 : 1, fillColor: color, fillOpacity: repetido ? .95 : .75 });
-      marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto(s): ${escapeHtml(ds.map(d => d.nombre).join(', '))}`, { sticky:true });
-      marker.addTo(capaDashboard);
-      bounds.push(item.latlng);
+    const usados = new Map();
+
+    // v68.1: se pinta un punto por Decreto Supremo y distrito, no un punto negro consolidado.
+    // Esto permite ver nuevamente los colores por DS y que cada checkbox oculte solo su DS.
+    (datos.decretosMapa || []).forEach(d => {
+      const color = d.__dashColor || '#0d6efd';
+      territorio(d).forEach(t => {
+        const base = latLng(t);
+        if (!base) return;
+        const coordKey = `${base[0].toFixed(5)}|${base[1].toFixed(5)}`;
+        const n = usados.get(coordKey) || 0;
+        usados.set(coordKey, n + 1);
+        const offset = n ? (0.006 * Math.ceil(n / 8)) : 0;
+        const angle = (n % 8) * (Math.PI / 4);
+        const punto = n ? [base[0] + Math.sin(angle) * offset, base[1] + Math.cos(angle) * offset] : base;
+        const marker = L.circleMarker(punto, {
+          radius: 5,
+          color: color,
+          weight: 1,
+          fillColor: color,
+          fillOpacity: .82
+        });
+        marker.bindTooltip(
+          `<strong>${escapeHtml(t.distrito || '')}</strong><br>` +
+          `Provincia: ${escapeHtml(t.provincia || '')}<br>` +
+          `Departamento: ${escapeHtml(t.departamento || '')}<br>` +
+          `Decreto: ${escapeHtml(nombreDS(d))}`,
+          { sticky:true }
+        );
+        marker.addTo(capaDashboard);
+        bounds.push(punto);
+      });
     });
+
     if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
+    else mapaDashboard.setView([-9.19, -75.02], 5);
     setTimeout(() => mapaDashboard?.invalidateSize(), 180);
   }
 
@@ -10476,7 +10524,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       renderResumen(datos);
       renderDepartamentos(datos);
       renderRepetidos(datos);
-    } catch (e) { console.error('Error Dashboard v67.1:', e); }
+    } catch (e) { console.error('Error Dashboard v68.1:', e); }
   }
 
   function loadScript(src) {
