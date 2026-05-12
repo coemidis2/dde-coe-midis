@@ -1,4 +1,4 @@
-// ================= VERSION 67 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -4549,7 +4549,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
     capaDashboardDEE.clearLayers();
     const bounds = [];
-    [...datos.distritos.values()].forEach(item => {
+    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
       if (!item.latlng) return;
       const dsUnicos = [...new Map(item.decretos.map(d => [d.id, d])).values()];
       const repetido = dsUnicos.length > 1;
@@ -7162,7 +7162,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       capaDashboardV531 = L.layerGroup().addTo(mapaDashboardV531);
     }
     capaDashboardV531.clearLayers();
-    [...datos.distritos.values()].forEach(item => {
+    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
       if (!item.latlng) return;
       const dsUnicos = [...new Map(item.decretos.map(d => [d.id, d])).values()];
       const repetido = dsUnicos.length > 1;
@@ -10101,12 +10101,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 // Mejora exclusiva de la pestaña Dashboard: filtro Vigentes/No vigentes/Todos,
 // leyenda por DS con checkboxes, tablas con DS involucrados y exportación JPG/PDF.
 (function cierreDashboardEjecutivoV661(){
-  const VERSION = 'Dashboard v66.1';
+  const VERSION = 'Dashboard v67.1 - leyenda DS corregida';
   const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
   let mapaDashboard = null;
   let capaDashboard = null;
   let filtroDashboard = 'vigentes';
   let dsVisibles = new Set();
+  let dsSeleccionInicializada = false;
   let inicializado = false;
 
   const q = (id) => document.getElementById(id);
@@ -10225,37 +10226,56 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const decretosFiltrados = decretosTodos.filter(aplicaFiltroEstado);
     decretosFiltrados.forEach((d, i) => { d.__dashColor = colorPorIndice(i); });
 
-    if (!dsVisibles.size) decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
     const idsFiltro = new Set(decretosFiltrados.map(d => String(d.id)));
     dsVisibles = new Set([...dsVisibles].filter(id => idsFiltro.has(id)));
-    if (!dsVisibles.size) decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
+
+    // Selección inicial o cambio de filtro: se marcan todos los DS del filtro activo.
+    // Si el usuario pulsa “Quitar selección”, dsVisibles queda vacío de forma válida
+    // y NO debe volver a poblarse automáticamente.
+    if (!dsSeleccionInicializada) {
+      decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
+      dsSeleccionInicializada = true;
+    }
 
     const decretosMapa = decretosFiltrados.filter(d => dsVisibles.has(String(d.id)));
-    const departamentos = new Set();
-    const provincias = new Set();
-    const distritos = new Map();
-    const departamentosConteo = new Map();
-    const departamentosDS = new Map();
 
-    decretosMapa.forEach((d) => {
-      territorio(d).forEach(t => {
-        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
-        if (!dep || !prov || !dist) return;
-        departamentos.add(dep); provincias.add(prov);
-        departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
-        if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
-        departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
-        if (!distritos.has(dist)) {
-          distritos.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
-        }
-        const item = distritos.get(dist);
-        item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
-        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
-        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+    const construirTerritorio = (listaDecretos) => {
+      const departamentos = new Set();
+      const provincias = new Set();
+      const distritos = new Map();
+      const departamentosConteo = new Map();
+      const departamentosDS = new Map();
+
+      listaDecretos.forEach((d) => {
+        territorio(d).forEach(t => {
+          const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
+          if (!dep || !prov || !dist) return;
+          departamentos.add(dep); provincias.add(prov);
+          departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
+          if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
+          departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+          if (!distritos.has(dist)) {
+            distritos.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
+          }
+          const item = distritos.get(dist);
+          item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
+          if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+          if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+        });
       });
-    });
+      return { departamentos, provincias, distritos, departamentosConteo, departamentosDS };
+    };
 
-    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, departamentosConteo, departamentosDS };
+    const datosGenerales = construirTerritorio(decretosFiltrados);
+    const datosMapa = construirTerritorio(decretosMapa);
+
+    return {
+      decretosTodos,
+      decretosFiltrados,
+      decretosMapa,
+      ...datosGenerales,
+      distritosMapa: datosMapa.distritos
+    };
   }
 
   function asegurarEstructuraDashboard() {
@@ -10368,7 +10388,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!cont) return;
     const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
     const cards = [
-      [`Declaratorias de Estado de Emergencia`, datos.decretosMapa.length, `Filtro: ${estadoFiltroTexto()}`],
+      [`Declaratorias de Estado de Emergencia`, datos.decretosFiltrados.length, `Filtro: ${estadoFiltroTexto()}`],
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
@@ -10387,7 +10407,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
     capaDashboard.clearLayers();
     const bounds = [];
-    [...datos.distritos.values()].forEach(item => {
+    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
       if (!item.latlng) return;
       const ds = [...item.decretos.values()];
       const repetido = ds.length > 1;
@@ -10404,7 +10424,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function renderResumen(datos) {
     const tbody = document.querySelector('#tablaResumenDS tbody');
     if (!tbody) return;
-    const filas = datos.decretosMapa.map(d => {
+    const filas = datos.decretosFiltrados.map(d => {
       const terr = territorio(d);
       const deps = new Set(terr.map(keyDep).filter(Boolean));
       const provs = new Set(terr.map(keyProv).filter(Boolean));
@@ -10444,7 +10464,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       asegurarEstructuraDashboard();
       const sel = q('dashboardFiltroEstado');
       if (sel && sel.value !== filtroDashboard) sel.value = filtroDashboard;
-      if (resetSeleccion) dsVisibles.clear();
+      if (resetSeleccion) {
+        dsVisibles.clear();
+        dsSeleccionInicializada = false;
+      }
       const datos = construirDatos();
       actualizarTextoFiltro();
       renderLeyenda(datos);
@@ -10453,7 +10476,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       renderResumen(datos);
       renderDepartamentos(datos);
       renderRepetidos(datos);
-    } catch (e) { console.error('Error Dashboard v66.1:', e); }
+    } catch (e) { console.error('Error Dashboard v67.1:', e); }
   }
 
   function loadScript(src) {
