@@ -1,4 +1,4 @@
-// ================= VERSION 76 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 77 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10813,8 +10813,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       shell.appendChild(leyenda);
     }
 
+    const thResumen = document.querySelector('#tablaResumenDS thead tr');
+    if (thResumen && !thResumen.querySelector('[data-dash-peligro-col]')) {
+      const thDS = thResumen.querySelector('th');
+      if (thDS) thDS.insertAdjacentHTML('afterend', '<th data-dash-peligro-col>Peligro</th><th data-dash-tipo-col>Tipo</th>');
+    }
+
     const thDeptos = document.querySelector('#tablaDeptos thead tr');
-    if (thDeptos && !thDeptos.querySelector('[data-dash-ds-col]')) thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+    if (thDeptos) {
+      const ths = thDeptos.querySelectorAll('th');
+      if (ths[1]) ths[1].textContent = 'Número de distritos';
+      if (!thDeptos.querySelector('[data-dash-ds-col]')) thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+    }
     const thReps = document.querySelector('#tablaRepetidos thead tr');
     if (thReps && !thReps.querySelector('[data-dash-ds-col]')) thReps.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
 
@@ -10958,13 +10968,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       const terr = territorio(d);
       return { d, deps:new Set(terr.map(keyDep).filter(Boolean)), provs:new Set(terr.map(keyProv).filter(Boolean)), dists:new Set(terr.map(keyDist).filter(Boolean)), sem:semaforo(d) };
     }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantes(a.d) - diasRestantes(b.d));
-    tbody.innerHTML = filas.length ? filas.map(x => `<tr><td>${esc(dsNombre(x.d))}</td><td>${esc(x.d.fecha_inicio||'')}</td><td>${esc(x.d.fecha_fin||'')}</td><td>${diasRestantes(x.d)}</td><td>${avanceTiempo(x.d)}%</td><td><span class="badge ${x.sem.clase}">${esc(x.sem.texto)}</span></td><td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td></tr>`).join('') : `<tr><td colspan="9" class="dee-dashboard-empty">No hay declaratorias para el filtro seleccionado.</td></tr>`;
+    tbody.innerHTML = filas.length ? filas.map(x => `<tr><td>${esc(dsNombre(x.d))}</td><td>${esc(x.d.peligro||'')}</td><td>${esc(x.d.tipo_peligro||x.d.tipoPeligro||'')}</td><td>${esc(x.d.fecha_inicio||'')}</td><td>${esc(x.d.fecha_fin||'')}</td><td>${diasRestantes(x.d)}</td><td>${avanceTiempo(x.d)}%</td><td><span class="badge ${x.sem.clase}">${esc(x.sem.texto)}</span></td><td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td></tr>`).join('') : `<tr><td colspan="11" class="dee-dashboard-empty">No hay declaratorias para el filtro seleccionado.</td></tr>`;
   }
 
   function renderDepartamentos(datos){
     const tbody = document.querySelector('#tablaDeptos tbody'); if (!tbody) return;
     const filas = [...datos.deptoDS.entries()].map(([key, obj]) => ({ departamento: obj.nombre || key, count: datos.deptoConteo.get(key) || 0, decretos: [...obj.decretos.values()] })).sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento,'es'));
-    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${esc(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${f.decretos.some(d=>d.estado==='Vigente') ? 'text-bg-success' : 'text-bg-secondary'}">${esc(filtroTexto())}</span></td><td>${esc(f.decretos.map(d=>d.nombre).join(', '))}</td></tr>`).join('') : `<tr><td colspan="4" class="dee-dashboard-empty">No hay departamentos para el filtro seleccionado.</td></tr>`;
+    tbody.innerHTML = filas.length ? filas.map(f => {
+      const dsTexto = f.decretos.map(d=>d.nombre).join(', ');
+      return `<tr><td>${esc(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${f.decretos.some(d=>d.estado==='Vigente') ? 'text-bg-success' : 'text-bg-secondary'}">${esc(filtroTexto())}</span></td><td>${esc(`(${f.decretos.length}) ${dsTexto}`)}</td></tr>`;
+    }).join('') : `<tr><td colspan="4" class="dee-dashboard-empty">No hay departamentos para el filtro seleccionado.</td></tr>`;
   }
 
   function renderRepetidos(datos){
