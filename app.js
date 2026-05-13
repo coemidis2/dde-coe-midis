@@ -1,4 +1,4 @@
-// ================= VERSION 77 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 78 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10814,9 +10814,22 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
 
     const thResumen = document.querySelector('#tablaResumenDS thead tr');
-    if (thResumen && !thResumen.querySelector('[data-dash-peligro-col]')) {
-      const thDS = thResumen.querySelector('th');
-      if (thDS) thDS.insertAdjacentHTML('afterend', '<th data-dash-peligro-col>Peligro</th><th data-dash-tipo-col>Tipo</th>');
+    if (thResumen) {
+      // v77.1: normaliza la cabecera para evitar columnas duplicadas Peligro/Tipo.
+      // La versión anterior insertaba Peligro/Tipo aunque ya existían en el HTML,
+      // desfasando los encabezados respecto de las celdas del cuerpo.
+      thResumen.innerHTML = `
+        <th>Decreto Supremo</th>
+        <th data-dash-peligro-col>Peligro</th>
+        <th data-dash-tipo-col>Tipo</th>
+        <th>Fecha inicio</th>
+        <th>Fecha fin</th>
+        <th>Días restantes</th>
+        <th>Avance %</th>
+        <th>Semáforo</th>
+        <th>N.° departamentos</th>
+        <th>N.° provincias</th>
+        <th>N.° distritos</th>`;
     }
 
     const thDeptos = document.querySelector('#tablaDeptos thead tr');
