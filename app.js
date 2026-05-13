@@ -1,4 +1,4 @@
-// ================= VERSION 70 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 71 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10397,15 +10397,27 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function reiniciarContenedorMapaDashboard() {
     const el = q('mapaDS');
-    if (!el || mapaContenedorReiniciado) return q('mapaDS');
+    if (!el) return null;
 
-    // Corrección quirúrgica: versiones anteriores del Dashboard pueden dejar
-    // capas Leaflet vivas sobre el mismo contenedor. Se reemplaza solo el DIV
-    // del mapa para que la leyenda controle una única capa de puntos.
+    // Corrección quirúrgica definitiva:
+    // En este app_68.js existen cierres anteriores del Dashboard (v39/v53.1)
+    // que también inicializan Leaflet sobre #mapaDS y pueden repintar puntos
+    // sin respetar la leyenda. Por eso NO basta limpiar una capa propia: hay
+    // que recuperar la propiedad del contenedor en cada render del Dashboard
+    // final. Así se eliminan del DOM todos los panes/capas heredados y el mapa
+    // vuelve a pintarse únicamente con los DS marcados en la leyenda.
+    try {
+      if (mapaDashboard && typeof mapaDashboard.remove === 'function') mapaDashboard.remove();
+    } catch (e) {
+      console.warn('No se pudo remover mapa Dashboard previo:', e);
+    }
+
     const limpio = el.cloneNode(false);
     limpio.id = el.id;
     limpio.className = el.className;
-    limpio.setAttribute('style', el.getAttribute('style') || 'height:520px; min-height:520px;');
+    const estilo = el.getAttribute('style') || 'height:520px; min-height:520px;';
+    limpio.setAttribute('style', estilo);
+    limpio.dataset.dashboardOwner = 'v661';
     el.parentNode?.replaceChild(limpio, el);
 
     mapaDashboard = null;
@@ -10427,15 +10439,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const el = reiniciarContenedorMapaDashboard();
     if (!el || !window.L) return;
 
-    if (!mapaDashboard) {
-      mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
-      capaDashboard = L.layerGroup().addTo(mapaDashboard);
-    } else {
-      limpiarCapasNoBaseDashboard();
-    }
+    mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
+    capaDashboard = L.layerGroup().addTo(mapaDashboard);
 
-    if (capaDashboard) capaDashboard.clearLayers();
     const bounds = [];
 
     [...datos.distritos.values()].forEach(item => {
