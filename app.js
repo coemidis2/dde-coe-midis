@@ -1,4 +1,4 @@
-// ================= VERSION 72 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 73 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10134,18 +10134,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       .dee-export-panel{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}.dee-export-panel .form-select{width:auto;min-width:150px}
       #dashboardExportArea{background:#fff}
       @media(max-width: 992px){.dee-map-shell{grid-template-columns:1fr}.dee-map-legend{max-height:260px}}
-      body.dee-dashboard-exporting #dashboardExportArea{width:1580px!important;max-width:none!important;min-width:1580px!important;padding:18px!important;overflow:visible!important;background:#fff!important}
-      body.dee-dashboard-exporting .dee-dashboard-toolbar{display:none!important}
-      body.dee-dashboard-exporting .row{display:flex!important;flex-wrap:wrap!important}
-      body.dee-dashboard-exporting .col-lg-7{flex:0 0 66.666667%!important;max-width:66.666667%!important;width:66.666667%!important}
-      body.dee-dashboard-exporting .col-lg-5{flex:0 0 33.333333%!important;max-width:33.333333%!important;width:33.333333%!important}
-      body.dee-dashboard-exporting .dee-map-shell{grid-template-columns:minmax(0,1fr) 290px!important;gap:10px!important}
-      body.dee-dashboard-exporting .dee-map-legend{max-height:520px!important;overflow:hidden!important}
-      body.dee-dashboard-exporting #mapaDS{height:520px!important;min-height:520px!important;width:100%!important;overflow:hidden!important}
-      body.dee-dashboard-exporting .leaflet-container{font-size:11px!important;background:#cfe8f3!important}
-      body.dee-dashboard-exporting .leaflet-control-zoom{display:block!important}
-      body.dee-dashboard-exporting .table-responsive{overflow:visible!important}
-      body.dee-dashboard-exporting table{page-break-inside:auto!important}
       @media print{#dashboardExportArea{padding:12px!important}.dee-dashboard-toolbar{display:none!important}}
     `;
     document.head.appendChild(style);
@@ -10406,28 +10394,83 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
 
+  function resetearContenedorMapaSiCorresponde() {
+    let el = q('mapaDS');
+    if (!el || !window.L) return null;
+
+    // Este archivo conserva cierres anteriores del Dashboard. Si alguno de ellos
+    // inicializó Leaflet sobre #mapaDS, Leaflet deja _leaflet_id y capas antiguas
+    // que no obedecen la leyenda final. Se reemplaza SOLO el nodo del mapa para
+    // recuperar control limpio sin tocar tablas, KPIs ni estilos.
+    const necesitaReset = !mapaDashboard && (el._leaflet_id || el.classList.contains('leaflet-container'));
+    if (necesitaReset) {
+      const limpio = el.cloneNode(false);
+      limpio.id = 'mapaDS';
+      limpio.className = el.className.replace(/\bleaflet-[^\s]+/g, '').trim();
+      limpio.removeAttribute('tabindex');
+      limpio.removeAttribute('style');
+      limpio.style.height = el.style.height || '430px';
+      limpio.style.minHeight = el.style.minHeight || '430px';
+      el.replaceWith(limpio);
+      el = limpio;
+    }
+    return el;
+  }
+
   function renderMapa(datos) {
-    const el = q('mapaDS');
+    let el = resetearContenedorMapaSiCorresponde();
     if (!el || !window.L) return;
-    if (!mapaDashboard) {
+
+    if (!mapaDashboard || !document.body.contains(mapaDashboard.getContainer())) {
       mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap',
+        crossOrigin: true
+      }).addTo(mapaDashboard);
       capaDashboard = L.layerGroup().addTo(mapaDashboard);
     }
+
+    if (!capaDashboard) capaDashboard = L.layerGroup().addTo(mapaDashboard);
     capaDashboard.clearLayers();
+
+    // Blindaje adicional: cualquier círculo/marcador dejado por cierres anteriores
+    // se retira; se conserva únicamente la capa base y la capa controlada aquí.
+    mapaDashboard.eachLayer(layer => {
+      if (layer !== capaDashboard && !(layer instanceof L.TileLayer)) {
+        try { mapaDashboard.removeLayer(layer); } catch (_) {}
+      }
+    });
+    if (!mapaDashboard.hasLayer(capaDashboard)) capaDashboard.addTo(mapaDashboard);
+
     const bounds = [];
     [...datos.distritos.values()].forEach(item => {
       if (!item.latlng) return;
       const ds = [...item.decretos.values()];
+      if (!ds.length) return;
       const repetido = ds.length > 1;
       const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
-      const marker = L.circleMarker(item.latlng, { radius: repetido ? 7 : 5, color: repetido ? '#000' : color, weight: repetido ? 3 : 1, fillColor: color, fillOpacity: repetido ? .95 : .75 });
+      const marker = L.circleMarker(item.latlng, {
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? .95 : .78,
+        opacity: 1,
+        pane: 'markerPane'
+      });
       marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto(s): ${escapeHtml(ds.map(d => d.nombre).join(', '))}`, { sticky:true });
       marker.addTo(capaDashboard);
       bounds.push(item.latlng);
     });
-    if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
-    setTimeout(() => mapaDashboard?.invalidateSize(), 180);
+
+    if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 });
+    else mapaDashboard.setView([-9.19, -75.02], 5);
+
+    setTimeout(() => {
+      try { mapaDashboard.invalidateSize(true); } catch (_) {}
+      try { if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 }); } catch (_) {}
+    }, 180);
   }
 
   function renderResumen(datos) {
@@ -10501,120 +10544,105 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   async function prepararExportacion(tipo) {
     const oldFiltro = filtroDashboard;
     const oldSeleccion = new Set(dsVisibles);
-    const oldLeyendaInicializada = seleccionLeyendaInicializada;
-    const oldClaveLeyenda = ultimaClaveFiltroLeyenda;
+    const oldInicializada = seleccionLeyendaInicializada;
+    const oldClave = ultimaClaveFiltroLeyenda;
     const chosen = q('dashboardExportFiltro')?.value || 'actual';
 
-    try {
-      if (chosen !== 'actual') {
-        filtroDashboard = chosen;
-        q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-        renderDashboardEjecutivoV661(true);
-      } else {
-        // Exporta exactamente lo que el usuario dejó marcado en la leyenda.
-        // No reinicia dsVisibles, porque eso volvía a marcar todos los DS.
-        renderDashboardEjecutivoV661(false);
-      }
-      await new Promise(r => setTimeout(r, 900));
-      await exportarDashboard(tipo);
-    } finally {
-      if (chosen !== 'actual') {
-        filtroDashboard = oldFiltro;
-        q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-      }
-      dsVisibles = new Set(oldSeleccion);
-      seleccionLeyendaInicializada = oldLeyendaInicializada;
-      ultimaClaveFiltroLeyenda = oldClaveLeyenda;
+    if (chosen !== 'actual') {
+      filtroDashboard = chosen;
+      q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+      dsVisibles.clear();
+      seleccionLeyendaInicializada = false;
+      ultimaClaveFiltroLeyenda = '';
+      renderDashboardEjecutivoV661(true);
+    } else {
+      // Exporta exactamente lo que el usuario tiene marcado en la leyenda.
       renderDashboardEjecutivoV661(false);
     }
+
+    await new Promise(r => setTimeout(r, 700));
+    await exportarDashboard(tipo);
+
+    filtroDashboard = oldFiltro;
+    q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+    dsVisibles = new Set(oldSeleccion);
+    seleccionLeyendaInicializada = oldInicializada;
+    ultimaClaveFiltroLeyenda = oldClave;
+    renderDashboardEjecutivoV661(false);
   }
 
   async function exportarDashboard(tipo) {
     const area = q('dashboardExportArea') || q('tabDashboard');
     if (!area) return alert('No se encontró el Dashboard para exportar.');
+    const oldAreaWidth = area.style.width;
+    const oldAreaMaxWidth = area.style.maxWidth;
+    const oldOverflow = document.body.style.overflow;
     let titulo = null;
-    const prevStyle = area.getAttribute('style') || '';
-    const prevScrollX = window.scrollX;
-    const prevScrollY = window.scrollY;
     try {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 
-      document.body.classList.add('dee-dashboard-exporting');
-      area.style.width = '1580px';
-      area.style.maxWidth = '1580px';
-      area.style.minWidth = '1580px';
-      area.style.background = '#ffffff';
-      area.style.overflow = 'visible';
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
+      await new Promise(r => setTimeout(r, 350));
 
       titulo = document.createElement('div');
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
       titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} · DS seleccionados: ${dsVisibles.size}</div>`;
       area.insertBefore(titulo, area.firstChild);
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
+      await new Promise(r => setTimeout(r, 250));
 
-      // Leaflet calcula los puntos según el tamaño del contenedor. Para exportar sin distorsión
-      // se fija el ancho del Dashboard, se invalida el tamaño del mapa y se espera al repintado.
-      window.scrollTo(0, 0);
-      mapaDashboard?.invalidateSize(true);
-      await new Promise(r => setTimeout(r, 450));
-      mapaDashboard?.invalidateSize(true);
-      await new Promise(r => setTimeout(r, 450));
-
-      const exportWidth = Math.ceil(area.scrollWidth);
-      const exportHeight = Math.ceil(area.scrollHeight);
       const canvas = await window.html2canvas(area, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: exportWidth,
-        height: exportHeight,
-        windowWidth: exportWidth,
-        windowHeight: exportHeight,
-        scrollX: 0,
-        scrollY: 0
+        width: area.scrollWidth,
+        height: area.scrollHeight,
+        windowWidth: Math.max(1400, area.scrollWidth),
+        windowHeight: Math.max(900, area.scrollHeight)
       });
-
+      titulo.remove();
+      titulo = null;
       const fileBase = `Dashboard_DEE_${estadoFiltroTexto().replace(/\s+/g,'_')}_${hoy()}`;
       if (tipo === 'jpg') {
         const a = document.createElement('a');
         a.download = `${fileBase}.jpg`;
-        a.href = canvas.toDataURL('image/jpeg', 0.96);
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
         a.click();
         return;
       }
-
       const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
       if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 6;
-      const imgW = pageW - (margin * 2);
+      const imgW = pageW - 16;
       const imgH = canvas.height * imgW / canvas.width;
-      const pageBodyH = pageH - (margin * 2);
       let heightLeft = imgH;
-      let position = margin;
-      const imgData = canvas.toDataURL('image/jpeg', 0.96);
-
-      pdf.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
-      heightLeft -= pageBodyH;
-      while (heightLeft > 1) {
+      let position = 8;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
+      heightLeft -= (pageH - 16);
+      while (heightLeft > 0) {
         pdf.addPage('l');
-        position = margin - (imgH - heightLeft);
-        pdf.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
-        heightLeft -= pageBodyH;
+        position = heightLeft - imgH + 8;
+        pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
+        heightLeft -= (pageH - 16);
       }
       pdf.save(`${fileBase}.pdf`);
     } catch (e) {
       console.error('Error exportando Dashboard:', e);
       alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
     } finally {
-      titulo?.remove();
-      area.setAttribute('style', prevStyle);
-      document.body.classList.remove('dee-dashboard-exporting');
-      window.scrollTo(prevScrollX, prevScrollY);
-      setTimeout(() => mapaDashboard?.invalidateSize(true), 150);
+      if (titulo) { try { titulo.remove(); } catch (_) {} }
+      area.style.width = oldAreaWidth;
+      area.style.maxWidth = oldAreaMaxWidth;
+      document.body.style.overflow = oldOverflow;
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
     }
   }
 
