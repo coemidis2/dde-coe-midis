@@ -1,4 +1,4 @@
-// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 69 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10394,8 +10394,30 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
 
-  function renderMapa(datos) {
+  function asegurarMapaLimpioV661() {
     const el = q('mapaDS');
+    if (!el || !window.L) return null;
+
+    // Corrección quirúrgica: versiones anteriores del Dashboard podían dejar una
+    // capa Leaflet viva sobre el mismo contenedor. Al clonar una sola vez el
+    // contenedor del mapa, se eliminan esos puntos residuales sin tocar data,
+    // tablas, KPIs ni diseño.
+    if (el.dataset.mapaV661 === '1') return el;
+
+    const nuevo = el.cloneNode(false);
+    nuevo.id = 'mapaDS';
+    nuevo.className = el.className;
+    nuevo.style.cssText = el.style.cssText;
+    nuevo.dataset.mapaV661 = '1';
+    el.parentNode.replaceChild(nuevo, el);
+
+    mapaDashboard = null;
+    capaDashboard = null;
+    return nuevo;
+  }
+
+  function renderMapa(datos) {
+    const el = asegurarMapaLimpioV661();
     if (!el || !window.L) return;
     if (!mapaDashboard) {
       mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
@@ -10406,7 +10428,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const bounds = [];
     [...datos.distritos.values()].forEach(item => {
       if (!item.latlng) return;
-      const ds = [...item.decretos.values()];
+      const ds = [...item.decretos.values()].filter(d => dsVisibles.has(String(d.id)));
+      if (!ds.length) return;
       const repetido = ds.length > 1;
       const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
       const marker = L.circleMarker(item.latlng, { radius: repetido ? 7 : 5, color: repetido ? '#000' : color, weight: repetido ? 3 : 1, fillColor: color, fillOpacity: repetido ? .95 : .75 });
@@ -10415,6 +10438,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       bounds.push(item.latlng);
     });
     if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
+    else mapaDashboard.setView([-9.19, -75.02], 5);
     setTimeout(() => mapaDashboard?.invalidateSize(), 180);
   }
 
