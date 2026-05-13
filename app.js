@@ -1,4 +1,4 @@
-// ================= VERSION 67 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10107,6 +10107,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   let capaDashboard = null;
   let filtroDashboard = 'vigentes';
   let dsVisibles = new Set();
+  let seleccionLeyendaInicializada = false;
+  let ultimaClaveFiltroLeyenda = '';
   let inicializado = false;
 
   const q = (id) => document.getElementById(id);
@@ -10225,10 +10227,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const decretosFiltrados = decretosTodos.filter(aplicaFiltroEstado);
     decretosFiltrados.forEach((d, i) => { d.__dashColor = colorPorIndice(i); });
 
-    if (!dsVisibles.size) decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
     const idsFiltro = new Set(decretosFiltrados.map(d => String(d.id)));
-    dsVisibles = new Set([...dsVisibles].filter(id => idsFiltro.has(id)));
-    if (!dsVisibles.size) decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
+    const claveFiltro = `${filtroDashboard}|${[...idsFiltro].sort().join(',')}`;
+
+    if (!seleccionLeyendaInicializada || ultimaClaveFiltroLeyenda !== claveFiltro) {
+      dsVisibles = new Set(idsFiltro);
+      seleccionLeyendaInicializada = true;
+      ultimaClaveFiltroLeyenda = claveFiltro;
+    } else {
+      dsVisibles = new Set([...dsVisibles].filter(id => idsFiltro.has(id)));
+    }
 
     const decretosMapa = decretosFiltrados.filter(d => dsVisibles.has(String(d.id)));
     const departamentos = new Set();
@@ -10357,10 +10365,19 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ${filas || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
     cont.querySelectorAll('.dash-ds-check').forEach(chk => chk.addEventListener('change', () => {
       if (chk.checked) dsVisibles.add(String(chk.value)); else dsVisibles.delete(String(chk.value));
+      seleccionLeyendaInicializada = true;
       renderDashboardEjecutivoV661(false);
     }));
-    q('btnDashSeleccionarTodos')?.addEventListener('click', () => { datos.decretosFiltrados.forEach(d => dsVisibles.add(String(d.id))); renderDashboardEjecutivoV661(false); });
-    q('btnDashQuitarSeleccion')?.addEventListener('click', () => { dsVisibles.clear(); renderDashboardEjecutivoV661(false); });
+    q('btnDashSeleccionarTodos')?.addEventListener('click', () => {
+      datos.decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
+      seleccionLeyendaInicializada = true;
+      renderDashboardEjecutivoV661(false);
+    });
+    q('btnDashQuitarSeleccion')?.addEventListener('click', () => {
+      dsVisibles.clear();
+      seleccionLeyendaInicializada = true;
+      renderDashboardEjecutivoV661(false);
+    });
   }
 
   function renderKPIs(datos) {
@@ -10444,7 +10461,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       asegurarEstructuraDashboard();
       const sel = q('dashboardFiltroEstado');
       if (sel && sel.value !== filtroDashboard) sel.value = filtroDashboard;
-      if (resetSeleccion) dsVisibles.clear();
+      if (resetSeleccion) {
+        dsVisibles.clear();
+        seleccionLeyendaInicializada = false;
+        ultimaClaveFiltroLeyenda = '';
+      }
       const datos = construirDatos();
       actualizarTextoFiltro();
       renderLeyenda(datos);
