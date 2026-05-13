@@ -1,4 +1,4 @@
-// ================= VERSION 75 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 76 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11364,15 +11364,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       .addTo(grupo);
     });
 
-    if (puntos.length) {
-      fixedMap.fitBounds(grupo.getBounds(), { padding: [22, 22], maxZoom: 7 });
-    } else {
-      fixedMap.setView(PERU_CENTER, PERU_ZOOM);
-    }
+    // v75: mantener el mapa centrado en el Perú, tanto en pantalla como durante exportación.
+    // No se usa fitBounds porque desplaza la vista hacia el bloque de puntos y deja el mapa visualmente corrido.
+    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
 
     await sleep(120);
     fixedMap.invalidateSize(true);
-    if (puntos.length) fixedMap.fitBounds(grupo.getBounds(), { padding: [22, 22], maxZoom: 7 });
+    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
   }
 
   function programarMapaCalzado(delay = 180) {
