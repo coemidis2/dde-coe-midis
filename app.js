@@ -1,4 +1,4 @@
-// ================= VERSION 69 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 70 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10105,6 +10105,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
   let mapaDashboard = null;
   let capaDashboard = null;
+  let mapaContenedorReiniciado = false;
   let filtroDashboard = 'vigentes';
   let dsVisibles = new Set();
   let seleccionLeyendaInicializada = false;
@@ -10394,41 +10395,52 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
 
-  function asegurarMapaLimpioV661() {
+  function reiniciarContenedorMapaDashboard() {
     const el = q('mapaDS');
-    if (!el || !window.L) return null;
+    if (!el || mapaContenedorReiniciado) return q('mapaDS');
 
-    // Corrección quirúrgica: versiones anteriores del Dashboard podían dejar una
-    // capa Leaflet viva sobre el mismo contenedor. Al clonar una sola vez el
-    // contenedor del mapa, se eliminan esos puntos residuales sin tocar data,
-    // tablas, KPIs ni diseño.
-    if (el.dataset.mapaV661 === '1') return el;
-
-    const nuevo = el.cloneNode(false);
-    nuevo.id = 'mapaDS';
-    nuevo.className = el.className;
-    nuevo.style.cssText = el.style.cssText;
-    nuevo.dataset.mapaV661 = '1';
-    el.parentNode.replaceChild(nuevo, el);
+    // Corrección quirúrgica: versiones anteriores del Dashboard pueden dejar
+    // capas Leaflet vivas sobre el mismo contenedor. Se reemplaza solo el DIV
+    // del mapa para que la leyenda controle una única capa de puntos.
+    const limpio = el.cloneNode(false);
+    limpio.id = el.id;
+    limpio.className = el.className;
+    limpio.setAttribute('style', el.getAttribute('style') || 'height:520px; min-height:520px;');
+    el.parentNode?.replaceChild(limpio, el);
 
     mapaDashboard = null;
     capaDashboard = null;
-    return nuevo;
+    mapaContenedorReiniciado = true;
+    return limpio;
+  }
+
+  function limpiarCapasNoBaseDashboard() {
+    if (!mapaDashboard || !window.L) return;
+    mapaDashboard.eachLayer(layer => {
+      const esBase = layer instanceof L.TileLayer;
+      if (!esBase) mapaDashboard.removeLayer(layer);
+    });
+    capaDashboard = L.layerGroup().addTo(mapaDashboard);
   }
 
   function renderMapa(datos) {
-    const el = asegurarMapaLimpioV661();
+    const el = reiniciarContenedorMapaDashboard();
     if (!el || !window.L) return;
+
     if (!mapaDashboard) {
       mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
       capaDashboard = L.layerGroup().addTo(mapaDashboard);
+    } else {
+      limpiarCapasNoBaseDashboard();
     }
-    capaDashboard.clearLayers();
+
+    if (capaDashboard) capaDashboard.clearLayers();
     const bounds = [];
+
     [...datos.distritos.values()].forEach(item => {
       if (!item.latlng) return;
-      const ds = [...item.decretos.values()].filter(d => dsVisibles.has(String(d.id)));
+      const ds = [...item.decretos.values()];
       if (!ds.length) return;
       const repetido = ds.length > 1;
       const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
@@ -10437,8 +10449,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       marker.addTo(capaDashboard);
       bounds.push(item.latlng);
     });
+
     if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
-    else mapaDashboard.setView([-9.19, -75.02], 5);
     setTimeout(() => mapaDashboard?.invalidateSize(), 180);
   }
 
