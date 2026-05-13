@@ -1,4 +1,4 @@
-// ================= VERSION 71 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 72 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10105,7 +10105,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
   let mapaDashboard = null;
   let capaDashboard = null;
-  let mapaContenedorReiniciado = false;
   let filtroDashboard = 'vigentes';
   let dsVisibles = new Set();
   let seleccionLeyendaInicializada = false;
@@ -10135,6 +10134,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       .dee-export-panel{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}.dee-export-panel .form-select{width:auto;min-width:150px}
       #dashboardExportArea{background:#fff}
       @media(max-width: 992px){.dee-map-shell{grid-template-columns:1fr}.dee-map-legend{max-height:260px}}
+      body.dee-dashboard-exporting #dashboardExportArea{width:1580px!important;max-width:none!important;min-width:1580px!important;padding:18px!important;overflow:visible!important;background:#fff!important}
+      body.dee-dashboard-exporting .dee-dashboard-toolbar{display:none!important}
+      body.dee-dashboard-exporting .row{display:flex!important;flex-wrap:wrap!important}
+      body.dee-dashboard-exporting .col-lg-7{flex:0 0 66.666667%!important;max-width:66.666667%!important;width:66.666667%!important}
+      body.dee-dashboard-exporting .col-lg-5{flex:0 0 33.333333%!important;max-width:33.333333%!important;width:33.333333%!important}
+      body.dee-dashboard-exporting .dee-map-shell{grid-template-columns:minmax(0,1fr) 290px!important;gap:10px!important}
+      body.dee-dashboard-exporting .dee-map-legend{max-height:520px!important;overflow:hidden!important}
+      body.dee-dashboard-exporting #mapaDS{height:520px!important;min-height:520px!important;width:100%!important;overflow:hidden!important}
+      body.dee-dashboard-exporting .leaflet-container{font-size:11px!important;background:#cfe8f3!important}
+      body.dee-dashboard-exporting .leaflet-control-zoom{display:block!important}
+      body.dee-dashboard-exporting .table-responsive{overflow:visible!important}
+      body.dee-dashboard-exporting table{page-break-inside:auto!important}
       @media print{#dashboardExportArea{padding:12px!important}.dee-dashboard-toolbar{display:none!important}}
     `;
     document.head.appendChild(style);
@@ -10395,60 +10406,19 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
 
-  function reiniciarContenedorMapaDashboard() {
-    const el = q('mapaDS');
-    if (!el) return null;
-
-    // Corrección quirúrgica definitiva:
-    // En este app_68.js existen cierres anteriores del Dashboard (v39/v53.1)
-    // que también inicializan Leaflet sobre #mapaDS y pueden repintar puntos
-    // sin respetar la leyenda. Por eso NO basta limpiar una capa propia: hay
-    // que recuperar la propiedad del contenedor en cada render del Dashboard
-    // final. Así se eliminan del DOM todos los panes/capas heredados y el mapa
-    // vuelve a pintarse únicamente con los DS marcados en la leyenda.
-    try {
-      if (mapaDashboard && typeof mapaDashboard.remove === 'function') mapaDashboard.remove();
-    } catch (e) {
-      console.warn('No se pudo remover mapa Dashboard previo:', e);
-    }
-
-    const limpio = el.cloneNode(false);
-    limpio.id = el.id;
-    limpio.className = el.className;
-    const estilo = el.getAttribute('style') || 'height:520px; min-height:520px;';
-    limpio.setAttribute('style', estilo);
-    limpio.dataset.dashboardOwner = 'v661';
-    el.parentNode?.replaceChild(limpio, el);
-
-    mapaDashboard = null;
-    capaDashboard = null;
-    mapaContenedorReiniciado = true;
-    return limpio;
-  }
-
-  function limpiarCapasNoBaseDashboard() {
-    if (!mapaDashboard || !window.L) return;
-    mapaDashboard.eachLayer(layer => {
-      const esBase = layer instanceof L.TileLayer;
-      if (!esBase) mapaDashboard.removeLayer(layer);
-    });
-    capaDashboard = L.layerGroup().addTo(mapaDashboard);
-  }
-
   function renderMapa(datos) {
-    const el = reiniciarContenedorMapaDashboard();
+    const el = q('mapaDS');
     if (!el || !window.L) return;
-
-    mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
-    capaDashboard = L.layerGroup().addTo(mapaDashboard);
-
+    if (!mapaDashboard) {
+      mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
+      capaDashboard = L.layerGroup().addTo(mapaDashboard);
+    }
+    capaDashboard.clearLayers();
     const bounds = [];
-
     [...datos.distritos.values()].forEach(item => {
       if (!item.latlng) return;
       const ds = [...item.decretos.values()];
-      if (!ds.length) return;
       const repetido = ds.length > 1;
       const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
       const marker = L.circleMarker(item.latlng, { radius: repetido ? 7 : 5, color: repetido ? '#000' : color, weight: repetido ? 3 : 1, fillColor: color, fillOpacity: repetido ? .95 : .75 });
@@ -10456,7 +10426,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       marker.addTo(capaDashboard);
       bounds.push(item.latlng);
     });
-
     if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
     setTimeout(() => mapaDashboard?.invalidateSize(), 180);
   }
@@ -10531,62 +10500,121 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function prepararExportacion(tipo) {
     const oldFiltro = filtroDashboard;
+    const oldSeleccion = new Set(dsVisibles);
+    const oldLeyendaInicializada = seleccionLeyendaInicializada;
+    const oldClaveLeyenda = ultimaClaveFiltroLeyenda;
     const chosen = q('dashboardExportFiltro')?.value || 'actual';
-    if (chosen !== 'actual') filtroDashboard = chosen;
-    q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-    renderDashboardEjecutivoV661(true);
-    await new Promise(r => setTimeout(r, 600));
-    await exportarDashboard(tipo);
-    if (chosen !== 'actual') {
-      filtroDashboard = oldFiltro;
-      q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-      renderDashboardEjecutivoV661(true);
+
+    try {
+      if (chosen !== 'actual') {
+        filtroDashboard = chosen;
+        q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+        renderDashboardEjecutivoV661(true);
+      } else {
+        // Exporta exactamente lo que el usuario dejó marcado en la leyenda.
+        // No reinicia dsVisibles, porque eso volvía a marcar todos los DS.
+        renderDashboardEjecutivoV661(false);
+      }
+      await new Promise(r => setTimeout(r, 900));
+      await exportarDashboard(tipo);
+    } finally {
+      if (chosen !== 'actual') {
+        filtroDashboard = oldFiltro;
+        q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+      }
+      dsVisibles = new Set(oldSeleccion);
+      seleccionLeyendaInicializada = oldLeyendaInicializada;
+      ultimaClaveFiltroLeyenda = oldClaveLeyenda;
+      renderDashboardEjecutivoV661(false);
     }
   }
 
   async function exportarDashboard(tipo) {
     const area = q('dashboardExportArea') || q('tabDashboard');
     if (!area) return alert('No se encontró el Dashboard para exportar.');
+    let titulo = null;
+    const prevStyle = area.getAttribute('style') || '';
+    const prevScrollX = window.scrollX;
+    const prevScrollY = window.scrollY;
     try {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-      mapaDashboard?.invalidateSize();
-      const titulo = document.createElement('div');
+
+      document.body.classList.add('dee-dashboard-exporting');
+      area.style.width = '1580px';
+      area.style.maxWidth = '1580px';
+      area.style.minWidth = '1580px';
+      area.style.background = '#ffffff';
+      area.style.overflow = 'visible';
+
+      titulo = document.createElement('div');
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())}</div>`;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} · DS seleccionados: ${dsVisibles.size}</div>`;
       area.insertBefore(titulo, area.firstChild);
-      const canvas = await window.html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
-      titulo.remove();
+
+      // Leaflet calcula los puntos según el tamaño del contenedor. Para exportar sin distorsión
+      // se fija el ancho del Dashboard, se invalida el tamaño del mapa y se espera al repintado.
+      window.scrollTo(0, 0);
+      mapaDashboard?.invalidateSize(true);
+      await new Promise(r => setTimeout(r, 450));
+      mapaDashboard?.invalidateSize(true);
+      await new Promise(r => setTimeout(r, 450));
+
+      const exportWidth = Math.ceil(area.scrollWidth);
+      const exportHeight = Math.ceil(area.scrollHeight);
+      const canvas = await window.html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: exportWidth,
+        height: exportHeight,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight,
+        scrollX: 0,
+        scrollY: 0
+      });
+
       const fileBase = `Dashboard_DEE_${estadoFiltroTexto().replace(/\s+/g,'_')}_${hoy()}`;
       if (tipo === 'jpg') {
         const a = document.createElement('a');
         a.download = `${fileBase}.jpg`;
-        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.href = canvas.toDataURL('image/jpeg', 0.96);
         a.click();
         return;
       }
+
       const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
       if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW - 16;
+      const margin = 6;
+      const imgW = pageW - (margin * 2);
       const imgH = canvas.height * imgW / canvas.width;
+      const pageBodyH = pageH - (margin * 2);
       let heightLeft = imgH;
-      let position = 8;
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
-      heightLeft -= (pageH - 16);
-      while (heightLeft > 0) {
+      let position = margin;
+      const imgData = canvas.toDataURL('image/jpeg', 0.96);
+
+      pdf.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+      heightLeft -= pageBodyH;
+      while (heightLeft > 1) {
         pdf.addPage('l');
-        position = heightLeft - imgH + 8;
-        pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
-        heightLeft -= (pageH - 16);
+        position = margin - (imgH - heightLeft);
+        pdf.addImage(imgData, 'JPEG', margin, position, imgW, imgH, undefined, 'FAST');
+        heightLeft -= pageBodyH;
       }
       pdf.save(`${fileBase}.pdf`);
     } catch (e) {
       console.error('Error exportando Dashboard:', e);
       alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+    } finally {
+      titulo?.remove();
+      area.setAttribute('style', prevStyle);
+      document.body.classList.remove('dee-dashboard-exporting');
+      window.scrollTo(prevScrollX, prevScrollY);
+      setTimeout(() => mapaDashboard?.invalidateSize(true), 150);
     }
   }
 
