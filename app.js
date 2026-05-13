@@ -1,4 +1,4 @@
-// ================= VERSION 74 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 75 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11139,5 +11139,435 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   document.addEventListener('DOMContentLoaded', () => { instalarEventos(); setTimeout(() => render(true), 1800); });
   setTimeout(() => { instalarEventos(); render(true); }, 4200);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= CORRECCIÓN QUIRÚRGICA DASHBOARD v74.1 =================
+// Alcance exclusivo: alineación de puntos Leaflet en el mapa del Dashboard y exportación JPG/PDF.
+// No modifica login, usuarios, roles, RDS, tablas ni estructura general.
+(function dashboardPuntosCalzadosV741(){
+  const VERSION = 'v74.1 puntos-calzados-mapa-export';
+  const PERU_CENTER = [-9.19, -75.02];
+  const PERU_ZOOM = 5;
+  const COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
+
+  let fixedMap = null;
+  let fixedRenderer = null;
+  let installing = false;
+  let renderTimer = null;
+  let exportando = false;
+
+  const $id = (id) => document.getElementById(id);
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const norm = (v) => (typeof normalizarTexto === 'function'
+    ? normalizarTexto(v)
+    : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase());
+  const esc = (v) => (typeof escapeHtml === 'function'
+    ? escapeHtml(v)
+    : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+
+  function fechaLocal(v) {
+    if (!v) return null;
+    const d = new Date(`${String(v).slice(0, 10)}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function hoy0() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function esVigente(d) {
+    const h = hoy0();
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (ini && h < ini) return false;
+    return h <= fin;
+  }
+
+  function filtroActual() {
+    return $id('dashboardFiltroEstado')?.value || 'vigentes';
+  }
+
+  function filtroTexto() {
+    const f = filtroActual();
+    if (f === 'vigentes') return 'Vigentes';
+    if (f === 'no_vigentes') return 'No vigentes';
+    return 'Todos';
+  }
+
+  function aplicaFiltroEstado(d) {
+    const v = esVigente(d);
+    const f = filtroActual();
+    if (f === 'vigentes') return v;
+    if (f === 'no_vigentes') return !v;
+    return true;
+  }
+
+  function getUbigeo(t) { return typeof getUbigeoValue === 'function' ? getUbigeoValue(t) : (t?.ubigeo || t?.UBIGEO || t?.codigo || t?.cod_ubigeo || ''); }
+  function getLat(t) { return typeof getLatitud === 'function' ? getLatitud(t) : (t?.latitud ?? t?.lat ?? ''); }
+  function getLng(t) { return typeof getLongitud === 'function' ? getLongitud(t) : (t?.longitud ?? t?.lng ?? t?.lon ?? ''); }
+  function territorio(d) { return Array.isArray(d?.territorio) ? d.territorio : []; }
+  function keyDist(t) {
+    const ub = getUbigeo(t);
+    return ub ? String(ub) : `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}|${norm(t?.distrito || '')}`;
+  }
+  function latLng(t) {
+    const lat = Number(String(getLat(t)).replace(',', '.'));
+    const lng = Number(String(getLng(t)).replace(',', '.'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    return [lat, lng];
+  }
+  function nombreDS(d) {
+    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    return String(txt).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
+  }
+  function decretosBase() {
+    const base = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
+    return (Array.isArray(base) ? base : []).map(d => typeof normalizarDecreto === 'function' ? normalizarDecreto(d) : d).filter(Boolean);
+  }
+
+  function coloresDesdeLeyenda() {
+    const mapa = new Map();
+    document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach((chk, i) => {
+      const dot = chk.closest('.dee-legend-row')?.querySelector('.dee-color-dot');
+      mapa.set(String(chk.value), dot?.style?.background || COLORS[i % COLORS.length]);
+    });
+    return mapa;
+  }
+
+  function idsSeleccionadosActuales() {
+    const checks = [...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')];
+    if (checks.length) return new Set(checks.filter(chk => chk.checked).map(chk => String(chk.value)));
+    return new Set(decretosBase().filter(aplicaFiltroEstado).map(d => String(d.id)));
+  }
+
+  function distritosSeleccionados() {
+    const ids = idsSeleccionadosActuales();
+    const colorLeyenda = coloresDesdeLeyenda();
+    const decretos = decretosBase().filter(aplicaFiltroEstado).map((d, i) => ({
+      ...d,
+      __dashColor: colorLeyenda.get(String(d.id)) || COLORS[i % COLORS.length]
+    })).filter(d => ids.has(String(d.id)));
+
+    const distritos = new Map();
+    decretos.forEach(d => {
+      territorio(d).forEach(t => {
+        const k = keyDist(t);
+        const ll = latLng(t);
+        if (!k || !ll) return;
+        if (!distritos.has(k)) {
+          distritos.set(k, {
+            key: k,
+            departamento: t.departamento || '',
+            provincia: t.provincia || '',
+            distrito: t.distrito || '',
+            latlng: ll,
+            decretos: new Map()
+          });
+        }
+        distritos.get(k).decretos.set(String(d.id), {
+          id: String(d.id),
+          nombre: nombreDS(d),
+          color: d.__dashColor
+        });
+      });
+    });
+    return [...distritos.values()];
+  }
+
+  function limpiarLeafletDiv(el) {
+    if (!el) return null;
+    try { if (fixedMap) fixedMap.remove(); } catch (_) {}
+    fixedMap = null;
+    fixedRenderer = null;
+
+    const limpio = document.createElement('div');
+    limpio.id = 'mapaDS';
+    limpio.className = (el.className || 'border rounded bg-white')
+      .split(/\s+/)
+      .filter(c => c && !c.startsWith('leaflet-'))
+      .join(' ') || 'border rounded bg-white';
+    limpio.style.height = el.style.height || '520px';
+    limpio.style.minHeight = el.style.minHeight || '520px';
+    limpio.style.width = '100%';
+    limpio.style.position = 'relative';
+    limpio.style.overflow = 'hidden';
+    limpio.dataset.owner = VERSION;
+    el.replaceWith(limpio);
+    return limpio;
+  }
+
+  async function esperarContenedorVisible(el, intentos = 12) {
+    for (let i = 0; i < intentos; i++) {
+      const r = el?.getBoundingClientRect?.();
+      if (r && r.width > 120 && r.height > 120 && el.offsetParent !== null) return true;
+      await sleep(100);
+    }
+    return false;
+  }
+
+  async function renderMapaCalzado() {
+    if (!window.L) return;
+    let el = $id('mapaDS');
+    if (!el) return;
+
+    const visible = await esperarContenedorVisible(el);
+    if (!visible) return;
+
+    el = limpiarLeafletDiv(el);
+    if (!el) return;
+
+    await sleep(40);
+
+    const puntos = distritosSeleccionados();
+    fixedRenderer = L.canvas({ padding: 0.5 });
+    fixedMap = L.map(el, {
+      preferCanvas: true,
+      renderer: fixedRenderer,
+      scrollWheelZoom: true,
+      zoomControl: true,
+      attributionControl: true,
+      zoomSnap: 0.25
+    }).setView(PERU_CENTER, PERU_ZOOM);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      crossOrigin: 'anonymous',
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(fixedMap);
+
+    await new Promise(resolve => fixedMap.whenReady(resolve));
+    fixedMap.invalidateSize(true);
+    await sleep(80);
+
+    const grupo = L.featureGroup().addTo(fixedMap);
+    puntos.forEach(item => {
+      const ds = [...item.decretos.values()];
+      if (!ds.length) return;
+      const repetido = ds.length > 1;
+      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
+      L.circleMarker(item.latlng, {
+        renderer: fixedRenderer,
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? 0.95 : 0.82,
+        opacity: 1,
+        interactive: true
+      })
+      .bindTooltip(`<strong>${esc(item.distrito)}</strong><br>Provincia: ${esc(item.provincia)}<br>Departamento: ${esc(item.departamento)}<br>Decreto(s): ${esc(ds.map(x => x.nombre).join(', '))}`, { sticky: true })
+      .addTo(grupo);
+    });
+
+    if (puntos.length) {
+      fixedMap.fitBounds(grupo.getBounds(), { padding: [22, 22], maxZoom: 7 });
+    } else {
+      fixedMap.setView(PERU_CENTER, PERU_ZOOM);
+    }
+
+    await sleep(120);
+    fixedMap.invalidateSize(true);
+    if (puntos.length) fixedMap.fitBounds(grupo.getBounds(), { padding: [22, 22], maxZoom: 7 });
+  }
+
+  function programarMapaCalzado(delay = 180) {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => {
+      renderMapaCalzado().catch(e => console.error('Error ajustando puntos Dashboard v74.1:', e));
+    }, delay);
+  }
+
+  async function renderDashboardSeguro(reset = false) {
+    if (typeof window.__dashboardCheckboxExportV682?.render === 'function') {
+      window.__dashboardCheckboxExportV682.render(Boolean(reset));
+    } else if (typeof window.renderDashboardEjecutivoV661 === 'function') {
+      window.renderDashboardEjecutivoV661(Boolean(reset));
+    }
+    await sleep(250);
+    await renderMapaCalzado();
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (src.includes('html2canvas') && window.html2canvas) return resolve();
+      if (src.includes('jspdf') && (window.jspdf?.jsPDF || window.jsPDF)) return resolve();
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function esperarTilesMapa(timeout = 2200) {
+    const inicio = Date.now();
+    while (Date.now() - inicio < timeout) {
+      const tiles = [...document.querySelectorAll('#mapaDS img.leaflet-tile')];
+      if (tiles.length && tiles.every(img => img.complete && img.naturalWidth > 0)) return;
+      await sleep(100);
+    }
+  }
+
+  async function exportarDashboardCalzado(tipo) {
+    if (exportando) return;
+    exportando = true;
+    const area = $id('dashboardExportArea') || $id('tabDashboard');
+    if (!area) { exportando = false; return alert('No se encontró el Dashboard para exportar.'); }
+
+    const oldFiltro = $id('dashboardFiltroEstado')?.value || 'vigentes';
+    const oldChecks = new Map([...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')].map(chk => [String(chk.value), chk.checked]));
+    const chosen = $id('dashboardExportFiltro')?.value || 'actual';
+    const oldW = area.style.width;
+    const oldMax = area.style.maxWidth;
+    const oldOverflow = document.body.style.overflow;
+    let titulo = null;
+
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+      if (tipo === 'pdf') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) {
+        $id('dashboardFiltroEstado').value = chosen;
+        await renderDashboardSeguro(true);
+      }
+
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      await sleep(150);
+      await renderDashboardSeguro(false);
+      await esperarTilesMapa();
+      await sleep(350);
+
+      titulo = document.createElement('div');
+      titulo.id = 'dashboardExportHeaderTmp';
+      titulo.className = 'border-bottom mb-2 pb-2';
+      const totalChecks = document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check:checked').length;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${totalChecks}</div>`;
+      area.insertBefore(titulo, area.firstChild);
+      await sleep(200);
+
+      const canvas = await window.html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: area.scrollWidth,
+        height: area.scrollHeight,
+        windowWidth: Math.max(1400, area.scrollWidth),
+        windowHeight: Math.max(900, area.scrollHeight)
+      });
+
+      const base = `Dashboard_DEE_${filtroTexto().replace(/\s+/g, '_')}_${typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10)}`;
+      if (tipo === 'jpg') {
+        const a = document.createElement('a');
+        a.download = `${base}.jpg`;
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.click();
+      } else {
+        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+        if (!jsPDF) throw new Error('jsPDF no disponible');
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const imgW = pageW - 16;
+        const imgH = canvas.height * imgW / canvas.width;
+        const img = canvas.toDataURL('image/jpeg', 0.95);
+        let pos = 8;
+        let left = imgH;
+        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
+        left -= (pageH - 16);
+        while (left > 0) {
+          pdf.addPage('l');
+          pos = left - imgH + 8;
+          pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
+          left -= (pageH - 16);
+        }
+        pdf.save(`${base}.pdf`);
+      }
+    } catch (e) {
+      console.error('Error exportando Dashboard v74.1:', e);
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+    } finally {
+      if (titulo) { try { titulo.remove(); } catch (_) {} }
+      area.style.width = oldW;
+      area.style.maxWidth = oldMax;
+      document.body.style.overflow = oldOverflow;
+      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) $id('dashboardFiltroEstado').value = oldFiltro;
+      await renderDashboardSeguro(chosen !== 'actual');
+      if (oldChecks.size) {
+        document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach(chk => {
+          if (oldChecks.has(String(chk.value))) chk.checked = oldChecks.get(String(chk.value));
+        });
+        await renderMapaCalzado();
+      }
+      exportando = false;
+    }
+  }
+
+  function instalar() {
+    if (installing) return;
+    installing = true;
+
+    // Evita que cierres antiguos del Dashboard vuelvan a dibujar un mapa desfasado al abrir la pestaña.
+    document.addEventListener('shown.bs.tab', (e) => {
+      const target = e.target?.getAttribute?.('data-bs-target');
+      if (target === '#tabDashboard') {
+        e.stopImmediatePropagation();
+        setTimeout(() => renderDashboardSeguro(false), 220);
+      }
+    }, true);
+
+    window.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t) return;
+
+      if (t.id === 'btnExportDashboardJPG') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        exportarDashboardCalzado('jpg');
+        return;
+      }
+      if (t.id === 'btnExportDashboardPDF') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        exportarDashboardCalzado('pdf');
+        return;
+      }
+      if (t.id === 'btnActualizarDashboard') {
+        programarMapaCalzado(550);
+        return;
+      }
+      if (t.closest?.('[data-bs-target="#tabDashboard"]')) {
+        programarMapaCalzado(900);
+      }
+      if (t.id === 'btnDashSeleccionarTodos' || t.id === 'btnDashQuitarSeleccion') {
+        programarMapaCalzado(350);
+      }
+    }, true);
+
+    window.addEventListener('change', (e) => {
+      const t = e.target;
+      if (!t) return;
+      if (t.id === 'dashboardFiltroEstado' || t.classList?.contains('dash-ds-check')) {
+        programarMapaCalzado(450);
+      }
+    }, true);
+
+    window.renderDashboardEjecutivoDEE = async function(reset) { await renderDashboardSeguro(Boolean(reset)); };
+    window.renderDashboardEjecutivoV661 = window.renderDashboardEjecutivoDEE;
+    window.__dashboardPuntosCalzadosV741 = { renderMapaCalzado, renderDashboardSeguro, exportarDashboardCalzado, version: VERSION };
+
+    setTimeout(() => renderDashboardSeguro(false), 5200);
+  }
+
+  document.addEventListener('DOMContentLoaded', instalar);
+  setTimeout(instalar, 1000);
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
