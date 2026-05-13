@@ -1,4 +1,4 @@
-// ================= VERSION 69 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -10244,40 +10244,26 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const distritos = new Map();
     const departamentosConteo = new Map();
     const departamentosDS = new Map();
-    const distritosMapa = new Map();
 
-    const acumularTerritorio = (lista, destino, incluirMetricas) => {
-      lista.forEach((d) => {
-        territorio(d).forEach(t => {
-          const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
-          if (!dep || !prov || !dist) return;
-
-          if (incluirMetricas) {
-            departamentos.add(dep);
-            provincias.add(prov);
-            departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
-            if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
-            departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
-          }
-
-          if (!destino.has(dist)) {
-            destino.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
-          }
-          const item = destino.get(dist);
-          item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
-          if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
-          if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
-        });
+    decretosMapa.forEach((d) => {
+      territorio(d).forEach(t => {
+        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
+        if (!dep || !prov || !dist) return;
+        departamentos.add(dep); provincias.add(prov);
+        departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
+        if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
+        departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+        if (!distritos.has(dist)) {
+          distritos.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
+        }
+        const item = distritos.get(dist);
+        item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
+        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
       });
-    };
+    });
 
-    // KPIs y tablas siempre respetan solo el filtro global, no los checkboxes de la leyenda.
-    acumularTerritorio(decretosFiltrados, distritos, true);
-
-    // El mapa sí respeta los checkboxes de la leyenda por Decreto Supremo.
-    acumularTerritorio(decretosMapa, distritosMapa, false);
-
-    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, distritosMapa, departamentosConteo, departamentosDS };
+    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, departamentosConteo, departamentosDS };
   }
 
   function asegurarEstructuraDashboard() {
@@ -10399,7 +10385,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!cont) return;
     const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
     const cards = [
-      [`Declaratorias de Estado de Emergencia`, datos.decretosFiltrados.length, `Filtro: ${estadoFiltroTexto()}`],
+      [`Declaratorias de Estado de Emergencia`, datos.decretosMapa.length, `Filtro: ${estadoFiltroTexto()}`],
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
@@ -10418,29 +10404,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
     capaDashboard.clearLayers();
     const bounds = [];
-    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
+    [...datos.distritos.values()].forEach(item => {
       if (!item.latlng) return;
       const ds = [...item.decretos.values()];
-      const total = ds.length;
-      ds.forEach((decreto, idx) => {
-        const color = decreto.color || '#0d6efd';
-        let latlng = item.latlng;
-        if (total > 1) {
-          const angulo = (Math.PI * 2 * idx) / total;
-          const radio = 0.018;
-          latlng = [item.latlng[0] + Math.sin(angulo) * radio, item.latlng[1] + Math.cos(angulo) * radio];
-        }
-        const marker = L.circleMarker(latlng, {
-          radius: total > 1 ? 5 : 6,
-          color,
-          weight: 1,
-          fillColor: color,
-          fillOpacity: 0.82
-        });
-        marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto: ${escapeHtml(decreto.nombre)}`, { sticky:true });
-        marker.addTo(capaDashboard);
-        bounds.push(latlng);
-      });
+      const repetido = ds.length > 1;
+      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
+      const marker = L.circleMarker(item.latlng, { radius: repetido ? 7 : 5, color: repetido ? '#000' : color, weight: repetido ? 3 : 1, fillColor: color, fillOpacity: repetido ? .95 : .75 });
+      marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto(s): ${escapeHtml(ds.map(d => d.nombre).join(', '))}`, { sticky:true });
+      marker.addTo(capaDashboard);
+      bounds.push(item.latlng);
     });
     if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
     setTimeout(() => mapaDashboard?.invalidateSize(), 180);
@@ -10449,7 +10421,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function renderResumen(datos) {
     const tbody = document.querySelector('#tablaResumenDS tbody');
     if (!tbody) return;
-    const filas = datos.decretosFiltrados.map(d => {
+    const filas = datos.decretosMapa.map(d => {
       const terr = territorio(d);
       const deps = new Set(terr.map(keyDep).filter(Boolean));
       const provs = new Set(terr.map(keyProv).filter(Boolean));
