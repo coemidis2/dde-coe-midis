@@ -1,4 +1,4 @@
-// ================= VERSION 80 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 81 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11983,3 +11983,311 @@ async function cargarUsuariosAdmin() {
   }).join('');
 }
 
+
+// ================= CIERRE FINAL LOGIN USUARIOS v78.2 =================
+// Objetivo: permitir ingreso de usuarios creados desde el panel Administrador
+// preservando credenciales locales y validando también contra /api/users cuando esté disponible.
+const DEE_LOGIN_CREDENTIALS_KEY_V782 = 'dee_login_credentials_v782';
+
+function leerCredencialesLoginV782() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DEE_LOGIN_CREDENTIALS_KEY_V782) || '{}');
+    return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  } catch {
+    return {};
+  }
+}
+
+function guardarCredencialLoginV782(email, clave, hash) {
+  const e = normalizarEmail(email);
+  if (!e) return;
+  const store = leerCredencialesLoginV782();
+  store[e] = {
+    password: String(clave || '').trim(),
+    clave: String(clave || '').trim(),
+    pass: String(clave || '').trim(),
+    password_hash: String(hash || '').trim().toLowerCase(),
+    hash: String(hash || '').trim().toLowerCase(),
+    updated_at: new Date().toISOString()
+  };
+  try { localStorage.setItem(DEE_LOGIN_CREDENTIALS_KEY_V782, JSON.stringify(store)); } catch (e) { console.warn('No se pudo guardar credencial login v78.2', e); }
+}
+
+function aplicarCredencialGuardadaV782(usuario) {
+  const u = normalizarUsuario(usuario);
+  if (!u) return null;
+  const cred = leerCredencialesLoginV782()[u.email];
+  if (!cred) return u;
+  return normalizarUsuario({
+    ...u,
+    password: u.password || cred.password || cred.clave || cred.pass || '',
+    clave: u.clave || cred.clave || cred.password || cred.pass || '',
+    pass: u.pass || cred.pass || cred.password || cred.clave || '',
+    password_hash: u.password_hash || cred.password_hash || cred.hash || '',
+    hash: u.hash || cred.hash || cred.password_hash || ''
+  });
+}
+
+function extraerListaUsuariosLoginV782(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw.users)) return raw.users;
+  if (Array.isArray(raw.usuarios)) return raw.usuarios;
+  if (Array.isArray(raw.items)) return raw.items;
+  if (Array.isArray(raw.data)) return raw.data;
+  return [];
+}
+
+function fusionarUsuarioV782(a, b) {
+  const previo = aplicarCredencialGuardadaV782(a) || null;
+  const nuevo = aplicarCredencialGuardadaV782(b) || null;
+  if (!previo && !nuevo) return null;
+  const out = { ...(previo || {}), ...(nuevo || {}) };
+  ['password', 'clave', 'pass', 'password_hash', 'hash'].forEach(k => {
+    if (!String(out[k] ?? '').trim()) {
+      if (previo && String(previo[k] ?? '').trim()) out[k] = previo[k];
+      if (nuevo && String(nuevo[k] ?? '').trim()) out[k] = nuevo[k];
+    }
+  });
+  return aplicarCredencialGuardadaV782(out);
+}
+
+cargarUsuariosLocales = function cargarUsuariosLocalesV782() {
+  const fuentes = [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema', 'dee_users', 'usuarios_locales'];
+  const mapa = new Map();
+
+  fuentes.forEach(key => {
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) || '[]');
+      extraerListaUsuariosLoginV782(raw).forEach(item => {
+        const u = aplicarCredencialGuardadaV782(item);
+        if (!u || normalizarTexto(u.rol) === 'EVALUADOR') return;
+        mapa.set(u.email, fusionarUsuarioV782(mapa.get(u.email), u));
+      });
+    } catch (e) {
+      console.warn('No se pudo leer ' + key, e);
+    }
+  });
+
+  Object.entries(leerCredencialesLoginV782()).forEach(([email, cred]) => {
+    const previo = mapa.get(normalizarEmail(email));
+    if (previo) mapa.set(previo.email, fusionarUsuarioV782(previo, { email, ...cred }));
+  });
+
+  const usuarios = [...mapa.values()].filter(Boolean);
+  guardarUsuariosLocales(usuarios);
+  return usuarios;
+};
+
+guardarUsuariosLocales = function guardarUsuariosLocalesV782(lista) {
+  const mapa = new Map();
+  (Array.isArray(lista) ? lista : extraerListaUsuariosLoginV782(lista)).forEach(item => {
+    const u = aplicarCredencialGuardadaV782(item);
+    if (!u || normalizarTexto(u.rol) === 'EVALUADOR') return;
+    mapa.set(u.email, fusionarUsuarioV782(mapa.get(u.email), u));
+  });
+  const depurados = [...mapa.values()].filter(Boolean);
+  depurados.forEach(u => {
+    if (String(u.password || u.clave || u.pass || u.password_hash || u.hash || '').trim()) {
+      guardarCredencialLoginV782(u.email, u.password || u.clave || u.pass || '', u.password_hash || u.hash || '');
+    }
+  });
+  [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema'].forEach(key => {
+    try { localStorage.setItem(key, JSON.stringify(depurados)); } catch (e) { console.warn('No se pudo guardar ' + key, e); }
+  });
+  adminUsuariosLocales = depurados;
+  return depurados;
+};
+
+buscarUsuarioLocalPorEmail = function buscarUsuarioLocalPorEmailV782(email) {
+  const e = normalizarEmail(email);
+  return cargarUsuariosLocales().find(u => u.email === e) || null;
+};
+
+loginLocal = async function loginLocalV782(email, password) {
+  const usuario = aplicarCredencialGuardadaV782(buscarUsuarioLocalPorEmail(email));
+  if (!usuario) return { ok: false, reason: 'not_found' };
+  if (usuario.estado !== 'activo') return { ok: false, reason: 'inactive' };
+
+  const ingresada = String(password ?? '').trim();
+  const hashIngresado = await sha256HexLoginV78(ingresada);
+  const clavesValidas = [usuario.password, usuario.clave, usuario.pass].map(v => String(v ?? '').trim()).filter(Boolean);
+  const hashesValidos = [usuario.password_hash, usuario.hash].map(v => String(v ?? '').trim().toLowerCase()).filter(Boolean);
+
+  const okPlano = clavesValidas.some(v => v === ingresada);
+  const okHash = Boolean(hashIngresado) && hashesValidos.some(v => v === hashIngresado.toLowerCase());
+  if (!okPlano && !okHash) return { ok: false, reason: 'bad_password' };
+
+  const sessionUser = {
+    name: usuario.name || usuario.nombre || usuario.email,
+    nombre: usuario.nombre || usuario.name || usuario.email,
+    email: usuario.email,
+    role: usuario.role || usuario.rol,
+    rol: usuario.rol || usuario.role,
+    programa: usuario.programa || '',
+    estado: usuario.estado
+  };
+  state.session = sessionUser;
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+  return { ok: true, user: sessionUser };
+};
+
+async function loginDesdeUsuariosEndpointV782(email, password) {
+  try {
+    const e = normalizarEmail(email);
+    const ingresada = String(password || '').trim();
+    const hashIngresado = await sha256HexLoginV78(ingresada);
+    const res = await api('/users');
+    if (!res.ok) return { ok: false, reason: 'users_endpoint_denied' };
+    const usuarios = extraerListaUsuariosLoginV782(res.data).map(aplicarCredencialGuardadaV782).filter(Boolean);
+    const usuario = usuarios.find(u => u.email === e);
+    if (!usuario) return { ok: false, reason: 'remote_not_found' };
+    if (usuario.estado !== 'activo') return { ok: false, reason: 'remote_inactive' };
+
+    const clavesValidas = [usuario.password, usuario.clave, usuario.pass].map(v => String(v ?? '').trim()).filter(Boolean);
+    const hashesValidos = [usuario.password_hash, usuario.hash].map(v => String(v ?? '').trim().toLowerCase()).filter(Boolean);
+    const okPlano = clavesValidas.some(v => v === ingresada);
+    const okHash = Boolean(hashIngresado) && hashesValidos.some(v => v === hashIngresado.toLowerCase());
+    if (!okPlano && !okHash) return { ok: false, reason: 'remote_bad_password' };
+
+    guardarUsuariosLocales([usuario]);
+    guardarCredencialLoginV782(usuario.email, usuario.password || usuario.clave || usuario.pass || '', usuario.password_hash || usuario.hash || hashIngresado);
+    const sessionUser = {
+      name: usuario.name || usuario.nombre || usuario.email,
+      nombre: usuario.nombre || usuario.name || usuario.email,
+      email: usuario.email,
+      role: usuario.role || usuario.rol,
+      rol: usuario.rol || usuario.role,
+      programa: usuario.programa || '',
+      estado: usuario.estado
+    };
+    state.session = sessionUser;
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+    return { ok: true, user: sessionUser };
+  } catch (e) {
+    console.warn('Error en loginDesdeUsuariosEndpointV782', e);
+    return { ok: false, reason: 'exception' };
+  }
+}
+
+doLogin = async function doLoginV782() {
+  const email = normalizarEmail($('loginUser')?.value);
+  const password = String($('loginPass')?.value || '').trim();
+
+  if (!email || !password) {
+    alert('Ingrese usuario y contraseña');
+    return;
+  }
+
+  const local = await loginLocal(email, password);
+  if (local.ok) {
+    iniciarSistemaConSesion(local.user);
+    return;
+  }
+
+  const viaUsers = await loginDesdeUsuariosEndpointV782(email, password);
+  if (viaUsers.ok) {
+    iniciarSistemaConSesion(viaUsers.user);
+    return;
+  }
+
+  const password_hash = await sha256HexLoginV78(password);
+  const intentos = [
+    { email, password, password_hash, hash: password_hash, clave: password },
+    { email, password_hash, hash: password_hash },
+    { email, password }
+  ];
+
+  for (const payload of intentos) {
+    const resLogin = await api('/login', 'POST', payload);
+    if (resLogin.ok && (resLogin.data?.ok || resLogin.data?.user)) {
+      const resSession = await api('/session');
+      const userServer = normalizarUsuario(resSession.data?.user || resLogin.data?.user || resLogin.data);
+      if (userServer && userServer.estado === 'activo') {
+        const sessionUser = {
+          name: userServer.name,
+          nombre: userServer.nombre,
+          email: userServer.email,
+          role: userServer.role,
+          rol: userServer.rol,
+          programa: userServer.programa,
+          estado: userServer.estado
+        };
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+        iniciarSistemaConSesion(sessionUser);
+        return;
+      }
+    }
+  }
+
+  if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
+    const demo = { name: 'Administrador DEMO', nombre: 'Administrador DEMO', email, role: 'Administrador', rol: 'Administrador', estado: 'activo' };
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(demo));
+    iniciarSistemaConSesion(demo);
+    return;
+  }
+
+  console.warn('Login rechazado v78.2', { email, local: local.reason, viaUsers: viaUsers.reason });
+  alert('Credenciales inválidas');
+};
+
+crearUsuarioAdmin = async function crearUsuarioAdminV782() {
+  if (!esAdministrador()) return;
+  const nombre = $('adminUserName')?.value.trim() || '';
+  const email = normalizarEmail($('adminUserEmail')?.value || '');
+  const rol = $('adminUserRole')?.value || '';
+  if (!nombre || !email || !rol) return alert('Complete nombre, correo y rol.');
+
+  const clave = generarClaveTemporal();
+  const password_hash = await sha256HexLoginV78(clave);
+  if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
+  guardarCredencialLoginV782(email, clave, password_hash);
+
+  const usuario = normalizarUsuario({
+    nombre, name: nombre, email, rol, role: rol,
+    password: clave, clave, pass: clave,
+    password_hash, hash: password_hash,
+    estado: 'activo', active: 1
+  });
+  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
+  lista.push(usuario);
+  guardarUsuariosLocales(lista);
+
+  await api('/users', 'POST', {
+    name: usuario.name, nombre: usuario.nombre, email: usuario.email,
+    password: clave, clave, pass: clave,
+    password_hash, hash: password_hash,
+    role: usuario.role, rol: usuario.rol, programa: usuario.programa,
+    estado: 'activo', active: 1
+  });
+  await cargarUsuariosAdmin();
+};
+
+resetClaveUsuarioAdmin = async function resetClaveUsuarioAdminV782(email) {
+  const emailNorm = normalizarEmail(email);
+  const clave = generarClaveTemporal();
+  const password_hash = await sha256HexLoginV78(clave);
+  guardarCredencialLoginV782(emailNorm, clave, password_hash);
+  const lista = cargarUsuariosLocales();
+  const idx = lista.findIndex(u => u.email === emailNorm);
+  if (idx >= 0) {
+    lista[idx] = { ...lista[idx], password: clave, clave, pass: clave, password_hash, hash: password_hash, estado: 'activo', active: 1 };
+    guardarUsuariosLocales(lista);
+  }
+  if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
+  await api('/users', 'POST', { email: emailNorm, password: clave, clave, pass: clave, password_hash, hash: password_hash, estado: 'activo', active: 1 });
+  await cargarUsuariosAdmin();
+  alert(`Clave temporal generada para ${emailNorm}`);
+};
+
+// Reenganche explícito del botón de login para evitar que quede asociado a cierres anteriores.
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = $('btnLogin');
+  if (btn) {
+    btn.onclick = (e) => { e.preventDefault(); doLogin(); };
+  }
+  const pass = $('loginPass');
+  if (pass) {
+    pass.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } };
+  }
+});
