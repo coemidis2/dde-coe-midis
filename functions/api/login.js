@@ -22,23 +22,6 @@ function getClientIp(request) {
   return request.headers.get('CF-Connecting-IP') || 'unknown';
 }
 
-
-function normalizeRoleInput(role, programa) {
-  const rawRole = String(role || '').trim();
-  const rawPrograma = String(programa || '').trim();
-
-  if (rawRole.startsWith('Registrador|')) {
-    const parts = rawRole.split('|');
-    return { role: 'Registrador', programa: (parts[1] || rawPrograma || '').trim() };
-  }
-
-  return { role: rawRole, programa: rawPrograma };
-}
-
-function isValidRole(role) {
-  return ['Administrador', 'Registrador', 'Consulta'].includes(role);
-}
-
 export async function onRequestPost(context) {
   try {
     const ip = getClientIp(context.request);
@@ -92,25 +75,11 @@ export async function onRequestPost(context) {
       return unauthorized('invalid_credentials');
     }
 
-    const normalized = normalizeRoleInput(user.role, user.programa);
-
-    if (!isValidRole(normalized.role)) {
-      await context.env.DB.prepare(`
-        INSERT INTO login_attempts (ip, email, created_at)
-        VALUES (?, ?, ?)
-      `).bind(ip, normalizedEmail, new Date().toISOString()).run();
-
-      return unauthorized('invalid_credentials');
-    }
-
     const sessionUser = {
-      id: user.id,
       email: user.email,
-      role: normalized.role,
-      rol: normalized.role,
+      role: user.role,
       name: user.name || '',
-      nombre: user.name || '',
-      programa: normalized.programa || ''
+      programa: user.programa || ''
     };
 
     const session = await createSession(context.env, sessionUser);
