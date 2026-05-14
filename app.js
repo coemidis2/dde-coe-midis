@@ -1,4 +1,4 @@
-// ================= VERSION 78 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 79 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -103,17 +103,41 @@ function normalizarUsuario(raw) {
 
   const estadoRaw = raw.estado ?? raw.status ?? raw.active ?? raw.activo ?? 'activo';
   const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || normalizarTexto(estadoRaw) === 'ACTIVO' || normalizarTexto(estadoRaw) === 'ACTIVE';
+  const passwordPlano = String(raw.password ?? raw.clave ?? raw.pass ?? raw.passwordTemporal ?? raw.claveTemporal ?? raw.generatedPassword ?? '');
+  const passwordHash = String(raw.password_hash ?? raw.passwordHash ?? raw.hash ?? '');
 
   return {
     nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
     name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
     email,
-    password: String(raw.password ?? raw.clave ?? raw.pass ?? ''),
+    password: passwordPlano,
+    clave: passwordPlano,
+    password_hash: passwordHash,
     rol,
     role: rol,
     programa,
     estado: activo ? 'activo' : 'inactivo',
     active: activo ? 1 : 0
+  };
+}
+
+function fusionarUsuarioLocal(existente, entrante) {
+  const a = normalizarUsuario(existente);
+  const b = normalizarUsuario(entrante);
+  if (!a) return b;
+  if (!b) return a;
+
+  // Regla crítica: nunca reemplazar una clave local existente por vacío.
+  // Antes, si otra fuente local tenía el mismo correo sin password, podía pisar
+  // la credencial generada y luego el login respondía "Credenciales inválidas".
+  return {
+    ...a,
+    ...b,
+    password: b.password || a.password || '',
+    clave: b.password || a.password || a.clave || '',
+    password_hash: b.password_hash || a.password_hash || '',
+    estado: b.estado || a.estado || 'activo',
+    active: (b.estado || a.estado) === 'inactivo' ? 0 : 1
   };
 }
 
@@ -127,7 +151,9 @@ function cargarUsuariosLocales() {
       if (!Array.isArray(lista)) return;
       lista.forEach(item => {
         const u = normalizarUsuario(item);
-        if (u) mapa.set(u.email, u);
+        if (!u) return;
+        const actual = mapa.get(u.email);
+        mapa.set(u.email, fusionarUsuarioLocal(actual, u));
       });
     } catch (e) {
       console.warn('No se pudo leer localStorage.' + key, e);
@@ -140,19 +166,25 @@ function cargarUsuariosLocales() {
 }
 
 function guardarUsuariosLocales(lista) {
-  const depurados = [];
-  const vistos = new Set();
+  const mapa = new Map();
 
   (Array.isArray(lista) ? lista : []).forEach(item => {
     const u = normalizarUsuario(item);
     if (!u) return;
     if (normalizarTexto(u.rol) === 'EVALUADOR') return;
-    if (vistos.has(u.email)) return;
-    vistos.add(u.email);
-    depurados.push(u);
+    const actual = mapa.get(u.email);
+    mapa.set(u.email, fusionarUsuarioLocal(actual, u));
   });
 
+  const depurados = [...mapa.values()];
   localStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(depurados));
+
+  // Compatibilidad con versiones anteriores del mismo aplicativo. No crea archivos,
+  // solo mantiene sincronizadas las claves históricas de localStorage.
+  ['users', 'userList', 'usuariosSistema'].forEach(key => {
+    try { localStorage.setItem(key, JSON.stringify(depurados)); } catch {}
+  });
+
   adminUsuariosLocales = depurados;
   return depurados;
 }
@@ -162,11 +194,18 @@ function buscarUsuarioLocalPorEmail(email) {
   return usuarios.find(u => u.email === normalizarEmail(email)) || null;
 }
 
+function passwordLocalCoincide(usuario, passwordIngresado) {
+  const ingresado = String(passwordIngresado ?? '').trim();
+  const guardado = String(usuario?.password ?? usuario?.clave ?? '').trim();
+  if (!guardado) return false;
+  return guardado === ingresado;
+}
+
 function loginLocal(email, password) {
   const usuario = buscarUsuarioLocalPorEmail(email);
   if (!usuario) return { ok: false, reason: 'not_found' };
   if (usuario.estado !== 'activo') return { ok: false, reason: 'inactive' };
-  if (String(usuario.password ?? '') !== String(password ?? '')) return { ok: false, reason: 'bad_password' };
+  if (!passwordLocalCoincide(usuario, password)) return { ok: false, reason: 'bad_password' };
 
   const sessionUser = {
     name: usuario.name || usuario.nombre || usuario.email,
@@ -181,6 +220,13 @@ function loginLocal(email, password) {
   state.session = sessionUser;
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
   return { ok: true, user: sessionUser };
+}
+
+async function sha256Hex(texto) {
+  if (!window.crypto?.subtle) return '';
+  const data = new TextEncoder().encode(String(texto ?? ''));
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function iniciarSistemaConSesion(usuario) {
@@ -696,7 +742,19 @@ async function crearUsuarioAdmin() {
   const clave = generarClaveTemporal();
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
 
-  const usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
+  const passwordHash = await sha256Hex(clave);
+  const usuario = normalizarUsuario({
+    nombre,
+    name: nombre,
+    email,
+    rol,
+    role: rol,
+    password: clave,
+    clave,
+    password_hash: passwordHash,
+    estado: 'activo',
+    active: 1
+  });
   const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
   lista.push(usuario);
   guardarUsuariosLocales(lista);
@@ -706,6 +764,9 @@ async function crearUsuarioAdmin() {
     nombre: usuario.nombre,
     email: usuario.email,
     password: usuario.password,
+    clave: usuario.password,
+    password_hash: usuario.password_hash,
+    passwordHash: usuario.password_hash,
     role: usuario.role,
     rol: usuario.rol,
     programa: usuario.programa,
@@ -727,13 +788,32 @@ function toggleUsuarioAdmin(email) {
   cargarUsuariosAdmin();
 }
 
-function resetClaveUsuarioAdmin(email) {
+async function resetClaveUsuarioAdmin(email) {
   const clave = generarClaveTemporal();
+  const passwordHash = await sha256Hex(clave);
   const lista = cargarUsuariosLocales();
   const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
   if (usuario) {
     usuario.password = clave;
+    usuario.clave = clave;
+    usuario.password_hash = passwordHash;
+    usuario.estado = 'activo';
+    usuario.active = 1;
     guardarUsuariosLocales(lista);
+    await api('/users', 'POST', {
+      name: usuario.name,
+      nombre: usuario.nombre,
+      email: usuario.email,
+      password: clave,
+      clave,
+      password_hash: passwordHash,
+      passwordHash,
+      role: usuario.role,
+      rol: usuario.rol,
+      programa: usuario.programa,
+      estado: 'activo',
+      active: 1
+    });
   }
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
   alert(`Clave temporal generada para ${email}`);
