@@ -1,4 +1,4 @@
-// ================= VERSION 79 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 80 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -111,7 +111,7 @@ function normalizarUsuario(raw) {
     nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
     name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
     email,
-    password: String(raw.password ?? raw.clave ?? raw.pass ?? ''),
+    password: String(raw.password ?? raw.clave ?? raw.pass ?? raw.temporaryPassword ?? raw.claveTemporal ?? ''),
     rol,
     role: rol,
     programa,
@@ -760,11 +760,26 @@ async function crearUsuarioAdmin() {
     const remoto = normalizarUsuario({ ...res.data.user, password: res.data.temporaryPassword || clave });
     if (remoto) usuario = remoto;
     if (res.data.temporaryPassword && $('adminGeneratedPassword')) $('adminGeneratedPassword').value = res.data.temporaryPassword;
+  } else if (res.data?.error || res.data?.message) {
+    console.warn('No se confirmó usuario en backend; se mantiene copia local para login:', res.data);
   }
 
+  // Guardado local canónico. Esto evita que el usuario recién creado quede solo
+  // como fila visual del panel y no pueda autenticarse en el mismo navegador.
   const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
   lista.push(usuario);
   guardarUsuariosLocales(lista);
+
+  // También se limpia cualquier copia antigua con diferente estructura.
+  ['users', 'userList', 'usuariosSistema'].forEach(key => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(arr)) return;
+      const filtrada = arr.filter(x => normalizarEmail(x?.email || x?.correo || x?.usuario) !== usuario.email);
+      filtrada.push(usuario);
+      localStorage.setItem(key, JSON.stringify(filtrada));
+    } catch {}
+  });
 
   await cargarUsuariosAdmin();
 }
