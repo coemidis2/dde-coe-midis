@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v84: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v78: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v84: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v78: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v84 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v78 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v84: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v78: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 84 · 14/05/2026 - 10:50 hrs· MIDIS © 2026
+            VERSION 78 · 13/05/2026 - 17:30 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -2388,200 +2388,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="ubigeoData.js?v=20260423-01"></script>
-  <script src="app_78.js?v=20260514-login-rescue-v785"></script>
-  <!-- LOGIN RESCUE FINAL v78.5: acceso local seguro si backend/API no devuelve contraseña -->
-  <script>
-  (function(){
-    "use strict";
-    const VERSION = "v78.5-login-rescue-index";
-    const ADMIN_PASSWORD = "AdminMIDIS2026!";
-    const ADMIN_EMAILS = new Set([
-      "admin@midis.gob.pe",
-      "whuatay@midis.gob.pe",
-      "wlliamhuatay@midis.gob.pe",
-      "williamhuatay@midis.gob.pe"
-    ]);
-    const USER_KEYS = ["usuarios","users","userList","usuariosSistema","dee_users","usuarios_locales"];
-
-    function $(id){ return document.getElementById(id); }
-    function clean(v){ return String(v == null ? "" : v).trim(); }
-    function email(v){ return clean(v).toLowerCase(); }
-    function norm(v){ return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(); }
-    function isTempPassword(v){
-      const p = clean(v);
-      return /^MIDIS/i.test(p) && /2026!?$/i.test(p) && p.length >= 10;
-    }
-    function isActive(u){
-      const v = u?.estado ?? u?.status ?? u?.active ?? u?.activo ?? "activo";
-      return v === true || v === 1 || v === "1" || ["ACTIVO","ACTIVE","TRUE","SI","SÍ","HABILITADO"].includes(norm(v));
-    }
-    function arr(raw){
-      if (Array.isArray(raw)) return raw;
-      if (Array.isArray(raw?.users)) return raw.users;
-      if (Array.isArray(raw?.usuarios)) return raw.usuarios;
-      if (Array.isArray(raw?.items)) return raw.items;
-      if (Array.isArray(raw?.data)) return raw.data;
-      if (raw && typeof raw === "object") return Object.values(raw).filter(x => x && typeof x === "object");
-      return [];
-    }
-    function parse(key){ try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; } }
-    function splitRole(raw){
-      const r = clean(raw || "Consulta");
-      return { role: r.includes("|") ? clean(r.split("|")[0]) : r, programa: r.includes("|") ? clean(r.split("|").slice(1).join("|")) : "" };
-    }
-    function normalizeUser(raw){
-      if (!raw) return null;
-      const e = email(raw.email || raw.correo || raw.usuario || raw.user || raw.username);
-      if (!e) return null;
-      const sr = splitRole(raw.rol || raw.role || "Consulta");
-      const role = splitRole(raw.role || raw.rol || sr.role || "Consulta").role;
-      const plain = clean(raw.password || raw.clave || raw.pass || raw.password_plain || raw.temp_password);
-      return {
-        ...raw,
-        email: e,
-        name: clean(raw.name || raw.nombre || raw.fullName || raw.full_name || e),
-        nombre: clean(raw.nombre || raw.name || raw.fullName || raw.full_name || e),
-        role: role || "Consulta",
-        rol: role || "Consulta",
-        programa: clean(raw.programa || raw.program || sr.programa || ""),
-        estado: isActive(raw) ? "activo" : "inactivo",
-        active: isActive(raw) ? 1 : 0,
-        password: plain,
-        clave: clean(raw.clave || plain),
-        pass: clean(raw.pass || plain),
-        password_hash: clean(raw.password_hash || raw.passwordHash || raw.hash || raw.password_sha256).toLowerCase(),
-        hash: clean(raw.hash || raw.password_hash || raw.passwordHash || raw.password_sha256).toLowerCase()
-      };
-    }
-    function merge(a,b){
-      const A=a||{}, B=b||{}, out={...A,...B};
-      ["password","clave","pass","password_hash","hash"].forEach(k => { if (!clean(B[k]) && clean(A[k])) out[k]=A[k]; });
-      return normalizeUser(out);
-    }
-    function readUsers(){
-      const map = new Map();
-      USER_KEYS.forEach(k => arr(parse(k)).forEach(raw => {
-        const u = normalizeUser(raw);
-        if (!u || norm(u.rol) === "EVALUADOR") return;
-        map.set(u.email, merge(map.get(u.email), u));
-      }));
-      return [...map.values()].filter(Boolean);
-    }
-    function writeUsers(users){
-      const map = new Map();
-      arr(users).forEach(raw => { const u=normalizeUser(raw); if (u && norm(u.rol) !== "EVALUADOR") map.set(u.email, merge(map.get(u.email), u)); });
-      const list = [...map.values()].filter(Boolean);
-      USER_KEYS.forEach(k => { try { localStorage.setItem(k, JSON.stringify(list)); } catch(e){} });
-      try { adminUsuariosLocales = list; } catch(e){}
-      return list;
-    }
-    async function sha256(v){
-      try {
-        const data = new TextEncoder().encode(String(v));
-        const buffer = await crypto.subtle.digest("SHA-256", data);
-        return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2,"0")).join("");
-      } catch { return ""; }
-    }
-    function seedAdmins(){
-      const users = readUsers();
-      const map = new Map(users.map(u => [u.email, u]));
-      ADMIN_EMAILS.forEach(e => {
-        const prev = map.get(e) || {};
-        map.set(e, normalizeUser({
-          ...prev, email:e, name: prev.name || (e === "admin@midis.gob.pe" ? "Administrador MIDIS" : "Administrador"),
-          nombre: prev.nombre || (e === "admin@midis.gob.pe" ? "Administrador MIDIS" : "Administrador"),
-          role:"Administrador", rol:"Administrador", estado:"activo", active:1,
-          password: prev.password || ADMIN_PASSWORD, clave: prev.clave || ADMIN_PASSWORD, pass: prev.pass || ADMIN_PASSWORD
-        }));
-      });
-      writeUsers([...map.values()]);
-    }
-    function sessionFromUser(u){
-      const x = normalizeUser(u) || {};
-      return { name:x.name || x.nombre || x.email, nombre:x.nombre || x.name || x.email, email:x.email, role:x.role || x.rol || "Consulta", rol:x.rol || x.role || "Consulta", programa:x.programa || "", estado:"activo" };
-    }
-    function enterApp(u){
-      const session = sessionFromUser(u);
-      try { localStorage.setItem("sessionUser", JSON.stringify(session)); } catch(e){}
-      try { if (typeof state !== "undefined" && state) state.session = session; } catch(e){}
-      try { if (typeof iniciarSistemaConSesion === "function") { iniciarSistemaConSesion(session); return; } } catch(e){ console.warn("Ingreso directo por fallback", e); }
-      $("loginView")?.classList.add("d-none");
-      $("appView")?.classList.remove("d-none");
-      if ($("sessionName")) $("sessionName").textContent = session.name || "";
-      if ($("sessionRole")) $("sessionRole").textContent = session.role || session.rol || "";
-      try { if (typeof renderSession === "function") renderSession(); } catch(e){}
-      try { if (typeof initUbigeo === "function") initUbigeo(); } catch(e){}
-      try { if (typeof activarEventosDS === "function") activarEventosDS(); } catch(e){}
-      try { if (typeof initRegistroAcciones === "function") initRegistroAcciones(); } catch(e){}
-    }
-    async function validate(e,p){
-      seedAdmins();
-      const users = readUsers();
-      const u = users.find(x => x.email === e);
-      const h = await sha256(p);
-
-      if (ADMIN_EMAILS.has(e) && p === ADMIN_PASSWORD) {
-        const admin = normalizeUser({ ...(u || {}), email:e, role:"Administrador", rol:"Administrador", estado:"activo", active:1, password:p, clave:p, pass:p, password_hash:h, hash:h });
-        writeUsers([...users.filter(x => x.email !== e), admin]);
-        return admin;
-      }
-
-      if (u && u.estado === "activo") {
-        const plains = [u.password,u.clave,u.pass].map(clean).filter(Boolean);
-        const hashes = [u.password_hash,u.hash].map(x => clean(x).toLowerCase()).filter(Boolean);
-        if (plains.includes(p) || (h && hashes.includes(h.toLowerCase()))) return u;
-        if (isTempPassword(p)) {
-          const fixed = normalizeUser({ ...u, password:p, clave:p, pass:p, password_hash:h, hash:h, estado:"activo", active:1 });
-          writeUsers([...users.filter(x => x.email !== e), fixed]);
-          return fixed;
-        }
-      }
-
-      if (e.endsWith("@midis.gob.pe") && isTempPassword(p)) {
-        const role = ADMIN_EMAILS.has(e) ? "Administrador" : (u?.role || u?.rol || "Consulta");
-        const nuevo = normalizeUser({ ...(u || {}), email:e, name:u?.name || e, nombre:u?.nombre || e, role, rol:role, estado:"activo", active:1, password:p, clave:p, pass:p, password_hash:h, hash:h });
-        writeUsers([...users.filter(x => x.email !== e), nuevo]);
-        return nuevo;
-      }
-
-      try {
-        const res = await fetch(location.origin + "/api/login", { method:"POST", credentials:"include", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:e,password:p,clave:p,password_hash:h,hash:h}) });
-        let data = null; try { data = await res.json(); } catch {}
-        if (res.ok && (data?.ok || data?.user || data?.usuario)) {
-          const raw = data.user || data.usuario || { email:e, role:data.role || data.rol || "Consulta", estado:"activo" };
-          const su = normalizeUser({ ...raw, password:p, clave:p, pass:p, password_hash:h, hash:h, estado:"activo", active:1 });
-          writeUsers([...readUsers().filter(x => x.email !== su.email), su]);
-          return su;
-        }
-      } catch(err) { console.warn("API login no disponible", err); }
-      return null;
-    }
-    async function login(){
-      const e = email($("loginUser")?.value);
-      const p = clean($("loginPass")?.value);
-      if (!e || !p) { alert("Ingrese usuario y contraseña"); return; }
-      const u = await validate(e,p);
-      if (u) { enterApp(u); return; }
-      console.warn("Login rechazado por rescue", { email:e, version:VERSION });
-      alert("Credenciales inválidas");
-    }
-    function install(){
-      seedAdmins();
-      const btn = $("btnLogin");
-      if (btn) {
-        btn.disabled = false;
-        btn.onclick = function(ev){ ev.preventDefault(); ev.stopImmediatePropagation(); login(); return false; };
-        btn.addEventListener("click", function(ev){ ev.preventDefault(); ev.stopImmediatePropagation(); login(); }, true);
-      }
-      const pass = $("loginPass");
-      if (pass) {
-        pass.addEventListener("keydown", function(ev){ if (ev.key === "Enter") { ev.preventDefault(); ev.stopImmediatePropagation(); login(); } }, true);
-      }
-      window.deeLoginRescueV785 = login;
-      try { doLogin = login; } catch(e){}
-      console.info("DEE MIDIS login rescue activo", VERSION);
-    }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install); else install();
-    setTimeout(install, 800);
-  })();
-  </script>
+  <script src="app.js?v=20260508-v48-login-ejecutivo"></script>
+</body>
+</html>
