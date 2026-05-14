@@ -201,6 +201,24 @@ export async function onRequestPost(context) {
   }
 }
 
+
+function isProtectedBaseAdmin(email) {
+  return String(email || '').trim().toLowerCase() === 'admin@midis.gob.pe';
+}
+
+async function findUserByIdentifier(env, identifier, email = '') {
+  const rawId = String(identifier ?? '').trim();
+  const rawEmail = String(email || '').trim().toLowerCase();
+
+  if (!rawId && !rawEmail) return null;
+
+  return env.DB.prepare(`
+    SELECT id, name, email, role, programa, active
+    FROM users
+    WHERE id = ? OR email = ? OR email = ?
+  `).bind(rawId, rawId.toLowerCase(), rawEmail).first();
+}
+
 export async function onRequestPatch(context) {
   const auth = await requireSession(context, ['Administrador']);
   if (!auth.ok) return auth.response;
@@ -218,11 +236,7 @@ export async function onRequestPatch(context) {
       return badRequest('id_required');
     }
 
-    const current = await context.env.DB.prepare(`
-      SELECT id, name, email, role, programa, active
-      FROM users
-      WHERE id = ?
-    `).bind(id).first();
+    const current = await findUserByIdentifier(context.env, id, body.email);
 
     if (!current) {
       return notFound('user_not_found');
@@ -237,7 +251,7 @@ export async function onRequestPatch(context) {
         UPDATE users
         SET active = ?, updated_at = ?
         WHERE id = ?
-      `).bind(active, now, id).run();
+      `).bind(active, now, current.id).run();
 
       if (!active) {
         await context.env.DB.prepare(`
@@ -261,6 +275,33 @@ export async function onRequestPatch(context) {
       });
     }
 
+    if (action === 'delete') {
+      if (isProtectedBaseAdmin(current.email)) {
+        return forbidden('base_admin_cannot_be_deleted');
+      }
+
+      await context.env.DB.prepare(`
+        UPDATE sessions
+        SET revoked_at = ?
+        WHERE email = ? AND revoked_at IS NULL
+      `).bind(now, current.email).run();
+
+      await context.env.DB.prepare(`
+        DELETE FROM users
+        WHERE id = ?
+      `).bind(current.id).run();
+
+      await writeAudit(context.env, {
+        actor: auth.session.email,
+        action: 'delete_user',
+        detail: current.email,
+        entity_type: 'user',
+        entity_id: String(current.id)
+      });
+
+      return json({ ok: true, deleted: true, email: current.email });
+    }
+
     if (action === 'reset_password') {
       const temporaryPassword = generateTemporaryPassword();
       const passwordHash = await sha256(temporaryPassword);
@@ -269,7 +310,7 @@ export async function onRequestPatch(context) {
         UPDATE users
         SET password_hash = ?, force_password_change = 1, updated_at = ?
         WHERE id = ?
-      `).bind(passwordHash, now, id).run();
+      `).bind(passwordHash, now, current.id).run();
 
       await context.env.DB.prepare(`
         UPDATE sessions
@@ -294,5 +335,48 @@ export async function onRequestPatch(context) {
     return badRequest('invalid_action');
   } catch (error) {
     return serverError('user_patch_failed', String(error?.message || error));
+  }
+}
+
+export async function onRequestDelete(context) {
+  const auth = await requireSession(context, ['Administrador']);
+  if (!auth.ok) return auth.response;
+
+  if (!verifyCsrf(context.request)) {
+    return forbidden('invalid_csrf');
+  }
+
+  try {
+    const body = await readJson(context.request);
+    const id = body.id;
+    const current = await findUserByIdentifier(context.env, id, body.email);
+
+    if (!current) return notFound('user_not_found');
+    if (isProtectedBaseAdmin(current.email)) return forbidden('base_admin_cannot_be_deleted');
+
+    const now = new Date().toISOString();
+
+    await context.env.DB.prepare(`
+      UPDATE sessions
+      SET revoked_at = ?
+      WHERE email = ? AND revoked_at IS NULL
+    `).bind(now, current.email).run();
+
+    await context.env.DB.prepare(`
+      DELETE FROM users
+      WHERE id = ?
+    `).bind(current.id).run();
+
+    await writeAudit(context.env, {
+      actor: auth.session.email,
+      action: 'delete_user',
+      detail: current.email,
+      entity_type: 'user',
+      entity_id: String(current.id)
+    });
+
+    return json({ ok: true, deleted: true, email: current.email });
+  } catch (error) {
+    return serverError('user_delete_failed', String(error?.message || error));
   }
 }
