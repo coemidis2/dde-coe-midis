@@ -137,54 +137,80 @@ export async function onRequestPost(context) {
       return badRequest('invalid_role');
     }
 
-    if (role === 'Registrador' && !programa) {
-      return badRequest('programa_required_for_registrador');
-    }
+    // El rol Registrador general existe y NO requiere programa.
+    // Solo los roles recibidos como Registrador|Programa guardan el programa correspondiente.
 
-    const existing = await context.env.DB
-      .prepare('SELECT id FROM users WHERE email = ?')
-      .bind(email)
-      .first();
-
-    if (existing) {
-      return badRequest('email_already_exists');
-    }
+    const existing = await context.env.DB.prepare(`
+      SELECT id, email
+      FROM users
+      WHERE email = ?
+    `).bind(email).first();
 
     const temporaryPassword = String(body.password || '').trim() || generateTemporaryPassword();
     const passwordHash = await sha256(temporaryPassword);
     const now = new Date().toISOString();
 
-    const insertResult = await context.env.DB.prepare(`
-      INSERT INTO users (
+    let id = existing?.id || null;
+
+    if (existing) {
+      await context.env.DB.prepare(`
+        UPDATE users
+        SET
+          name = ?,
+          role = ?,
+          programa = ?,
+          password_hash = ?,
+          active = 1,
+          force_password_change = 1,
+          updated_at = ?
+        WHERE id = ?
+      `).bind(
+        name,
+        role,
+        programa,
+        passwordHash,
+        now,
+        existing.id
+      ).run();
+    } else {
+      const insertResult = await context.env.DB.prepare(`
+        INSERT INTO users (
+          name,
+          email,
+          role,
+          programa,
+          password_hash,
+          active,
+          force_password_change,
+          created_at,
+          updated_at,
+          last_login_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
         name,
         email,
         role,
         programa,
-        password_hash,
-        active,
-        force_password_change,
-        created_at,
-        updated_at,
-        last_login_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      name,
-      email,
-      role,
-      programa,
-      passwordHash,
-      1,
-      1,
-      now,
-      now,
-      null
-    ).run();
+        passwordHash,
+        1,
+        1,
+        now,
+        now,
+        null
+      ).run();
 
-    const id = insertResult?.meta?.last_row_id || email;
+      id = insertResult?.meta?.last_row_id || email;
+    }
+
+    await context.env.DB.prepare(`
+      UPDATE sessions
+      SET revoked_at = ?
+      WHERE email = ? AND revoked_at IS NULL
+    `).bind(now, email).run();
 
     await writeAudit(context.env, {
       actor: auth.session.email,
-      action: 'create_user',
+      action: existing ? 'update_user' : 'create_user',
       detail: email,
       entity_type: 'user',
       entity_id: id
