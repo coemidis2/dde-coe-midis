@@ -1,4 +1,4 @@
-// ================= VERSION 80 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 68 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11,7 +11,6 @@ let ubigeoCache = [];
 let ubigeoInicializado = false;
 let adminPanelInicializado = false;
 let adminUsuariosLocales = [];
-let adminUsuariosVista = [];
 let dsEventosInicializados = false;
 const DECRETOS_STORAGE_KEY = 'decretos';
 const ACCIONES_STORAGE_KEY = 'accionesDS';
@@ -74,7 +73,6 @@ function programaSesionNormalizado() {
 
 // ================= USUARIOS LOCALES / LOGIN UNIFICADO =================
 const USUARIOS_STORAGE_KEY = 'usuarios';
-const USUARIOS_ELIMINADOS_KEY = 'usuariosEliminados';
 const SESSION_STORAGE_KEY = 'sessionUser';
 
 function normalizarEmail(email) {
@@ -107,11 +105,10 @@ function normalizarUsuario(raw) {
   const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || normalizarTexto(estadoRaw) === 'ACTIVO' || normalizarTexto(estadoRaw) === 'ACTIVE';
 
   return {
-    id: raw.id ?? raw.user_id ?? raw.userId ?? email,
     nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
     name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
     email,
-    password: String(raw.password ?? raw.clave ?? raw.pass ?? raw.temporaryPassword ?? raw.claveTemporal ?? ''),
+    password: String(raw.password ?? raw.clave ?? raw.pass ?? ''),
     rol,
     role: rol,
     programa,
@@ -120,37 +117,9 @@ function normalizarUsuario(raw) {
   };
 }
 
-
-function cargarUsuariosEliminados() {
-  try {
-    const lista = JSON.parse(localStorage.getItem(USUARIOS_ELIMINADOS_KEY) || '[]');
-    return new Set((Array.isArray(lista) ? lista : []).map(normalizarEmail).filter(Boolean));
-  } catch {
-    return new Set();
-  }
-}
-
-function marcarUsuarioEliminado(email) {
-  const eliminados = cargarUsuariosEliminados();
-  const limpio = normalizarEmail(email);
-  if (limpio) eliminados.add(limpio);
-  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
-}
-
-function usuarioEstaEliminado(email) {
-  return cargarUsuariosEliminados().has(normalizarEmail(email));
-}
-
-function quitarMarcaUsuarioEliminado(email) {
-  const eliminados = cargarUsuariosEliminados();
-  eliminados.delete(normalizarEmail(email));
-  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
-}
-
 function cargarUsuariosLocales() {
   const fuentes = [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema'];
   const mapa = new Map();
-  const eliminados = cargarUsuariosEliminados();
 
   fuentes.forEach(key => {
     try {
@@ -158,7 +127,7 @@ function cargarUsuariosLocales() {
       if (!Array.isArray(lista)) return;
       lista.forEach(item => {
         const u = normalizarUsuario(item);
-        if (u && !eliminados.has(u.email)) mapa.set(u.email, u);
+        if (u) mapa.set(u.email, u);
       });
     } catch (e) {
       console.warn('No se pudo leer localStorage.' + key, e);
@@ -178,7 +147,6 @@ function guardarUsuariosLocales(lista) {
     const u = normalizarUsuario(item);
     if (!u) return;
     if (normalizarTexto(u.rol) === 'EVALUADOR') return;
-    if (usuarioEstaEliminado(u.email)) return;
     if (vistos.has(u.email)) return;
     vistos.add(u.email);
     depurados.push(u);
@@ -190,7 +158,6 @@ function guardarUsuariosLocales(lista) {
 }
 
 function buscarUsuarioLocalPorEmail(email) {
-  if (usuarioEstaEliminado(email)) return null;
   const usuarios = cargarUsuariosLocales();
   return usuarios.find(u => u.email === normalizarEmail(email)) || null;
 }
@@ -605,7 +572,6 @@ function initAdminPanel() {
 
     if (e.target.dataset.adminToggleUser) toggleUsuarioAdmin(e.target.dataset.adminToggleUser);
     if (e.target.dataset.adminResetUser) resetClaveUsuarioAdmin(e.target.dataset.adminResetUser);
-    if (e.target.dataset.adminDeleteUser) eliminarUsuarioAdmin(e.target.dataset.adminDeleteUser);
     if (e.target.dataset.auditCopy) copiarTexto(e.target.dataset.auditCopy);
   });
 
@@ -673,12 +639,7 @@ async function cargarUsuariosAdmin() {
     usuarios = [...mapa.values()];
   }
 
-  usuarios = usuarios
-    .map(u => normalizarUsuario(u) || u)
-    .filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR')
-    .filter(u => !usuarioEstaEliminado(u.email));
-
-  adminUsuariosVista = usuarios;
+  usuarios = usuarios.filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR');
 
   const filtro = normalizarTexto($('adminBuscarUsuario')?.value || '');
   const filtrados = usuarios.filter(u => {
@@ -714,12 +675,6 @@ async function cargarUsuariosAdmin() {
                   data-admin-reset-user="${escapeHtmlAttr(email)}">
             Reset clave
           </button>
-          <button type="button"
-                  class="btn btn-sm btn-outline-danger"
-                  ${normalizarEmail(email) === 'admin@midis.gob.pe' ? 'disabled title="Usuario base protegido"' : ''}
-                  data-admin-delete-user="${escapeHtmlAttr(email)}">
-            Eliminar
-          </button>
         </td>
       </tr>
     `;
@@ -741,10 +696,12 @@ async function crearUsuarioAdmin() {
   const clave = generarClaveTemporal();
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
 
-  quitarMarcaUsuarioEliminado(email);
-  let usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
+  const usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
+  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
+  lista.push(usuario);
+  guardarUsuariosLocales(lista);
 
-  const res = await api('/users', 'POST', {
+  await api('/users', 'POST', {
     name: usuario.name,
     nombre: usuario.nombre,
     email: usuario.email,
@@ -756,122 +713,30 @@ async function crearUsuarioAdmin() {
     active: usuario.active
   });
 
-  if (res.ok && res.data?.user) {
-    const remoto = normalizarUsuario({ ...res.data.user, password: res.data.temporaryPassword || clave });
-    if (remoto) usuario = remoto;
-    if (res.data.temporaryPassword && $('adminGeneratedPassword')) $('adminGeneratedPassword').value = res.data.temporaryPassword;
-  } else if (res.data?.error || res.data?.message) {
-    console.warn('No se confirmó usuario en backend; se mantiene copia local para login:', res.data);
-  }
-
-  // Guardado local canónico. Esto evita que el usuario recién creado quede solo
-  // como fila visual del panel y no pueda autenticarse en el mismo navegador.
-  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
-  lista.push(usuario);
-  guardarUsuariosLocales(lista);
-
-  // También se limpia cualquier copia antigua con diferente estructura.
-  ['users', 'userList', 'usuariosSistema'].forEach(key => {
-    try {
-      const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      if (!Array.isArray(arr)) return;
-      const filtrada = arr.filter(x => normalizarEmail(x?.email || x?.correo || x?.usuario) !== usuario.email);
-      filtrada.push(usuario);
-      localStorage.setItem(key, JSON.stringify(filtrada));
-    } catch {}
-  });
-
   await cargarUsuariosAdmin();
 }
 
-async function toggleUsuarioAdmin(email) {
-  const limpio = normalizarEmail(email);
-  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
-  if (!vista) return;
-
-  const activoActual = String(vista.estado || '').toLowerCase() === 'activo' || Number(vista.active) === 1;
-  const nuevoActivo = !activoActual;
-
-  await api('/users', 'PATCH', {
-    action: 'status',
-    id: vista.id || limpio,
-    email: limpio,
-    active: nuevoActivo
-  });
-
+function toggleUsuarioAdmin(email) {
   const lista = cargarUsuariosLocales();
-  let usuario = lista.find(u => String(u.email) === limpio);
-  if (!usuario) {
-    usuario = normalizarUsuario({ ...vista, email: limpio, password: '' });
-    if (usuario) lista.push(usuario);
-  }
+  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
   if (usuario) {
-    usuario.estado = nuevoActivo ? 'activo' : 'inactivo';
-    usuario.active = nuevoActivo ? 1 : 0;
+    usuario.estado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    usuario.active = usuario.estado === 'activo' ? 1 : 0;
     guardarUsuariosLocales(lista);
   }
   cargarUsuariosAdmin();
 }
 
-async function resetClaveUsuarioAdmin(email) {
-  const limpio = normalizarEmail(email);
-  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
-  const claveLocal = generarClaveTemporal();
-
-  const res = await api('/users', 'PATCH', {
-    action: 'reset_password',
-    id: vista?.id || limpio,
-    email: limpio
-  });
-
-  const clave = (res.ok && res.data?.temporaryPassword) ? res.data.temporaryPassword : claveLocal;
+function resetClaveUsuarioAdmin(email) {
+  const clave = generarClaveTemporal();
   const lista = cargarUsuariosLocales();
-  let usuario = lista.find(u => String(u.email) === limpio);
-  if (!usuario && vista) {
-    usuario = normalizarUsuario({ ...vista, email: limpio, password: clave });
-    if (usuario) lista.push(usuario);
-  }
+  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
   if (usuario) {
     usuario.password = clave;
-    usuario.estado = 'activo';
-    usuario.active = 1;
     guardarUsuariosLocales(lista);
   }
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
-  alert(`Clave temporal generada para ${limpio}`);
-  cargarUsuariosAdmin();
-}
-
-async function eliminarUsuarioAdmin(email) {
-  const limpio = normalizarEmail(email);
-  if (!limpio) return;
-  if (limpio === 'admin@midis.gob.pe') {
-    alert('El usuario Administrador DEMO no se puede eliminar. Es el usuario base del sistema.');
-    return;
-  }
-  if (!confirm(`¿Eliminar el usuario ${limpio}? Ya no podrá iniciar sesión.`)) return;
-
-  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
-
-  await api('/users', 'PATCH', {
-    action: 'delete',
-    id: vista?.id || limpio,
-    email: limpio
-  });
-
-  marcarUsuarioEliminado(limpio);
-  const lista = cargarUsuariosLocales().filter(u => normalizarEmail(u.email) !== limpio);
-  localStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(lista));
-  adminUsuariosLocales = lista;
-
-  if (normalizarEmail(state.session?.email) === limpio) {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
-    state.session = null;
-    showLogin();
-    return;
-  }
-
-  await cargarUsuariosAdmin();
+  alert(`Clave temporal generada para ${email}`);
 }
 
 function generarClaveTemporal() {
@@ -10379,26 +10244,40 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const distritos = new Map();
     const departamentosConteo = new Map();
     const departamentosDS = new Map();
+    const distritosMapa = new Map();
 
-    decretosMapa.forEach((d) => {
-      territorio(d).forEach(t => {
-        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
-        if (!dep || !prov || !dist) return;
-        departamentos.add(dep); provincias.add(prov);
-        departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
-        if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
-        departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
-        if (!distritos.has(dist)) {
-          distritos.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
-        }
-        const item = distritos.get(dist);
-        item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
-        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
-        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+    const acumularTerritorio = (lista, destino, incluirMetricas) => {
+      lista.forEach((d) => {
+        territorio(d).forEach(t => {
+          const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
+          if (!dep || !prov || !dist) return;
+
+          if (incluirMetricas) {
+            departamentos.add(dep);
+            provincias.add(prov);
+            departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
+            if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
+            departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+          }
+
+          if (!destino.has(dist)) {
+            destino.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
+          }
+          const item = destino.get(dist);
+          item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
+          if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+          if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+        });
       });
-    });
+    };
 
-    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, departamentosConteo, departamentosDS };
+    // KPIs y tablas siempre respetan solo el filtro global, no los checkboxes de la leyenda.
+    acumularTerritorio(decretosFiltrados, distritos, true);
+
+    // El mapa sí respeta los checkboxes de la leyenda por Decreto Supremo.
+    acumularTerritorio(decretosMapa, distritosMapa, false);
+
+    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, distritosMapa, departamentosConteo, departamentosDS };
   }
 
   function asegurarEstructuraDashboard() {
@@ -10520,7 +10399,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!cont) return;
     const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
     const cards = [
-      [`Declaratorias de Estado de Emergencia`, datos.decretosMapa.length, `Filtro: ${estadoFiltroTexto()}`],
+      [`Declaratorias de Estado de Emergencia`, datos.decretosFiltrados.length, `Filtro: ${estadoFiltroTexto()}`],
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
@@ -10529,89 +10408,48 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
 
-  function resetearContenedorMapaSiCorresponde() {
-    let el = q('mapaDS');
-    if (!el || !window.L) return null;
-
-    // Este archivo conserva cierres anteriores del Dashboard. Si alguno de ellos
-    // inicializó Leaflet sobre #mapaDS, Leaflet deja _leaflet_id y capas antiguas
-    // que no obedecen la leyenda final. Se reemplaza SOLO el nodo del mapa para
-    // recuperar control limpio sin tocar tablas, KPIs ni estilos.
-    const necesitaReset = !mapaDashboard && (el._leaflet_id || el.classList.contains('leaflet-container'));
-    if (necesitaReset) {
-      const limpio = el.cloneNode(false);
-      limpio.id = 'mapaDS';
-      limpio.className = el.className.replace(/\bleaflet-[^\s]+/g, '').trim();
-      limpio.removeAttribute('tabindex');
-      limpio.removeAttribute('style');
-      limpio.style.height = el.style.height || '430px';
-      limpio.style.minHeight = el.style.minHeight || '430px';
-      el.replaceWith(limpio);
-      el = limpio;
-    }
-    return el;
-  }
-
   function renderMapa(datos) {
-    let el = resetearContenedorMapaSiCorresponde();
+    const el = q('mapaDS');
     if (!el || !window.L) return;
-
-    if (!mapaDashboard || !document.body.contains(mapaDashboard.getContainer())) {
+    if (!mapaDashboard) {
       mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: '&copy; OpenStreetMap',
-        crossOrigin: true
-      }).addTo(mapaDashboard);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(mapaDashboard);
       capaDashboard = L.layerGroup().addTo(mapaDashboard);
     }
-
-    if (!capaDashboard) capaDashboard = L.layerGroup().addTo(mapaDashboard);
     capaDashboard.clearLayers();
-
-    // Blindaje adicional: cualquier círculo/marcador dejado por cierres anteriores
-    // se retira; se conserva únicamente la capa base y la capa controlada aquí.
-    mapaDashboard.eachLayer(layer => {
-      if (layer !== capaDashboard && !(layer instanceof L.TileLayer)) {
-        try { mapaDashboard.removeLayer(layer); } catch (_) {}
-      }
-    });
-    if (!mapaDashboard.hasLayer(capaDashboard)) capaDashboard.addTo(mapaDashboard);
-
     const bounds = [];
-    [...datos.distritos.values()].forEach(item => {
+    [...(datos.distritosMapa || new Map()).values()].forEach(item => {
       if (!item.latlng) return;
       const ds = [...item.decretos.values()];
-      if (!ds.length) return;
-      const repetido = ds.length > 1;
-      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
-      const marker = L.circleMarker(item.latlng, {
-        radius: repetido ? 7 : 5,
-        color: repetido ? '#000' : color,
-        weight: repetido ? 3 : 1,
-        fillColor: color,
-        fillOpacity: repetido ? .95 : .78,
-        opacity: 1,
-        pane: 'markerPane'
+      const total = ds.length;
+      ds.forEach((decreto, idx) => {
+        const color = decreto.color || '#0d6efd';
+        let latlng = item.latlng;
+        if (total > 1) {
+          const angulo = (Math.PI * 2 * idx) / total;
+          const radio = 0.018;
+          latlng = [item.latlng[0] + Math.sin(angulo) * radio, item.latlng[1] + Math.cos(angulo) * radio];
+        }
+        const marker = L.circleMarker(latlng, {
+          radius: total > 1 ? 5 : 6,
+          color,
+          weight: 1,
+          fillColor: color,
+          fillOpacity: 0.82
+        });
+        marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto: ${escapeHtml(decreto.nombre)}`, { sticky:true });
+        marker.addTo(capaDashboard);
+        bounds.push(latlng);
       });
-      marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto(s): ${escapeHtml(ds.map(d => d.nombre).join(', '))}`, { sticky:true });
-      marker.addTo(capaDashboard);
-      bounds.push(item.latlng);
     });
-
-    if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 });
-    else mapaDashboard.setView([-9.19, -75.02], 5);
-
-    setTimeout(() => {
-      try { mapaDashboard.invalidateSize(true); } catch (_) {}
-      try { if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 }); } catch (_) {}
-    }, 180);
+    if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20] });
+    setTimeout(() => mapaDashboard?.invalidateSize(), 180);
   }
 
   function renderResumen(datos) {
     const tbody = document.querySelector('#tablaResumenDS tbody');
     if (!tbody) return;
-    const filas = datos.decretosMapa.map(d => {
+    const filas = datos.decretosFiltrados.map(d => {
       const terr = territorio(d);
       const deps = new Set(terr.map(keyDep).filter(Boolean));
       const provs = new Set(terr.map(keyProv).filter(Boolean));
@@ -10678,70 +10516,32 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function prepararExportacion(tipo) {
     const oldFiltro = filtroDashboard;
-    const oldSeleccion = new Set(dsVisibles);
-    const oldInicializada = seleccionLeyendaInicializada;
-    const oldClave = ultimaClaveFiltroLeyenda;
     const chosen = q('dashboardExportFiltro')?.value || 'actual';
-
-    if (chosen !== 'actual') {
-      filtroDashboard = chosen;
-      q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-      dsVisibles.clear();
-      seleccionLeyendaInicializada = false;
-      ultimaClaveFiltroLeyenda = '';
-      renderDashboardEjecutivoV661(true);
-    } else {
-      // Exporta exactamente lo que el usuario tiene marcado en la leyenda.
-      renderDashboardEjecutivoV661(false);
-    }
-
-    await new Promise(r => setTimeout(r, 700));
-    await exportarDashboard(tipo);
-
-    filtroDashboard = oldFiltro;
+    if (chosen !== 'actual') filtroDashboard = chosen;
     q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
-    dsVisibles = new Set(oldSeleccion);
-    seleccionLeyendaInicializada = oldInicializada;
-    ultimaClaveFiltroLeyenda = oldClave;
-    renderDashboardEjecutivoV661(false);
+    renderDashboardEjecutivoV661(true);
+    await new Promise(r => setTimeout(r, 600));
+    await exportarDashboard(tipo);
+    if (chosen !== 'actual') {
+      filtroDashboard = oldFiltro;
+      q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+      renderDashboardEjecutivoV661(true);
+    }
   }
 
   async function exportarDashboard(tipo) {
     const area = q('dashboardExportArea') || q('tabDashboard');
     if (!area) return alert('No se encontró el Dashboard para exportar.');
-    const oldAreaWidth = area.style.width;
-    const oldAreaMaxWidth = area.style.maxWidth;
-    const oldOverflow = document.body.style.overflow;
-    let titulo = null;
     try {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-
-      area.style.width = '1400px';
-      area.style.maxWidth = '1400px';
-      document.body.style.overflow = 'visible';
-      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
-      await new Promise(r => setTimeout(r, 350));
-
-      titulo = document.createElement('div');
+      mapaDashboard?.invalidateSize();
+      const titulo = document.createElement('div');
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} · DS seleccionados: ${dsVisibles.size}</div>`;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())}</div>`;
       area.insertBefore(titulo, area.firstChild);
-      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
-      await new Promise(r => setTimeout(r, 250));
-
-      const canvas = await window.html2canvas(area, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: area.scrollWidth,
-        height: area.scrollHeight,
-        windowWidth: Math.max(1400, area.scrollWidth),
-        windowHeight: Math.max(900, area.scrollHeight)
-      });
+      const canvas = await window.html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
       titulo.remove();
-      titulo = null;
       const fileBase = `Dashboard_DEE_${estadoFiltroTexto().replace(/\s+/g,'_')}_${hoy()}`;
       if (tipo === 'jpg') {
         const a = document.createElement('a');
@@ -10772,12 +10572,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     } catch (e) {
       console.error('Error exportando Dashboard:', e);
       alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
-    } finally {
-      if (titulo) { try { titulo.remove(); } catch (_) {} }
-      area.style.width = oldAreaWidth;
-      area.style.maxWidth = oldAreaMaxWidth;
-      document.body.style.overflow = oldOverflow;
-      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
     }
   }
 
@@ -10818,915 +10612,5 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   setTimeout(() => { instalarEventos(); renderDashboardEjecutivoV661(true); }, 2500);
   window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoV661;
   window.renderDashboardEjecutivoV661 = renderDashboardEjecutivoV661;
-  console.info('DEE MIDIS cierre aplicado:', VERSION);
-})();
-
-// ================= CORRECCIÓN QUIRÚRGICA FINAL DASHBOARD v68.2 =================
-// Alcance exclusivo: checkbox Leyenda por DS ↔ puntos del mapa y exportación JPG/PDF.
-// No modifica login, roles, tablas de registro, RDS, usuarios ni estilos generales.
-(function dashboardCheckboxExportV682(){
-  const VERSION = 'v68.2 checkbox-export-map-final';
-  const COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
-  const PERU_CENTER = [-9.19, -75.02];
-  const PERU_ZOOM = 5;
-
-  let filtroEstado = 'vigentes';
-  let seleccionInicializada = false;
-  let claveSeleccion = '';
-  let dsSeleccionados = new Set();
-  let finalMap = null;
-  let installed = false;
-
-  const q = (id) => document.getElementById(id);
-  const norm = (v) => (typeof normalizarTexto === 'function' ? normalizarTexto(v) : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase());
-  const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
-  const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
-
-  function fechaLocal(v){
-    if (!v) return null;
-    const s = String(v).slice(0,10);
-    const d = new Date(`${s}T00:00:00`);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  function hoy0(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
-  function vigente(d){
-    const h = hoy0();
-    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
-    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
-    if (!fin) return false;
-    if (ini && h < ini) return false;
-    return h <= fin;
-  }
-  function aplicaFiltro(d){
-    const v = vigente(d);
-    if (filtroEstado === 'vigentes') return v;
-    if (filtroEstado === 'no_vigentes') return !v;
-    return true;
-  }
-  function filtroTexto(){ return filtroEstado === 'vigentes' ? 'Vigentes' : (filtroEstado === 'no_vigentes' ? 'No vigentes' : 'Todos'); }
-  function territorio(d){ return Array.isArray(d?.territorio) ? d.territorio : []; }
-  function ubigeo(t){ return (typeof getUbigeoValue === 'function' ? getUbigeoValue(t) : (t?.ubigeo || t?.UBIGEO || t?.codigo || '')); }
-  function latVal(t){ return (typeof getLatitud === 'function' ? getLatitud(t) : (t?.latitud ?? t?.lat ?? '')); }
-  function lngVal(t){ return (typeof getLongitud === 'function' ? getLongitud(t) : (t?.longitud ?? t?.lng ?? t?.lon ?? '')); }
-  function keyDep(t){ return norm(t?.departamento || ''); }
-  function keyProv(t){ return `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}`; }
-  function keyDist(t){ const u = ubigeo(t); return u ? String(u) : `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}|${norm(t?.distrito || '')}`; }
-  function latLng(t){
-    const lat = Number(String(latVal(t)).replace(',', '.'));
-    const lng = Number(String(lngVal(t)).replace(',', '.'));
-    return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
-  }
-  function dsNombre(d){
-    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
-    return txt.replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
-  }
-  function decretosBase(){
-    const arr = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
-    return (Array.isArray(arr) ? arr : []).map(x => typeof normalizarDecreto === 'function' ? normalizarDecreto(x) : x).filter(Boolean);
-  }
-  function diasRestantes(d){ const fin = fechaLocal(d?.fecha_fin || d?.fechaFin); return fin ? Math.max(0, Math.ceil((fin - hoy0()) / 86400000)) : 0; }
-  function avanceTiempo(d){
-    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio), fin = fechaLocal(d?.fecha_fin || d?.fechaFin), h = hoy0();
-    if (!ini || !fin || fin <= ini) return 0;
-    return Math.round((Math.min(Math.max(h - ini, 0), fin - ini) / (fin - ini)) * 100);
-  }
-  function semaforo(d){
-    if (!vigente(d)) return { texto:'No vigente', clase:'dee-badge-gris', orden:4 };
-    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio), fin = fechaLocal(d?.fecha_fin || d?.fechaFin), h = hoy0();
-    if (!ini || !fin || fin <= ini) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
-    const pct = (Math.max(fin - h, 0) / (fin - ini)) * 100;
-    if (pct < 20) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
-    if (pct <= 50) return { texto:'Ámbar', clase:'dee-badge-ambar', orden:2 };
-    return { texto:'Verde', clase:'dee-badge-verde', orden:3 };
-  }
-
-  function asegurarEstructura(){
-    const tab = q('tabDashboard');
-    const cardBody = tab?.querySelector('.card-body');
-    if (!cardBody) return;
-    cardBody.id = 'dashboardExportArea';
-
-    const header = cardBody.querySelector('.d-flex.justify-content-between.align-items-center.mb-3');
-    if (header && !q('dashboardControlGlobal')) {
-      const panel = document.createElement('div');
-      panel.id = 'dashboardControlGlobal';
-      panel.className = 'dee-dashboard-toolbar border rounded bg-light p-2';
-      panel.innerHTML = `
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <label class="form-label mb-0 small">Filtro global</label>
-          <select id="dashboardFiltroEstado" class="form-select form-select-sm">
-            <option value="vigentes">Vigentes</option>
-            <option value="no_vigentes">No vigentes</option>
-            <option value="todos">Todos</option>
-          </select>
-          <span id="dashboardFiltroActivo" class="badge text-bg-primary">Vigentes</span>
-        </div>
-        <div class="dee-export-panel">
-          <label class="form-label mb-0 small">Exportar</label>
-          <select id="dashboardExportFiltro" class="form-select form-select-sm">
-            <option value="actual">Filtro actual</option>
-            <option value="vigentes">Vigentes</option>
-            <option value="no_vigentes">No vigentes</option>
-            <option value="todos">Todos</option>
-          </select>
-          <button id="btnExportDashboardJPG" type="button" class="btn btn-sm btn-outline-primary">Exportar Dashboard JPG</button>
-          <button id="btnExportDashboardPDF" type="button" class="btn btn-sm btn-primary">Exportar Dashboard PDF</button>
-        </div>`;
-      header.insertAdjacentElement('afterend', panel);
-    }
-
-    const mapa = q('mapaDS');
-    if (mapa && !q('dashboardMapaLeyenda')) {
-      const parent = mapa.parentElement;
-      const shell = document.createElement('div');
-      shell.className = 'dee-map-shell';
-      const leyenda = document.createElement('div');
-      leyenda.id = 'dashboardMapaLeyenda';
-      leyenda.className = 'dee-map-legend';
-      parent.insertBefore(shell, mapa);
-      shell.appendChild(mapa);
-      shell.appendChild(leyenda);
-    }
-
-    const thResumen = document.querySelector('#tablaResumenDS thead tr');
-    if (thResumen) {
-      // v77.1: normaliza la cabecera para evitar columnas duplicadas Peligro/Tipo.
-      // La versión anterior insertaba Peligro/Tipo aunque ya existían en el HTML,
-      // desfasando los encabezados respecto de las celdas del cuerpo.
-      thResumen.innerHTML = `
-        <th>Decreto Supremo</th>
-        <th data-dash-peligro-col>Peligro</th>
-        <th data-dash-tipo-col>Tipo</th>
-        <th>Fecha inicio</th>
-        <th>Fecha fin</th>
-        <th>Días restantes</th>
-        <th>Avance %</th>
-        <th>Semáforo</th>
-        <th>N.° departamentos</th>
-        <th>N.° provincias</th>
-        <th>N.° distritos</th>`;
-    }
-
-    const thDeptos = document.querySelector('#tablaDeptos thead tr');
-    if (thDeptos) {
-      const ths = thDeptos.querySelectorAll('th');
-      if (ths[1]) ths[1].textContent = 'Número de distritos';
-      if (!thDeptos.querySelector('[data-dash-ds-col]')) thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
-    }
-    const thReps = document.querySelector('#tablaRepetidos thead tr');
-    if (thReps && !thReps.querySelector('[data-dash-ds-col]')) thReps.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
-
-    const resumen = q('tablaResumenDS');
-    if (resumen && !q('dashboardSemaforoLeyenda')) {
-      resumen.closest('.table-responsive')?.insertAdjacentHTML('afterend', `
-        <div id="dashboardSemaforoLeyenda" class="dee-semaforo-legend">
-          <span class="dee-semaforo-item"><span class="badge dee-badge-verde">Verde</span> Plazo suficiente de vigencia</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ámbar</span> Próxima a vencer</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crítica o pocos días restantes</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-gris">Gris</span> Declaratoria no vigente</span>
-        </div>`);
-    }
-  }
-
-  function datosDashboard(){
-    const filtrados = decretosBase().filter(aplicaFiltro).map((d, i) => ({ ...d, __dashColor: COLORS[i % COLORS.length] }));
-    const ids = new Set(filtrados.map(d => String(d.id)));
-    const clave = `${filtroEstado}|${[...ids].sort().join(',')}`;
-    if (!seleccionInicializada || claveSeleccion !== clave) {
-      dsSeleccionados = new Set(ids);
-      seleccionInicializada = true;
-      claveSeleccion = clave;
-    } else {
-      dsSeleccionados = new Set([...dsSeleccionados].filter(id => ids.has(id)));
-    }
-
-    const decretosMapa = filtrados.filter(d => dsSeleccionados.has(String(d.id)));
-    const departamentos = new Set(), provincias = new Set(), distritos = new Map(), deptoConteo = new Map(), deptoDS = new Map();
-
-    decretosMapa.forEach(d => {
-      territorio(d).forEach(t => {
-        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
-        if (!dep || !prov || !dist) return;
-        departamentos.add(dep); provincias.add(prov);
-        deptoConteo.set(dep, (deptoConteo.get(dep) || 0) + 1);
-        if (!deptoDS.has(dep)) deptoDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
-        deptoDS.get(dep).decretos.set(String(d.id), { nombre: dsNombre(d), estado: vigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
-        if (!distritos.has(dist)) distritos.set(dist, { key: dist, departamento: t.departamento || '', provincia: t.provincia || '', distrito: t.distrito || '', latlng: latLng(t), decretos: new Map(), fechasInicio: [], fechasFin: [] });
-        const item = distritos.get(dist);
-        item.decretos.set(String(d.id), { nombre: dsNombre(d), estado: vigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
-        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
-        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
-      });
-    });
-
-    return { filtrados, decretosMapa, departamentos, provincias, distritos, deptoConteo, deptoDS };
-  }
-
-  function renderLeyenda(datos){
-    const cont = q('dashboardMapaLeyenda');
-    if (!cont) return;
-    cont.innerHTML = `
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <strong>Leyenda por DS</strong>
-        <span class="badge text-bg-light">${esc(filtroTexto())}</span>
-      </div>
-      <div class="d-flex gap-2 mb-2">
-        <button id="btnDashSeleccionarTodos" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
-        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
-      </div>
-      ${datos.filtrados.map(d => {
-        const id = String(d.id);
-        const count = new Set(territorio(d).map(keyDist).filter(Boolean)).size;
-        return `<label class="dee-legend-row">
-          <input type="checkbox" class="form-check-input dash-ds-check" value="${escAttr(id)}" ${dsSeleccionados.has(id) ? 'checked' : ''}>
-          <span class="dee-color-dot" style="background:${escAttr(d.__dashColor)}"></span>
-          <span><strong>${esc(dsNombre(d))}</strong><br><span class="text-muted">${vigente(d) ? 'Vigente' : 'No vigente'} · ${count} distrito(s)</span></span>
-        </label>`;
-      }).join('') || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
-  }
-
-  function recrearMapaLimpio(){
-    let el = q('mapaDS');
-    if (!el || !window.L) return null;
-    try { if (finalMap) finalMap.remove(); } catch(_) {}
-    finalMap = null;
-
-    const limpio = document.createElement('div');
-    limpio.id = 'mapaDS';
-    limpio.className = (el.className || '').split(/\s+/).filter(c => !c.startsWith('leaflet-')).join(' ');
-    limpio.style.height = el.style.height || '430px';
-    limpio.style.minHeight = el.style.minHeight || '430px';
-    limpio.style.width = '100%';
-    limpio.dataset.owner = VERSION;
-    el.replaceWith(limpio);
-    return limpio;
-  }
-
-  function renderMapa(datos){
-    const el = recrearMapaLimpio();
-    if (!el || !window.L) return;
-    finalMap = L.map(el, { scrollWheelZoom: true, zoomControl: true }).setView(PERU_CENTER, PERU_ZOOM);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap', crossOrigin: true }).addTo(finalMap);
-    const capa = L.layerGroup().addTo(finalMap);
-    const bounds = [];
-
-    [...datos.distritos.values()].forEach(item => {
-      if (!item.latlng) return;
-      const ds = [...item.decretos.values()];
-      if (!ds.length) return;
-      const repetido = ds.length > 1;
-      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
-      const marker = L.circleMarker(item.latlng, {
-        radius: repetido ? 7 : 5,
-        color: repetido ? '#000000' : color,
-        weight: repetido ? 3 : 1,
-        fillColor: color,
-        fillOpacity: repetido ? 0.95 : 0.80,
-        opacity: 1
-      });
-      marker.bindTooltip(`<strong>${esc(item.distrito)}</strong><br>Provincia: ${esc(item.provincia)}<br>Departamento: ${esc(item.departamento)}<br>Decreto(s): ${esc(ds.map(x => x.nombre).join(', '))}`, { sticky: true });
-      marker.addTo(capa);
-      bounds.push(item.latlng);
-    });
-
-    if (bounds.length) finalMap.fitBounds(bounds, { padding:[20,20], maxZoom:7 });
-    else finalMap.setView(PERU_CENTER, PERU_ZOOM);
-    setTimeout(() => {
-      try { finalMap.invalidateSize(true); } catch(_) {}
-      try { if (bounds.length) finalMap.fitBounds(bounds, { padding:[20,20], maxZoom:7 }); } catch(_) {}
-    }, 180);
-  }
-
-  function renderKPIs(datos){
-    const cont = q('dashboardMetricas'); if (!cont) return;
-    const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
-    const cards = [
-      ['Declaratorias de Estado de Emergencia', datos.decretosMapa.length, `Filtro: ${filtroTexto()}`],
-      ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
-      ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
-      ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
-      ['Distritos en más de una declaratoria', repetidos, `Según filtro ${filtroTexto().toLowerCase()}`]
-    ];
-    cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${esc(value)}</div><div class="dee-kpi-label">${esc(label)}</div><div class="dee-kpi-note">${esc(note)}</div></div></div>`).join('');
-  }
-
-  function renderResumen(datos){
-    const tbody = document.querySelector('#tablaResumenDS tbody'); if (!tbody) return;
-    const filas = datos.decretosMapa.map(d => {
-      const terr = territorio(d);
-      return { d, deps:new Set(terr.map(keyDep).filter(Boolean)), provs:new Set(terr.map(keyProv).filter(Boolean)), dists:new Set(terr.map(keyDist).filter(Boolean)), sem:semaforo(d) };
-    }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantes(a.d) - diasRestantes(b.d));
-    tbody.innerHTML = filas.length ? filas.map(x => `<tr><td>${esc(dsNombre(x.d))}</td><td>${esc(x.d.peligro||'')}</td><td>${esc(x.d.tipo_peligro||x.d.tipoPeligro||'')}</td><td>${esc(x.d.fecha_inicio||'')}</td><td>${esc(x.d.fecha_fin||'')}</td><td>${diasRestantes(x.d)}</td><td>${avanceTiempo(x.d)}%</td><td><span class="badge ${x.sem.clase}">${esc(x.sem.texto)}</span></td><td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td></tr>`).join('') : `<tr><td colspan="11" class="dee-dashboard-empty">No hay declaratorias para el filtro seleccionado.</td></tr>`;
-  }
-
-  function renderDepartamentos(datos){
-    const tbody = document.querySelector('#tablaDeptos tbody'); if (!tbody) return;
-    const filas = [...datos.deptoDS.entries()].map(([key, obj]) => ({ departamento: obj.nombre || key, count: datos.deptoConteo.get(key) || 0, decretos: [...obj.decretos.values()] })).sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento,'es'));
-    tbody.innerHTML = filas.length ? filas.map(f => {
-      const dsTexto = f.decretos.map(d=>d.nombre).join(', ');
-      return `<tr><td>${esc(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${f.decretos.some(d=>d.estado==='Vigente') ? 'text-bg-success' : 'text-bg-secondary'}">${esc(filtroTexto())}</span></td><td>${esc(`(${f.decretos.length}) ${dsTexto}`)}</td></tr>`;
-    }).join('') : `<tr><td colspan="4" class="dee-dashboard-empty">No hay departamentos para el filtro seleccionado.</td></tr>`;
-  }
-
-  function renderRepetidos(datos){
-    const tbody = document.querySelector('#tablaRepetidos tbody'); if (!tbody) return;
-    const filas = [...datos.distritos.values()].map(x => ({ ...x, veces:x.decretos.size, ds:[...x.decretos.values()] })).filter(x => x.veces > 1).sort((a,b) => b.veces - a.veces || String(a.departamento).localeCompare(String(b.departamento),'es'));
-    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${esc(f.departamento)}</td><td>${esc(f.provincia)}</td><td>${esc(f.distrito)}</td><td>${f.veces}</td><td>${esc(f.fechasInicio.sort()[0]||'')}</td><td>${esc(f.fechasFin.sort().slice(-1)[0]||'')}</td><td>${esc(f.ds.map(d=>d.nombre).join(', '))}</td></tr>`).join('') : `<tr><td colspan="7" class="dee-dashboard-empty">No hay distritos repetidos para el filtro seleccionado.</td></tr>`;
-  }
-
-  function actualizarTextos(){
-    const sel = q('dashboardFiltroEstado'); if (sel) sel.value = filtroEstado;
-    const badge = q('dashboardFiltroActivo'); if (badge) badge.textContent = filtroTexto();
-    const subtitulo = q('tabDashboard')?.querySelector('h4.text-primary + .text-muted');
-    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia · Filtro aplicado: ${filtroTexto()} · Control territorial sin duplicidades`;
-    const tituloRep = [...(q('tabDashboard')?.querySelectorAll('h5.text-primary') || [])].find(h => norm(h.textContent).includes('DISTRITOS REPETIDOS'));
-    if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${filtroTexto().toLowerCase()}`;
-  }
-
-  function render(reset = false){
-    try {
-      asegurarEstructura();
-      if (reset) { seleccionInicializada = false; claveSeleccion = ''; dsSeleccionados.clear(); }
-      const datos = datosDashboard();
-      actualizarTextos();
-      renderLeyenda(datos);
-      renderKPIs(datos);
-      renderMapa(datos);
-      renderResumen(datos);
-      renderDepartamentos(datos);
-      renderRepetidos(datos);
-    } catch(e) { console.error('Error Dashboard v68.2:', e); }
-  }
-
-  function loadScript(src){
-    return new Promise((resolve, reject) => {
-      if (src.includes('html2canvas') && window.html2canvas) return resolve();
-      if (src.includes('jspdf') && (window.jspdf?.jsPDF || window.jsPDF)) return resolve();
-      const s = document.createElement('script'); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
-    });
-  }
-
-  async function exportar(tipo){
-    const area = q('dashboardExportArea') || q('tabDashboard');
-    if (!area) return alert('No se encontró el Dashboard para exportar.');
-    const oldFiltro = filtroEstado;
-    const oldSeleccion = new Set(dsSeleccionados);
-    const oldInit = seleccionInicializada;
-    const oldClave = claveSeleccion;
-    const chosen = q('dashboardExportFiltro')?.value || 'actual';
-
-    if (chosen !== 'actual') {
-      filtroEstado = chosen;
-      seleccionInicializada = false;
-      claveSeleccion = '';
-      dsSeleccionados.clear();
-    }
-    render(chosen !== 'actual');
-    await new Promise(r => setTimeout(r, 700));
-
-    const oldW = area.style.width, oldMax = area.style.maxWidth, oldOverflow = document.body.style.overflow;
-    let titulo = null;
-    try {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-      if (tipo === 'pdf') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-      area.style.width = '1400px';
-      area.style.maxWidth = '1400px';
-      document.body.style.overflow = 'visible';
-      render(false);
-      await new Promise(r => setTimeout(r, 900));
-      try { finalMap?.invalidateSize(true); } catch(_) {}
-
-      titulo = document.createElement('div');
-      titulo.id = 'dashboardExportHeaderTmp';
-      titulo.className = 'border-bottom mb-2 pb-2';
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${dsSeleccionados.size}</div>`;
-      area.insertBefore(titulo, area.firstChild);
-      await new Promise(r => setTimeout(r, 300));
-
-      const canvas = await window.html2canvas(area, { scale:2, useCORS:true, allowTaint:false, backgroundColor:'#ffffff', logging:false, width:area.scrollWidth, height:area.scrollHeight, windowWidth:Math.max(1400, area.scrollWidth), windowHeight:Math.max(900, area.scrollHeight) });
-      titulo.remove(); titulo = null;
-      const base = `Dashboard_DEE_${filtroTexto().replace(/\s+/g,'_')}_${typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10)}`;
-      if (tipo === 'jpg') {
-        const a = document.createElement('a');
-        a.download = `${base}.jpg`;
-        a.href = canvas.toDataURL('image/jpeg', 0.95);
-        a.click();
-      } else {
-        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-        if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
-        const pdf = new jsPDF('l','mm','a4');
-        const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
-        const imgW = pageW - 16, imgH = canvas.height * imgW / canvas.width;
-        const img = canvas.toDataURL('image/jpeg', 0.95);
-        let pos = 8, left = imgH;
-        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-        left -= (pageH - 16);
-        while (left > 0) { pdf.addPage('l'); pos = left - imgH + 8; pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH); left -= (pageH - 16); }
-        pdf.save(`${base}.pdf`);
-      }
-    } catch(e) {
-      console.error('Error exportando Dashboard v68.2:', e);
-      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
-    } finally {
-      if (titulo) { try { titulo.remove(); } catch(_) {} }
-      area.style.width = oldW;
-      area.style.maxWidth = oldMax;
-      document.body.style.overflow = oldOverflow;
-      filtroEstado = oldFiltro;
-      dsSeleccionados = new Set(oldSeleccion);
-      seleccionInicializada = oldInit;
-      claveSeleccion = oldClave;
-      render(false);
-    }
-  }
-
-  function instalarEventos(){
-    if (installed) return;
-    installed = true;
-
-    document.addEventListener('change', (e) => {
-      const t = e.target;
-      if (!t) return;
-      if (t.id === 'dashboardFiltroEstado') {
-        e.preventDefault(); e.stopImmediatePropagation();
-        filtroEstado = t.value || 'vigentes';
-        seleccionInicializada = false; claveSeleccion = ''; dsSeleccionados.clear();
-        render(true);
-        return;
-      }
-      if (t.classList?.contains('dash-ds-check')) {
-        e.preventDefault(); e.stopImmediatePropagation();
-        const id = String(t.value || '');
-        if (t.checked) dsSeleccionados.add(id); else dsSeleccionados.delete(id);
-        seleccionInicializada = true;
-        render(false);
-      }
-    }, true);
-
-    document.addEventListener('click', (e) => {
-      const t = e.target;
-      if (!t) return;
-      if (t.id === 'btnDashSeleccionarTodos') {
-        e.preventDefault(); e.stopImmediatePropagation();
-        datosDashboard().filtrados.forEach(d => dsSeleccionados.add(String(d.id)));
-        seleccionInicializada = true;
-        render(false);
-        return;
-      }
-      if (t.id === 'btnDashQuitarSeleccion') {
-        e.preventDefault(); e.stopImmediatePropagation();
-        dsSeleccionados.clear(); seleccionInicializada = true;
-        render(false);
-        return;
-      }
-      if (t.id === 'btnExportDashboardJPG') {
-        e.preventDefault(); e.stopImmediatePropagation(); exportar('jpg'); return;
-      }
-      if (t.id === 'btnExportDashboardPDF') {
-        e.preventDefault(); e.stopImmediatePropagation(); exportar('pdf'); return;
-      }
-      if (t.id === 'btnActualizarDashboard') {
-        e.preventDefault(); e.stopImmediatePropagation(); render(true); return;
-      }
-    }, true);
-
-    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', () => setTimeout(() => render(false), 350));
-    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(() => render(false), 450));
-  }
-
-  window.renderDashboardEjecutivoDEE = function(reset){ return render(Boolean(reset)); };
-  window.renderDashboardEjecutivoV661 = window.renderDashboardEjecutivoDEE;
-  window.__dashboardCheckboxExportV682 = { render, exportar, version: VERSION };
-
-  document.addEventListener('DOMContentLoaded', () => { instalarEventos(); setTimeout(() => render(true), 1800); });
-  setTimeout(() => { instalarEventos(); render(true); }, 4200);
-  console.info('DEE MIDIS cierre aplicado:', VERSION);
-})();
-
-// ================= CORRECCIÓN QUIRÚRGICA DASHBOARD v74.1 =================
-// Alcance exclusivo: alineación de puntos Leaflet en el mapa del Dashboard y exportación JPG/PDF.
-// No modifica login, usuarios, roles, RDS, tablas ni estructura general.
-(function dashboardPuntosCalzadosV741(){
-  const VERSION = 'v74.1 puntos-calzados-mapa-export';
-  const PERU_CENTER = [-9.19, -75.02];
-  const PERU_ZOOM = 5;
-  const COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
-
-  let fixedMap = null;
-  let fixedRenderer = null;
-  let installing = false;
-  let renderTimer = null;
-  let exportando = false;
-
-  const $id = (id) => document.getElementById(id);
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  const norm = (v) => (typeof normalizarTexto === 'function'
-    ? normalizarTexto(v)
-    : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase());
-  const esc = (v) => (typeof escapeHtml === 'function'
-    ? escapeHtml(v)
-    : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
-
-  function fechaLocal(v) {
-    if (!v) return null;
-    const d = new Date(`${String(v).slice(0, 10)}T00:00:00`);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  function hoy0() {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
-
-  function esVigente(d) {
-    const h = hoy0();
-    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
-    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
-    if (!fin) return false;
-    if (ini && h < ini) return false;
-    return h <= fin;
-  }
-
-  function filtroActual() {
-    return $id('dashboardFiltroEstado')?.value || 'vigentes';
-  }
-
-  function filtroTexto() {
-    const f = filtroActual();
-    if (f === 'vigentes') return 'Vigentes';
-    if (f === 'no_vigentes') return 'No vigentes';
-    return 'Todos';
-  }
-
-  function aplicaFiltroEstado(d) {
-    const v = esVigente(d);
-    const f = filtroActual();
-    if (f === 'vigentes') return v;
-    if (f === 'no_vigentes') return !v;
-    return true;
-  }
-
-  function getUbigeo(t) { return typeof getUbigeoValue === 'function' ? getUbigeoValue(t) : (t?.ubigeo || t?.UBIGEO || t?.codigo || t?.cod_ubigeo || ''); }
-  function getLat(t) { return typeof getLatitud === 'function' ? getLatitud(t) : (t?.latitud ?? t?.lat ?? ''); }
-  function getLng(t) { return typeof getLongitud === 'function' ? getLongitud(t) : (t?.longitud ?? t?.lng ?? t?.lon ?? ''); }
-  function territorio(d) { return Array.isArray(d?.territorio) ? d.territorio : []; }
-  function keyDist(t) {
-    const ub = getUbigeo(t);
-    return ub ? String(ub) : `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}|${norm(t?.distrito || '')}`;
-  }
-  function latLng(t) {
-    const lat = Number(String(getLat(t)).replace(',', '.'));
-    const lng = Number(String(getLng(t)).replace(',', '.'));
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
-    return [lat, lng];
-  }
-  function nombreDS(d) {
-    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
-    return String(txt).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
-  }
-  function decretosBase() {
-    const base = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
-    return (Array.isArray(base) ? base : []).map(d => typeof normalizarDecreto === 'function' ? normalizarDecreto(d) : d).filter(Boolean);
-  }
-
-  function coloresDesdeLeyenda() {
-    const mapa = new Map();
-    document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach((chk, i) => {
-      const dot = chk.closest('.dee-legend-row')?.querySelector('.dee-color-dot');
-      mapa.set(String(chk.value), dot?.style?.background || COLORS[i % COLORS.length]);
-    });
-    return mapa;
-  }
-
-  function idsSeleccionadosActuales() {
-    const checks = [...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')];
-    if (checks.length) return new Set(checks.filter(chk => chk.checked).map(chk => String(chk.value)));
-    return new Set(decretosBase().filter(aplicaFiltroEstado).map(d => String(d.id)));
-  }
-
-  function distritosSeleccionados() {
-    const ids = idsSeleccionadosActuales();
-    const colorLeyenda = coloresDesdeLeyenda();
-    const decretos = decretosBase().filter(aplicaFiltroEstado).map((d, i) => ({
-      ...d,
-      __dashColor: colorLeyenda.get(String(d.id)) || COLORS[i % COLORS.length]
-    })).filter(d => ids.has(String(d.id)));
-
-    const distritos = new Map();
-    decretos.forEach(d => {
-      territorio(d).forEach(t => {
-        const k = keyDist(t);
-        const ll = latLng(t);
-        if (!k || !ll) return;
-        if (!distritos.has(k)) {
-          distritos.set(k, {
-            key: k,
-            departamento: t.departamento || '',
-            provincia: t.provincia || '',
-            distrito: t.distrito || '',
-            latlng: ll,
-            decretos: new Map()
-          });
-        }
-        distritos.get(k).decretos.set(String(d.id), {
-          id: String(d.id),
-          nombre: nombreDS(d),
-          color: d.__dashColor
-        });
-      });
-    });
-    return [...distritos.values()];
-  }
-
-  function limpiarLeafletDiv(el) {
-    if (!el) return null;
-    try { if (fixedMap) fixedMap.remove(); } catch (_) {}
-    fixedMap = null;
-    fixedRenderer = null;
-
-    const limpio = document.createElement('div');
-    limpio.id = 'mapaDS';
-    limpio.className = (el.className || 'border rounded bg-white')
-      .split(/\s+/)
-      .filter(c => c && !c.startsWith('leaflet-'))
-      .join(' ') || 'border rounded bg-white';
-    limpio.style.height = el.style.height || '520px';
-    limpio.style.minHeight = el.style.minHeight || '520px';
-    limpio.style.width = '100%';
-    limpio.style.position = 'relative';
-    limpio.style.overflow = 'hidden';
-    limpio.dataset.owner = VERSION;
-    el.replaceWith(limpio);
-    return limpio;
-  }
-
-  async function esperarContenedorVisible(el, intentos = 12) {
-    for (let i = 0; i < intentos; i++) {
-      const r = el?.getBoundingClientRect?.();
-      if (r && r.width > 120 && r.height > 120 && el.offsetParent !== null) return true;
-      await sleep(100);
-    }
-    return false;
-  }
-
-  async function renderMapaCalzado() {
-    if (!window.L) return;
-    let el = $id('mapaDS');
-    if (!el) return;
-
-    const visible = await esperarContenedorVisible(el);
-    if (!visible) return;
-
-    el = limpiarLeafletDiv(el);
-    if (!el) return;
-
-    await sleep(40);
-
-    const puntos = distritosSeleccionados();
-    fixedRenderer = L.canvas({ padding: 0.5 });
-    fixedMap = L.map(el, {
-      preferCanvas: true,
-      renderer: fixedRenderer,
-      scrollWheelZoom: true,
-      zoomControl: true,
-      attributionControl: true,
-      zoomSnap: 0.25
-    }).setView(PERU_CENTER, PERU_ZOOM);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      crossOrigin: 'anonymous',
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(fixedMap);
-
-    await new Promise(resolve => fixedMap.whenReady(resolve));
-    fixedMap.invalidateSize(true);
-    await sleep(80);
-
-    const grupo = L.featureGroup().addTo(fixedMap);
-    puntos.forEach(item => {
-      const ds = [...item.decretos.values()];
-      if (!ds.length) return;
-      const repetido = ds.length > 1;
-      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
-      L.circleMarker(item.latlng, {
-        renderer: fixedRenderer,
-        radius: repetido ? 7 : 5,
-        color: repetido ? '#000000' : color,
-        weight: repetido ? 3 : 1,
-        fillColor: color,
-        fillOpacity: repetido ? 0.95 : 0.82,
-        opacity: 1,
-        interactive: true
-      })
-      .bindTooltip(`<strong>${esc(item.distrito)}</strong><br>Provincia: ${esc(item.provincia)}<br>Departamento: ${esc(item.departamento)}<br>Decreto(s): ${esc(ds.map(x => x.nombre).join(', '))}`, { sticky: true })
-      .addTo(grupo);
-    });
-
-    // v75: mantener el mapa centrado en el Perú, tanto en pantalla como durante exportación.
-    // No se usa fitBounds porque desplaza la vista hacia el bloque de puntos y deja el mapa visualmente corrido.
-    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
-
-    await sleep(120);
-    fixedMap.invalidateSize(true);
-    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
-  }
-
-  function programarMapaCalzado(delay = 180) {
-    clearTimeout(renderTimer);
-    renderTimer = setTimeout(() => {
-      renderMapaCalzado().catch(e => console.error('Error ajustando puntos Dashboard v74.1:', e));
-    }, delay);
-  }
-
-  async function renderDashboardSeguro(reset = false) {
-    if (typeof window.__dashboardCheckboxExportV682?.render === 'function') {
-      window.__dashboardCheckboxExportV682.render(Boolean(reset));
-    } else if (typeof window.renderDashboardEjecutivoV661 === 'function') {
-      window.renderDashboardEjecutivoV661(Boolean(reset));
-    }
-    await sleep(250);
-    await renderMapaCalzado();
-  }
-
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      if (src.includes('html2canvas') && window.html2canvas) return resolve();
-      if (src.includes('jspdf') && (window.jspdf?.jsPDF || window.jsPDF)) return resolve();
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-
-  async function esperarTilesMapa(timeout = 2200) {
-    const inicio = Date.now();
-    while (Date.now() - inicio < timeout) {
-      const tiles = [...document.querySelectorAll('#mapaDS img.leaflet-tile')];
-      if (tiles.length && tiles.every(img => img.complete && img.naturalWidth > 0)) return;
-      await sleep(100);
-    }
-  }
-
-  async function exportarDashboardCalzado(tipo) {
-    if (exportando) return;
-    exportando = true;
-    const area = $id('dashboardExportArea') || $id('tabDashboard');
-    if (!area) { exportando = false; return alert('No se encontró el Dashboard para exportar.'); }
-
-    const oldFiltro = $id('dashboardFiltroEstado')?.value || 'vigentes';
-    const oldChecks = new Map([...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')].map(chk => [String(chk.value), chk.checked]));
-    const chosen = $id('dashboardExportFiltro')?.value || 'actual';
-    const oldW = area.style.width;
-    const oldMax = area.style.maxWidth;
-    const oldOverflow = document.body.style.overflow;
-    let titulo = null;
-
-    try {
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-      if (tipo === 'pdf') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-
-      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) {
-        $id('dashboardFiltroEstado').value = chosen;
-        await renderDashboardSeguro(true);
-      }
-
-      area.style.width = '1400px';
-      area.style.maxWidth = '1400px';
-      document.body.style.overflow = 'visible';
-      await sleep(150);
-      await renderDashboardSeguro(false);
-      await esperarTilesMapa();
-      await sleep(350);
-
-      titulo = document.createElement('div');
-      titulo.id = 'dashboardExportHeaderTmp';
-      titulo.className = 'border-bottom mb-2 pb-2';
-      const totalChecks = document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check:checked').length;
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${totalChecks}</div>`;
-      area.insertBefore(titulo, area.firstChild);
-      await sleep(200);
-
-      const canvas = await window.html2canvas(area, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: area.scrollWidth,
-        height: area.scrollHeight,
-        windowWidth: Math.max(1400, area.scrollWidth),
-        windowHeight: Math.max(900, area.scrollHeight)
-      });
-
-      const base = `Dashboard_DEE_${filtroTexto().replace(/\s+/g, '_')}_${typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10)}`;
-      if (tipo === 'jpg') {
-        const a = document.createElement('a');
-        a.download = `${base}.jpg`;
-        a.href = canvas.toDataURL('image/jpeg', 0.95);
-        a.click();
-      } else {
-        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-        if (!jsPDF) throw new Error('jsPDF no disponible');
-        const pdf = new jsPDF('l', 'mm', 'a4');
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const imgW = pageW - 16;
-        const imgH = canvas.height * imgW / canvas.width;
-        const img = canvas.toDataURL('image/jpeg', 0.95);
-        let pos = 8;
-        let left = imgH;
-        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-        left -= (pageH - 16);
-        while (left > 0) {
-          pdf.addPage('l');
-          pos = left - imgH + 8;
-          pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-          left -= (pageH - 16);
-        }
-        pdf.save(`${base}.pdf`);
-      }
-    } catch (e) {
-      console.error('Error exportando Dashboard v74.1:', e);
-      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
-    } finally {
-      if (titulo) { try { titulo.remove(); } catch (_) {} }
-      area.style.width = oldW;
-      area.style.maxWidth = oldMax;
-      document.body.style.overflow = oldOverflow;
-      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) $id('dashboardFiltroEstado').value = oldFiltro;
-      await renderDashboardSeguro(chosen !== 'actual');
-      if (oldChecks.size) {
-        document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach(chk => {
-          if (oldChecks.has(String(chk.value))) chk.checked = oldChecks.get(String(chk.value));
-        });
-        await renderMapaCalzado();
-      }
-      exportando = false;
-    }
-  }
-
-  function instalar() {
-    if (installing) return;
-    installing = true;
-
-    // Evita que cierres antiguos del Dashboard vuelvan a dibujar un mapa desfasado al abrir la pestaña.
-    document.addEventListener('shown.bs.tab', (e) => {
-      const target = e.target?.getAttribute?.('data-bs-target');
-      if (target === '#tabDashboard') {
-        e.stopImmediatePropagation();
-        setTimeout(() => renderDashboardSeguro(false), 220);
-      }
-    }, true);
-
-    window.addEventListener('click', (e) => {
-      const t = e.target;
-      if (!t) return;
-
-      if (t.id === 'btnExportDashboardJPG') {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        exportarDashboardCalzado('jpg');
-        return;
-      }
-      if (t.id === 'btnExportDashboardPDF') {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        exportarDashboardCalzado('pdf');
-        return;
-      }
-      if (t.id === 'btnActualizarDashboard') {
-        programarMapaCalzado(550);
-        return;
-      }
-      if (t.closest?.('[data-bs-target="#tabDashboard"]')) {
-        programarMapaCalzado(900);
-      }
-      if (t.id === 'btnDashSeleccionarTodos' || t.id === 'btnDashQuitarSeleccion') {
-        programarMapaCalzado(350);
-      }
-    }, true);
-
-    window.addEventListener('change', (e) => {
-      const t = e.target;
-      if (!t) return;
-      if (t.id === 'dashboardFiltroEstado' || t.classList?.contains('dash-ds-check')) {
-        programarMapaCalzado(450);
-      }
-    }, true);
-
-    window.renderDashboardEjecutivoDEE = async function(reset) { await renderDashboardSeguro(Boolean(reset)); };
-    window.renderDashboardEjecutivoV661 = window.renderDashboardEjecutivoDEE;
-    window.__dashboardPuntosCalzadosV741 = { renderMapaCalzado, renderDashboardSeguro, exportarDashboardCalzado, version: VERSION };
-
-    setTimeout(() => renderDashboardSeguro(false), 5200);
-  }
-
-  document.addEventListener('DOMContentLoaded', instalar);
-  setTimeout(instalar, 1000);
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
