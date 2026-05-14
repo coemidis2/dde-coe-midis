@@ -408,7 +408,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v61: reducción visual 30% =================
+    /* ================= AJUSTE LOGIN v60: reducción visual 30% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
     .login-wrap {
       padding: 20px;
@@ -637,7 +637,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v62: reducción visual 50% =================
+    /* ================= AJUSTE LOGIN v60: reducción visual 50% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
     .login-wrap {
       padding: 14px;
@@ -896,7 +896,7 @@
     }
 
 
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v62 =================
+    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v60 =================
        Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
        No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
     :root {
@@ -1145,7 +1145,7 @@
     }
 
 
-    /* ================= AJUSTE LOGIN v62: aumento visual 10% =================
+    /* ================= AJUSTE LOGIN v60: aumento visual 10% =================
        Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
        autenticación, usuarios, roles ni navegación posterior al login. */
     #loginView.login-wrap {
@@ -1478,7 +1478,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 62 · 11/05/2026 - 16:30 hrs· MIDIS © 2026
+            VERSION 60 · 11/05/2026 - 14:00 hrs· MIDIS © 2026
           </div>
         </div>
       </section>
@@ -1982,32 +1982,7 @@
               <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="preFechaRegistroRDS" class="form-control" readonly></div>
             </div></div>
             <h5 class="text-primary">Acciones registradas por Programas Nacionales</h5>
-            <div id="filtrosPreAprobarAcciones" class="border rounded bg-light p-2 mb-2">
-              <div class="row g-2 align-items-end">
-                <div class="col-md-3">
-                  <label class="form-label">Programa</label>
-                  <select id="filtroPrePrograma" class="form-select form-select-sm">
-                    <option value="">Todos</option>
-                    <option>CUNA MÁS</option>
-                    <option>PAE</option>
-                    <option>JUNTOS</option>
-                    <option>CONTIGO</option>
-                    <option>PENSIÓN 65</option>
-                    <option>FONCODES</option>
-                    <option>PAIS</option>
-                  </select>
-                </div>
-                <div class="col-md-2"><label class="form-label">Departamento</label><input id="filtroPreDepartamento" class="form-control form-control-sm" placeholder="Departamento"></div>
-                <div class="col-md-2"><label class="form-label">Provincia</label><input id="filtroPreProvincia" class="form-control form-control-sm" placeholder="Provincia"></div>
-                <div class="col-md-2"><label class="form-label">Distrito</label><input id="filtroPreDistrito" class="form-control form-control-sm" placeholder="Distrito"></div>
-                <div class="col-md-3 d-flex gap-2">
-                  <button id="btnBuscarPreAprobar" type="button" class="btn btn-sm btn-primary">Buscar</button>
-                  <button id="btnLimpiarPreAprobar" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button>
-                </div>
-              </div>
-              <div id="contadorPreAprobarAcciones" class="text-muted small mt-2">Mostrando 0 registro(s)</div>
-            </div>
-            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
             <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnSalirPreAprobar" type="button" class="btn btn-outline-secondary">Salir</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
           </div></div>
         </div>
