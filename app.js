@@ -1,4 +1,4 @@
-// ================= VERSION 60 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 80 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11,6 +11,7 @@ let ubigeoCache = [];
 let ubigeoInicializado = false;
 let adminPanelInicializado = false;
 let adminUsuariosLocales = [];
+let adminUsuariosVista = [];
 let dsEventosInicializados = false;
 const DECRETOS_STORAGE_KEY = 'decretos';
 const ACCIONES_STORAGE_KEY = 'accionesDS';
@@ -73,6 +74,7 @@ function programaSesionNormalizado() {
 
 // ================= USUARIOS LOCALES / LOGIN UNIFICADO =================
 const USUARIOS_STORAGE_KEY = 'usuarios';
+const USUARIOS_ELIMINADOS_KEY = 'usuariosEliminados';
 const SESSION_STORAGE_KEY = 'sessionUser';
 
 function normalizarEmail(email) {
@@ -105,10 +107,11 @@ function normalizarUsuario(raw) {
   const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || normalizarTexto(estadoRaw) === 'ACTIVO' || normalizarTexto(estadoRaw) === 'ACTIVE';
 
   return {
+    id: raw.id ?? raw.user_id ?? raw.userId ?? email,
     nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
     name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
     email,
-    password: String(raw.password ?? raw.clave ?? raw.pass ?? ''),
+    password: String(raw.password ?? raw.clave ?? raw.pass ?? raw.temporaryPassword ?? raw.claveTemporal ?? ''),
     rol,
     role: rol,
     programa,
@@ -117,9 +120,37 @@ function normalizarUsuario(raw) {
   };
 }
 
+
+function cargarUsuariosEliminados() {
+  try {
+    const lista = JSON.parse(localStorage.getItem(USUARIOS_ELIMINADOS_KEY) || '[]');
+    return new Set((Array.isArray(lista) ? lista : []).map(normalizarEmail).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
+function marcarUsuarioEliminado(email) {
+  const eliminados = cargarUsuariosEliminados();
+  const limpio = normalizarEmail(email);
+  if (limpio) eliminados.add(limpio);
+  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
+}
+
+function usuarioEstaEliminado(email) {
+  return cargarUsuariosEliminados().has(normalizarEmail(email));
+}
+
+function quitarMarcaUsuarioEliminado(email) {
+  const eliminados = cargarUsuariosEliminados();
+  eliminados.delete(normalizarEmail(email));
+  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
+}
+
 function cargarUsuariosLocales() {
   const fuentes = [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema'];
   const mapa = new Map();
+  const eliminados = cargarUsuariosEliminados();
 
   fuentes.forEach(key => {
     try {
@@ -127,7 +158,7 @@ function cargarUsuariosLocales() {
       if (!Array.isArray(lista)) return;
       lista.forEach(item => {
         const u = normalizarUsuario(item);
-        if (u) mapa.set(u.email, u);
+        if (u && !eliminados.has(u.email)) mapa.set(u.email, u);
       });
     } catch (e) {
       console.warn('No se pudo leer localStorage.' + key, e);
@@ -147,6 +178,7 @@ function guardarUsuariosLocales(lista) {
     const u = normalizarUsuario(item);
     if (!u) return;
     if (normalizarTexto(u.rol) === 'EVALUADOR') return;
+    if (usuarioEstaEliminado(u.email)) return;
     if (vistos.has(u.email)) return;
     vistos.add(u.email);
     depurados.push(u);
@@ -158,6 +190,7 @@ function guardarUsuariosLocales(lista) {
 }
 
 function buscarUsuarioLocalPorEmail(email) {
+  if (usuarioEstaEliminado(email)) return null;
   const usuarios = cargarUsuariosLocales();
   return usuarios.find(u => u.email === normalizarEmail(email)) || null;
 }
@@ -572,6 +605,7 @@ function initAdminPanel() {
 
     if (e.target.dataset.adminToggleUser) toggleUsuarioAdmin(e.target.dataset.adminToggleUser);
     if (e.target.dataset.adminResetUser) resetClaveUsuarioAdmin(e.target.dataset.adminResetUser);
+    if (e.target.dataset.adminDeleteUser) eliminarUsuarioAdmin(e.target.dataset.adminDeleteUser);
     if (e.target.dataset.auditCopy) copiarTexto(e.target.dataset.auditCopy);
   });
 
@@ -639,7 +673,12 @@ async function cargarUsuariosAdmin() {
     usuarios = [...mapa.values()];
   }
 
-  usuarios = usuarios.filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR');
+  usuarios = usuarios
+    .map(u => normalizarUsuario(u) || u)
+    .filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR')
+    .filter(u => !usuarioEstaEliminado(u.email));
+
+  adminUsuariosVista = usuarios;
 
   const filtro = normalizarTexto($('adminBuscarUsuario')?.value || '');
   const filtrados = usuarios.filter(u => {
@@ -675,6 +714,12 @@ async function cargarUsuariosAdmin() {
                   data-admin-reset-user="${escapeHtmlAttr(email)}">
             Reset clave
           </button>
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  ${normalizarEmail(email) === 'admin@midis.gob.pe' ? 'disabled title="Usuario base protegido"' : ''}
+                  data-admin-delete-user="${escapeHtmlAttr(email)}">
+            Eliminar
+          </button>
         </td>
       </tr>
     `;
@@ -696,12 +741,10 @@ async function crearUsuarioAdmin() {
   const clave = generarClaveTemporal();
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
 
-  const usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
-  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
-  lista.push(usuario);
-  guardarUsuariosLocales(lista);
+  quitarMarcaUsuarioEliminado(email);
+  let usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
 
-  await api('/users', 'POST', {
+  const res = await api('/users', 'POST', {
     name: usuario.name,
     nombre: usuario.nombre,
     email: usuario.email,
@@ -713,30 +756,122 @@ async function crearUsuarioAdmin() {
     active: usuario.active
   });
 
+  if (res.ok && res.data?.user) {
+    const remoto = normalizarUsuario({ ...res.data.user, password: res.data.temporaryPassword || clave });
+    if (remoto) usuario = remoto;
+    if (res.data.temporaryPassword && $('adminGeneratedPassword')) $('adminGeneratedPassword').value = res.data.temporaryPassword;
+  } else if (res.data?.error || res.data?.message) {
+    console.warn('No se confirmó usuario en backend; se mantiene copia local para login:', res.data);
+  }
+
+  // Guardado local canónico. Esto evita que el usuario recién creado quede solo
+  // como fila visual del panel y no pueda autenticarse en el mismo navegador.
+  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
+  lista.push(usuario);
+  guardarUsuariosLocales(lista);
+
+  // También se limpia cualquier copia antigua con diferente estructura.
+  ['users', 'userList', 'usuariosSistema'].forEach(key => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(arr)) return;
+      const filtrada = arr.filter(x => normalizarEmail(x?.email || x?.correo || x?.usuario) !== usuario.email);
+      filtrada.push(usuario);
+      localStorage.setItem(key, JSON.stringify(filtrada));
+    } catch {}
+  });
+
   await cargarUsuariosAdmin();
 }
 
-function toggleUsuarioAdmin(email) {
+async function toggleUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+  if (!vista) return;
+
+  const activoActual = String(vista.estado || '').toLowerCase() === 'activo' || Number(vista.active) === 1;
+  const nuevoActivo = !activoActual;
+
+  await api('/users', 'PATCH', {
+    action: 'status',
+    id: vista.id || limpio,
+    email: limpio,
+    active: nuevoActivo
+  });
+
   const lista = cargarUsuariosLocales();
-  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  let usuario = lista.find(u => String(u.email) === limpio);
+  if (!usuario) {
+    usuario = normalizarUsuario({ ...vista, email: limpio, password: '' });
+    if (usuario) lista.push(usuario);
+  }
   if (usuario) {
-    usuario.estado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
-    usuario.active = usuario.estado === 'activo' ? 1 : 0;
+    usuario.estado = nuevoActivo ? 'activo' : 'inactivo';
+    usuario.active = nuevoActivo ? 1 : 0;
     guardarUsuariosLocales(lista);
   }
   cargarUsuariosAdmin();
 }
 
-function resetClaveUsuarioAdmin(email) {
-  const clave = generarClaveTemporal();
+async function resetClaveUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+  const claveLocal = generarClaveTemporal();
+
+  const res = await api('/users', 'PATCH', {
+    action: 'reset_password',
+    id: vista?.id || limpio,
+    email: limpio
+  });
+
+  const clave = (res.ok && res.data?.temporaryPassword) ? res.data.temporaryPassword : claveLocal;
   const lista = cargarUsuariosLocales();
-  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  let usuario = lista.find(u => String(u.email) === limpio);
+  if (!usuario && vista) {
+    usuario = normalizarUsuario({ ...vista, email: limpio, password: clave });
+    if (usuario) lista.push(usuario);
+  }
   if (usuario) {
     usuario.password = clave;
+    usuario.estado = 'activo';
+    usuario.active = 1;
     guardarUsuariosLocales(lista);
   }
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
-  alert(`Clave temporal generada para ${email}`);
+  alert(`Clave temporal generada para ${limpio}`);
+  cargarUsuariosAdmin();
+}
+
+async function eliminarUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  if (!limpio) return;
+  if (limpio === 'admin@midis.gob.pe') {
+    alert('El usuario Administrador DEMO no se puede eliminar. Es el usuario base del sistema.');
+    return;
+  }
+  if (!confirm(`¿Eliminar el usuario ${limpio}? Ya no podrá iniciar sesión.`)) return;
+
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+
+  await api('/users', 'PATCH', {
+    action: 'delete',
+    id: vista?.id || limpio,
+    email: limpio
+  });
+
+  marcarUsuarioEliminado(limpio);
+  const lista = cargarUsuariosLocales().filter(u => normalizarEmail(u.email) !== limpio);
+  localStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(lista));
+  adminUsuariosLocales = lista;
+
+  if (normalizarEmail(state.session?.email) === limpio) {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    state.session = null;
+    showLogin();
+    return;
+  }
+
+  await cargarUsuariosAdmin();
 }
 
 function generarClaveTemporal() {
@@ -8768,4 +8903,2830 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     setInterval(reemplazarBotonGuardarGrupal, 2000);
     console.info('DEE MIDIS cierre aplicado:', VERSION);
   });
+})();
+
+// ================= CIERRE FINAL v61.1 - D1 + DUPLICADOS + DS LIMPIO =================
+// Alcance: corrige DS repetido, lectura desde D1, UPDATE/INSERT lógico, control territorial y exportación sin romper módulos previos.
+(function(){
+  'use strict';
+  const VERSION = 'v61.1 D1 duplicados exportacion territorio';
+  const STORAGE = (typeof ACCIONES_STORAGE_KEY !== 'undefined') ? ACCIONES_STORAGE_KEY : 'accionesDS';
+  const $x = (id) => document.getElementById(id);
+  const txt = (v) => String(v ?? '').trim();
+  const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ');
+
+  function fechaISO(v){
+    const s = txt(v);
+    if (!s) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+    return s.slice(0,10);
+  }
+
+  function limpiarNumeroDSRaw(raw, anio){
+    let s = txt(raw);
+    if (!s && anio) return '';
+    s = s.replace(/^D\.?\s*S\.?\s*N?[°.º]?\s*/i, '');
+    s = s.replace(/^DS[-\s]*/i, '');
+    s = s.replace(/\s+/g, '');
+    s = s.replace(/-PCM-(\d{4})-PCM$/i, '-PCM');
+    s = s.replace(/-(\d{4})-PCM-\1-PCM$/i, '-$1-PCM');
+    s = s.replace(/-PCM-(\d{4})$/i, '-PCM');
+    if (/^\d{1,4}$/.test(s) && anio) s = `${s.padStart(3,'0')}-${anio}-PCM`;
+    if (/^\d{1,4}-\d{4}$/i.test(s)) s = `${s}-PCM`;
+    s = s.replace(/^0+(\d{3,})/, '$1');
+    if (/^\d{1,2}-\d{4}-PCM$/i.test(s)) s = s.replace(/^(\d{1,2})-/, m => m.replace('-', '').padStart(3,'0') + '-');
+    return s;
+  }
+
+  function numeroDSCanonico(d){
+    const anio = txt(d?.anio || d?.año || '');
+    const candidatos = [d?.numero, d?.ds, d?.numeroDS, d?.decreto_supremo, d?.codigo_registro, d?.codigoRegistro, d?.id];
+    for (const c of candidatos) {
+      const limpio = limpiarNumeroDSRaw(c, anio);
+      if (/^\d{3,4}-\d{4}-PCM$/i.test(limpio)) return limpio.toUpperCase();
+    }
+    const n = limpiarNumeroDSRaw(d?.numero || '', anio);
+    return n ? n.toUpperCase() : txt(d?.id || '').toUpperCase();
+  }
+
+  const formatearNumeroDSPrevV611 = window.formatearNumeroDS || (typeof formatearNumeroDS === 'function' ? formatearNumeroDS : null);
+  function formatearNumeroDSV611(d){
+    const n = numeroDSCanonico(d || {});
+    if (n) return `D.S. N°${n}`;
+    if (formatearNumeroDSPrevV611) return String(formatearNumeroDSPrevV611(d)).replace(/-PCM-\d{4}(?:-PCM)?$/i,'-PCM');
+    return 'D.S. N°';
+  }
+  window.formatearNumeroDS = formatearNumeroDSV611;
+  try { formatearNumeroDS = formatearNumeroDSV611; } catch {}
+
+  function programaNorm(v){
+    try { if (typeof normalizarProgramaNombre === 'function') return normalizarProgramaNombre(v); } catch {}
+    const n = norm(v);
+    if (n === 'CUNA MAS' || n === 'CUNAMAS') return 'CUNA MÁS';
+    if (n === 'PENSION 65') return 'PENSIÓN 65';
+    return n;
+  }
+
+  function val(o, ...keys){
+    for (const k of keys) {
+      const v = o?.[k];
+      if (v !== undefined && v !== null && txt(v) !== '') return v;
+    }
+    return '';
+  }
+
+  function reunionBase(v){
+    return norm(String(v || '')
+      .replace(/\s*-\s*\d{1,2}\/\d{1,2}\/\d{2,4}.*$/,'')
+      .replace(/\s*-\s*\d{4}-\d{2}-\d{2}.*$/,''));
+  }
+
+  function claveLogicaAccion(a){
+    return [
+      txt(val(a,'dsId','ds_id')),
+      reunionBase(val(a,'numeroReunion','numero_reunion')),
+      fechaISO(val(a,'fechaReunion','fecha_reunion')),
+      programaNorm(val(a,'programaNacional','programa')),
+      norm(val(a,'departamento')),
+      norm(val(a,'provincia')),
+      norm(val(a,'distrito')),
+      norm(val(a,'tipoAccion','tipo','tipo_accion')),
+      norm(val(a,'codigoAccion','codigo','codigo_accion'))
+    ].join('|');
+  }
+
+  function accionNormalizada(a){
+    const numeroReunion = txt(val(a,'numeroReunion','numero_reunion'));
+    const fechaReunion = txt(val(a,'fechaReunion','fecha_reunion'));
+    const programa = programaNorm(val(a,'programaNacional','programa'));
+    const tipo = txt(val(a,'tipoAccion','tipo','tipo_accion'));
+    const codigo = txt(val(a,'codigoAccion','codigo','codigo_accion'));
+    const unidad = txt(val(a,'unidadMedida','unidad','unidad_medida'));
+    const plazo = val(a,'plazoDias','plazo_dias','plazo');
+    const fechaRegistro = txt(val(a,'fechaRegistro','fecha_registro')) || new Date().toISOString();
+    const usuario = txt(val(a,'usuarioRegistro','usuario_registro','usuario')) || ((typeof state !== 'undefined' ? state.session?.email : '') || '');
+    return {
+      ...a,
+      id: txt(a?.id) || (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+      dsId: txt(val(a,'dsId','ds_id')),
+      ds_id: txt(val(a,'ds_id','dsId')),
+      numeroReunion,
+      numero_reunion: numeroReunion,
+      fechaReunion,
+      fecha_reunion: fechaReunion,
+      programaNacional: programa,
+      programa,
+      tipoAccion: tipo,
+      tipo,
+      codigoAccion: codigo,
+      codigo,
+      unidadMedida: unidad,
+      unidad,
+      metaProgramada: val(a,'metaProgramada','meta_programada') === '' ? 0 : Number(val(a,'metaProgramada','meta_programada')),
+      meta_programada: val(a,'meta_programada','metaProgramada') === '' ? 0 : Number(val(a,'meta_programada','metaProgramada')),
+      plazoDias: plazo === '' ? 0 : Number(plazo),
+      plazo: plazo === '' ? 0 : Number(plazo),
+      plazo_dias: plazo === '' ? 0 : Number(plazo),
+      fechaInicio: txt(val(a,'fechaInicio','fecha_inicio')),
+      fecha_inicio: txt(val(a,'fecha_inicio','fechaInicio')),
+      fechaFinal: txt(val(a,'fechaFinal','fecha_final')),
+      fecha_final: txt(val(a,'fecha_final','fechaFinal')),
+      metaEjecutada: val(a,'metaEjecutada','meta_ejecutada') === '' ? 0 : Number(val(a,'metaEjecutada','meta_ejecutada')),
+      meta_ejecutada: val(a,'meta_ejecutada','metaEjecutada') === '' ? 0 : Number(val(a,'meta_ejecutada','metaEjecutada')),
+      avance: txt(val(a,'avance')).replace('%',''),
+      detalle: txt(val(a,'detalle','accion_registrada','accionRegistrada','accionesEspecificas')),
+      descripcionActividades: txt(val(a,'descripcionActividades','descripcion','observaciones')),
+      descripcion: txt(val(a,'descripcion','descripcionActividades','observaciones')),
+      departamento: txt(val(a,'departamento')),
+      provincia: txt(val(a,'provincia')),
+      distrito: txt(val(a,'distrito')),
+      ubigeo: txt(val(a,'ubigeo')),
+      fechaRegistro,
+      fecha_registro: fechaRegistro,
+      usuarioRegistro: usuario,
+      usuario_registro: usuario,
+      estado: txt(val(a,'estado')) || 'Registrado'
+    };
+  }
+
+  function deduplicarAcciones(lista){
+    const mapa = new Map();
+    (Array.isArray(lista) ? lista : []).forEach(raw => {
+      const a = accionNormalizada(raw);
+      const k = claveLogicaAccion(a) || a.id;
+      const previo = mapa.get(k);
+      if (!previo) mapa.set(k, a);
+      else {
+        mapa.set(k, {
+          ...previo,
+          ...a,
+          id: previo.id || a.id,
+          fechaRegistro: previo.fechaRegistro || previo.fecha_registro || a.fechaRegistro,
+          fecha_registro: previo.fecha_registro || previo.fechaRegistro || a.fecha_registro,
+          usuarioRegistro: previo.usuarioRegistro || previo.usuario_registro || a.usuarioRegistro,
+          usuario_registro: previo.usuario_registro || previo.usuarioRegistro || a.usuario_registro,
+          updated_at: a.updated_at || previo.updated_at
+        });
+      }
+    });
+    return [...mapa.values()];
+  }
+
+  const cargarAccionesLocalesPrevV611 = window.cargarAccionesLocales || (typeof cargarAccionesLocales === 'function' ? cargarAccionesLocales : null);
+  const guardarAccionesLocalesPrevV611 = window.guardarAccionesLocales || (typeof guardarAccionesLocales === 'function' ? guardarAccionesLocales : null);
+
+  function cargarAccionesLocalesV611(){
+    try {
+      const data = cargarAccionesLocalesPrevV611 ? cargarAccionesLocalesPrevV611() : JSON.parse(localStorage.getItem(STORAGE) || '[]');
+      return deduplicarAcciones(Array.isArray(data) ? data : []);
+    } catch { return []; }
+  }
+
+  function guardarAccionesLocalesV611(lista){
+    const depurada = deduplicarAcciones(lista);
+    if (guardarAccionesLocalesPrevV611) {
+      try { guardarAccionesLocalesPrevV611(depurada); }
+      catch { localStorage.setItem(STORAGE, JSON.stringify(depurada)); }
+    } else {
+      localStorage.setItem(STORAGE, JSON.stringify(depurada));
+    }
+    return depurada;
+  }
+
+  window.cargarAccionesLocales = cargarAccionesLocalesV611;
+  window.guardarAccionesLocales = guardarAccionesLocalesV611;
+  try { cargarAccionesLocales = cargarAccionesLocalesV611; guardarAccionesLocales = guardarAccionesLocalesV611; } catch {}
+
+  async function cargarAccionesDesdeD1V611(){
+    if (typeof api !== 'function') return cargarAccionesLocalesV611();
+    const res = await api('/acciones');
+    if (!res?.ok) return cargarAccionesLocalesV611();
+    const rows = Array.isArray(res.data?.rows) ? res.data.rows : (Array.isArray(res.data) ? res.data : []);
+    if (!rows.length) return cargarAccionesLocalesV611();
+    const fusion = deduplicarAcciones([...cargarAccionesLocalesV611(), ...rows]);
+    guardarAccionesLocalesV611(fusion);
+    return fusion;
+  }
+  window.cargarAccionesDesdeD1V611 = cargarAccionesDesdeD1V611;
+
+  function decretoActualPrograma(){
+    const id = window.dsProgramaSeleccionadoId || (typeof dsProgramaSeleccionadoId !== 'undefined' ? dsProgramaSeleccionadoId : '') || $x('accionDs')?.value || '';
+    try { if (typeof buscarDecretoPorId === 'function') return buscarDecretoPorId(id); } catch {}
+    return null;
+  }
+
+  function territoriosActuales(d){
+    const arr = Array.isArray(d?.territorio) ? d.territorio : [];
+    const map = new Map();
+    arr.forEach(t => {
+      const ub = txt(t?.ubigeo || t?.UBIGEO || t?.codigo || t?.cod_ubigeo);
+      const key = ub ? `UBIGEO:${ub}` : [t?.departamento,t?.provincia,t?.distrito].map(norm).join('|');
+      if (!txt(t?.distrito) || map.has(key)) return;
+      map.set(key, { key, ubigeo:ub, departamento:txt(t.departamento), provincia:txt(t.provincia), distrito:txt(t.distrito) });
+    });
+    return [...map.values()].sort((a,b) => `${a.departamento}|${a.provincia}|${a.distrito}`.localeCompare(`${b.departamento}|${b.provincia}|${b.distrito}`,'es'));
+  }
+
+  function programaActual(){
+    try { if (typeof programaSesionNormalizado === 'function') return programaSesionNormalizado(); } catch {}
+    return programaNorm($x('progProgramaNacional')?.value || '');
+  }
+
+  function numero(v){
+    if (v === undefined || v === null || txt(v) === '') return 0;
+    const n = Number(txt(v).replace('%','').replace(',','.'));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function porcentaje(valor, meta, ejecutada){
+    const raw = txt(valor);
+    if (raw) return raw.replace('%','');
+    const m = numero(meta), e = numero(ejecutada);
+    return m > 0 ? String(Math.min(100, Math.round((e/m)*100))) : '0';
+  }
+
+  function valoresProgramaPrincipal(){
+    try { if (typeof calcularFechaFinalPrograma === 'function') calcularFechaFinalPrograma(); } catch {}
+    try { if (typeof calcularAvancePrograma === 'function') calcularAvancePrograma(); } catch {}
+    const meta = numero($x('progMetaProgramada')?.value);
+    const ejec = numero($x('progMetaEjecutada')?.value);
+    return {
+      programa: programaActual(),
+      tipo: txt($x('progTipoAccion')?.value),
+      subtipo: txt($x('progSubtipoRehabilitacion')?.value),
+      codigo: txt($x('progCodigoAccion')?.value),
+      unidad: txt($x('progUnidadMedida')?.value),
+      metaProgramada: meta,
+      plazoDias: numero($x('progPlazoDias')?.value),
+      fechaInicio: txt($x('progFechaInicio')?.value),
+      fechaFinal: txt($x('progFechaFinal')?.value),
+      metaEjecutada: ejec,
+      avance: porcentaje($x('progAvance')?.value, meta, ejec),
+      fechaRegistro: txt($x('progFechaRegistro')?.value) || (typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toISOString())
+    };
+  }
+
+  function validarValoresPrograma(v){
+    if (!v.tipo) return 'Seleccione un Tipo de Acción válido del catálogo oficial.';
+    if (norm(v.tipo).includes('REHABILITACION') && !v.subtipo) return 'Seleccione el Subtipo de Rehabilitación.';
+    if (!v.codigo) return 'Ingrese el Código de acción.';
+    if (!v.unidad) return 'Seleccione la Unidad de medida.';
+    if (!v.fechaInicio) return 'Ingrese la F. inicio.';
+    if (!v.fechaFinal) return 'Ingrese la F. final.';
+    if (new Date(`${v.fechaInicio}T00:00:00`) > new Date(`${v.fechaFinal}T00:00:00`)) return 'La F. inicio no puede ser mayor que la F. final.';
+    return '';
+  }
+
+  async function postAccionD1(accion){
+    if (typeof api !== 'function') return null;
+    try { return await api('/acciones', 'POST', accion); } catch { return null; }
+  }
+
+  async function guardarAccionGrupalV611(){
+    const d = decretoActualPrograma();
+    try { if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.'); } catch {}
+    if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+    const numeroReunion = txt(d.numeroReunion || d.numero_reunion || $x('progNumeroReunion')?.value);
+    const fechaReunion = txt(d.fechaReunion || d.fecha_reunion || $x('progFechaReunion')?.value);
+    if (!numeroReunion || !fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+
+    const checks = Array.from(document.querySelectorAll('.chk-distrito-programa-v571:checked, .chk-distrito-programa:checked'));
+    const keys = new Set(checks.map(x => x.value));
+    if (!keys.size) return alert('Debe seleccionar al menos un distrito.');
+    const territorios = territoriosActuales(d).filter(t => keys.has(t.key));
+    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+
+    const detalle = txt($x('grupoDetallePrograma')?.value);
+    const descripcion = txt($x('grupoDescripcionPrograma')?.value);
+    if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+
+    const v = valoresProgramaPrincipal();
+    const error = validarValoresPrograma(v);
+    if (error) return alert(error);
+
+    let lista = cargarAccionesLocalesV611();
+    let guardados = 0;
+    for (const t of territorios) {
+      const accionBase = accionNormalizada({
+        dsId: d.id,
+        ds_id: d.id,
+        numeroDS: formatearNumeroDSV611(d),
+        ds: formatearNumeroDSV611(d),
+        numeroReunion,
+        numero_reunion: numeroReunion,
+        fechaReunion,
+        fecha_reunion: fechaReunion,
+        estadoRDS: d.estadoRDS || 'Activo',
+        programaNacional: v.programa,
+        programa: v.programa,
+        tipoAccion: v.tipo,
+        tipo: v.tipo,
+        subtipoRehabilitacion: v.subtipo,
+        subtipo_rehabilitacion: v.subtipo,
+        codigoAccion: v.codigo,
+        codigo: v.codigo,
+        unidadMedida: v.unidad,
+        unidad: v.unidad,
+        metaProgramada: v.metaProgramada,
+        meta_programada: v.metaProgramada,
+        plazoDias: v.plazoDias,
+        plazo_dias: v.plazoDias,
+        plazo: v.plazoDias,
+        fechaInicio: v.fechaInicio,
+        fecha_inicio: v.fechaInicio,
+        fechaFinal: v.fechaFinal,
+        fecha_final: v.fechaFinal,
+        metaEjecutada: v.metaEjecutada,
+        meta_ejecutada: v.metaEjecutada,
+        avance: v.avance,
+        detalle,
+        descripcionActividades: descripcion,
+        descripcion,
+        departamento: t.departamento,
+        provincia: t.provincia,
+        distrito: t.distrito,
+        ubigeo: t.ubigeo,
+        fechaRegistro: v.fechaRegistro,
+        fecha_registro: v.fechaRegistro,
+        usuarioRegistro: (typeof state !== 'undefined' ? state.session?.email : '') || '',
+        usuario_registro: (typeof state !== 'undefined' ? state.session?.email : '') || '',
+        estado: 'Registrado'
+      });
+      const k = claveLogicaAccion(accionBase);
+      const idx = lista.findIndex(a => claveLogicaAccion(a) === k);
+      const previo = idx >= 0 ? lista[idx] : null;
+      const accion = accionNormalizada({
+        ...(previo || {}),
+        ...accionBase,
+        id: previo?.id || accionBase.id,
+        fechaRegistro: previo?.fechaRegistro || previo?.fecha_registro || accionBase.fechaRegistro,
+        fecha_registro: previo?.fecha_registro || previo?.fechaRegistro || accionBase.fecha_registro,
+        usuarioRegistro: previo?.usuarioRegistro || previo?.usuario_registro || accionBase.usuarioRegistro,
+        usuario_registro: previo?.usuario_registro || previo?.usuarioRegistro || accionBase.usuario_registro,
+        usuario_actualiza: previo ? ((typeof state !== 'undefined' ? state.session?.email : '') || '') : '',
+        fecha_actualiza: previo ? new Date().toISOString() : ''
+      });
+      if (idx >= 0) lista[idx] = accion; else lista.push(accion);
+      await postAccionD1(accion);
+      guardados++;
+    }
+    guardarAccionesLocalesV611(lista);
+    try { await cargarAccionesDesdeD1V611(); } catch {}
+    const modal = $x('modalAccionGrupalPrograma');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+    checks.forEach(chk => { chk.checked = false; });
+    try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch {}
+    try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
+    try { if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica(); } catch {}
+    if (guardados) alert('Acción registrada correctamente en los distritos seleccionados.');
+  }
+
+  function reemplazarBotonGrupalV611(){
+    const oldBtn = $x('btnGuardarAccionGrupalPrograma');
+    if (!oldBtn || oldBtn.dataset.v611 === '1') return;
+    const newBtn = oldBtn.cloneNode(true);
+    newBtn.dataset.v611 = '1';
+    oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+    newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      guardarAccionGrupalV611();
+    }, true);
+  }
+
+  const exportExcelPrevV611 = window.exportarDSExcel;
+  const exportPDFPrevV611 = window.exportarDSPDF;
+  if (typeof exportExcelPrevV611 === 'function') {
+    window.exportarDSExcel = async function(id){
+      await cargarAccionesDesdeD1V611();
+      return exportExcelPrevV611(id);
+    };
+    try { exportarDSExcel = window.exportarDSExcel; } catch {}
+  }
+  if (typeof exportPDFPrevV611 === 'function') {
+    window.exportarDSPDF = async function(id){
+      await cargarAccionesDesdeD1V611();
+      return exportPDFPrevV611(id);
+    };
+    try { exportarDSPDF = window.exportarDSPDF; } catch {}
+  }
+
+  function arranqueV611(){
+    try { guardarAccionesLocalesV611(cargarAccionesLocalesV611()); } catch {}
+    setTimeout(async () => {
+      await cargarAccionesDesdeD1V611();
+      try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
+      try { if (typeof renderTablaAcciones === 'function') renderTablaAcciones(); } catch {}
+      try { if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica(); } catch {}
+    }, 1200);
+    reemplazarBotonGrupalV611();
+    setInterval(reemplazarBotonGrupalV611, 1500);
+    console.info('DEE MIDIS cierre aplicado:', VERSION);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arranqueV611);
+  else arranqueV611();
+})();
+
+// ================= AJUSTE v62.1 - PREAPROBAR: FILTROS Y TERRITORIO =================
+// Alcance quirúrgico: solo pestaña "PreAprobar Acciones" / tabla "Acciones registradas por Programas Nacionales".
+(function cierrePreAprobarTerritorioV621(){
+  const VERSION = 'v62.1-preaprobar-filtros-territorio';
+
+  function q(id){ return document.getElementById(id); }
+  function txt(v){ return String(v ?? ''); }
+  function norm(v){
+    return txt(v)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
+  }
+  function esc(v){
+    return txt(v)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
+  }
+  function escAttr(v){ return esc(v); }
+  function valor(a, ...keys){
+    if (typeof accionValor === 'function') return accionValor(a, ...keys);
+    for (const k of keys) {
+      if (a && a[k] !== undefined && a[k] !== null && txt(a[k]).trim() !== '') return a[k];
+    }
+    return '';
+  }
+
+  function programaNormal(v){
+    if (typeof normalizarProgramaNombre === 'function') return normalizarProgramaNombre(v);
+    return norm(v);
+  }
+
+  function accionesPreAprobarBase(){
+    const dsId = (typeof dsPreAprobarSeleccionadoId !== 'undefined' && dsPreAprobarSeleccionadoId) ? dsPreAprobarSeleccionadoId : '';
+    try {
+      if (typeof accionesPorDSReunionActualV38 === 'function') return accionesPorDSReunionActualV38(dsId) || [];
+    } catch {}
+    try {
+      if (typeof accionesPorDS === 'function') return accionesPorDS(dsId) || [];
+    } catch {}
+    try {
+      if (typeof cargarAccionesLocales === 'function') {
+        return cargarAccionesLocales().filter(a => !dsId || String(a.dsId || a.ds_id) === String(dsId));
+      }
+    } catch {}
+    return [];
+  }
+
+  function filtrosPreAprobar(){
+    return {
+      programa: programaNormal(q('filtroPrePrograma')?.value || ''),
+      departamento: norm(q('filtroPreDepartamento')?.value || ''),
+      provincia: norm(q('filtroPreProvincia')?.value || ''),
+      distrito: norm(q('filtroPreDistrito')?.value || '')
+    };
+  }
+
+  function aplicaFiltros(a, f){
+    const programa = programaNormal(valor(a,'programaNacional','programa'));
+    const departamento = norm(valor(a,'departamento'));
+    const provincia = norm(valor(a,'provincia'));
+    const distrito = norm(valor(a,'distrito'));
+    if (f.programa && programa !== f.programa) return false;
+    if (f.departamento && !departamento.includes(f.departamento)) return false;
+    if (f.provincia && !provincia.includes(f.provincia)) return false;
+    if (f.distrito && !distrito.includes(f.distrito)) return false;
+    return true;
+  }
+
+  function actualizarEncabezadoTabla(){
+    const head = document.querySelector('#tablaPreAprobarAcciones thead tr');
+    if (!head) return;
+    const requerido = ['Programa','Departamento','Provincia','Distrito','Tipo de acción','Código','Detalle','Meta programada','Meta ejecutada','Avance','Usuario','Fecha registro','Gestión'];
+    const actual = Array.from(head.children).map(th => norm(th.textContent));
+    if (actual.includes('DEPARTAMENTO') && actual.includes('PROVINCIA') && actual.includes('DISTRITO')) return;
+    head.innerHTML = requerido.map(h => `<th>${esc(h)}</th>`).join('');
+  }
+
+  function actualizarOpcionesProgramaDesdeDatos(){
+    const sel = q('filtroPrePrograma');
+    if (!sel) return;
+    const actual = sel.value;
+    const programas = [...new Set(accionesPreAprobarBase().map(a => txt(valor(a,'programaNacional','programa')).trim()).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,'es'));
+    const base = ['','CUNA MÁS','PAE','JUNTOS','CONTIGO','PENSIÓN 65','FONCODES','PAIS'];
+    const todos = [...new Set(base.concat(programas))];
+    sel.innerHTML = todos.map(p => p ? `<option>${esc(p)}</option>` : '<option value="">Todos</option>').join('');
+    if (actual && Array.from(sel.options).some(o => programaNormal(o.value) === programaNormal(actual))) sel.value = actual;
+  }
+
+  function limpiarFiltrosPreAprobar(){
+    if (q('filtroPrePrograma')) q('filtroPrePrograma').value = '';
+    if (q('filtroPreDepartamento')) q('filtroPreDepartamento').value = '';
+    if (q('filtroPreProvincia')) q('filtroPreProvincia').value = '';
+    if (q('filtroPreDistrito')) q('filtroPreDistrito').value = '';
+    renderTablaPreAprobarAcciones();
+  }
+
+  function instalarFiltrosPreAprobar(){
+    actualizarEncabezadoTabla();
+    actualizarOpcionesProgramaDesdeDatos();
+    const btnBuscar = q('btnBuscarPreAprobar');
+    const btnLimpiar = q('btnLimpiarPreAprobar');
+    if (btnBuscar && btnBuscar.dataset.v621 !== '1') {
+      btnBuscar.dataset.v621 = '1';
+      btnBuscar.addEventListener('click', (e) => { e.preventDefault(); renderTablaPreAprobarAcciones(); });
+    }
+    if (btnLimpiar && btnLimpiar.dataset.v621 !== '1') {
+      btnLimpiar.dataset.v621 = '1';
+      btnLimpiar.addEventListener('click', (e) => { e.preventDefault(); limpiarFiltrosPreAprobar(); });
+    }
+    ['filtroPrePrograma','filtroPreDepartamento','filtroPreProvincia','filtroPreDistrito'].forEach(id => {
+      const el = q(id);
+      if (!el || el.dataset.v621 === '1') return;
+      el.dataset.v621 = '1';
+      el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); renderTablaPreAprobarAcciones(); } });
+    });
+  }
+
+  const renderAnteriorV621 = typeof renderTablaPreAprobarAcciones === 'function' ? renderTablaPreAprobarAcciones : null;
+  renderTablaPreAprobarAcciones = function renderTablaPreAprobarAccionesV621(){
+    const tbody = document.querySelector('#tablaPreAprobarAcciones tbody');
+    if (!tbody) return renderAnteriorV621?.apply(this, arguments);
+    instalarFiltrosPreAprobar();
+    const todas = accionesPreAprobarBase();
+    const f = filtrosPreAprobar();
+    const acciones = todas.filter(a => aplicaFiltros(a, f));
+    const contador = q('contadorPreAprobarAcciones');
+    if (contador) contador.textContent = `Mostrando ${acciones.length} de ${todas.length} registro(s)`;
+
+    if (!acciones.length) {
+      tbody.innerHTML = '<tr><td colspan="13" class="text-muted">No hay acciones registradas para los filtros aplicados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = acciones.map(a => {
+      const id = valor(a,'id');
+      return `<tr>
+        <td>${esc(valor(a,'programaNacional','programa'))}</td>
+        <td>${esc(valor(a,'departamento'))}</td>
+        <td>${esc(valor(a,'provincia'))}</td>
+        <td>${esc(valor(a,'distrito'))}</td>
+        <td>${esc(valor(a,'tipoAccion','tipo'))}</td>
+        <td>${esc(valor(a,'codigoAccion','codigo'))}</td>
+        <td>${esc(valor(a,'detalle'))}</td>
+        <td>${esc(valor(a,'metaProgramada','meta_programada'))}</td>
+        <td>${esc(valor(a,'metaEjecutada','meta_ejecutada'))}</td>
+        <td>${esc(valor(a,'avance'))}</td>
+        <td>${esc(valor(a,'usuarioRegistro','usuario_registro'))}</td>
+        <td>${esc(valor(a,'fechaRegistro','fecha_registro'))}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirModalEditarAccion('${escAttr(id)}')">Ver / Editar</button></td>
+      </tr>`;
+    }).join('');
+  };
+
+  const cargarVistaAnteriorV621 = typeof cargarVistaPreAprobar === 'function' ? cargarVistaPreAprobar : null;
+  if (cargarVistaAnteriorV621) {
+    cargarVistaPreAprobar = function cargarVistaPreAprobarV621(){
+      const r = cargarVistaAnteriorV621.apply(this, arguments);
+      setTimeout(() => { instalarFiltrosPreAprobar(); renderTablaPreAprobarAcciones(); }, 0);
+      return r;
+    };
+  }
+
+  const initAnteriorV621 = typeof initPreAprobarAcciones === 'function' ? initPreAprobarAcciones : null;
+  if (initAnteriorV621) {
+    initPreAprobarAcciones = function initPreAprobarAccionesV621(){
+      const r = initAnteriorV621.apply(this, arguments);
+      instalarFiltrosPreAprobar();
+      return r;
+    };
+  }
+
+  window.renderTablaPreAprobarAcciones = renderTablaPreAprobarAcciones;
+  window.cargarVistaPreAprobar = typeof cargarVistaPreAprobar === 'function' ? cargarVistaPreAprobar : window.cargarVistaPreAprobar;
+  window.initPreAprobarAcciones = typeof initPreAprobarAcciones === 'function' ? initPreAprobarAcciones : window.initPreAprobarAcciones;
+
+  document.addEventListener('DOMContentLoaded', () => setTimeout(instalarFiltrosPreAprobar, 500));
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= AJUSTE v64.1 - ADMIN EDITAR / ELIMINAR DS EN LISTADO =================
+(function () {
+  'use strict';
+
+  const VERSION_ADMIN_DS = 'v64.1 Admin editar/eliminar DS';
+  const q = (id) => document.getElementById(id);
+  const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+  const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
+  const norm = (v) => (typeof normalizarTexto === 'function' ? normalizarTexto(v) : String(v || '').trim().toUpperCase());
+
+  function esAdminDS() {
+    try { return typeof esAdministrador === 'function' && esAdministrador(); } catch { return false; }
+  }
+
+  function listaDSAdmin() {
+    try {
+      const base = (state?.decretos?.length ? state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
+      return (Array.isArray(base) ? base : []).map(d => typeof normalizarDecreto === 'function' ? normalizarDecreto(d) : d).filter(Boolean);
+    } catch { return []; }
+  }
+
+  function accionesAdmin() {
+    try {
+      const data = JSON.parse(localStorage.getItem(ACCIONES_STORAGE_KEY) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch { return []; }
+  }
+
+  function guardarAccionesAdmin(lista) {
+    try {
+      if (typeof guardarAccionesLocales === 'function') guardarAccionesLocales(Array.isArray(lista) ? lista : []);
+      else localStorage.setItem(ACCIONES_STORAGE_KEY, JSON.stringify(Array.isArray(lista) ? lista : []));
+    } catch {}
+  }
+
+  function tituloDSAdmin(d) {
+    try { if (typeof formatearNumeroDSFinal === 'function') return formatearNumeroDSFinal(d); } catch {}
+    try { if (typeof formatearNumeroDS === 'function') return formatearNumeroDS(d); } catch {}
+    const numero = String(d?.numero || '').trim();
+    const anio = String(d?.anio || '').trim();
+    return `DS N.° ${numero}${anio ? '-' + anio : ''}-PCM`;
+  }
+
+  function extraerIdDSDesdeFila(row) {
+    if (!row) return '';
+    const boton = row.querySelector('button[onclick*="verDetalleDS"],button[onclick*="abrirRDS"],button[onclick*="abrirPreAprobacion"],button[onclick*="exportarDSExcel"],button[onclick*="exportarDSPDF"]');
+    const onclick = boton?.getAttribute('onclick') || '';
+    const m = onclick.match(/'([^']+)'|\"([^\"]+)\"/);
+    return m ? (m[1] || m[2] || '') : '';
+  }
+
+  function asegurarColumnaAdminDS() {
+    const head = document.querySelector('#tablaDS thead tr');
+    if (!head) return;
+    if (!esAdminDS()) {
+      head.querySelector('[data-admin-ds-col="1"]')?.remove();
+      return;
+    }
+    if (!head.querySelector('[data-admin-ds-col="1"]')) {
+      const th = document.createElement('th');
+      th.dataset.adminDsCol = '1';
+      th.textContent = 'Gestión DS';
+      head.appendChild(th);
+    }
+  }
+
+  function aplicarBotonesAdminDS() {
+    asegurarColumnaAdminDS();
+    const tbody = document.querySelector('#tablaDS tbody');
+    if (!tbody) return;
+
+    Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+      const existente = row.querySelector('[data-admin-ds-cell="1"]');
+      if (!esAdminDS()) {
+        existente?.remove();
+        return;
+      }
+      const dsId = extraerIdDSDesdeFila(row);
+      if (!dsId) {
+        if (!existente && row.children.length > 1) {
+          const td = document.createElement('td');
+          td.dataset.adminDsCell = '1';
+          td.textContent = '-';
+          row.appendChild(td);
+        }
+        return;
+      }
+      const html = `<div class="d-flex flex-wrap gap-1">
+        <button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirEditarDSAdmin('${escAttr(dsId)}')">Editar</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDSAdmin('${escAttr(dsId)}')">Eliminar</button>
+      </div>`;
+      if (existente) existente.innerHTML = html;
+      else {
+        const td = document.createElement('td');
+        td.dataset.adminDsCell = '1';
+        td.innerHTML = html;
+        row.appendChild(td);
+      }
+    });
+  }
+
+  function asegurarModalEditarDSAdmin() {
+    if (q('modalEditarDSAdmin')) return;
+    const div = document.createElement('div');
+    div.className = 'modal fade';
+    div.id = 'modalEditarDSAdmin';
+    div.tabIndex = -1;
+    div.setAttribute('aria-hidden', 'true');
+    div.innerHTML = `
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Decreto Supremo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input id="editDsIdAdmin" type="hidden">
+            <div class="alert alert-info small py-2 mb-3">Edición habilitada solo para Administrador. No modifica login, roles ni flujos RDS.</div>
+            <div class="row g-3">
+              <div class="col-md-3"><label class="form-label">Número DS</label><input id="editDsNumeroAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Año</label><input id="editDsAnioAdmin" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Código de registro</label><input id="editDsCodigoAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Plazo (días)</label><input id="editDsPlazoAdmin" type="number" min="0" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Vigencia</label><input id="editDsVigenciaAdmin" class="form-control" readonly></div>
+              <div class="col-md-3"><label class="form-label">Peligro</label><select id="editDsPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Por impacto de daños</option><option>Por peligro inminente</option></select></div>
+              <div class="col-md-3"><label class="form-label">Tipo de peligro</label><select id="editDsTipoPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Lluvias intensas</option><option>Inundación</option><option>Deslizamiento</option><option>Friaje</option><option>Heladas</option><option>Incendio forestal</option><option>Contaminación hídrica</option><option>Sismo</option></select></div>
+              <div class="col-md-2"><label class="form-label">Fecha inicio</label><input id="editDsFechaInicioAdmin" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Fecha final</label><input id="editDsFechaFinAdmin" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Semáforo</label><input id="editDsSemaforoAdmin" class="form-control" readonly></div>
+              <div class="col-12"><label class="form-label">Exposición de Motivos</label><textarea id="editDsMotivosAdmin" class="form-control" rows="3"></textarea></div>
+            </div>
+            <hr>
+            <h6 class="text-primary">Relación de prórrogas</h6>
+            <div class="row g-3 align-items-end">
+              <div class="col-md-3"><div class="form-check mt-4"><input id="editDsEsProrrogaAdmin" class="form-check-input" type="checkbox"><label class="form-check-label" for="editDsEsProrrogaAdmin">Es prórroga</label></div></div>
+              <div class="col-md-3"><label class="form-label">DS origen</label><input id="editDsOrigenAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Nivel prórroga</label><input id="editDsNivelAdmin" type="number" min="0" class="form-control"></div>
+              <div class="col-md-4"><label class="form-label">Cadena</label><input id="editDsCadenaAdmin" class="form-control"></div>
+            </div>
+            <hr>
+            <h6 class="text-primary">Sectores que firman</h6>
+            <div id="editDsSectoresAdmin" class="row g-2"></div>
+            <hr>
+            <h6 class="text-primary">Territorio involucrado</h6>
+            <div class="alert alert-warning small py-2">Para no romper la estructura actual, el territorio se edita como JSON. Mantén departamento, provincia y distrito.</div>
+            <textarea id="editDsTerritorioAdmin" class="form-control font-monospace" rows="10"></textarea>
+            <hr>
+            <h6 class="text-primary">RDS / Estado del proceso</h6>
+            <div class="row g-3">
+              <div class="col-md-2"><div class="form-check mt-4"><input id="editDsRdsActivoAdmin" class="form-check-input" type="checkbox"><label class="form-check-label" for="editDsRdsActivoAdmin">RDS activo</label></div></div>
+              <div class="col-md-3"><label class="form-label">Número de reunión</label><input id="editDsNumeroReunionAdmin" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Fecha de reunión</label><input id="editDsFechaReunionAdmin" type="date" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="editDsEstadoRDSAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Fecha Registro RDS</label><input id="editDsFechaRegistroRDSAdmin" class="form-control"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btnGuardarEditarDSAdmin" type="button" class="btn btn-primary">Guardar cambios</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(div);
+    ['editDsFechaInicioAdmin','editDsFechaFinAdmin','editDsPlazoAdmin'].forEach(id => q(id)?.addEventListener('change', actualizarCalculosEditarDSAdmin));
+    q('btnGuardarEditarDSAdmin')?.addEventListener('click', guardarEditarDSAdmin);
+  }
+
+  function renderSectoresEditarAdmin(seleccionados) {
+    const cont = q('editDsSectoresAdmin');
+    if (!cont) return;
+    const lista = Array.isArray(MINISTERIOS_FIRMANTES) ? MINISTERIOS_FIRMANTES : [];
+    const set = new Set((Array.isArray(seleccionados) ? seleccionados : []).map(norm));
+    cont.innerHTML = lista.map((m, i) => `
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="form-check border rounded bg-white px-2 py-2 h-100">
+          <input class="form-check-input ms-0 me-1 chk-edit-sector-admin" type="checkbox" id="editSectorAdmin_${i}" value="${escAttr(m)}" ${set.has(norm(m)) ? 'checked' : ''}>
+          <label class="form-check-label" for="editSectorAdmin_${i}">${esc(m)}</label>
+        </div>
+      </div>`).join('');
+  }
+
+  function calcularFechaFinalEditarSiCorresponde() {
+    const inicio = q('editDsFechaInicioAdmin')?.value || '';
+    const plazo = Number(q('editDsPlazoAdmin')?.value || 0);
+    const finInput = q('editDsFechaFinAdmin');
+    if (!inicio || !plazo || !finInput || finInput.value) return;
+    const f = new Date(`${inicio}T00:00:00`);
+    f.setDate(f.getDate() + plazo);
+    finInput.value = f.toISOString().split('T')[0];
+  }
+
+  function actualizarCalculosEditarDSAdmin() {
+    calcularFechaFinalEditarSiCorresponde();
+    const fin = q('editDsFechaFinAdmin')?.value || '';
+    try { if (q('editDsVigenciaAdmin') && typeof calcularVigencia === 'function') q('editDsVigenciaAdmin').value = calcularVigencia(fin); } catch {}
+    try { if (q('editDsSemaforoAdmin') && typeof calcularSemaforo === 'function') q('editDsSemaforoAdmin').value = calcularSemaforo(fin); } catch {}
+  }
+
+  function abrirEditarDSAdmin(id) {
+    if (!esAdminDS()) return alert('Solo el Administrador puede editar Decretos Supremos.');
+    asegurarModalEditarDSAdmin();
+    const d = (typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : listaDSAdmin().find(x => String(x.id) === String(id)));
+    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+
+    q('editDsIdAdmin').value = d.id || id;
+    q('editDsNumeroAdmin').value = d.numero || '';
+    q('editDsAnioAdmin').value = d.anio || '';
+    q('editDsCodigoAdmin').value = d.codigo_registro || d.codigoRegistro || d.id || '';
+    q('editDsPlazoAdmin').value = d.plazo_dias ?? d.plazoDias ?? '';
+    q('editDsPeligroAdmin').value = d.peligro || '';
+    q('editDsTipoPeligroAdmin').value = d.tipo_peligro || d.tipoPeligro || '';
+    q('editDsFechaInicioAdmin').value = d.fecha_inicio || d.fechaInicio || '';
+    q('editDsFechaFinAdmin').value = d.fecha_fin || d.fechaFin || '';
+    q('editDsMotivosAdmin').value = d.motivos || d.exposicion_motivos || '';
+    q('editDsEsProrrogaAdmin').checked = Boolean(d.es_prorroga || d.esProrroga);
+    q('editDsOrigenAdmin').value = d.ds_origen_id || d.dsOrigenId || d.ds_origen || '';
+    q('editDsNivelAdmin').value = d.nivel_prorroga ?? d.nivelProrroga ?? 0;
+    q('editDsCadenaAdmin').value = d.cadena || '';
+    q('editDsTerritorioAdmin').value = JSON.stringify(Array.isArray(d.territorio) ? d.territorio : [], null, 2);
+    q('editDsRdsActivoAdmin').checked = Boolean(d.rdsActivo || d.rds_activo);
+    q('editDsNumeroReunionAdmin').value = d.numeroReunion || d.numero_reunion || '';
+    q('editDsFechaReunionAdmin').value = d.fechaReunion || d.fecha_reunion || '';
+    q('editDsEstadoRDSAdmin').value = d.estadoRDS || (d.rdsActivo ? 'Activo' : '');
+    q('editDsFechaRegistroRDSAdmin').value = d.fechaRegistroRDS || d.fecha_registro_rds || '';
+    renderSectoresEditarAdmin(d.sectores || []);
+    actualizarCalculosEditarDSAdmin();
+
+    const modal = q('modalEditarDSAdmin');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+    else if (modal) { modal.style.display = 'block'; modal.classList.add('show'); }
+  }
+
+  async function guardarEditarDSAdmin() {
+    if (!esAdminDS()) return alert('Solo el Administrador puede guardar cambios.');
+    const idOriginal = q('editDsIdAdmin')?.value || '';
+    const lista = listaDSAdmin();
+    const idx = lista.findIndex(d => String(d.id) === String(idOriginal));
+    if (idx < 0) return alert('No se encontró el Decreto Supremo para actualizar.');
+
+    let territorio = [];
+    try {
+      const parsed = JSON.parse(q('editDsTerritorioAdmin')?.value || '[]');
+      if (!Array.isArray(parsed)) throw new Error('El territorio debe ser un arreglo JSON.');
+      territorio = parsed;
+    } catch (e) {
+      alert('El territorio involucrado no tiene un JSON válido. Revíselo antes de guardar.');
+      return;
+    }
+
+    const sectores = Array.from(document.querySelectorAll('.chk-edit-sector-admin:checked')).map(x => String(x.value || '').trim()).filter(Boolean);
+    const numero = q('editDsNumeroAdmin')?.value || '';
+    const anio = q('editDsAnioAdmin')?.value || '';
+    const codigo = q('editDsCodigoAdmin')?.value || (typeof generarCodigoRegistro === 'function' ? generarCodigoRegistro(numero, anio) : idOriginal);
+    const fechaFin = q('editDsFechaFinAdmin')?.value || '';
+
+    const actualizadoBase = {
+      ...lista[idx],
+      id: idOriginal,
+      numero,
+      anio,
+      codigo_registro: codigo,
+      peligro: q('editDsPeligroAdmin')?.value || '',
+      tipo_peligro: q('editDsTipoPeligroAdmin')?.value || '',
+      plazo_dias: Number(q('editDsPlazoAdmin')?.value || 0),
+      fecha_inicio: q('editDsFechaInicioAdmin')?.value || '',
+      fecha_fin: fechaFin,
+      vigencia: (typeof calcularVigencia === 'function' ? calcularVigencia(fechaFin) : (q('editDsVigenciaAdmin')?.value || '')),
+      semaforo: (typeof calcularSemaforo === 'function' ? calcularSemaforo(fechaFin) : (q('editDsSemaforoAdmin')?.value || '')),
+      motivos: q('editDsMotivosAdmin')?.value || '',
+      sectores,
+      territorio,
+      es_prorroga: Boolean(q('editDsEsProrrogaAdmin')?.checked),
+      ds_origen_id: q('editDsOrigenAdmin')?.value || '',
+      nivel_prorroga: Number(q('editDsNivelAdmin')?.value || 0),
+      cadena: q('editDsCadenaAdmin')?.value || '',
+      rdsActivo: Boolean(q('editDsRdsActivoAdmin')?.checked),
+      numeroReunion: q('editDsNumeroReunionAdmin')?.value || '',
+      fechaReunion: q('editDsFechaReunionAdmin')?.value || '',
+      estadoRDS: q('editDsEstadoRDSAdmin')?.value || '',
+      fechaRegistroRDS: q('editDsFechaRegistroRDSAdmin')?.value || '',
+      usuario_actualiza: state?.session?.email || '',
+      fecha_actualiza: new Date().toISOString()
+    };
+
+    const actualizado = typeof normalizarDecreto === 'function' ? normalizarDecreto(actualizadoBase) : actualizadoBase;
+    lista[idx] = actualizado;
+    if (typeof guardarDecretosLocales === 'function') guardarDecretosLocales(lista);
+    else localStorage.setItem(DECRETOS_STORAGE_KEY, JSON.stringify(lista));
+
+    try { await api('/decretos', 'POST', actualizado); } catch {}
+    try { if (typeof cargarDSOrigen === 'function') cargarDSOrigen(); } catch {}
+    try { if (typeof cargarSelectAccionDS === 'function') cargarSelectAccionDS(); } catch {}
+    try { renderTablaDecretosBasica(); } catch {}
+
+    const modal = q('modalEditarDSAdmin');
+    if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
+    alert('Decreto Supremo actualizado correctamente.');
+  }
+
+  async function eliminarDSAdmin(id) {
+    if (!esAdminDS()) return alert('Solo el Administrador puede eliminar Decretos Supremos.');
+    const d = (typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : listaDSAdmin().find(x => String(x.id) === String(id)));
+    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+
+    const acciones = accionesAdmin().filter(a => String(a.dsId || a.ds_id) === String(id));
+    const mensaje = `Se eliminará el Decreto Supremo:\n\n${tituloDSAdmin(d)}\n\nTambién se eliminarán ${acciones.length} acción(es) registrada(s) asociada(s).\n\nEsta acción no se puede deshacer. ¿Desea continuar?`;
+    if (!confirm(mensaje)) return;
+
+    const decretosActualizados = listaDSAdmin().filter(x => String(x.id) !== String(id));
+    if (typeof guardarDecretosLocales === 'function') guardarDecretosLocales(decretosActualizados);
+    else localStorage.setItem(DECRETOS_STORAGE_KEY, JSON.stringify(decretosActualizados));
+
+    const accionesActualizadas = accionesAdmin().filter(a => String(a.dsId || a.ds_id) !== String(id));
+    guardarAccionesAdmin(accionesActualizadas);
+
+    // Intentos de borrado remoto. Si algún endpoint no soporta DELETE, no se rompe el flujo local.
+    try { await api(`/acciones?ds_id=${encodeURIComponent(id)}`, 'DELETE'); } catch {}
+    try { await api('/acciones', 'DELETE', { ds_id: id }); } catch {}
+    try { await api(`/decretos/${encodeURIComponent(id)}`, 'DELETE'); } catch {}
+    try { await api(`/decretos?id=${encodeURIComponent(id)}`, 'DELETE'); } catch {}
+    try { await api('/decretos', 'DELETE', { id }); } catch {}
+
+    try { if (typeof cargarDSOrigen === 'function') cargarDSOrigen(); } catch {}
+    try { if (typeof cargarSelectAccionDS === 'function') cargarSelectAccionDS(); } catch {}
+    try { if (typeof renderTablaAcciones === 'function') renderTablaAcciones(); } catch {}
+    try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
+    try { renderTablaDecretosBasica(); } catch {}
+
+    alert('Decreto Supremo y acciones asociadas eliminados correctamente.');
+  }
+
+  function instalarWrapperRenderAdminDS() {
+    const original = typeof renderTablaDecretosBasica === 'function' ? renderTablaDecretosBasica : null;
+    if (!original || original.__adminDsV641) return;
+    const wrapper = function renderTablaDecretosBasicaAdminV641() {
+      const r = original.apply(this, arguments);
+      setTimeout(aplicarBotonesAdminDS, 0);
+      return r;
+    };
+    wrapper.__adminDsV641 = true;
+    try { renderTablaDecretosBasica = wrapper; } catch {}
+    window.renderTablaDecretosBasica = wrapper;
+  }
+
+  window.abrirEditarDSAdmin = abrirEditarDSAdmin;
+  window.guardarEditarDSAdmin = guardarEditarDSAdmin;
+  window.eliminarDSAdmin = eliminarDSAdmin;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    asegurarModalEditarDSAdmin();
+    setTimeout(() => {
+      instalarWrapperRenderAdminDS();
+      aplicarBotonesAdminDS();
+      console.info('DEE MIDIS cierre aplicado:', VERSION_ADMIN_DS);
+    }, 1200);
+  });
+
+  // Refuerzo por si el render final del sistema se instala después del DOMContentLoaded.
+  setTimeout(() => {
+    instalarWrapperRenderAdminDS();
+    aplicarBotonesAdminDS();
+  }, 2500);
+})();
+
+// ================= AJUSTE v65.1 - ADMIN EDITAR DS: TERRITORIO CON UBIGEO =================
+// Alcance quirúrgico: solo mejora el campo "Territorio involucrado" del modal Editar DS.
+// No modifica login, roles, RDS, acciones, aprobación, exportación ni estructura base.
+(function () {
+  'use strict';
+
+  const VERSION = 'v65.1 Admin editar DS territorio ubigeo';
+  const q = (id) => document.getElementById(id);
+  const esc = (v) => (typeof escapeHtml === 'function'
+    ? escapeHtml(v)
+    : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+  const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
+  const norm = (v) => (typeof normalizarTexto === 'function'
+    ? normalizarTexto(v)
+    : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase());
+
+  let editTerritorioSeleccionado = [];
+  let eventosEditTerritorioInstalados = false;
+
+  function ubigeoDisponibleAdmin() {
+    if (Array.isArray(window.ubigeoData) && window.ubigeoData.length) return window.ubigeoData;
+    if (Array.isArray(ubigeoCache) && ubigeoCache.length) return ubigeoCache;
+    return [];
+  }
+
+  function claveTerritorioAdmin(reg) {
+    try {
+      if (typeof getTerritorioKey === 'function') return getTerritorioKey(reg);
+    } catch {}
+    const ubigeo = reg?.ubigeo || reg?.UBIGEO || reg?.codigo || reg?.cod_ubigeo || '';
+    if (ubigeo) return String(ubigeo);
+    return [norm(reg?.departamento), norm(reg?.provincia), norm(reg?.distrito)].join('|');
+  }
+
+  function normalizarTerritorioAdmin(reg) {
+    if (!reg) return null;
+    return {
+      clave: reg.clave || claveTerritorioAdmin(reg),
+      ubigeo: reg.ubigeo || reg.UBIGEO || reg.codigo || reg.cod_ubigeo || '',
+      departamento: reg.departamento || '',
+      provincia: reg.provincia || '',
+      distrito: reg.distrito || '',
+      latitud: reg.latitud ?? reg.lat ?? '',
+      longitud: reg.longitud ?? reg.lng ?? reg.lon ?? ''
+    };
+  }
+
+  function sincronizarTextareaTerritorioAdmin() {
+    const txt = q('editDsTerritorioAdmin');
+    if (!txt) return;
+    txt.value = JSON.stringify(editTerritorioSeleccionado.map(t => ({ ...t })), null, 2);
+  }
+
+  function cargarDesdeTextareaTerritorioAdmin() {
+    const txt = q('editDsTerritorioAdmin');
+    let lista = [];
+    try {
+      const parsed = JSON.parse(txt?.value || '[]');
+      if (Array.isArray(parsed)) lista = parsed;
+    } catch { lista = []; }
+
+    const mapa = new Map();
+    lista.map(normalizarTerritorioAdmin).filter(Boolean).forEach(t => mapa.set(String(t.clave), t));
+    editTerritorioSeleccionado = Array.from(mapa.values()).sort((a, b) =>
+      `${a.departamento}|${a.provincia}|${a.distrito}`.localeCompare(`${b.departamento}|${b.provincia}|${b.distrito}`, 'es')
+    );
+    sincronizarTextareaTerritorioAdmin();
+  }
+
+  function asegurarUIEditarTerritorioAdmin() {
+    const txt = q('editDsTerritorioAdmin');
+    if (!txt || q('editTerritorioAdminBox')) return;
+
+    const aviso = txt.previousElementSibling;
+    if (aviso && aviso.classList?.contains('alert')) {
+      aviso.className = 'alert alert-info small py-2';
+      aviso.textContent = 'Seleccione departamento, provincia y marque los distritos. El sistema conserva internamente la estructura territorial existente.';
+    }
+
+    txt.style.display = 'none';
+    txt.setAttribute('aria-hidden', 'true');
+
+    const box = document.createElement('div');
+    box.id = 'editTerritorioAdminBox';
+    box.innerHTML = `
+      <div class="border rounded bg-light p-3 mb-3">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Departamento</label>
+            <select id="editSelDepartamentoAdmin" class="form-select form-select-sm"></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Provincia</label>
+            <select id="editSelProvinciaAdmin" class="form-select form-select-sm"><option value="">Seleccione...</option></select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Buscar distrito</label>
+            <input id="editBuscarDistritoAdmin" class="form-control form-control-sm" placeholder="Buscar distrito">
+          </div>
+          <div class="col-md-3 d-flex flex-wrap gap-2">
+            <button id="btnEditMarcarTodosAdmin" type="button" class="btn btn-sm btn-outline-secondary">Marcar todos</button>
+            <button id="btnEditLimpiarChecksAdmin" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button>
+          </div>
+        </div>
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div id="editDistritosChecklistAdmin" class="border rounded p-2 bg-white" style="min-height:210px;max-height:280px;overflow:auto;">
+              <div class="text-muted small">Seleccione primero departamento y provincia.</div>
+            </div>
+            <button id="btnEditAgregarDistritosAdmin" type="button" class="btn btn-sm btn-outline-primary mt-2" disabled>Agregar distritos seleccionados</button>
+          </div>
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <strong class="small">Distritos seleccionados</strong>
+              <span id="editTerritorioContadorAdmin" class="text-muted small">0 distrito(s)</span>
+            </div>
+            <div id="editTerritorioSeleccionadoAdmin" class="border rounded p-2 bg-white" style="min-height:210px;max-height:280px;overflow:auto;"></div>
+          </div>
+        </div>
+      </div>`;
+    txt.insertAdjacentElement('beforebegin', box);
+
+    instalarEventosEditarTerritorioAdmin();
+  }
+
+  function instalarEventosEditarTerritorioAdmin() {
+    if (eventosEditTerritorioInstalados) return;
+    eventosEditTerritorioInstalados = true;
+
+    document.addEventListener('change', (e) => {
+      if (e.target?.id === 'editSelDepartamentoAdmin') {
+        cargarProvinciasEditarTerritorioAdmin();
+        limpiarDistritosEditarTerritorioAdmin('Seleccione una provincia.');
+      }
+      if (e.target?.id === 'editSelProvinciaAdmin') cargarDistritosEditarTerritorioAdmin();
+      if (e.target?.classList?.contains('chk-edit-distrito-admin')) actualizarBotonAgregarEditarTerritorioAdmin();
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target?.id === 'editBuscarDistritoAdmin') filtrarDistritosEditarTerritorioAdmin();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target?.id === 'btnEditMarcarTodosAdmin') { e.preventDefault(); marcarTodosEditarTerritorioAdmin(); }
+      if (e.target?.id === 'btnEditLimpiarChecksAdmin') { e.preventDefault(); limpiarChecksEditarTerritorioAdmin(); }
+      if (e.target?.id === 'btnEditAgregarDistritosAdmin') { e.preventDefault(); agregarDistritosEditarTerritorioAdmin(); }
+      const quitar = e.target?.closest?.('[data-edit-quitar-territorio-admin]');
+      if (quitar) { e.preventDefault(); quitarTerritorioEditarAdmin(quitar.getAttribute('data-edit-quitar-territorio-admin')); }
+    });
+  }
+
+  function cargarDepartamentosEditarTerritorioAdmin() {
+    const sel = q('editSelDepartamentoAdmin');
+    if (!sel) return;
+    const data = ubigeoDisponibleAdmin();
+    const actual = sel.value;
+    const deps = Array.from(new Set(data.map(x => x.departamento).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b), 'es'));
+    sel.innerHTML = '<option value="">Seleccione...</option>' + deps.map(d => `<option value="${escAttr(d)}">${esc(d)}</option>`).join('');
+    if (actual && deps.includes(actual)) sel.value = actual;
+  }
+
+  function cargarProvinciasEditarTerritorioAdmin() {
+    const dep = q('editSelDepartamentoAdmin')?.value || '';
+    const sel = q('editSelProvinciaAdmin');
+    if (!sel) return;
+    const data = ubigeoDisponibleAdmin();
+    const provs = Array.from(new Set(data.filter(x => norm(x.departamento) === norm(dep)).map(x => x.provincia).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b), 'es'));
+    sel.innerHTML = '<option value="">Seleccione...</option>' + provs.map(p => `<option value="${escAttr(p)}">${esc(p)}</option>`).join('');
+  }
+
+  function limpiarDistritosEditarTerritorioAdmin(mensaje) {
+    const cont = q('editDistritosChecklistAdmin');
+    if (cont) cont.innerHTML = `<div class="text-muted small">${esc(mensaje)}</div>`;
+    if (q('editBuscarDistritoAdmin')) q('editBuscarDistritoAdmin').value = '';
+    actualizarBotonAgregarEditarTerritorioAdmin();
+  }
+
+  function cargarDistritosEditarTerritorioAdmin() {
+    const dep = q('editSelDepartamentoAdmin')?.value || '';
+    const prov = q('editSelProvinciaAdmin')?.value || '';
+    const cont = q('editDistritosChecklistAdmin');
+    if (!cont) return;
+    const data = ubigeoDisponibleAdmin();
+    if (!dep || !prov) return limpiarDistritosEditarTerritorioAdmin('Seleccione primero departamento y provincia.');
+
+    const seleccionadas = new Set(editTerritorioSeleccionado.map(t => String(t.clave)));
+    const distritos = data.filter(x => norm(x.departamento) === norm(dep) && norm(x.provincia) === norm(prov))
+      .sort((a, b) => String(a.distrito || '').localeCompare(String(b.distrito || ''), 'es'));
+
+    if (!distritos.length) return limpiarDistritosEditarTerritorioAdmin('No hay distritos para esta selección.');
+
+    cont.innerHTML = distritos.map(d => {
+      const t = normalizarTerritorioAdmin(d);
+      const key = String(t.clave);
+      const idSeguro = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const ya = seleccionadas.has(key);
+      return `
+        <div class="form-check distrito-edit-item-admin">
+          <input class="form-check-input chk-edit-distrito-admin" type="checkbox" id="editDistAdmin_${escAttr(idSeguro)}" value="${escAttr(key)}" ${ya ? 'disabled' : ''}>
+          <label class="form-check-label" for="editDistAdmin_${escAttr(idSeguro)}">
+            ${esc(d.distrito || '')}${ya ? '<span class="text-success small"> — agregado</span>' : ''}
+          </label>
+        </div>`;
+    }).join('');
+    filtrarDistritosEditarTerritorioAdmin();
+    actualizarBotonAgregarEditarTerritorioAdmin();
+  }
+
+  function filtrarDistritosEditarTerritorioAdmin() {
+    const texto = norm(q('editBuscarDistritoAdmin')?.value || '');
+    const cont = q('editDistritosChecklistAdmin');
+    if (!cont) return;
+    cont.querySelectorAll('.distrito-edit-item-admin').forEach(div => {
+      div.style.display = !texto || norm(div.textContent).includes(texto) ? '' : 'none';
+    });
+    actualizarBotonAgregarEditarTerritorioAdmin();
+  }
+
+  function actualizarBotonAgregarEditarTerritorioAdmin() {
+    const btn = q('btnEditAgregarDistritosAdmin');
+    const cont = q('editDistritosChecklistAdmin');
+    if (!btn || !cont) return;
+    btn.disabled = cont.querySelectorAll('.chk-edit-distrito-admin:checked:not(:disabled)').length === 0;
+  }
+
+  function marcarTodosEditarTerritorioAdmin() {
+    const cont = q('editDistritosChecklistAdmin');
+    if (!cont) return;
+    cont.querySelectorAll('.distrito-edit-item-admin').forEach(div => {
+      if (div.style.display === 'none') return;
+      const chk = div.querySelector('.chk-edit-distrito-admin');
+      if (chk && !chk.disabled) chk.checked = true;
+    });
+    actualizarBotonAgregarEditarTerritorioAdmin();
+  }
+
+  function limpiarChecksEditarTerritorioAdmin() {
+    const cont = q('editDistritosChecklistAdmin');
+    if (!cont) return;
+    cont.querySelectorAll('.chk-edit-distrito-admin').forEach(chk => { chk.checked = false; });
+    if (q('editBuscarDistritoAdmin')) q('editBuscarDistritoAdmin').value = '';
+    filtrarDistritosEditarTerritorioAdmin();
+    actualizarBotonAgregarEditarTerritorioAdmin();
+  }
+
+  function agregarDistritosEditarTerritorioAdmin() {
+    const cont = q('editDistritosChecklistAdmin');
+    if (!cont) return;
+    const checks = Array.from(cont.querySelectorAll('.chk-edit-distrito-admin:checked:not(:disabled)'));
+    if (!checks.length) return alert('Seleccione al menos un distrito.');
+
+    const data = ubigeoDisponibleAdmin();
+    const mapa = new Map(editTerritorioSeleccionado.map(t => [String(t.clave), t]));
+    checks.forEach(chk => {
+      const item = data.find(x => String(claveTerritorioAdmin(x)) === String(chk.value));
+      const t = normalizarTerritorioAdmin(item);
+      if (t) mapa.set(String(t.clave), t);
+    });
+    editTerritorioSeleccionado = Array.from(mapa.values()).sort((a, b) =>
+      `${a.departamento}|${a.provincia}|${a.distrito}`.localeCompare(`${b.departamento}|${b.provincia}|${b.distrito}`, 'es')
+    );
+    sincronizarTextareaTerritorioAdmin();
+    renderSeleccionTerritorioEditarAdmin();
+    cargarDistritosEditarTerritorioAdmin();
+  }
+
+  function quitarTerritorioEditarAdmin(clave) {
+    editTerritorioSeleccionado = editTerritorioSeleccionado.filter(t => String(t.clave) !== String(clave));
+    sincronizarTextareaTerritorioAdmin();
+    renderSeleccionTerritorioEditarAdmin();
+    cargarDistritosEditarTerritorioAdmin();
+  }
+
+  function renderSeleccionTerritorioEditarAdmin() {
+    const cont = q('editTerritorioSeleccionadoAdmin');
+    const contador = q('editTerritorioContadorAdmin');
+    if (contador) contador.textContent = `${editTerritorioSeleccionado.length} distrito(s)`;
+    if (!cont) return;
+    if (!editTerritorioSeleccionado.length) {
+      cont.innerHTML = '<div class="text-muted small">No hay distritos seleccionados.</div>';
+      return;
+    }
+    cont.innerHTML = editTerritorioSeleccionado.map(t => `
+      <div class="d-flex justify-content-between align-items-start gap-2 border rounded bg-light px-2 py-2 mb-2">
+        <div>
+          <div><strong>${esc(t.departamento)}</strong> / ${esc(t.provincia)} / ${esc(t.distrito)}</div>
+          <div class="text-muted small">Ubigeo: ${esc(t.ubigeo || '-')}</div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-edit-quitar-territorio-admin="${escAttr(t.clave)}">Quitar</button>
+      </div>`).join('');
+  }
+
+  function inicializarTerritorioEditarDesdeModal() {
+    asegurarUIEditarTerritorioAdmin();
+    cargarDesdeTextareaTerritorioAdmin();
+    cargarDepartamentosEditarTerritorioAdmin();
+    if (q('editSelProvinciaAdmin')) q('editSelProvinciaAdmin').innerHTML = '<option value="">Seleccione...</option>';
+    limpiarDistritosEditarTerritorioAdmin('Seleccione primero departamento y provincia.');
+    renderSeleccionTerritorioEditarAdmin();
+  }
+
+  function envolverAbrirEditarDSAdmin() {
+    const original = window.abrirEditarDSAdmin || (typeof abrirEditarDSAdmin === 'function' ? abrirEditarDSAdmin : null);
+    if (!original || original.__territorioAdminV651) return;
+    const wrapper = function abrirEditarDSAdminTerritorioV651(id) {
+      const r = original.apply(this, arguments);
+      setTimeout(inicializarTerritorioEditarDesdeModal, 80);
+      return r;
+    };
+    wrapper.__territorioAdminV651 = true;
+    window.abrirEditarDSAdmin = wrapper;
+    try { abrirEditarDSAdmin = wrapper; } catch {}
+  }
+
+  function envolverGuardarEditarDSAdmin() {
+    const original = window.guardarEditarDSAdmin || (typeof guardarEditarDSAdmin === 'function' ? guardarEditarDSAdmin : null);
+    if (!original || original.__territorioAdminV651) return;
+    const wrapper = function guardarEditarDSAdminTerritorioV651() {
+      sincronizarTextareaTerritorioAdmin();
+      if (!editTerritorioSeleccionado.length) {
+        alert('Debe seleccionar al menos un distrito en Territorio involucrado.');
+        return;
+      }
+      return original.apply(this, arguments);
+    };
+    wrapper.__territorioAdminV651 = true;
+    window.guardarEditarDSAdmin = wrapper;
+    try { guardarEditarDSAdmin = wrapper; } catch {}
+
+    const btn = q('btnGuardarEditarDSAdmin');
+    if (btn) {
+      btn.replaceWith(btn.cloneNode(true));
+      q('btnGuardarEditarDSAdmin')?.addEventListener('click', wrapper);
+    }
+  }
+
+  function instalarV651() {
+    envolverAbrirEditarDSAdmin();
+    asegurarUIEditarTerritorioAdmin();
+    envolverGuardarEditarDSAdmin();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      instalarV651();
+      console.info('DEE MIDIS cierre aplicado:', VERSION);
+    }, 2700);
+  });
+
+  setTimeout(instalarV651, 3600);
+})();
+
+
+// ================= CIERRE FINAL DASHBOARD EJECUTIVO v66.1 =================
+// Mejora exclusiva de la pestaña Dashboard: filtro Vigentes/No vigentes/Todos,
+// leyenda por DS con checkboxes, tablas con DS involucrados y exportación JPG/PDF.
+(function cierreDashboardEjecutivoV661(){
+  const VERSION = 'Dashboard v66.1';
+  const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
+  let mapaDashboard = null;
+  let capaDashboard = null;
+  let filtroDashboard = 'vigentes';
+  let dsVisibles = new Set();
+  let seleccionLeyendaInicializada = false;
+  let ultimaClaveFiltroLeyenda = '';
+  let inicializado = false;
+
+  const q = (id) => document.getElementById(id);
+
+  function asegurarEstilosDashboard() {
+    if (q('dashboardDEEStylesV661')) return;
+    const style = document.createElement('style');
+    style.id = 'dashboardDEEStylesV661';
+    style.textContent = `
+      .dee-dashboard-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+      .dee-dashboard-toolbar .form-select{max-width:180px}
+      .dee-kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 3px 12px rgba(15,23,42,.06);height:100%}
+      .dee-kpi-number{font-size:2.1rem;font-weight:800;line-height:1;color:#1F4E79}
+      .dee-kpi-label{font-size:.86rem;color:#475569;margin-top:8px;font-weight:600}
+      .dee-kpi-note{font-size:.74rem;color:#64748b;margin-top:4px}
+      .dee-badge-rojo{background:#dc3545;color:#fff}.dee-badge-ambar{background:#ffc107;color:#111}.dee-badge-verde{background:#198754;color:#fff}.dee-badge-gris{background:#6c757d;color:#fff}
+      .dee-dashboard-empty{color:#64748b;font-size:.88rem;padding:10px}
+      .dee-map-shell{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:.75rem;align-items:stretch}
+      .dee-map-legend{background:#fff;border:1px solid #dbe3ef;border-radius:10px;padding:.75rem;max-height:520px;overflow:auto}
+      .dee-legend-row{display:flex;align-items:flex-start;gap:.45rem;border-bottom:1px solid #eef2f7;padding:.38rem 0;font-size:11px;line-height:1.25}
+      .dee-legend-row:last-child{border-bottom:0}.dee-color-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-top:2px;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+      .dee-semaforo-legend{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.35rem;margin-bottom:1rem}.dee-semaforo-item{border:1px solid #dbe3ef;border-radius:999px;padding:.28rem .55rem;background:#fff;font-size:11px}
+      .dee-export-panel{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}.dee-export-panel .form-select{width:auto;min-width:150px}
+      #dashboardExportArea{background:#fff}
+      @media(max-width: 992px){.dee-map-shell{grid-template-columns:1fr}.dee-map-legend{max-height:260px}}
+      @media print{#dashboardExportArea{padding:12px!important}.dee-dashboard-toolbar{display:none!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function fechaLocal(valor) {
+    if (!valor) return null;
+    const s = String(valor).slice(0, 10);
+    const d = new Date(`${s}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function hoyCero() {
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function esVigente(d) {
+    const h = hoyCero();
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (ini && h < ini) return false;
+    return h <= fin;
+  }
+
+  function estadoFiltroTexto() {
+    if (filtroDashboard === 'vigentes') return 'Vigentes';
+    if (filtroDashboard === 'no_vigentes') return 'No vigentes';
+    return 'Todos';
+  }
+
+  function aplicaFiltroEstado(d) {
+    const vigente = esVigente(d);
+    if (filtroDashboard === 'vigentes') return vigente;
+    if (filtroDashboard === 'no_vigentes') return !vigente;
+    return true;
+  }
+
+  function diasRestantes(d) {
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return 0;
+    return Math.max(0, Math.ceil((fin - hoyCero()) / 86400000));
+  }
+
+  function avanceTiempo(d) {
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    const h = hoyCero();
+    if (!ini || !fin || fin <= ini) return 0;
+    const total = fin - ini;
+    const usado = Math.min(Math.max(h - ini, 0), total);
+    return Math.round((usado / total) * 100);
+  }
+
+  function semaforo(d) {
+    if (!esVigente(d)) return { texto:'No vigente', clase:'dee-badge-gris', orden:4 };
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    const h = hoyCero();
+    if (!ini || !fin || fin <= ini) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
+    const restante = Math.max(fin - h, 0);
+    const total = fin - ini;
+    const pct = (restante / total) * 100;
+    if (pct < 20) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
+    if (pct <= 50) return { texto:'Ámbar', clase:'dee-badge-ambar', orden:2 };
+    return { texto:'Verde', clase:'dee-badge-verde', orden:3 };
+  }
+
+  function territorio(d) { return Array.isArray(d?.territorio) ? d.territorio : []; }
+  function keyDep(t){ return normalizarTexto(t?.departamento || ''); }
+  function keyProv(t){ return `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}`; }
+  function keyDist(t){ const ub = getUbigeoValue(t); return ub ? String(ub) : `${normalizarTexto(t?.departamento || '')}|${normalizarTexto(t?.provincia || '')}|${normalizarTexto(t?.distrito || '')}`; }
+  function latLng(t){
+    const lat = Number(String(getLatitud(t)).replace(',', '.'));
+    const lng = Number(String(getLongitud(t)).replace(',', '.'));
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
+    return null;
+  }
+  function nombreDS(d){ return formatearNumeroDS(d).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°'); }
+
+  function todosDecretos() {
+    return (state.decretos?.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
+  }
+
+  function colorPorIndice(i){ return DASH_COLORS[i % DASH_COLORS.length]; }
+
+  function construirDatos() {
+    const decretosTodos = todosDecretos();
+    const decretosFiltrados = decretosTodos.filter(aplicaFiltroEstado);
+    decretosFiltrados.forEach((d, i) => { d.__dashColor = colorPorIndice(i); });
+
+    const idsFiltro = new Set(decretosFiltrados.map(d => String(d.id)));
+    const claveFiltro = `${filtroDashboard}|${[...idsFiltro].sort().join(',')}`;
+
+    if (!seleccionLeyendaInicializada || ultimaClaveFiltroLeyenda !== claveFiltro) {
+      dsVisibles = new Set(idsFiltro);
+      seleccionLeyendaInicializada = true;
+      ultimaClaveFiltroLeyenda = claveFiltro;
+    } else {
+      dsVisibles = new Set([...dsVisibles].filter(id => idsFiltro.has(id)));
+    }
+
+    const decretosMapa = decretosFiltrados.filter(d => dsVisibles.has(String(d.id)));
+    const departamentos = new Set();
+    const provincias = new Set();
+    const distritos = new Map();
+    const departamentosConteo = new Map();
+    const departamentosDS = new Map();
+
+    decretosMapa.forEach((d) => {
+      territorio(d).forEach(t => {
+        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
+        if (!dep || !prov || !dist) return;
+        departamentos.add(dep); provincias.add(prov);
+        departamentosConteo.set(dep, (departamentosConteo.get(dep) || 0) + 1);
+        if (!departamentosDS.has(dep)) departamentosDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
+        departamentosDS.get(dep).decretos.set(String(d.id), { id: d.id, nombre: nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+        if (!distritos.has(dist)) {
+          distritos.set(dist, { key:dist, departamento:t.departamento||'', provincia:t.provincia||'', distrito:t.distrito||'', latlng:latLng(t), decretos:new Map(), fechasInicio:[], fechasFin:[] });
+        }
+        const item = distritos.get(dist);
+        item.decretos.set(String(d.id), { id:d.id, nombre:nombreDS(d), estado: esVigente(d) ? 'Vigente' : 'No vigente', color:d.__dashColor });
+        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+      });
+    });
+
+    return { decretosTodos, decretosFiltrados, decretosMapa, departamentos, provincias, distritos, departamentosConteo, departamentosDS };
+  }
+
+  function asegurarEstructuraDashboard() {
+    const tab = q('tabDashboard');
+    if (!tab) return;
+    const cardBody = tab.querySelector('.card-body');
+    if (!cardBody) return;
+    cardBody.id = 'dashboardExportArea';
+
+    const header = cardBody.querySelector('.d-flex.justify-content-between.align-items-center.mb-3');
+    if (header && !q('dashboardControlGlobal')) {
+      const panel = document.createElement('div');
+      panel.id = 'dashboardControlGlobal';
+      panel.className = 'dee-dashboard-toolbar border rounded bg-light p-2';
+      panel.innerHTML = `
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <label class="form-label mb-0 small">Filtro global</label>
+          <select id="dashboardFiltroEstado" class="form-select form-select-sm">
+            <option value="vigentes">Vigentes</option>
+            <option value="no_vigentes">No vigentes</option>
+            <option value="todos">Todos</option>
+          </select>
+          <span id="dashboardFiltroActivo" class="badge text-bg-primary">Vigentes</span>
+        </div>
+        <div class="dee-export-panel">
+          <label class="form-label mb-0 small">Exportar</label>
+          <select id="dashboardExportFiltro" class="form-select form-select-sm">
+            <option value="actual">Filtro actual</option>
+            <option value="vigentes">Vigentes</option>
+            <option value="no_vigentes">No vigentes</option>
+            <option value="todos">Todos</option>
+          </select>
+          <button id="btnExportDashboardJPG" type="button" class="btn btn-sm btn-outline-primary">Exportar Dashboard JPG</button>
+          <button id="btnExportDashboardPDF" type="button" class="btn btn-sm btn-primary">Exportar Dashboard PDF</button>
+        </div>`;
+      header.insertAdjacentElement('afterend', panel);
+    }
+
+    const mapa = q('mapaDS');
+    if (mapa && !q('dashboardMapaLeyenda')) {
+      const parent = mapa.parentElement;
+      const shell = document.createElement('div');
+      shell.className = 'dee-map-shell';
+      const leyenda = document.createElement('div');
+      leyenda.id = 'dashboardMapaLeyenda';
+      leyenda.className = 'dee-map-legend';
+      leyenda.innerHTML = '<div class="text-muted small">Leyenda de Decretos Supremos</div>';
+      parent.insertBefore(shell, mapa);
+      shell.appendChild(mapa);
+      shell.appendChild(leyenda);
+    }
+
+    const thDeptos = document.querySelector('#tablaDeptos thead tr');
+    if (thDeptos && !thDeptos.querySelector('[data-dash-ds-col]')) {
+      thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+    }
+    const thReps = document.querySelector('#tablaRepetidos thead tr');
+    if (thReps && !thReps.querySelector('[data-dash-ds-col]')) {
+      thReps.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+    }
+    const tituloRep = [...cardBody.querySelectorAll('h5.text-primary')].find(h => normalizarTexto(h.textContent).includes('DISTRITOS REPETIDOS'));
+    if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${estadoFiltroTexto().toLowerCase()}`;
+
+    const resumen = q('tablaResumenDS');
+    if (resumen && !q('dashboardSemaforoLeyenda')) {
+      resumen.closest('.table-responsive')?.insertAdjacentHTML('afterend', `
+        <div id="dashboardSemaforoLeyenda" class="dee-semaforo-legend">
+          <span class="dee-semaforo-item"><span class="badge dee-badge-verde">Verde</span> Plazo suficiente de vigencia</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ámbar</span> Próxima a vencer</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crítica o pocos días restantes</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-gris">Gris</span> Declaratoria no vigente</span>
+        </div>`);
+    }
+  }
+
+  function renderLeyenda(datos) {
+    const cont = q('dashboardMapaLeyenda');
+    if (!cont) return;
+    const filas = datos.decretosFiltrados.map(d => {
+      const distCount = new Set(territorio(d).map(keyDist).filter(Boolean)).size;
+      const id = String(d.id);
+      const checked = dsVisibles.has(id) ? 'checked' : '';
+      return `
+        <label class="dee-legend-row">
+          <input type="checkbox" class="form-check-input dash-ds-check" value="${escapeHtmlAttr(id)}" ${checked}>
+          <span class="dee-color-dot" style="background:${escapeHtmlAttr(d.__dashColor)}"></span>
+          <span><strong>${escapeHtml(nombreDS(d))}</strong><br><span class="text-muted">${esVigente(d) ? 'Vigente' : 'No vigente'} · ${distCount} distrito(s)</span></span>
+        </label>`;
+    }).join('');
+    cont.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>Leyenda por DS</strong>
+        <span class="badge text-bg-light">${escapeHtml(estadoFiltroTexto())}</span>
+      </div>
+      <div class="d-flex gap-2 mb-2">
+        <button id="btnDashSeleccionarTodos" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
+        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
+      </div>
+      ${filas || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
+    cont.querySelectorAll('.dash-ds-check').forEach(chk => chk.addEventListener('change', () => {
+      if (chk.checked) dsVisibles.add(String(chk.value)); else dsVisibles.delete(String(chk.value));
+      seleccionLeyendaInicializada = true;
+      renderDashboardEjecutivoV661(false);
+    }));
+    q('btnDashSeleccionarTodos')?.addEventListener('click', () => {
+      datos.decretosFiltrados.forEach(d => dsVisibles.add(String(d.id)));
+      seleccionLeyendaInicializada = true;
+      renderDashboardEjecutivoV661(false);
+    });
+    q('btnDashQuitarSeleccion')?.addEventListener('click', () => {
+      dsVisibles.clear();
+      seleccionLeyendaInicializada = true;
+      renderDashboardEjecutivoV661(false);
+    });
+  }
+
+  function renderKPIs(datos) {
+    const cont = q('dashboardMetricas');
+    if (!cont) return;
+    const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
+    const cards = [
+      [`Declaratorias de Estado de Emergencia`, datos.decretosMapa.length, `Filtro: ${estadoFiltroTexto()}`],
+      ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
+      ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
+      ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
+      ['Distritos en más de una declaratoria', repetidos, `Según filtro ${estadoFiltroTexto().toLowerCase()}`]
+    ];
+    cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
+  }
+
+  function resetearContenedorMapaSiCorresponde() {
+    let el = q('mapaDS');
+    if (!el || !window.L) return null;
+
+    // Este archivo conserva cierres anteriores del Dashboard. Si alguno de ellos
+    // inicializó Leaflet sobre #mapaDS, Leaflet deja _leaflet_id y capas antiguas
+    // que no obedecen la leyenda final. Se reemplaza SOLO el nodo del mapa para
+    // recuperar control limpio sin tocar tablas, KPIs ni estilos.
+    const necesitaReset = !mapaDashboard && (el._leaflet_id || el.classList.contains('leaflet-container'));
+    if (necesitaReset) {
+      const limpio = el.cloneNode(false);
+      limpio.id = 'mapaDS';
+      limpio.className = el.className.replace(/\bleaflet-[^\s]+/g, '').trim();
+      limpio.removeAttribute('tabindex');
+      limpio.removeAttribute('style');
+      limpio.style.height = el.style.height || '430px';
+      limpio.style.minHeight = el.style.minHeight || '430px';
+      el.replaceWith(limpio);
+      el = limpio;
+    }
+    return el;
+  }
+
+  function renderMapa(datos) {
+    let el = resetearContenedorMapaSiCorresponde();
+    if (!el || !window.L) return;
+
+    if (!mapaDashboard || !document.body.contains(mapaDashboard.getContainer())) {
+      mapaDashboard = L.map(el, { scrollWheelZoom: true }).setView([-9.19, -75.02], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap',
+        crossOrigin: true
+      }).addTo(mapaDashboard);
+      capaDashboard = L.layerGroup().addTo(mapaDashboard);
+    }
+
+    if (!capaDashboard) capaDashboard = L.layerGroup().addTo(mapaDashboard);
+    capaDashboard.clearLayers();
+
+    // Blindaje adicional: cualquier círculo/marcador dejado por cierres anteriores
+    // se retira; se conserva únicamente la capa base y la capa controlada aquí.
+    mapaDashboard.eachLayer(layer => {
+      if (layer !== capaDashboard && !(layer instanceof L.TileLayer)) {
+        try { mapaDashboard.removeLayer(layer); } catch (_) {}
+      }
+    });
+    if (!mapaDashboard.hasLayer(capaDashboard)) capaDashboard.addTo(mapaDashboard);
+
+    const bounds = [];
+    [...datos.distritos.values()].forEach(item => {
+      if (!item.latlng) return;
+      const ds = [...item.decretos.values()];
+      if (!ds.length) return;
+      const repetido = ds.length > 1;
+      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
+      const marker = L.circleMarker(item.latlng, {
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? .95 : .78,
+        opacity: 1,
+        pane: 'markerPane'
+      });
+      marker.bindTooltip(`<strong>${escapeHtml(item.distrito)}</strong><br>Provincia: ${escapeHtml(item.provincia)}<br>Departamento: ${escapeHtml(item.departamento)}<br>Decreto(s): ${escapeHtml(ds.map(d => d.nombre).join(', '))}`, { sticky:true });
+      marker.addTo(capaDashboard);
+      bounds.push(item.latlng);
+    });
+
+    if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 });
+    else mapaDashboard.setView([-9.19, -75.02], 5);
+
+    setTimeout(() => {
+      try { mapaDashboard.invalidateSize(true); } catch (_) {}
+      try { if (bounds.length) mapaDashboard.fitBounds(bounds, { padding:[20,20], maxZoom: 7 }); } catch (_) {}
+    }, 180);
+  }
+
+  function renderResumen(datos) {
+    const tbody = document.querySelector('#tablaResumenDS tbody');
+    if (!tbody) return;
+    const filas = datos.decretosMapa.map(d => {
+      const terr = territorio(d);
+      const deps = new Set(terr.map(keyDep).filter(Boolean));
+      const provs = new Set(terr.map(keyProv).filter(Boolean));
+      const dists = new Set(terr.map(keyDist).filter(Boolean));
+      const sem = semaforo(d);
+      return { d, deps, provs, dists, sem };
+    }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantes(a.d) - diasRestantes(b.d));
+    tbody.innerHTML = filas.length ? filas.map(x => `<tr><td>${escapeHtml(nombreDS(x.d))}</td><td>${escapeHtml(x.d.fecha_inicio||'')}</td><td>${escapeHtml(x.d.fecha_fin||'')}</td><td>${diasRestantes(x.d)}</td><td>${avanceTiempo(x.d)}%</td><td><span class="badge ${x.sem.clase}">${x.sem.texto}</span></td><td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td></tr>`).join('') : `<tr><td colspan="9" class="dee-dashboard-empty">No hay declaratorias para el filtro seleccionado.</td></tr>`;
+  }
+
+  function renderDepartamentos(datos) {
+    const tbody = document.querySelector('#tablaDeptos tbody');
+    if (!tbody) return;
+    const filas = [...datos.departamentosDS.entries()].map(([key, obj]) => ({ departamento: obj.nombre || key, count: datos.departamentosConteo.get(key) || 0, decretos: [...obj.decretos.values()] })).sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento,'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${escapeHtml(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${f.decretos.some(d=>d.estado==='Vigente') ? 'text-bg-success' : 'text-bg-secondary'}">${escapeHtml(estadoFiltroTexto())}</span></td><td>${escapeHtml(f.decretos.map(d=>d.nombre).join(', '))}</td></tr>`).join('') : `<tr><td colspan="4" class="dee-dashboard-empty">No hay departamentos para el filtro seleccionado.</td></tr>`;
+  }
+
+  function renderRepetidos(datos) {
+    const tbody = document.querySelector('#tablaRepetidos tbody');
+    if (!tbody) return;
+    const filas = [...datos.distritos.values()].map(item => ({...item, veces:item.decretos.size, ds:[...item.decretos.values()]})).filter(x => x.veces > 1).sort((a,b) => b.veces - a.veces || String(a.departamento).localeCompare(String(b.departamento),'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${escapeHtml(f.departamento)}</td><td>${escapeHtml(f.provincia)}</td><td>${escapeHtml(f.distrito)}</td><td>${f.veces}</td><td>${escapeHtml(f.fechasInicio.sort()[0]||'')}</td><td>${escapeHtml(f.fechasFin.sort().slice(-1)[0]||'')}</td><td>${escapeHtml(f.ds.map(d=>d.nombre).join(', '))}</td></tr>`).join('') : `<tr><td colspan="7" class="dee-dashboard-empty">No hay distritos repetidos para el filtro seleccionado.</td></tr>`;
+  }
+
+  function actualizarTextoFiltro() {
+    const badge = q('dashboardFiltroActivo');
+    if (badge) badge.textContent = estadoFiltroTexto();
+    const subtitulo = q('tabDashboard')?.querySelector('h4.text-primary + .text-muted');
+    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia · Filtro aplicado: ${estadoFiltroTexto()} · Control territorial sin duplicidades`;
+    const tituloRep = [...(q('tabDashboard')?.querySelectorAll('h5.text-primary') || [])].find(h => normalizarTexto(h.textContent).includes('DISTRITOS REPETIDOS'));
+    if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${estadoFiltroTexto().toLowerCase()}`;
+  }
+
+  function renderDashboardEjecutivoV661(resetSeleccion = true) {
+    try {
+      asegurarEstilosDashboard();
+      asegurarEstructuraDashboard();
+      const sel = q('dashboardFiltroEstado');
+      if (sel && sel.value !== filtroDashboard) sel.value = filtroDashboard;
+      if (resetSeleccion) {
+        dsVisibles.clear();
+        seleccionLeyendaInicializada = false;
+        ultimaClaveFiltroLeyenda = '';
+      }
+      const datos = construirDatos();
+      actualizarTextoFiltro();
+      renderLeyenda(datos);
+      renderKPIs(datos);
+      renderMapa(datos);
+      renderResumen(datos);
+      renderDepartamentos(datos);
+      renderRepetidos(datos);
+    } catch (e) { console.error('Error Dashboard v66.1:', e); }
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (src.includes('html2canvas') && window.html2canvas) return resolve();
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function prepararExportacion(tipo) {
+    const oldFiltro = filtroDashboard;
+    const oldSeleccion = new Set(dsVisibles);
+    const oldInicializada = seleccionLeyendaInicializada;
+    const oldClave = ultimaClaveFiltroLeyenda;
+    const chosen = q('dashboardExportFiltro')?.value || 'actual';
+
+    if (chosen !== 'actual') {
+      filtroDashboard = chosen;
+      q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+      dsVisibles.clear();
+      seleccionLeyendaInicializada = false;
+      ultimaClaveFiltroLeyenda = '';
+      renderDashboardEjecutivoV661(true);
+    } else {
+      // Exporta exactamente lo que el usuario tiene marcado en la leyenda.
+      renderDashboardEjecutivoV661(false);
+    }
+
+    await new Promise(r => setTimeout(r, 700));
+    await exportarDashboard(tipo);
+
+    filtroDashboard = oldFiltro;
+    q('dashboardFiltroEstado') && (q('dashboardFiltroEstado').value = filtroDashboard);
+    dsVisibles = new Set(oldSeleccion);
+    seleccionLeyendaInicializada = oldInicializada;
+    ultimaClaveFiltroLeyenda = oldClave;
+    renderDashboardEjecutivoV661(false);
+  }
+
+  async function exportarDashboard(tipo) {
+    const area = q('dashboardExportArea') || q('tabDashboard');
+    if (!area) return alert('No se encontró el Dashboard para exportar.');
+    const oldAreaWidth = area.style.width;
+    const oldAreaMaxWidth = area.style.maxWidth;
+    const oldOverflow = document.body.style.overflow;
+    let titulo = null;
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
+      await new Promise(r => setTimeout(r, 350));
+
+      titulo = document.createElement('div');
+      titulo.id = 'dashboardExportHeaderTmp';
+      titulo.className = 'border-bottom mb-2 pb-2';
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} · DS seleccionados: ${dsVisibles.size}</div>`;
+      area.insertBefore(titulo, area.firstChild);
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
+      await new Promise(r => setTimeout(r, 250));
+
+      const canvas = await window.html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: area.scrollWidth,
+        height: area.scrollHeight,
+        windowWidth: Math.max(1400, area.scrollWidth),
+        windowHeight: Math.max(900, area.scrollHeight)
+      });
+      titulo.remove();
+      titulo = null;
+      const fileBase = `Dashboard_DEE_${estadoFiltroTexto().replace(/\s+/g,'_')}_${hoy()}`;
+      if (tipo === 'jpg') {
+        const a = document.createElement('a');
+        a.download = `${fileBase}.jpg`;
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.click();
+        return;
+      }
+      const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+      if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW - 16;
+      const imgH = canvas.height * imgW / canvas.width;
+      let heightLeft = imgH;
+      let position = 8;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
+      heightLeft -= (pageH - 16);
+      while (heightLeft > 0) {
+        pdf.addPage('l');
+        position = heightLeft - imgH + 8;
+        pdf.addImage(imgData, 'JPEG', 8, position, imgW, imgH);
+        heightLeft -= (pageH - 16);
+      }
+      pdf.save(`${fileBase}.pdf`);
+    } catch (e) {
+      console.error('Error exportando Dashboard:', e);
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+    } finally {
+      if (titulo) { try { titulo.remove(); } catch (_) {} }
+      area.style.width = oldAreaWidth;
+      area.style.maxWidth = oldAreaMaxWidth;
+      document.body.style.overflow = oldOverflow;
+      try { mapaDashboard?.invalidateSize(true); } catch (_) {}
+    }
+  }
+
+  function instalarEventos() {
+    if (inicializado) return;
+    inicializado = true;
+    document.addEventListener('change', (e) => {
+      if (e.target?.id === 'dashboardFiltroEstado') {
+        filtroDashboard = e.target.value || 'vigentes';
+        dsVisibles.clear();
+        renderDashboardEjecutivoV661(true);
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (e.target?.id === 'btnActualizarDashboard') renderDashboardEjecutivoV661(true);
+      if (e.target?.id === 'btnExportDashboardJPG') prepararExportacion('jpg');
+      if (e.target?.id === 'btnExportDashboardPDF') prepararExportacion('pdf');
+    });
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', () => setTimeout(() => renderDashboardEjecutivoV661(false), 250));
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(() => renderDashboardEjecutivoV661(false), 300));
+  }
+
+  const renderOriginalDS = typeof window.renderTablaDecretosBasica === 'function' ? window.renderTablaDecretosBasica : null;
+  if (renderOriginalDS && !window.__dashboardV661RenderHook) {
+    window.__dashboardV661RenderHook = true;
+    window.renderTablaDecretosBasica = function() {
+      const r = renderOriginalDS.apply(this, arguments);
+      setTimeout(() => renderDashboardEjecutivoV661(false), 100);
+      return r;
+    };
+    try { renderTablaDecretosBasica = window.renderTablaDecretosBasica; } catch {}
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    instalarEventos();
+    setTimeout(() => renderDashboardEjecutivoV661(true), 1200);
+  });
+  setTimeout(() => { instalarEventos(); renderDashboardEjecutivoV661(true); }, 2500);
+  window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoV661;
+  window.renderDashboardEjecutivoV661 = renderDashboardEjecutivoV661;
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= CORRECCIÓN QUIRÚRGICA FINAL DASHBOARD v68.2 =================
+// Alcance exclusivo: checkbox Leyenda por DS ↔ puntos del mapa y exportación JPG/PDF.
+// No modifica login, roles, tablas de registro, RDS, usuarios ni estilos generales.
+(function dashboardCheckboxExportV682(){
+  const VERSION = 'v68.2 checkbox-export-map-final';
+  const COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
+  const PERU_CENTER = [-9.19, -75.02];
+  const PERU_ZOOM = 5;
+
+  let filtroEstado = 'vigentes';
+  let seleccionInicializada = false;
+  let claveSeleccion = '';
+  let dsSeleccionados = new Set();
+  let finalMap = null;
+  let installed = false;
+
+  const q = (id) => document.getElementById(id);
+  const norm = (v) => (typeof normalizarTexto === 'function' ? normalizarTexto(v) : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase());
+  const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+  const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
+
+  function fechaLocal(v){
+    if (!v) return null;
+    const s = String(v).slice(0,10);
+    const d = new Date(`${s}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  function hoy0(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function vigente(d){
+    const h = hoy0();
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (ini && h < ini) return false;
+    return h <= fin;
+  }
+  function aplicaFiltro(d){
+    const v = vigente(d);
+    if (filtroEstado === 'vigentes') return v;
+    if (filtroEstado === 'no_vigentes') return !v;
+    return true;
+  }
+  function filtroTexto(){ return filtroEstado === 'vigentes' ? 'Vigentes' : (filtroEstado === 'no_vigentes' ? 'No vigentes' : 'Todos'); }
+  function territorio(d){ return Array.isArray(d?.territorio) ? d.territorio : []; }
+  function ubigeo(t){ return (typeof getUbigeoValue === 'function' ? getUbigeoValue(t) : (t?.ubigeo || t?.UBIGEO || t?.codigo || '')); }
+  function latVal(t){ return (typeof getLatitud === 'function' ? getLatitud(t) : (t?.latitud ?? t?.lat ?? '')); }
+  function lngVal(t){ return (typeof getLongitud === 'function' ? getLongitud(t) : (t?.longitud ?? t?.lng ?? t?.lon ?? '')); }
+  function keyDep(t){ return norm(t?.departamento || ''); }
+  function keyProv(t){ return `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}`; }
+  function keyDist(t){ const u = ubigeo(t); return u ? String(u) : `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}|${norm(t?.distrito || '')}`; }
+  function latLng(t){
+    const lat = Number(String(latVal(t)).replace(',', '.'));
+    const lng = Number(String(lngVal(t)).replace(',', '.'));
+    return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
+  }
+  function dsNombre(d){
+    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    return txt.replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
+  }
+  function decretosBase(){
+    const arr = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
+    return (Array.isArray(arr) ? arr : []).map(x => typeof normalizarDecreto === 'function' ? normalizarDecreto(x) : x).filter(Boolean);
+  }
+  function diasRestantes(d){ const fin = fechaLocal(d?.fecha_fin || d?.fechaFin); return fin ? Math.max(0, Math.ceil((fin - hoy0()) / 86400000)) : 0; }
+  function avanceTiempo(d){
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio), fin = fechaLocal(d?.fecha_fin || d?.fechaFin), h = hoy0();
+    if (!ini || !fin || fin <= ini) return 0;
+    return Math.round((Math.min(Math.max(h - ini, 0), fin - ini) / (fin - ini)) * 100);
+  }
+  function semaforo(d){
+    if (!vigente(d)) return { texto:'No vigente', clase:'dee-badge-gris', orden:4 };
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio), fin = fechaLocal(d?.fecha_fin || d?.fechaFin), h = hoy0();
+    if (!ini || !fin || fin <= ini) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
+    const pct = (Math.max(fin - h, 0) / (fin - ini)) * 100;
+    if (pct < 20) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
+    if (pct <= 50) return { texto:'Ámbar', clase:'dee-badge-ambar', orden:2 };
+    return { texto:'Verde', clase:'dee-badge-verde', orden:3 };
+  }
+
+  function asegurarEstructura(){
+    const tab = q('tabDashboard');
+    const cardBody = tab?.querySelector('.card-body');
+    if (!cardBody) return;
+    cardBody.id = 'dashboardExportArea';
+
+    const header = cardBody.querySelector('.d-flex.justify-content-between.align-items-center.mb-3');
+    if (header && !q('dashboardControlGlobal')) {
+      const panel = document.createElement('div');
+      panel.id = 'dashboardControlGlobal';
+      panel.className = 'dee-dashboard-toolbar border rounded bg-light p-2';
+      panel.innerHTML = `
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <label class="form-label mb-0 small">Filtro global</label>
+          <select id="dashboardFiltroEstado" class="form-select form-select-sm">
+            <option value="vigentes">Vigentes</option>
+            <option value="no_vigentes">No vigentes</option>
+            <option value="todos">Todos</option>
+          </select>
+          <span id="dashboardFiltroActivo" class="badge text-bg-primary">Vigentes</span>
+        </div>
+        <div class="dee-export-panel">
+          <label class="form-label mb-0 small">Exportar</label>
+          <select id="dashboardExportFiltro" class="form-select form-select-sm">
+            <option value="actual">Filtro actual</option>
+            <option value="vigentes">Vigentes</option>
+            <option value="no_vigentes">No vigentes</option>
+            <option value="todos">Todos</option>
+          </select>
+          <button id="btnExportDashboardJPG" type="button" class="btn btn-sm btn-outline-primary">Exportar Dashboard JPG</button>
+          <button id="btnExportDashboardPDF" type="button" class="btn btn-sm btn-primary">Exportar Dashboard PDF</button>
+        </div>`;
+      header.insertAdjacentElement('afterend', panel);
+    }
+
+    const mapa = q('mapaDS');
+    if (mapa && !q('dashboardMapaLeyenda')) {
+      const parent = mapa.parentElement;
+      const shell = document.createElement('div');
+      shell.className = 'dee-map-shell';
+      const leyenda = document.createElement('div');
+      leyenda.id = 'dashboardMapaLeyenda';
+      leyenda.className = 'dee-map-legend';
+      parent.insertBefore(shell, mapa);
+      shell.appendChild(mapa);
+      shell.appendChild(leyenda);
+    }
+
+    const thResumen = document.querySelector('#tablaResumenDS thead tr');
+    if (thResumen) {
+      // v77.1: normaliza la cabecera para evitar columnas duplicadas Peligro/Tipo.
+      // La versión anterior insertaba Peligro/Tipo aunque ya existían en el HTML,
+      // desfasando los encabezados respecto de las celdas del cuerpo.
+      thResumen.innerHTML = `
+        <th>Decreto Supremo</th>
+        <th data-dash-peligro-col>Peligro</th>
+        <th data-dash-tipo-col>Tipo</th>
+        <th>Fecha inicio</th>
+        <th>Fecha fin</th>
+        <th>Días restantes</th>
+        <th>Avance %</th>
+        <th>Semáforo</th>
+        <th>N.° departamentos</th>
+        <th>N.° provincias</th>
+        <th>N.° distritos</th>`;
+    }
+
+    const thDeptos = document.querySelector('#tablaDeptos thead tr');
+    if (thDeptos) {
+      const ths = thDeptos.querySelectorAll('th');
+      if (ths[1]) ths[1].textContent = 'Número de distritos';
+      if (!thDeptos.querySelector('[data-dash-ds-col]')) thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+    }
+    const thReps = document.querySelector('#tablaRepetidos thead tr');
+    if (thReps && !thReps.querySelector('[data-dash-ds-col]')) thReps.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
+
+    const resumen = q('tablaResumenDS');
+    if (resumen && !q('dashboardSemaforoLeyenda')) {
+      resumen.closest('.table-responsive')?.insertAdjacentHTML('afterend', `
+        <div id="dashboardSemaforoLeyenda" class="dee-semaforo-legend">
+          <span class="dee-semaforo-item"><span class="badge dee-badge-verde">Verde</span> Plazo suficiente de vigencia</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ámbar</span> Próxima a vencer</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crítica o pocos días restantes</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-gris">Gris</span> Declaratoria no vigente</span>
+        </div>`);
+    }
+  }
+
+  function datosDashboard(){
+    const filtrados = decretosBase().filter(aplicaFiltro).map((d, i) => ({ ...d, __dashColor: COLORS[i % COLORS.length] }));
+    const ids = new Set(filtrados.map(d => String(d.id)));
+    const clave = `${filtroEstado}|${[...ids].sort().join(',')}`;
+    if (!seleccionInicializada || claveSeleccion !== clave) {
+      dsSeleccionados = new Set(ids);
+      seleccionInicializada = true;
+      claveSeleccion = clave;
+    } else {
+      dsSeleccionados = new Set([...dsSeleccionados].filter(id => ids.has(id)));
+    }
+
+    const decretosMapa = filtrados.filter(d => dsSeleccionados.has(String(d.id)));
+    const departamentos = new Set(), provincias = new Set(), distritos = new Map(), deptoConteo = new Map(), deptoDS = new Map();
+
+    decretosMapa.forEach(d => {
+      territorio(d).forEach(t => {
+        const dep = keyDep(t), prov = keyProv(t), dist = keyDist(t);
+        if (!dep || !prov || !dist) return;
+        departamentos.add(dep); provincias.add(prov);
+        deptoConteo.set(dep, (deptoConteo.get(dep) || 0) + 1);
+        if (!deptoDS.has(dep)) deptoDS.set(dep, { nombre: t.departamento || dep, decretos: new Map() });
+        deptoDS.get(dep).decretos.set(String(d.id), { nombre: dsNombre(d), estado: vigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+        if (!distritos.has(dist)) distritos.set(dist, { key: dist, departamento: t.departamento || '', provincia: t.provincia || '', distrito: t.distrito || '', latlng: latLng(t), decretos: new Map(), fechasInicio: [], fechasFin: [] });
+        const item = distritos.get(dist);
+        item.decretos.set(String(d.id), { nombre: dsNombre(d), estado: vigente(d) ? 'Vigente' : 'No vigente', color: d.__dashColor });
+        if (d.fecha_inicio) item.fechasInicio.push(String(d.fecha_inicio).slice(0,10));
+        if (d.fecha_fin) item.fechasFin.push(String(d.fecha_fin).slice(0,10));
+      });
+    });
+
+    return { filtrados, decretosMapa, departamentos, provincias, distritos, deptoConteo, deptoDS };
+  }
+
+  function renderLeyenda(datos){
+    const cont = q('dashboardMapaLeyenda');
+    if (!cont) return;
+    cont.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>Leyenda por DS</strong>
+        <span class="badge text-bg-light">${esc(filtroTexto())}</span>
+      </div>
+      <div class="d-flex gap-2 mb-2">
+        <button id="btnDashSeleccionarTodos" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
+        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
+      </div>
+      ${datos.filtrados.map(d => {
+        const id = String(d.id);
+        const count = new Set(territorio(d).map(keyDist).filter(Boolean)).size;
+        return `<label class="dee-legend-row">
+          <input type="checkbox" class="form-check-input dash-ds-check" value="${escAttr(id)}" ${dsSeleccionados.has(id) ? 'checked' : ''}>
+          <span class="dee-color-dot" style="background:${escAttr(d.__dashColor)}"></span>
+          <span><strong>${esc(dsNombre(d))}</strong><br><span class="text-muted">${vigente(d) ? 'Vigente' : 'No vigente'} · ${count} distrito(s)</span></span>
+        </label>`;
+      }).join('') || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
+  }
+
+  function recrearMapaLimpio(){
+    let el = q('mapaDS');
+    if (!el || !window.L) return null;
+    try { if (finalMap) finalMap.remove(); } catch(_) {}
+    finalMap = null;
+
+    const limpio = document.createElement('div');
+    limpio.id = 'mapaDS';
+    limpio.className = (el.className || '').split(/\s+/).filter(c => !c.startsWith('leaflet-')).join(' ');
+    limpio.style.height = el.style.height || '430px';
+    limpio.style.minHeight = el.style.minHeight || '430px';
+    limpio.style.width = '100%';
+    limpio.dataset.owner = VERSION;
+    el.replaceWith(limpio);
+    return limpio;
+  }
+
+  function renderMapa(datos){
+    const el = recrearMapaLimpio();
+    if (!el || !window.L) return;
+    finalMap = L.map(el, { scrollWheelZoom: true, zoomControl: true }).setView(PERU_CENTER, PERU_ZOOM);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap', crossOrigin: true }).addTo(finalMap);
+    const capa = L.layerGroup().addTo(finalMap);
+    const bounds = [];
+
+    [...datos.distritos.values()].forEach(item => {
+      if (!item.latlng) return;
+      const ds = [...item.decretos.values()];
+      if (!ds.length) return;
+      const repetido = ds.length > 1;
+      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
+      const marker = L.circleMarker(item.latlng, {
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? 0.95 : 0.80,
+        opacity: 1
+      });
+      marker.bindTooltip(`<strong>${esc(item.distrito)}</strong><br>Provincia: ${esc(item.provincia)}<br>Departamento: ${esc(item.departamento)}<br>Decreto(s): ${esc(ds.map(x => x.nombre).join(', '))}`, { sticky: true });
+      marker.addTo(capa);
+      bounds.push(item.latlng);
+    });
+
+    if (bounds.length) finalMap.fitBounds(bounds, { padding:[20,20], maxZoom:7 });
+    else finalMap.setView(PERU_CENTER, PERU_ZOOM);
+    setTimeout(() => {
+      try { finalMap.invalidateSize(true); } catch(_) {}
+      try { if (bounds.length) finalMap.fitBounds(bounds, { padding:[20,20], maxZoom:7 }); } catch(_) {}
+    }, 180);
+  }
+
+  function renderKPIs(datos){
+    const cont = q('dashboardMetricas'); if (!cont) return;
+    const repetidos = [...datos.distritos.values()].filter(x => x.decretos.size > 1).length;
+    const cards = [
+      ['Declaratorias de Estado de Emergencia', datos.decretosMapa.length, `Filtro: ${filtroTexto()}`],
+      ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
+      ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
+      ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
+      ['Distritos en más de una declaratoria', repetidos, `Según filtro ${filtroTexto().toLowerCase()}`]
+    ];
+    cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${esc(value)}</div><div class="dee-kpi-label">${esc(label)}</div><div class="dee-kpi-note">${esc(note)}</div></div></div>`).join('');
+  }
+
+  function renderResumen(datos){
+    const tbody = document.querySelector('#tablaResumenDS tbody'); if (!tbody) return;
+    const filas = datos.decretosMapa.map(d => {
+      const terr = territorio(d);
+      return { d, deps:new Set(terr.map(keyDep).filter(Boolean)), provs:new Set(terr.map(keyProv).filter(Boolean)), dists:new Set(terr.map(keyDist).filter(Boolean)), sem:semaforo(d) };
+    }).sort((a,b) => a.sem.orden - b.sem.orden || diasRestantes(a.d) - diasRestantes(b.d));
+    tbody.innerHTML = filas.length ? filas.map(x => `<tr><td>${esc(dsNombre(x.d))}</td><td>${esc(x.d.peligro||'')}</td><td>${esc(x.d.tipo_peligro||x.d.tipoPeligro||'')}</td><td>${esc(x.d.fecha_inicio||'')}</td><td>${esc(x.d.fecha_fin||'')}</td><td>${diasRestantes(x.d)}</td><td>${avanceTiempo(x.d)}%</td><td><span class="badge ${x.sem.clase}">${esc(x.sem.texto)}</span></td><td>${x.deps.size}</td><td>${x.provs.size}</td><td>${x.dists.size}</td></tr>`).join('') : `<tr><td colspan="11" class="dee-dashboard-empty">No hay declaratorias para el filtro seleccionado.</td></tr>`;
+  }
+
+  function renderDepartamentos(datos){
+    const tbody = document.querySelector('#tablaDeptos tbody'); if (!tbody) return;
+    const filas = [...datos.deptoDS.entries()].map(([key, obj]) => ({ departamento: obj.nombre || key, count: datos.deptoConteo.get(key) || 0, decretos: [...obj.decretos.values()] })).sort((a,b) => b.count - a.count || a.departamento.localeCompare(b.departamento,'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => {
+      const dsTexto = f.decretos.map(d=>d.nombre).join(', ');
+      return `<tr><td>${esc(f.departamento)}</td><td>${f.count}</td><td><span class="badge ${f.decretos.some(d=>d.estado==='Vigente') ? 'text-bg-success' : 'text-bg-secondary'}">${esc(filtroTexto())}</span></td><td>${esc(`(${f.decretos.length}) ${dsTexto}`)}</td></tr>`;
+    }).join('') : `<tr><td colspan="4" class="dee-dashboard-empty">No hay departamentos para el filtro seleccionado.</td></tr>`;
+  }
+
+  function renderRepetidos(datos){
+    const tbody = document.querySelector('#tablaRepetidos tbody'); if (!tbody) return;
+    const filas = [...datos.distritos.values()].map(x => ({ ...x, veces:x.decretos.size, ds:[...x.decretos.values()] })).filter(x => x.veces > 1).sort((a,b) => b.veces - a.veces || String(a.departamento).localeCompare(String(b.departamento),'es'));
+    tbody.innerHTML = filas.length ? filas.map(f => `<tr><td>${esc(f.departamento)}</td><td>${esc(f.provincia)}</td><td>${esc(f.distrito)}</td><td>${f.veces}</td><td>${esc(f.fechasInicio.sort()[0]||'')}</td><td>${esc(f.fechasFin.sort().slice(-1)[0]||'')}</td><td>${esc(f.ds.map(d=>d.nombre).join(', '))}</td></tr>`).join('') : `<tr><td colspan="7" class="dee-dashboard-empty">No hay distritos repetidos para el filtro seleccionado.</td></tr>`;
+  }
+
+  function actualizarTextos(){
+    const sel = q('dashboardFiltroEstado'); if (sel) sel.value = filtroEstado;
+    const badge = q('dashboardFiltroActivo'); if (badge) badge.textContent = filtroTexto();
+    const subtitulo = q('tabDashboard')?.querySelector('h4.text-primary + .text-muted');
+    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia · Filtro aplicado: ${filtroTexto()} · Control territorial sin duplicidades`;
+    const tituloRep = [...(q('tabDashboard')?.querySelectorAll('h5.text-primary') || [])].find(h => norm(h.textContent).includes('DISTRITOS REPETIDOS'));
+    if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${filtroTexto().toLowerCase()}`;
+  }
+
+  function render(reset = false){
+    try {
+      asegurarEstructura();
+      if (reset) { seleccionInicializada = false; claveSeleccion = ''; dsSeleccionados.clear(); }
+      const datos = datosDashboard();
+      actualizarTextos();
+      renderLeyenda(datos);
+      renderKPIs(datos);
+      renderMapa(datos);
+      renderResumen(datos);
+      renderDepartamentos(datos);
+      renderRepetidos(datos);
+    } catch(e) { console.error('Error Dashboard v68.2:', e); }
+  }
+
+  function loadScript(src){
+    return new Promise((resolve, reject) => {
+      if (src.includes('html2canvas') && window.html2canvas) return resolve();
+      if (src.includes('jspdf') && (window.jspdf?.jsPDF || window.jsPDF)) return resolve();
+      const s = document.createElement('script'); s.src = src; s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+    });
+  }
+
+  async function exportar(tipo){
+    const area = q('dashboardExportArea') || q('tabDashboard');
+    if (!area) return alert('No se encontró el Dashboard para exportar.');
+    const oldFiltro = filtroEstado;
+    const oldSeleccion = new Set(dsSeleccionados);
+    const oldInit = seleccionInicializada;
+    const oldClave = claveSeleccion;
+    const chosen = q('dashboardExportFiltro')?.value || 'actual';
+
+    if (chosen !== 'actual') {
+      filtroEstado = chosen;
+      seleccionInicializada = false;
+      claveSeleccion = '';
+      dsSeleccionados.clear();
+    }
+    render(chosen !== 'actual');
+    await new Promise(r => setTimeout(r, 700));
+
+    const oldW = area.style.width, oldMax = area.style.maxWidth, oldOverflow = document.body.style.overflow;
+    let titulo = null;
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+      if (tipo === 'pdf') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      render(false);
+      await new Promise(r => setTimeout(r, 900));
+      try { finalMap?.invalidateSize(true); } catch(_) {}
+
+      titulo = document.createElement('div');
+      titulo.id = 'dashboardExportHeaderTmp';
+      titulo.className = 'border-bottom mb-2 pb-2';
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${dsSeleccionados.size}</div>`;
+      area.insertBefore(titulo, area.firstChild);
+      await new Promise(r => setTimeout(r, 300));
+
+      const canvas = await window.html2canvas(area, { scale:2, useCORS:true, allowTaint:false, backgroundColor:'#ffffff', logging:false, width:area.scrollWidth, height:area.scrollHeight, windowWidth:Math.max(1400, area.scrollWidth), windowHeight:Math.max(900, area.scrollHeight) });
+      titulo.remove(); titulo = null;
+      const base = `Dashboard_DEE_${filtroTexto().replace(/\s+/g,'_')}_${typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10)}`;
+      if (tipo === 'jpg') {
+        const a = document.createElement('a');
+        a.download = `${base}.jpg`;
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.click();
+      } else {
+        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+        if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
+        const pdf = new jsPDF('l','mm','a4');
+        const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
+        const imgW = pageW - 16, imgH = canvas.height * imgW / canvas.width;
+        const img = canvas.toDataURL('image/jpeg', 0.95);
+        let pos = 8, left = imgH;
+        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
+        left -= (pageH - 16);
+        while (left > 0) { pdf.addPage('l'); pos = left - imgH + 8; pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH); left -= (pageH - 16); }
+        pdf.save(`${base}.pdf`);
+      }
+    } catch(e) {
+      console.error('Error exportando Dashboard v68.2:', e);
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+    } finally {
+      if (titulo) { try { titulo.remove(); } catch(_) {} }
+      area.style.width = oldW;
+      area.style.maxWidth = oldMax;
+      document.body.style.overflow = oldOverflow;
+      filtroEstado = oldFiltro;
+      dsSeleccionados = new Set(oldSeleccion);
+      seleccionInicializada = oldInit;
+      claveSeleccion = oldClave;
+      render(false);
+    }
+  }
+
+  function instalarEventos(){
+    if (installed) return;
+    installed = true;
+
+    document.addEventListener('change', (e) => {
+      const t = e.target;
+      if (!t) return;
+      if (t.id === 'dashboardFiltroEstado') {
+        e.preventDefault(); e.stopImmediatePropagation();
+        filtroEstado = t.value || 'vigentes';
+        seleccionInicializada = false; claveSeleccion = ''; dsSeleccionados.clear();
+        render(true);
+        return;
+      }
+      if (t.classList?.contains('dash-ds-check')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        const id = String(t.value || '');
+        if (t.checked) dsSeleccionados.add(id); else dsSeleccionados.delete(id);
+        seleccionInicializada = true;
+        render(false);
+      }
+    }, true);
+
+    document.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t) return;
+      if (t.id === 'btnDashSeleccionarTodos') {
+        e.preventDefault(); e.stopImmediatePropagation();
+        datosDashboard().filtrados.forEach(d => dsSeleccionados.add(String(d.id)));
+        seleccionInicializada = true;
+        render(false);
+        return;
+      }
+      if (t.id === 'btnDashQuitarSeleccion') {
+        e.preventDefault(); e.stopImmediatePropagation();
+        dsSeleccionados.clear(); seleccionInicializada = true;
+        render(false);
+        return;
+      }
+      if (t.id === 'btnExportDashboardJPG') {
+        e.preventDefault(); e.stopImmediatePropagation(); exportar('jpg'); return;
+      }
+      if (t.id === 'btnExportDashboardPDF') {
+        e.preventDefault(); e.stopImmediatePropagation(); exportar('pdf'); return;
+      }
+      if (t.id === 'btnActualizarDashboard') {
+        e.preventDefault(); e.stopImmediatePropagation(); render(true); return;
+      }
+    }, true);
+
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', () => setTimeout(() => render(false), 350));
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('click', () => setTimeout(() => render(false), 450));
+  }
+
+  window.renderDashboardEjecutivoDEE = function(reset){ return render(Boolean(reset)); };
+  window.renderDashboardEjecutivoV661 = window.renderDashboardEjecutivoDEE;
+  window.__dashboardCheckboxExportV682 = { render, exportar, version: VERSION };
+
+  document.addEventListener('DOMContentLoaded', () => { instalarEventos(); setTimeout(() => render(true), 1800); });
+  setTimeout(() => { instalarEventos(); render(true); }, 4200);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= CORRECCIÓN QUIRÚRGICA DASHBOARD v74.1 =================
+// Alcance exclusivo: alineación de puntos Leaflet en el mapa del Dashboard y exportación JPG/PDF.
+// No modifica login, usuarios, roles, RDS, tablas ni estructura general.
+(function dashboardPuntosCalzadosV741(){
+  const VERSION = 'v74.1 puntos-calzados-mapa-export';
+  const PERU_CENTER = [-9.19, -75.02];
+  const PERU_ZOOM = 5;
+  const COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
+
+  let fixedMap = null;
+  let fixedRenderer = null;
+  let installing = false;
+  let renderTimer = null;
+  let exportando = false;
+
+  const $id = (id) => document.getElementById(id);
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const norm = (v) => (typeof normalizarTexto === 'function'
+    ? normalizarTexto(v)
+    : String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase());
+  const esc = (v) => (typeof escapeHtml === 'function'
+    ? escapeHtml(v)
+    : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+
+  function fechaLocal(v) {
+    if (!v) return null;
+    const d = new Date(`${String(v).slice(0, 10)}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function hoy0() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function esVigente(d) {
+    const h = hoy0();
+    const ini = fechaLocal(d?.fecha_inicio || d?.fechaInicio);
+    const fin = fechaLocal(d?.fecha_fin || d?.fechaFin);
+    if (!fin) return false;
+    if (ini && h < ini) return false;
+    return h <= fin;
+  }
+
+  function filtroActual() {
+    return $id('dashboardFiltroEstado')?.value || 'vigentes';
+  }
+
+  function filtroTexto() {
+    const f = filtroActual();
+    if (f === 'vigentes') return 'Vigentes';
+    if (f === 'no_vigentes') return 'No vigentes';
+    return 'Todos';
+  }
+
+  function aplicaFiltroEstado(d) {
+    const v = esVigente(d);
+    const f = filtroActual();
+    if (f === 'vigentes') return v;
+    if (f === 'no_vigentes') return !v;
+    return true;
+  }
+
+  function getUbigeo(t) { return typeof getUbigeoValue === 'function' ? getUbigeoValue(t) : (t?.ubigeo || t?.UBIGEO || t?.codigo || t?.cod_ubigeo || ''); }
+  function getLat(t) { return typeof getLatitud === 'function' ? getLatitud(t) : (t?.latitud ?? t?.lat ?? ''); }
+  function getLng(t) { return typeof getLongitud === 'function' ? getLongitud(t) : (t?.longitud ?? t?.lng ?? t?.lon ?? ''); }
+  function territorio(d) { return Array.isArray(d?.territorio) ? d.territorio : []; }
+  function keyDist(t) {
+    const ub = getUbigeo(t);
+    return ub ? String(ub) : `${norm(t?.departamento || '')}|${norm(t?.provincia || '')}|${norm(t?.distrito || '')}`;
+  }
+  function latLng(t) {
+    const lat = Number(String(getLat(t)).replace(',', '.'));
+    const lng = Number(String(getLng(t)).replace(',', '.'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    return [lat, lng];
+  }
+  function nombreDS(d) {
+    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    return String(txt).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
+  }
+  function decretosBase() {
+    const base = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
+    return (Array.isArray(base) ? base : []).map(d => typeof normalizarDecreto === 'function' ? normalizarDecreto(d) : d).filter(Boolean);
+  }
+
+  function coloresDesdeLeyenda() {
+    const mapa = new Map();
+    document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach((chk, i) => {
+      const dot = chk.closest('.dee-legend-row')?.querySelector('.dee-color-dot');
+      mapa.set(String(chk.value), dot?.style?.background || COLORS[i % COLORS.length]);
+    });
+    return mapa;
+  }
+
+  function idsSeleccionadosActuales() {
+    const checks = [...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')];
+    if (checks.length) return new Set(checks.filter(chk => chk.checked).map(chk => String(chk.value)));
+    return new Set(decretosBase().filter(aplicaFiltroEstado).map(d => String(d.id)));
+  }
+
+  function distritosSeleccionados() {
+    const ids = idsSeleccionadosActuales();
+    const colorLeyenda = coloresDesdeLeyenda();
+    const decretos = decretosBase().filter(aplicaFiltroEstado).map((d, i) => ({
+      ...d,
+      __dashColor: colorLeyenda.get(String(d.id)) || COLORS[i % COLORS.length]
+    })).filter(d => ids.has(String(d.id)));
+
+    const distritos = new Map();
+    decretos.forEach(d => {
+      territorio(d).forEach(t => {
+        const k = keyDist(t);
+        const ll = latLng(t);
+        if (!k || !ll) return;
+        if (!distritos.has(k)) {
+          distritos.set(k, {
+            key: k,
+            departamento: t.departamento || '',
+            provincia: t.provincia || '',
+            distrito: t.distrito || '',
+            latlng: ll,
+            decretos: new Map()
+          });
+        }
+        distritos.get(k).decretos.set(String(d.id), {
+          id: String(d.id),
+          nombre: nombreDS(d),
+          color: d.__dashColor
+        });
+      });
+    });
+    return [...distritos.values()];
+  }
+
+  function limpiarLeafletDiv(el) {
+    if (!el) return null;
+    try { if (fixedMap) fixedMap.remove(); } catch (_) {}
+    fixedMap = null;
+    fixedRenderer = null;
+
+    const limpio = document.createElement('div');
+    limpio.id = 'mapaDS';
+    limpio.className = (el.className || 'border rounded bg-white')
+      .split(/\s+/)
+      .filter(c => c && !c.startsWith('leaflet-'))
+      .join(' ') || 'border rounded bg-white';
+    limpio.style.height = el.style.height || '520px';
+    limpio.style.minHeight = el.style.minHeight || '520px';
+    limpio.style.width = '100%';
+    limpio.style.position = 'relative';
+    limpio.style.overflow = 'hidden';
+    limpio.dataset.owner = VERSION;
+    el.replaceWith(limpio);
+    return limpio;
+  }
+
+  async function esperarContenedorVisible(el, intentos = 12) {
+    for (let i = 0; i < intentos; i++) {
+      const r = el?.getBoundingClientRect?.();
+      if (r && r.width > 120 && r.height > 120 && el.offsetParent !== null) return true;
+      await sleep(100);
+    }
+    return false;
+  }
+
+  async function renderMapaCalzado() {
+    if (!window.L) return;
+    let el = $id('mapaDS');
+    if (!el) return;
+
+    const visible = await esperarContenedorVisible(el);
+    if (!visible) return;
+
+    el = limpiarLeafletDiv(el);
+    if (!el) return;
+
+    await sleep(40);
+
+    const puntos = distritosSeleccionados();
+    fixedRenderer = L.canvas({ padding: 0.5 });
+    fixedMap = L.map(el, {
+      preferCanvas: true,
+      renderer: fixedRenderer,
+      scrollWheelZoom: true,
+      zoomControl: true,
+      attributionControl: true,
+      zoomSnap: 0.25
+    }).setView(PERU_CENTER, PERU_ZOOM);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      crossOrigin: 'anonymous',
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(fixedMap);
+
+    await new Promise(resolve => fixedMap.whenReady(resolve));
+    fixedMap.invalidateSize(true);
+    await sleep(80);
+
+    const grupo = L.featureGroup().addTo(fixedMap);
+    puntos.forEach(item => {
+      const ds = [...item.decretos.values()];
+      if (!ds.length) return;
+      const repetido = ds.length > 1;
+      const color = repetido ? '#111827' : (ds[0]?.color || '#0d6efd');
+      L.circleMarker(item.latlng, {
+        renderer: fixedRenderer,
+        radius: repetido ? 7 : 5,
+        color: repetido ? '#000000' : color,
+        weight: repetido ? 3 : 1,
+        fillColor: color,
+        fillOpacity: repetido ? 0.95 : 0.82,
+        opacity: 1,
+        interactive: true
+      })
+      .bindTooltip(`<strong>${esc(item.distrito)}</strong><br>Provincia: ${esc(item.provincia)}<br>Departamento: ${esc(item.departamento)}<br>Decreto(s): ${esc(ds.map(x => x.nombre).join(', '))}`, { sticky: true })
+      .addTo(grupo);
+    });
+
+    // v75: mantener el mapa centrado en el Perú, tanto en pantalla como durante exportación.
+    // No se usa fitBounds porque desplaza la vista hacia el bloque de puntos y deja el mapa visualmente corrido.
+    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
+
+    await sleep(120);
+    fixedMap.invalidateSize(true);
+    fixedMap.setView(PERU_CENTER, PERU_ZOOM);
+  }
+
+  function programarMapaCalzado(delay = 180) {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => {
+      renderMapaCalzado().catch(e => console.error('Error ajustando puntos Dashboard v74.1:', e));
+    }, delay);
+  }
+
+  async function renderDashboardSeguro(reset = false) {
+    if (typeof window.__dashboardCheckboxExportV682?.render === 'function') {
+      window.__dashboardCheckboxExportV682.render(Boolean(reset));
+    } else if (typeof window.renderDashboardEjecutivoV661 === 'function') {
+      window.renderDashboardEjecutivoV661(Boolean(reset));
+    }
+    await sleep(250);
+    await renderMapaCalzado();
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (src.includes('html2canvas') && window.html2canvas) return resolve();
+      if (src.includes('jspdf') && (window.jspdf?.jsPDF || window.jsPDF)) return resolve();
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function esperarTilesMapa(timeout = 2200) {
+    const inicio = Date.now();
+    while (Date.now() - inicio < timeout) {
+      const tiles = [...document.querySelectorAll('#mapaDS img.leaflet-tile')];
+      if (tiles.length && tiles.every(img => img.complete && img.naturalWidth > 0)) return;
+      await sleep(100);
+    }
+  }
+
+  async function exportarDashboardCalzado(tipo) {
+    if (exportando) return;
+    exportando = true;
+    const area = $id('dashboardExportArea') || $id('tabDashboard');
+    if (!area) { exportando = false; return alert('No se encontró el Dashboard para exportar.'); }
+
+    const oldFiltro = $id('dashboardFiltroEstado')?.value || 'vigentes';
+    const oldChecks = new Map([...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')].map(chk => [String(chk.value), chk.checked]));
+    const chosen = $id('dashboardExportFiltro')?.value || 'actual';
+    const oldW = area.style.width;
+    const oldMax = area.style.maxWidth;
+    const oldOverflow = document.body.style.overflow;
+    let titulo = null;
+
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+      if (tipo === 'pdf') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) {
+        $id('dashboardFiltroEstado').value = chosen;
+        await renderDashboardSeguro(true);
+      }
+
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      await sleep(150);
+      await renderDashboardSeguro(false);
+      await esperarTilesMapa();
+      await sleep(350);
+
+      titulo = document.createElement('div');
+      titulo.id = 'dashboardExportHeaderTmp';
+      titulo.className = 'border-bottom mb-2 pb-2';
+      const totalChecks = document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check:checked').length;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${totalChecks}</div>`;
+      area.insertBefore(titulo, area.firstChild);
+      await sleep(200);
+
+      const canvas = await window.html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: area.scrollWidth,
+        height: area.scrollHeight,
+        windowWidth: Math.max(1400, area.scrollWidth),
+        windowHeight: Math.max(900, area.scrollHeight)
+      });
+
+      const base = `Dashboard_DEE_${filtroTexto().replace(/\s+/g, '_')}_${typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10)}`;
+      if (tipo === 'jpg') {
+        const a = document.createElement('a');
+        a.download = `${base}.jpg`;
+        a.href = canvas.toDataURL('image/jpeg', 0.95);
+        a.click();
+      } else {
+        const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+        if (!jsPDF) throw new Error('jsPDF no disponible');
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const imgW = pageW - 16;
+        const imgH = canvas.height * imgW / canvas.width;
+        const img = canvas.toDataURL('image/jpeg', 0.95);
+        let pos = 8;
+        let left = imgH;
+        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
+        left -= (pageH - 16);
+        while (left > 0) {
+          pdf.addPage('l');
+          pos = left - imgH + 8;
+          pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
+          left -= (pageH - 16);
+        }
+        pdf.save(`${base}.pdf`);
+      }
+    } catch (e) {
+      console.error('Error exportando Dashboard v74.1:', e);
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+    } finally {
+      if (titulo) { try { titulo.remove(); } catch (_) {} }
+      area.style.width = oldW;
+      area.style.maxWidth = oldMax;
+      document.body.style.overflow = oldOverflow;
+      if (chosen !== 'actual' && $id('dashboardFiltroEstado')) $id('dashboardFiltroEstado').value = oldFiltro;
+      await renderDashboardSeguro(chosen !== 'actual');
+      if (oldChecks.size) {
+        document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check').forEach(chk => {
+          if (oldChecks.has(String(chk.value))) chk.checked = oldChecks.get(String(chk.value));
+        });
+        await renderMapaCalzado();
+      }
+      exportando = false;
+    }
+  }
+
+  function instalar() {
+    if (installing) return;
+    installing = true;
+
+    // Evita que cierres antiguos del Dashboard vuelvan a dibujar un mapa desfasado al abrir la pestaña.
+    document.addEventListener('shown.bs.tab', (e) => {
+      const target = e.target?.getAttribute?.('data-bs-target');
+      if (target === '#tabDashboard') {
+        e.stopImmediatePropagation();
+        setTimeout(() => renderDashboardSeguro(false), 220);
+      }
+    }, true);
+
+    window.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t) return;
+
+      if (t.id === 'btnExportDashboardJPG') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        exportarDashboardCalzado('jpg');
+        return;
+      }
+      if (t.id === 'btnExportDashboardPDF') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        exportarDashboardCalzado('pdf');
+        return;
+      }
+      if (t.id === 'btnActualizarDashboard') {
+        programarMapaCalzado(550);
+        return;
+      }
+      if (t.closest?.('[data-bs-target="#tabDashboard"]')) {
+        programarMapaCalzado(900);
+      }
+      if (t.id === 'btnDashSeleccionarTodos' || t.id === 'btnDashQuitarSeleccion') {
+        programarMapaCalzado(350);
+      }
+    }, true);
+
+    window.addEventListener('change', (e) => {
+      const t = e.target;
+      if (!t) return;
+      if (t.id === 'dashboardFiltroEstado' || t.classList?.contains('dash-ds-check')) {
+        programarMapaCalzado(450);
+      }
+    }, true);
+
+    window.renderDashboardEjecutivoDEE = async function(reset) { await renderDashboardSeguro(Boolean(reset)); };
+    window.renderDashboardEjecutivoV661 = window.renderDashboardEjecutivoDEE;
+    window.__dashboardPuntosCalzadosV741 = { renderMapaCalzado, renderDashboardSeguro, exportarDashboardCalzado, version: VERSION };
+
+    setTimeout(() => renderDashboardSeguro(false), 5200);
+  }
+
+  document.addEventListener('DOMContentLoaded', instalar);
+  setTimeout(instalar, 1000);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
