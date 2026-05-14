@@ -1,4 +1,4 @@
-// ================= VERSION 82 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 83 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -12263,4 +12263,248 @@ async function cargarUsuariosAdmin() {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', instalarLogin);
   else instalarLogin();
+})();
+
+// ================= CIERRE DEFINITIVO LOGIN v78.4 - 14/05/2026 =================
+// Objetivo: impedir que funciones antiguas del login o datos locales inconsistentes bloqueen el ingreso.
+(function(){
+  'use strict';
+  const LOGIN_FIX_VERSION = 'v78.4-login-autoritativo';
+  const ADMIN_PASSWORD = 'AdminMIDIS2026!';
+  const TEMP_PASS_RE = /^MIDIS[A-Z0-9]{4,12}2026!$/i;
+  const ADMIN_EMAILS = new Set([
+    'admin@midis.gob.pe',
+    'whuatay@midis.gob.pe',
+    'wlliamhuatay@midis.gob.pe',
+    'williamhuatay@midis.gob.pe'
+  ]);
+  const USER_KEYS = ['usuarios','users','userList','usuariosSistema','dee_users','usuarios_locales'];
+  const $fix = (id) => document.getElementById(id);
+  const txt = (v) => String(v == null ? '' : v).trim();
+  const emailNorm = (v) => txt(v).toLowerCase();
+  const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  const arr = (v) => Array.isArray(v) ? v : (Array.isArray(v?.users) ? v.users : (Array.isArray(v?.items) ? v.items : (Array.isArray(v?.data) ? v.data : [])));
+  const safeJson = (s, fb) => { try { return JSON.parse(s || ''); } catch { return fb; } };
+
+  async function sha256(value){
+    try {
+      const data = new TextEncoder().encode(String(value));
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+    } catch { return ''; }
+  }
+
+  function splitRol(rawRol){
+    const r = txt(rawRol || 'Consulta');
+    return {
+      rol: r.includes('|') ? txt(r.split('|')[0]) : r,
+      programa: r.includes('|') ? txt(r.split('|').slice(1).join('|')) : ''
+    };
+  }
+
+  function isActive(raw){
+    const v = raw?.estado ?? raw?.status ?? raw?.active ?? raw?.activo ?? 'activo';
+    return v === true || v === 1 || v === '1' || ['ACTIVO','ACTIVE','TRUE','SI','SÍ'].includes(norm(v));
+  }
+
+  function normalizeUser(raw){
+    if (!raw) return null;
+    const email = emailNorm(raw.email || raw.correo || raw.usuario || raw.user || raw.username);
+    if (!email) return null;
+    const baseRol = raw.rol || raw.role || 'Consulta';
+    const sp = splitRol(baseRol);
+    const role = txt(raw.role || raw.rol || sp.rol || 'Consulta');
+    const cleanRole = role.includes('|') ? txt(role.split('|')[0]) : role;
+    const programa = txt(raw.programa || raw.program || sp.programa || '');
+    const plain = txt(raw.password_plain || raw.temp_password || raw.clave || raw.pass || raw.password);
+    const pHash = txt(raw.password_hash || raw.passwordHash || raw.hash || raw.password_sha256).toLowerCase();
+    return {
+      ...raw,
+      email,
+      name: txt(raw.name || raw.nombre || raw.fullName || raw.full_name || email),
+      nombre: txt(raw.nombre || raw.name || raw.fullName || raw.full_name || email),
+      role: cleanRole,
+      rol: cleanRole,
+      programa,
+      estado: isActive(raw) ? 'activo' : 'inactivo',
+      active: isActive(raw) ? 1 : 0,
+      password: plain,
+      clave: txt(raw.clave || plain),
+      pass: txt(raw.pass || plain),
+      password_hash: pHash,
+      hash: txt(raw.hash || pHash).toLowerCase()
+    };
+  }
+
+  function mergeUser(a,b){
+    const A = a || {}, B = b || {};
+    const merged = { ...A, ...B };
+    ['password','clave','pass','password_hash','hash'].forEach(k => {
+      if (!txt(B[k]) && txt(A[k])) merged[k] = A[k];
+    });
+    return normalizeUser(merged);
+  }
+
+  function readLocalUsers(){
+    const map = new Map();
+    USER_KEYS.forEach(k => {
+      arr(safeJson(localStorage.getItem(k), [])).forEach(raw => {
+        const u = normalizeUser(raw);
+        if (!u || norm(u.rol) === 'EVALUADOR') return;
+        map.set(u.email, mergeUser(map.get(u.email), u));
+      });
+    });
+    return [...map.values()].filter(Boolean);
+  }
+
+  function writeLocalUsers(users){
+    const map = new Map();
+    arr(users).forEach(raw => {
+      const u = normalizeUser(raw);
+      if (!u || norm(u.rol) === 'EVALUADOR') return;
+      map.set(u.email, mergeUser(map.get(u.email), u));
+    });
+    const list = [...map.values()].filter(Boolean);
+    USER_KEYS.forEach(k => { try { localStorage.setItem(k, JSON.stringify(list)); } catch {} });
+    try { window.adminUsuariosLocales = list; } catch {}
+    return list;
+  }
+
+  function seedRecoveryAdmins(){
+    const users = readLocalUsers();
+    const nowMap = new Map(users.map(u => [u.email, u]));
+    ['admin@midis.gob.pe','whuatay@midis.gob.pe'].forEach(mail => {
+      if (!nowMap.has(mail)) {
+        nowMap.set(mail, normalizeUser({
+          email: mail,
+          name: mail === 'admin@midis.gob.pe' ? 'Administrador MIDIS' : 'William Huatay Villoslada',
+          nombre: mail === 'admin@midis.gob.pe' ? 'Administrador MIDIS' : 'William Huatay Villoslada',
+          role: 'Administrador', rol: 'Administrador', estado: 'activo', active: 1,
+          password: ADMIN_PASSWORD, clave: ADMIN_PASSWORD, pass: ADMIN_PASSWORD
+        }));
+      }
+    });
+    writeLocalUsers([...nowMap.values()]);
+  }
+
+  function makeSession(user){
+    const u = normalizeUser(user) || {};
+    return {
+      name: u.name || u.nombre || u.email,
+      nombre: u.nombre || u.name || u.email,
+      email: u.email,
+      role: u.role || u.rol || 'Consulta',
+      rol: u.rol || u.role || 'Consulta',
+      programa: u.programa || '',
+      estado: 'activo'
+    };
+  }
+
+  function enterApp(user){
+    const sessionUser = makeSession(user);
+    try { localStorage.setItem('sessionUser', JSON.stringify(sessionUser)); } catch {}
+    try {
+      if (typeof iniciarSistemaConSesion === 'function') {
+        iniciarSistemaConSesion(sessionUser);
+        return;
+      }
+    } catch (e) {
+      console.warn('Ingreso con sesión creado, se aplicará apertura directa.', e);
+    }
+    try { window.state = window.state || {}; window.state.session = sessionUser; } catch {}
+    $fix('loginView')?.classList.add('d-none');
+    $fix('appView')?.classList.remove('d-none');
+    if ($fix('sessionName')) $fix('sessionName').textContent = sessionUser.name || '';
+    if ($fix('sessionRole')) $fix('sessionRole').textContent = sessionUser.role || sessionUser.rol || '';
+    try { if (typeof initUbigeo === 'function') initUbigeo(); } catch(e) {}
+    try { if (typeof activarEventosDS === 'function') activarEventosDS(); } catch(e) {}
+    try { if (typeof initRegistroAcciones === 'function') initRegistroAcciones(); } catch(e) {}
+  }
+
+  async function validateUser(email, password){
+    seedRecoveryAdmins();
+    const e = emailNorm(email);
+    const p = txt(password);
+    const h = await sha256(p);
+    let users = readLocalUsers();
+    let u = users.find(x => x.email === e);
+
+    if (ADMIN_EMAILS.has(e) && p === ADMIN_PASSWORD) {
+      const admin = normalizeUser({ ...(u || {}), email:e, role:'Administrador', rol:'Administrador', estado:'activo', active:1, password:p, clave:p, pass:p, password_hash:h, hash:h });
+      users = users.filter(x => x.email !== e); users.push(admin); writeLocalUsers(users);
+      return admin;
+    }
+
+    if (u && u.estado === 'activo') {
+      const plains = [u.password, u.clave, u.pass].map(txt).filter(Boolean);
+      const hashes = [u.password_hash, u.hash].map(x => txt(x).toLowerCase()).filter(Boolean);
+      if (plains.includes(p) || (h && hashes.includes(h.toLowerCase()))) return u;
+
+      // Solución operativa: todo usuario activo creado por el sistema con clave temporal MIDISxxxx2026! puede ingresar.
+      // Esto evita el bloqueo cuando el backend devuelve al usuario activo pero no devuelve su contraseña.
+      if (TEMP_PASS_RE.test(p)) {
+        const fixed = normalizeUser({ ...u, password:p, clave:p, pass:p, password_hash:h, hash:h, estado:'activo', active:1 });
+        users = users.filter(x => x.email !== e); users.push(fixed); writeLocalUsers(users);
+        return fixed;
+      }
+    }
+
+    // Última recuperación: correo MIDIS + clave temporal institucional. Entra como Consulta si no existe usuario local.
+    if (!u && e.endsWith('@midis.gob.pe') && TEMP_PASS_RE.test(p)) {
+      const role = ADMIN_EMAILS.has(e) ? 'Administrador' : 'Consulta';
+      const nuevo = normalizeUser({ email:e, name:e, nombre:e, role, rol:role, estado:'activo', active:1, password:p, clave:p, pass:p, password_hash:h, hash:h });
+      users.push(nuevo); writeLocalUsers(users);
+      return nuevo;
+    }
+
+    // Backend, por si D1 sí valida.
+    try {
+      const res = await fetch((window.location.origin || '') + '/api/login', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ email:e, password:p, password_hash:h, clave:p, hash:h })
+      });
+      let data = null; try { data = await res.json(); } catch {}
+      if (res.ok && (data?.ok || data?.user || data?.usuario)) {
+        const raw = data?.user || data?.usuario || { email:e, role:data?.role || data?.rol || 'Consulta', estado:'activo' };
+        const serverUser = normalizeUser({ ...raw, password:p, clave:p, pass:p, password_hash:h, hash:h, estado:'activo', active:1 });
+        users = readLocalUsers().filter(x => x.email !== serverUser.email); users.push(serverUser); writeLocalUsers(users);
+        return serverUser;
+      }
+    } catch (err) { console.warn('Login API no disponible', err); }
+
+    return null;
+  }
+
+  async function authoritativeLogin(){
+    const email = emailNorm($fix('loginUser')?.value);
+    const password = txt($fix('loginPass')?.value);
+    if (!email || !password) { alert('Ingrese usuario y contraseña'); return; }
+    const u = await validateUser(email, password);
+    if (u) { enterApp(u); return; }
+    console.warn('Login v78.4 rechazado', { email });
+    alert('Credenciales inválidas');
+  }
+
+  function install(){
+    seedRecoveryAdmins();
+    const btn = $fix('btnLogin');
+    if (btn) {
+      btn.onclick = null;
+      const nb = btn.cloneNode(true);
+      btn.parentNode.replaceChild(nb, btn);
+      nb.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopImmediatePropagation(); authoritativeLogin(); }, true);
+    }
+    const pass = $fix('loginPass');
+    if (pass) {
+      const np = pass.cloneNode(true);
+      pass.parentNode.replaceChild(np, pass);
+      np.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); ev.stopImmediatePropagation(); authoritativeLogin(); } }, true);
+    }
+    window.doLogin = authoritativeLogin;
+    try { doLogin = authoritativeLogin; } catch {}
+    console.info('DEE MIDIS login activo:', LOGIN_FIX_VERSION);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
+  else install();
 })();
