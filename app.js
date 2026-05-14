@@ -1,4 +1,4 @@
-// ================= VERSION 83 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 84 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -12269,7 +12269,7 @@ async function cargarUsuariosAdmin() {
 // Objetivo: impedir que funciones antiguas del login o datos locales inconsistentes bloqueen el ingreso.
 (function(){
   'use strict';
-  const LOGIN_FIX_VERSION = 'v78.4-login-autoritativo';
+  const LOGIN_FIX_VERSION = 'v78.5-login-autoritativo';
   const ADMIN_PASSWORD = 'AdminMIDIS2026!';
   const TEMP_PASS_RE = /^MIDIS[A-Z0-9]{4,12}2026!$/i;
   const ADMIN_EMAILS = new Set([
