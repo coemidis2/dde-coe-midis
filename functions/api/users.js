@@ -137,80 +137,54 @@ export async function onRequestPost(context) {
       return badRequest('invalid_role');
     }
 
-    // El rol Registrador general existe y NO requiere programa.
-    // Solo los roles recibidos como Registrador|Programa guardan el programa correspondiente.
+    if (role === 'Registrador' && !programa) {
+      return badRequest('programa_required_for_registrador');
+    }
 
-    const existing = await context.env.DB.prepare(`
-      SELECT id, email
-      FROM users
-      WHERE email = ?
-    `).bind(email).first();
+    const existing = await context.env.DB
+      .prepare('SELECT id FROM users WHERE email = ?')
+      .bind(email)
+      .first();
+
+    if (existing) {
+      return badRequest('email_already_exists');
+    }
 
     const temporaryPassword = String(body.password || '').trim() || generateTemporaryPassword();
     const passwordHash = await sha256(temporaryPassword);
     const now = new Date().toISOString();
 
-    let id = existing?.id || null;
-
-    if (existing) {
-      await context.env.DB.prepare(`
-        UPDATE users
-        SET
-          name = ?,
-          role = ?,
-          programa = ?,
-          password_hash = ?,
-          active = 1,
-          force_password_change = 1,
-          updated_at = ?
-        WHERE id = ?
-      `).bind(
-        name,
-        role,
-        programa,
-        passwordHash,
-        now,
-        existing.id
-      ).run();
-    } else {
-      const insertResult = await context.env.DB.prepare(`
-        INSERT INTO users (
-          name,
-          email,
-          role,
-          programa,
-          password_hash,
-          active,
-          force_password_change,
-          created_at,
-          updated_at,
-          last_login_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
+    const insertResult = await context.env.DB.prepare(`
+      INSERT INTO users (
         name,
         email,
         role,
         programa,
-        passwordHash,
-        1,
-        1,
-        now,
-        now,
-        null
-      ).run();
+        password_hash,
+        active,
+        force_password_change,
+        created_at,
+        updated_at,
+        last_login_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      name,
+      email,
+      role,
+      programa,
+      passwordHash,
+      1,
+      1,
+      now,
+      now,
+      null
+    ).run();
 
-      id = insertResult?.meta?.last_row_id || email;
-    }
-
-    await context.env.DB.prepare(`
-      UPDATE sessions
-      SET revoked_at = ?
-      WHERE email = ? AND revoked_at IS NULL
-    `).bind(now, email).run();
+    const id = insertResult?.meta?.last_row_id || email;
 
     await writeAudit(context.env, {
       actor: auth.session.email,
-      action: existing ? 'update_user' : 'create_user',
+      action: 'create_user',
       detail: email,
       entity_type: 'user',
       entity_id: id
@@ -225,24 +199,6 @@ export async function onRequestPost(context) {
   } catch (error) {
     return serverError('user_create_failed', String(error?.message || error));
   }
-}
-
-
-function isProtectedBaseAdmin(email) {
-  return String(email || '').trim().toLowerCase() === 'admin@midis.gob.pe';
-}
-
-async function findUserByIdentifier(env, identifier, email = '') {
-  const rawId = String(identifier ?? '').trim();
-  const rawEmail = String(email || '').trim().toLowerCase();
-
-  if (!rawId && !rawEmail) return null;
-
-  return env.DB.prepare(`
-    SELECT id, name, email, role, programa, active
-    FROM users
-    WHERE id = ? OR email = ? OR email = ?
-  `).bind(rawId, rawId.toLowerCase(), rawEmail).first();
 }
 
 export async function onRequestPatch(context) {
@@ -262,7 +218,11 @@ export async function onRequestPatch(context) {
       return badRequest('id_required');
     }
 
-    const current = await findUserByIdentifier(context.env, id, body.email);
+    const current = await context.env.DB.prepare(`
+      SELECT id, name, email, role, programa, active
+      FROM users
+      WHERE id = ?
+    `).bind(id).first();
 
     if (!current) {
       return notFound('user_not_found');
@@ -277,7 +237,7 @@ export async function onRequestPatch(context) {
         UPDATE users
         SET active = ?, updated_at = ?
         WHERE id = ?
-      `).bind(active, now, current.id).run();
+      `).bind(active, now, id).run();
 
       if (!active) {
         await context.env.DB.prepare(`
@@ -301,33 +261,6 @@ export async function onRequestPatch(context) {
       });
     }
 
-    if (action === 'delete') {
-      if (isProtectedBaseAdmin(current.email)) {
-        return forbidden('base_admin_cannot_be_deleted');
-      }
-
-      await context.env.DB.prepare(`
-        UPDATE sessions
-        SET revoked_at = ?
-        WHERE email = ? AND revoked_at IS NULL
-      `).bind(now, current.email).run();
-
-      await context.env.DB.prepare(`
-        DELETE FROM users
-        WHERE id = ?
-      `).bind(current.id).run();
-
-      await writeAudit(context.env, {
-        actor: auth.session.email,
-        action: 'delete_user',
-        detail: current.email,
-        entity_type: 'user',
-        entity_id: String(current.id)
-      });
-
-      return json({ ok: true, deleted: true, email: current.email });
-    }
-
     if (action === 'reset_password') {
       const temporaryPassword = generateTemporaryPassword();
       const passwordHash = await sha256(temporaryPassword);
@@ -336,7 +269,7 @@ export async function onRequestPatch(context) {
         UPDATE users
         SET password_hash = ?, force_password_change = 1, updated_at = ?
         WHERE id = ?
-      `).bind(passwordHash, now, current.id).run();
+      `).bind(passwordHash, now, id).run();
 
       await context.env.DB.prepare(`
         UPDATE sessions
@@ -361,48 +294,5 @@ export async function onRequestPatch(context) {
     return badRequest('invalid_action');
   } catch (error) {
     return serverError('user_patch_failed', String(error?.message || error));
-  }
-}
-
-export async function onRequestDelete(context) {
-  const auth = await requireSession(context, ['Administrador']);
-  if (!auth.ok) return auth.response;
-
-  if (!verifyCsrf(context.request)) {
-    return forbidden('invalid_csrf');
-  }
-
-  try {
-    const body = await readJson(context.request);
-    const id = body.id;
-    const current = await findUserByIdentifier(context.env, id, body.email);
-
-    if (!current) return notFound('user_not_found');
-    if (isProtectedBaseAdmin(current.email)) return forbidden('base_admin_cannot_be_deleted');
-
-    const now = new Date().toISOString();
-
-    await context.env.DB.prepare(`
-      UPDATE sessions
-      SET revoked_at = ?
-      WHERE email = ? AND revoked_at IS NULL
-    `).bind(now, current.email).run();
-
-    await context.env.DB.prepare(`
-      DELETE FROM users
-      WHERE id = ?
-    `).bind(current.id).run();
-
-    await writeAudit(context.env, {
-      actor: auth.session.email,
-      action: 'delete_user',
-      detail: current.email,
-      entity_type: 'user',
-      entity_id: String(current.id)
-    });
-
-    return json({ ok: true, deleted: true, email: current.email });
-  } catch (error) {
-    return serverError('user_delete_failed', String(error?.message || error));
   }
 }
