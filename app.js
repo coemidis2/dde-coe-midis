@@ -1,4 +1,4 @@
-// ================= VERSION 78 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 79 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -259,6 +259,20 @@ function showApp() {
 }
 
 // ================= LOGIN =================
+function normalizarSesionDesdeUsuario(userServer) {
+  const user = normalizarUsuario(userServer);
+  if (!user || user.estado !== 'activo') return null;
+  return {
+    name: user.name,
+    nombre: user.nombre,
+    email: user.email,
+    role: user.role,
+    rol: user.rol,
+    programa: user.programa,
+    estado: user.estado
+  };
+}
+
 async function doLogin() {
   const email = normalizarEmail($('loginUser')?.value);
   const password = $('loginPass')?.value || '';
@@ -268,32 +282,25 @@ async function doLogin() {
     return;
   }
 
-  const local = loginLocal(email, password);
-  if (local.ok) {
-    iniciarSistemaConSesion(local.user);
-    return;
-  }
-
+  // Primero se valida contra el backend/D1 para que se creen las cookies
+  // dee_session y dee_csrf. El login local queda solo como respaldo.
   const resLogin = await api('/login', 'POST', { email, password });
 
   if (resLogin.ok && resLogin.data?.ok) {
     const resSession = await api('/session');
-    const userServer = normalizarUsuario(resSession.data?.user || resLogin.data?.user);
+    const sessionUser = normalizarSesionDesdeUsuario(resSession.data?.user || resLogin.data?.user);
 
-    if (userServer && userServer.estado === 'activo') {
-      const sessionUser = {
-        name: userServer.name,
-        nombre: userServer.nombre,
-        email: userServer.email,
-        role: userServer.role,
-        rol: userServer.rol,
-        programa: userServer.programa,
-        estado: userServer.estado
-      };
+    if (sessionUser) {
       localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
       iniciarSistemaConSesion(sessionUser);
       return;
     }
+  }
+
+  const local = loginLocal(email, password);
+  if (local.ok) {
+    iniciarSistemaConSesion(local.user);
+    return;
   }
 
   if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
@@ -316,41 +323,28 @@ async function doLogin() {
 
 // ================= AUTO LOGIN =================
 async function autoLogin() {
+  // Prioridad: sesión real del backend. Evita que localStorage viejo o demo
+  // oculte datos/pestañas y deje sin cookie a las APIs D1.
+  const res = await api('/session');
+
+  if (res.ok && res.data?.user) {
+    const sessionUser = normalizarSesionDesdeUsuario(res.data.user);
+    if (sessionUser) {
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+      iniciarSistemaConSesion(sessionUser);
+      return;
+    }
+  }
+
   try {
     const localSession = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
-    const user = normalizarUsuario(localSession);
-    if (user && user.estado === 'activo') {
-      iniciarSistemaConSesion({
-        name: user.name,
-        nombre: user.nombre,
-        email: user.email,
-        role: user.role,
-        rol: user.rol,
-        programa: user.programa,
-        estado: user.estado
-      });
+    const sessionUser = normalizarSesionDesdeUsuario(localSession);
+    if (sessionUser) {
+      iniciarSistemaConSesion(sessionUser);
       return;
     }
   } catch (e) {
     localStorage.removeItem(SESSION_STORAGE_KEY);
-  }
-
-  const res = await api('/session');
-
-  if (res.ok && res.data?.user) {
-    const user = normalizarUsuario(res.data.user);
-    if (user && user.estado === 'activo') {
-      iniciarSistemaConSesion({
-        name: user.name,
-        nombre: user.nombre,
-        email: user.email,
-        role: user.role,
-        rol: user.rol,
-        programa: user.programa,
-        estado: user.estado
-      });
-      return;
-    }
   }
 
   showLogin();
@@ -11731,283 +11725,433 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
-// ================= CORRECCIÓN FINAL v78.1 LOGIN / ROLES / PESTAÑAS =================
-// Corrección quirúrgica: normaliza roles creados en Panel de Administración,
-// permite login de usuarios D1/locales y restaura visibilidad de pestañas por rol.
-(function cierreLoginRolesV781(){
-  const VERSION = 'v78.1-login-roles-tabs';
+// ================= PUENTE D1 FINAL v78.2: DECRETOS Y ACCIONES =================
+// Objetivo: usar D1 como fuente principal para decretos, acciones, listado y dashboard.
+// localStorage queda solo como caché/respaldo temporal del navegador.
+let __DEE_D1_IMPORTANDO = false;
+let __DEE_D1_SYNC_TIMER = null;
+let __DEE_ACCIONES_D1_CACHE = [];
+let __DEE_D1_LISTO = false;
 
-  function normTxt(v) {
-    return String(v || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toUpperCase();
+function extraerListaAccionesD1(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.rows)) return data.rows;
+  if (Array.isArray(data?.acciones)) return data.acciones;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
+}
+
+function normalizarAccionD1(raw) {
+  if (!raw) return null;
+  const dsId = raw.ds_id || raw.dsId || raw.dsID || '';
+  const programa = normalizarProgramaNombre(raw.programaNacional || raw.programa || '');
+  const codigo = raw.codigoAccion || raw.codigo || raw.codigo_accion || '';
+  const id = raw.id || [dsId, raw.numero_reunion || raw.numeroReunion || '', programa, raw.departamento || '', raw.provincia || '', raw.distrito || '', raw.tipo || raw.tipoAccion || '', codigo].join('|');
+  return {
+    ...raw,
+    id,
+    dsId,
+    ds_id: dsId,
+    numeroDS: raw.numeroDS || raw.ds || raw.numero_ds || '',
+    ds: raw.ds || raw.numeroDS || raw.numero_ds || '',
+    numeroReunion: raw.numeroReunion || raw.numero_reunion || '',
+    numero_reunion: raw.numero_reunion || raw.numeroReunion || '',
+    fechaReunion: raw.fechaReunion || raw.fecha_reunion || '',
+    fecha_reunion: raw.fecha_reunion || raw.fechaReunion || '',
+    estadoRDS: raw.estadoRDS || raw.estado_rds || '',
+    programaNacional: programa,
+    programa,
+    tipoAccion: raw.tipoAccion || raw.tipo || raw.tipo_accion || '',
+    tipo: raw.tipo || raw.tipoAccion || raw.tipo_accion || '',
+    subtipoRehabilitacion: raw.subtipoRehabilitacion || raw.subtipo_rehabilitacion || '',
+    subtipo_rehabilitacion: raw.subtipo_rehabilitacion || raw.subtipoRehabilitacion || '',
+    codigoAccion: codigo,
+    codigo,
+    detalle: raw.detalle || raw.accion_registrada || raw.accionRegistrada || '',
+    unidadMedida: raw.unidadMedida || raw.unidad || raw.unidad_medida || '',
+    unidad: raw.unidad || raw.unidadMedida || raw.unidad_medida || '',
+    metaProgramada: raw.metaProgramada ?? raw.meta_programada ?? 0,
+    meta_programada: raw.meta_programada ?? raw.metaProgramada ?? 0,
+    plazoDias: raw.plazoDias ?? raw.plazo_dias ?? raw.plazo ?? 0,
+    plazo_dias: raw.plazo_dias ?? raw.plazoDias ?? raw.plazo ?? 0,
+    plazo: raw.plazo ?? raw.plazo_dias ?? raw.plazoDias ?? 0,
+    fechaInicio: raw.fechaInicio || raw.fecha_inicio || '',
+    fecha_inicio: raw.fecha_inicio || raw.fechaInicio || '',
+    fechaFinal: raw.fechaFinal || raw.fecha_final || '',
+    fecha_final: raw.fecha_final || raw.fechaFinal || '',
+    metaEjecutada: raw.metaEjecutada ?? raw.meta_ejecutada ?? 0,
+    meta_ejecutada: raw.meta_ejecutada ?? raw.metaEjecutada ?? 0,
+    avance: String(raw.avance ?? raw.porcentaje_avance ?? '0').includes('%') ? String(raw.avance ?? raw.porcentaje_avance ?? '0') : String(raw.avance ?? raw.porcentaje_avance ?? 0) + '%',
+    descripcionActividades: raw.descripcionActividades || raw.descripcion || raw.observaciones || '',
+    descripcion: raw.descripcion || raw.descripcionActividades || raw.observaciones || '',
+    usuarioRegistro: raw.usuarioRegistro || raw.usuario_registro || raw.usuario || '',
+    usuario_registro: raw.usuario_registro || raw.usuarioRegistro || raw.usuario || '',
+    fechaRegistro: raw.fechaRegistro || raw.fecha_registro || raw.created_at || '',
+    fecha_registro: raw.fecha_registro || raw.fechaRegistro || raw.created_at || '',
+    estado: raw.estado || 'Registrado',
+    departamento: raw.departamento || '',
+    provincia: raw.provincia || '',
+    distrito: raw.distrito || ''
+  };
+}
+
+function normalizarDecretoD1(raw) {
+  const d = normalizarDecreto(raw);
+  if (!d) return null;
+  const programas = Array.isArray(raw?.programasHabilitados) ? raw.programasHabilitados : (Array.isArray(raw?.programas_habilitados) ? raw.programas_habilitados : d.programasHabilitados);
+  return normalizarDecreto({
+    ...d,
+    rdsActivo: raw?.rdsActivo ?? raw?.rds_activo ?? d.rdsActivo,
+    numeroReunion: raw?.numeroReunion || raw?.numero_reunion || d.numeroReunion,
+    fechaReunion: raw?.fechaReunion || raw?.fecha_reunion || d.fechaReunion,
+    estadoRDS: raw?.estadoRDS || raw?.estado_rds || d.estadoRDS,
+    fechaRegistroRDS: raw?.fechaRegistroRDS || raw?.fecha_registro_rds || d.fechaRegistroRDS,
+    activadoPor: raw?.activadoPor || raw?.activado_por || d.activadoPor,
+    programasHabilitados: Array.isArray(programas) && programas.length ? programas.map(normalizarProgramaNombre) : PROGRAMAS_RDS.slice()
+  });
+}
+
+function cargarDecretosLocales() {
+  try {
+    if (Array.isArray(state.decretos) && state.decretos.length) return state.decretos.map(normalizarDecretoD1).filter(Boolean);
+    const data = JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]');
+    return Array.isArray(data) ? data.map(normalizarDecretoD1).filter(Boolean) : [];
+  } catch (e) {
+    console.warn('No se pudo leer localStorage.decretos', e);
+    return [];
+  }
+}
+
+function guardarDecretosLocales(lista) {
+  const data = (Array.isArray(lista) ? lista : []).map(normalizarDecretoD1).filter(Boolean);
+  state.decretos = data;
+  localStorage.setItem(DECRETOS_STORAGE_KEY, JSON.stringify(data));
+  if (!__DEE_D1_IMPORTANDO && state.session?.email) {
+    clearTimeout(__DEE_D1_SYNC_TIMER);
+    __DEE_D1_SYNC_TIMER = setTimeout(() => sincronizarDecretosLocalesAD1(data), 250);
+  }
+  return data;
+}
+
+function cargarAccionesLocales() {
+  try {
+    if (Array.isArray(__DEE_ACCIONES_D1_CACHE) && __DEE_ACCIONES_D1_CACHE.length) return __DEE_ACCIONES_D1_CACHE.map(normalizarAccionD1).filter(Boolean);
+    const data = JSON.parse(localStorage.getItem(ACCIONES_STORAGE_KEY) || '[]');
+    return Array.isArray(data) ? data.map(normalizarAccionD1).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarAccionesLocales(lista) {
+  const data = (Array.isArray(lista) ? lista : []).map(normalizarAccionD1).filter(Boolean);
+  __DEE_ACCIONES_D1_CACHE = data;
+  localStorage.setItem(ACCIONES_STORAGE_KEY, JSON.stringify(data));
+  if (!__DEE_D1_IMPORTANDO && state.session?.email) {
+    setTimeout(() => sincronizarAccionesLocalesAD1(data), 250);
+  }
+  return data;
+}
+
+async function sincronizarDecretosLocalesAD1(lista) {
+  if (!Array.isArray(lista) || !lista.length) return;
+  for (const d of lista) {
+    try { await api('/decretos', 'POST', d); } catch (e) { console.warn('No se pudo sincronizar DS en D1', d?.id, e); }
+  }
+}
+
+async function sincronizarAccionesLocalesAD1(lista) {
+  if (!Array.isArray(lista) || !lista.length) return;
+  for (const a of lista) {
+    try { await api('/acciones', 'POST', a); } catch (e) { console.warn('No se pudo sincronizar acción en D1', a?.id, e); }
+  }
+}
+
+async function cargarAccionesDesdeD1() {
+  const res = await api('/acciones');
+  const remotas = extraerListaAccionesD1(res?.data).map(normalizarAccionD1).filter(Boolean);
+  const locales = (() => { try { return JSON.parse(localStorage.getItem(ACCIONES_STORAGE_KEY) || '[]'); } catch { return []; } })().map(normalizarAccionD1).filter(Boolean);
+
+  let acciones = remotas;
+
+  // Migración controlada: si D1 está vacío pero el navegador actual sí tiene acciones,
+  // las sube a D1 para que otros usuarios/navegadores también las vean.
+  if (res.ok && !remotas.length && locales.length) {
+    await sincronizarAccionesLocalesAD1(locales);
+    const reread = await api('/acciones');
+    acciones = extraerListaAccionesD1(reread?.data).map(normalizarAccionD1).filter(Boolean);
+    if (!acciones.length) acciones = locales;
   }
 
-  function canonicalPrograma(v) {
-    const t = normTxt(v);
-    if (!t) return '';
-    if (['CUNA MAS','CUNA MÁS','CUNAMAS'].includes(t)) return 'CUNA MÁS';
-    if (['PENSION 65','PENSIÓN 65'].includes(t)) return 'PENSIÓN 65';
-    if (['PAIS','PAÍS'].includes(t)) return 'PAIS';
-    return t;
+  __DEE_D1_IMPORTANDO = true;
+  guardarAccionesLocales(acciones);
+  __DEE_D1_IMPORTANDO = false;
+  return acciones;
+}
+
+async function cargarDecretosParaOrigen() {
+  const locales = (() => { try { return JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]'); } catch { return []; } })().map(normalizarDecretoD1).filter(Boolean);
+  const res = await api('/decretos');
+  let remotos = extraerListaDecretos(res?.data).map(normalizarDecretoD1).filter(Boolean);
+
+  // Migración controlada: si D1 está vacío pero este navegador tiene DS,
+  // los sube a D1 y luego vuelve a leer desde la base.
+  if (res.ok && !remotos.length && locales.length) {
+    await sincronizarDecretosLocalesAD1(locales);
+    const reread = await api('/decretos');
+    remotos = extraerListaDecretos(reread?.data).map(normalizarDecretoD1).filter(Boolean);
   }
 
-  function splitRolPrograma(valor, programaExplicito) {
-    const raw = String(valor || '').trim();
-    const explicit = String(programaExplicito || '').trim();
-    if (!raw) return { role: '', programa: canonicalPrograma(explicit) };
+  const mapa = new Map();
+  (remotos.length ? remotos : locales).forEach(d => { if (d?.id) mapa.set(String(d.id), d); });
+  const decretos = Array.from(mapa.values());
 
-    const clean = normTxt(raw);
-    if (clean === 'CONSULTA' || clean === 'CONSULTAR') return { role: 'Consulta', programa: '' };
-    if (clean === 'ADMINISTRADOR') return { role: 'Administrador', programa: '' };
+  __DEE_D1_IMPORTANDO = true;
+  guardarDecretosLocales(decretos);
+  await cargarAccionesDesdeD1();
+  __DEE_D1_IMPORTANDO = false;
 
-    if (raw.includes('|')) {
-      const parts = raw.split('|');
-      if (normTxt(parts[0]) === 'REGISTRADOR') {
-        return { role: 'Registrador', programa: canonicalPrograma(parts.slice(1).join('|') || explicit) };
-      }
-    }
+  cargarDSOrigen();
+  actualizarDatosProrroga();
+  renderTablaDecretosBasica();
+  if (typeof cargarSelectAccionDS === 'function') cargarSelectAccionDS();
+  if (typeof cargarRDSDesdeDSSeleccionado === 'function') cargarRDSDesdeDSSeleccionado();
+  if (typeof renderTablaAcciones === 'function') renderTablaAcciones();
+  if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas();
+  if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true);
+  __DEE_D1_LISTO = true;
+}
 
-    const dash = raw.match(/^Registrador\s*[-–—]\s*(.+)$/i);
-    if (dash) return { role: 'Registrador', programa: canonicalPrograma(dash[1] || explicit) };
+async function guardarDecreto() {
+  try {
+    const validacion = validarFormularioDecreto();
+    if (!validacion.ok) return alert(validacion.mensaje);
 
-    if (clean === 'REGISTRADOR') return { role: 'Registrador', programa: canonicalPrograma(explicit) };
-    return { role: raw, programa: canonicalPrograma(explicit) };
+    const decreto = construirObjetoDecreto();
+    const res = await api('/decretos', 'POST', decreto);
+    if (res.ok && res.data?.id) decreto.id = res.data.id;
+
+    const existentes = cargarDecretosLocales().map(normalizarDecretoD1).filter(Boolean);
+    const lista = existentes.filter(d => String(d.id) !== String(decreto.id) && String(d.codigo_registro) !== String(decreto.codigo_registro));
+    lista.push(decreto);
+    __DEE_D1_IMPORTANDO = true;
+    guardarDecretosLocales(lista);
+    __DEE_D1_IMPORTANDO = false;
+
+    cargarDSOrigen();
+    renderTablaDecretosBasica();
+    if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true);
+    alert(res.ok ? 'Decreto guardado correctamente en D1.' : 'Decreto guardado localmente. No se confirmó en D1; revise API/decretos.');
+    limpiarFormularioDecreto();
+  } catch (e) {
+    console.error('Error al guardar Decreto Supremo:', e);
+    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle técnico.');
   }
+}
 
-  window.normalizarRol = function(valor) {
-    return splitRolPrograma(valor, '').role;
+async function activarRDSSeleccionado() {
+  if (!puedeActivarRDS()) return alert('Solo el Administrador o Registrador puede activar RDS.');
+  const id = $('accionDs')?.value || '';
+  const numeroReunion = $('rdsNumeroReunion')?.value || '';
+  const fechaReunion = $('rdsFechaReunion')?.value || '';
+  if (!id) return alert('Seleccione un Decreto Supremo.');
+  if (!numeroReunion) return alert('Seleccione el número de reunión.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+
+  const lista = cargarDecretosLocales().map(normalizarDecretoD1).filter(Boolean);
+  const idx = lista.findIndex(d => String(d.id) === String(id));
+  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+
+  lista[idx] = {
+    ...lista[idx],
+    rdsActivo: true,
+    rds_activo: true,
+    numeroReunion,
+    numero_reunion: numeroReunion,
+    fechaReunion,
+    fecha_reunion: fechaReunion,
+    estadoRDS: 'Activo',
+    estado_rds: 'Activo',
+    fechaRegistroRDS: fechaHoraLocalISO(),
+    fecha_registro_rds: fechaHoraLocalISO(),
+    activadoPor: state.session?.email || '',
+    activado_por: state.session?.email || '',
+    programasHabilitados: PROGRAMAS_RDS.slice(),
+    programas_habilitados: PROGRAMAS_RDS.slice()
   };
 
-  window.normalizarPrograma = function(valor) {
-    return splitRolPrograma(valor, '').programa;
-  };
+  const res = await api('/decretos', 'POST', lista[idx]);
+  __DEE_D1_IMPORTANDO = true;
+  guardarDecretosLocales(lista);
+  __DEE_D1_IMPORTANDO = false;
+  renderTablaDecretosBasica();
+  cargarSelectAccionDS();
+  if ($('accionDs')) $('accionDs').value = id;
+  cargarRDSDesdeDSSeleccionado();
+  aplicarRestriccionesAccion();
+  aplicarVistaRegistroAcciones();
+  if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true);
+  alert(res.ok ? 'RDS activado correctamente en D1.' : 'RDS activado localmente. No se confirmó en D1.');
+}
 
-  window.normalizarProgramaNombre = function(valor) {
-    return canonicalPrograma(valor);
-  };
+async function guardarAccionDS() {
+  const d = buscarDecretoPorId($('accionDs')?.value || '');
+  if (!d) return alert('Seleccione un Decreto Supremo.');
+  if (!d.rdsActivo) return alert('No se puede registrar acciones: el DS no tiene Estado RDS = Activo.');
 
-  const normalizarUsuarioBase = window.normalizarUsuario || normalizarUsuario;
-  window.normalizarUsuario = function(raw) {
-    if (!raw) return null;
-    const email = String(raw.email || raw.correo || raw.usuario || raw.user || raw.username || '').trim().toLowerCase();
-    if (!email) return null;
+  const programa = normalizarProgramaNombre($('accionPrograma')?.value || '');
+  const tipo = $('accionTipo')?.value || '';
+  const codigo = String($('accionCodigo')?.value || '').trim();
+  if (!programa) return alert('Seleccione el Programa Nacional.');
+  if (esRegistradorPrograma() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
+  if (!tipo) return alert('Seleccione el Tipo de acción.');
+  if (!codigo) return alert('Ingrese el Código de acción.');
+  if (!$('accionDetalle')?.value.trim()) return alert('Ingrese la acción específica programada.');
 
-    const rolOriginal = raw.rol ?? raw.role ?? 'Consulta';
-    const rp = splitRolPrograma(rolOriginal, raw.programa || raw.program || '');
-    const estadoRaw = raw.estado ?? raw.status ?? raw.active ?? raw.activo ?? 'activo';
-    const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || ['ACTIVO','ACTIVE','TRUE'].includes(normTxt(estadoRaw));
-    const nombre = String(raw.nombre || raw.name || raw.fullName || email).trim();
+  calcularFechaFinalAccion();
+  calcularAvanceAccion();
 
-    return {
-      ...raw,
-      id: raw.id ?? raw.user_id ?? raw.userId ?? email,
-      nombre,
-      name: nombre,
-      email,
-      password: String(raw.password ?? raw.clave ?? raw.pass ?? raw.temporaryPassword ?? raw.claveTemporal ?? ''),
-      rol: rp.role,
-      role: rp.role,
-      programa: rp.programa,
-      estado: activo ? 'activo' : 'inactivo',
-      active: activo ? 1 : 0
-    };
-  };
-
-  window.esAdministrador = function() {
-    return splitRolPrograma(state.session?.role || state.session?.rol || '', state.session?.programa || '').role === 'Administrador';
-  };
-
-  window.esRegistrador = function() {
-    return splitRolPrograma(state.session?.role || state.session?.rol || '', state.session?.programa || '').role === 'Registrador';
-  };
-
-  window.esConsulta = function() {
-    return splitRolPrograma(state.session?.role || state.session?.rol || '', state.session?.programa || '').role === 'Consulta';
-  };
-
-  window.programaSesionNormalizado = function() {
-    const rp = splitRolPrograma(state.session?.role || state.session?.rol || '', state.session?.programa || '');
-    return canonicalPrograma(rp.programa || state.session?.programa || '');
-  };
-
-  window.esRegistradorPrograma = function() {
-    return window.esRegistrador() && Boolean(window.programaSesionNormalizado());
-  };
-
-  window.esRegistradorGeneral = function() {
-    return window.esRegistrador() && !window.programaSesionNormalizado();
-  };
-
-  window.puedeActivarRDS = function() {
-    return window.esAdministrador() || window.esRegistradorGeneral();
-  };
-
-  window.puedeUsarRDS = function() {
-    return window.puedeActivarRDS();
-  };
-
-  window.puedePreaprobar = function() {
-    return window.esRegistradorGeneral();
-  };
-
-  window.puedeAprobar = function() {
-    return window.esAdministrador();
-  };
-
-  function setNavVisible(target, visible) {
-    const item = document.querySelector(`[data-bs-target="${target}"]`)?.closest('.nav-item');
-    if (item) item.style.display = visible ? '' : 'none';
-  }
-
-  window.aplicarVisibilidadPorRol = function() {
-    const admin = window.esAdministrador();
-    const registradorGeneral = window.esRegistradorGeneral();
-    const registradorPrograma = window.esRegistradorPrograma();
-    const consulta = window.esConsulta();
-
-    setNavVisible('#tabListado', true);
-    setNavVisible('#tabDashboard', true);
-    setNavVisible('#tabNuevo', admin || registradorGeneral);
-    setNavVisible('#tabAcciones', admin || registradorGeneral);
-    setNavVisible('#tabAccionesProgramas', registradorPrograma);
-    setNavVisible('#tabPreAprobarAcciones', false);
-    setNavVisible('#tabSeg', admin);
-
-    const btnAdmin = document.getElementById('btnAdminPanel');
-    if (btnAdmin) {
-      btnAdmin.style.display = admin ? 'inline-block' : 'none';
-      btnAdmin.disabled = !admin;
-      btnAdmin.style.pointerEvents = admin ? 'auto' : 'none';
-    }
-
-    const activeHidden = document.querySelector('.nav-tabs .nav-item[style*="display: none"] .nav-link.active');
-    if (activeHidden) {
-      const fallback = document.querySelector('[data-bs-target="#tabListado"]');
-      if (fallback && window.bootstrap?.Tab) bootstrap.Tab.getOrCreateInstance(fallback).show();
-      else fallback?.click();
-    }
-  };
-
-  window.renderSession = function() {
-    const rp = splitRolPrograma(state.session?.role || state.session?.rol || '', state.session?.programa || '');
-    if (document.getElementById('sessionName')) document.getElementById('sessionName').textContent = state.session?.name || state.session?.nombre || state.session?.email || '';
-    if (document.getElementById('sessionRole')) {
-      const label = rp.role === 'Consulta' ? 'Consultar' : (rp.role || '');
-      document.getElementById('sessionRole').textContent = rp.programa ? `${label} - ${rp.programa}` : label;
-    }
-    window.aplicarVisibilidadPorRol();
-  };
-
-  window.loginLocal = function(email, password) {
-    const usuario = buscarUsuarioLocalPorEmail(email);
-    if (!usuario) return { ok: false, reason: 'not_found' };
-    if (usuario.estado !== 'activo') return { ok: false, reason: 'inactive' };
-    if (String(usuario.password ?? '') !== String(password ?? '')) return { ok: false, reason: 'bad_password' };
-
-    const u = window.normalizarUsuario(usuario);
-    const sessionUser = {
-      name: u.name || u.nombre || u.email,
-      nombre: u.nombre || u.name || u.email,
-      email: u.email,
-      role: u.role,
-      rol: u.rol,
-      programa: u.programa || '',
-      estado: u.estado
-    };
-    state.session = sessionUser;
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
-    return { ok: true, user: sessionUser };
-  };
-
-  window.doLogin = async function() {
-    const email = normalizarEmail(document.getElementById('loginUser')?.value);
-    const password = document.getElementById('loginPass')?.value || '';
-    if (!email || !password) {
-      alert('Ingrese usuario y contraseña');
-      return;
-    }
-
-    const local = window.loginLocal(email, password);
-    if (local.ok) {
-      iniciarSistemaConSesion(local.user);
-      return;
-    }
-
-    const resLogin = await api('/login', 'POST', { email, password });
-    if (resLogin.ok && resLogin.data?.ok) {
-      const sessionSource = resLogin.data?.user || (await api('/session')).data?.user;
-      const userServer = window.normalizarUsuario(sessionSource);
-      if (userServer && userServer.estado === 'activo') {
-        const sessionUser = {
-          name: userServer.name,
-          nombre: userServer.nombre,
-          email: userServer.email,
-          role: userServer.role,
-          rol: userServer.rol,
-          programa: userServer.programa,
-          estado: userServer.estado
-        };
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
-        iniciarSistemaConSesion(sessionUser);
-        return;
-      }
-    }
-
-    if (email === 'admin@midis.gob.pe' && password === 'AdminMIDIS2026!') {
-      const demo = { name: 'Administrador MIDIS', nombre: 'Administrador MIDIS', email, role: 'Administrador', rol: 'Administrador', programa: '', estado: 'activo' };
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(demo));
-      iniciarSistemaConSesion(demo);
-      return;
-    }
-
-    alert('Credenciales inválidas');
-  };
-
-  window.autoLogin = async function() {
-    try {
-      const localSession = JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
-      const user = window.normalizarUsuario(localSession);
-      if (user && user.estado === 'activo') {
-        iniciarSistemaConSesion({ name: user.name, nombre: user.nombre, email: user.email, role: user.role, rol: user.rol, programa: user.programa, estado: user.estado });
-        return;
-      }
-    } catch (e) {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    }
-
-    const res = await api('/session');
-    if (res.ok && res.data?.user) {
-      const user = window.normalizarUsuario(res.data.user);
-      if (user && user.estado === 'activo') {
-        iniciarSistemaConSesion({ name: user.name, nombre: user.nombre, email: user.email, role: user.role, rol: user.rol, programa: user.programa, estado: user.estado });
-        return;
-      }
-    }
-    showLogin();
-  };
-
-  // Reengancha el botón login para usar la versión endurecida aunque exista listener anterior.
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btnLogin');
-    if (btn && !btn.dataset.loginHardeningV781) {
-      btn.dataset.loginHardeningV781 = '1';
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        window.doLogin();
-      }, true);
-      btn.onclick = (e) => { e.preventDefault(); window.doLogin(); };
-    }
-    const pass = document.getElementById('loginPass');
-    if (pass && !pass.dataset.loginV781) {
-      pass.dataset.loginV781 = '1';
-      pass.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); window.doLogin(); } }, true);
-    }
-    setTimeout(() => { try { window.aplicarVisibilidadPorRol(); } catch (_) {} }, 800);
+  const lista = cargarAccionesLocales();
+  const id = accionEditandoId || crypto.randomUUID();
+  const existente = lista.find(a => String(a.id) === String(id));
+  const accion = normalizarAccionD1({
+    id,
+    ds_id: d.id,
+    dsId: d.id,
+    ds: formatearNumeroDS(d),
+    numeroDS: formatearNumeroDS(d),
+    numero_reunion: d.numeroReunion || '',
+    numeroReunion: d.numeroReunion || '',
+    fecha_reunion: d.fechaReunion || '',
+    fechaReunion: d.fechaReunion || '',
+    estadoRDS: d.estadoRDS || 'Activo',
+    programa,
+    programaNacional: programa,
+    tipo,
+    tipoAccion: tipo,
+    codigo,
+    codigoAccion: codigo,
+    unidad: $('accionUnidad')?.value || '',
+    unidadMedida: $('accionUnidad')?.value || '',
+    meta_programada: Number($('accionMetaProgramada')?.value || 0),
+    plazo_dias: Number($('accionPlazo')?.value || 0),
+    plazo: Number($('accionPlazo')?.value || 0),
+    fecha_inicio: $('accionFechaInicio')?.value || '',
+    fecha_final: $('accionFechaFinal')?.value || '',
+    meta_ejecutada: Number($('accionMetaEjecutada')?.value || 0),
+    avance: $('accionAvance')?.value || '0%',
+    detalle: $('accionDetalle')?.value || '',
+    descripcion: $('accionDescripcion')?.value || '',
+    descripcionActividades: $('accionDescripcion')?.value || '',
+    estado: existente?.estado || 'Registrado',
+    usuario_registro: existente?.usuario_registro || state.session?.email || '',
+    usuarioRegistro: existente?.usuarioRegistro || state.session?.email || '',
+    fecha_registro: existente?.fecha_registro || new Date().toISOString(),
+    fechaRegistro: existente?.fechaRegistro || new Date().toISOString()
   });
 
-  console.info('DEE MIDIS cierre aplicado:', VERSION);
-})();
+  const duplicada = lista.some(a => String(a.id) !== String(id) && String(a.ds_id || a.dsId) === String(d.id) && String(a.numero_reunion || a.numeroReunion || '') === String(accion.numero_reunion || '') && normalizarProgramaNombre(a.programaNacional || a.programa) === programa && normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigo));
+  if (duplicada) return alert('Ya existe una acción con el mismo DS, reunión, Programa Nacional y Código de acción.');
+
+  const res = await api('/acciones', 'POST', accion);
+  const depurada = lista.filter(a => String(a.id) !== String(id));
+  depurada.push(accion);
+  __DEE_D1_IMPORTANDO = true;
+  guardarAccionesLocales(depurada);
+  __DEE_D1_IMPORTANDO = false;
+  renderTablaAcciones();
+  limpiarFormularioAccion();
+  accionEditandoId = null;
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acción';
+  alert(res.ok ? 'Acción guardada correctamente en D1.' : 'Acción guardada localmente. No se confirmó en D1.');
+}
+
+async function guardarAccionPrograma() {
+  const d = buscarDecretoPorId(dsProgramaSeleccionadoId);
+  if (!esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede guardar acciones en esta vista.');
+  if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+
+  const programa = programaSesionNormalizado();
+  const tipoAccion = $('progTipoAccion')?.value || '';
+  const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
+  const detalle = String($('progDetalle')?.value || '').trim();
+  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
+  if (!codigoAccion) return alert('Ingrese el Código de acción.');
+  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
+  if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
+
+  calcularFechaFinalPrograma();
+  calcularAvancePrograma();
+
+  const lista = cargarAccionesLocales();
+  const duplicada = lista.some(a => String(a.dsId || a.ds_id) === String(d.id) && String(a.numeroReunion || a.numero_reunion || '') === String(d.numeroReunion || '') && normalizarProgramaNombre(a.programaNacional || a.programa) === programa && normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion) && !a.departamento && !a.provincia && !a.distrito);
+  if (duplicada) return alert('Ya existe una acción con el mismo DS, reunión, Programa Nacional y Código de acción.');
+
+  const fechaRegistro = fechaHoraLocalISO();
+  const accion = normalizarAccionD1({
+    id: crypto.randomUUID(),
+    dsId: d.id,
+    ds_id: d.id,
+    numeroDS: formatearNumeroDS(d),
+    ds: formatearNumeroDS(d),
+    numeroReunion: d.numeroReunion || '',
+    numero_reunion: d.numeroReunion || '',
+    fechaReunion: d.fechaReunion || '',
+    fecha_reunion: d.fechaReunion || '',
+    estadoRDS: d.estadoRDS || 'Activo',
+    programaNacional: programa,
+    programa,
+    tipoAccion,
+    tipo: tipoAccion,
+    codigoAccion,
+    codigo: codigoAccion,
+    detalle,
+    unidadMedida: $('progUnidadMedida')?.value || '',
+    unidad: $('progUnidadMedida')?.value || '',
+    metaProgramada: Number($('progMetaProgramada')?.value || 0),
+    meta_programada: Number($('progMetaProgramada')?.value || 0),
+    plazoDias: Number($('progPlazoDias')?.value || 0),
+    plazo_dias: Number($('progPlazoDias')?.value || 0),
+    plazo: Number($('progPlazoDias')?.value || 0),
+    fechaInicio: $('progFechaInicio')?.value || '',
+    fecha_inicio: $('progFechaInicio')?.value || '',
+    fechaFinal: $('progFechaFinal')?.value || '',
+    fecha_final: $('progFechaFinal')?.value || '',
+    metaEjecutada: Number($('progMetaEjecutada')?.value || 0),
+    meta_ejecutada: Number($('progMetaEjecutada')?.value || 0),
+    avance: $('progAvance')?.value || '0%',
+    descripcionActividades: $('progDescripcionActividades')?.value || '',
+    descripcion: $('progDescripcionActividades')?.value || '',
+    fechaRegistro,
+    fecha_registro: fechaRegistro,
+    usuarioRegistro: state.session?.email || '',
+    usuario_registro: state.session?.email || '',
+    estado: 'Registrado'
+  });
+
+  const res = await api('/acciones', 'POST', accion);
+  lista.push(accion);
+  __DEE_D1_IMPORTANDO = true;
+  guardarAccionesLocales(lista);
+  __DEE_D1_IMPORTANDO = false;
+  limpiarFormularioAccionPrograma(true);
+  renderTablaAccionesProgramas();
+  renderTablaDecretosBasica();
+  alert(res.ok ? 'Acción registrada correctamente en D1.' : 'Acción registrada localmente. No se confirmó en D1.');
+}
+
+// Refuerza la carga D1 al entrar al sistema y al cambiar a pestañas que dependen de DS/acciones.
+document.addEventListener('shown.bs.tab', (e) => {
+  const target = e.target?.getAttribute?.('data-bs-target');
+  if (['#tabListado', '#tabDashboard', '#tabAcciones', '#tabAccionesProgramas'].includes(target)) {
+    cargarDecretosParaOrigen().catch(err => console.warn('No se pudo refrescar D1:', err));
+  }
+}, true);
+
+setTimeout(() => {
+  if (state.session?.email) cargarDecretosParaOrigen().catch(err => console.warn('Carga inicial D1 fallida:', err));
+}, 1800);
+
+console.info('DEE MIDIS parche D1 activo: decretos y acciones usan D1 como fuente principal v78.2');
