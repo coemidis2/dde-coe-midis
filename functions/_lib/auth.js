@@ -31,6 +31,23 @@ export function newCsrfToken() {
   return crypto.randomUUID();
 }
 
+
+function normalizeRoleInput(role, programa) {
+  const rawRole = String(role || '').trim();
+  const rawPrograma = String(programa || '').trim();
+
+  if (rawRole.startsWith('Registrador|')) {
+    const parts = rawRole.split('|');
+    return { role: 'Registrador', programa: (parts[1] || rawPrograma || '').trim() };
+  }
+
+  return { role: rawRole, programa: rawPrograma };
+}
+
+function isValidRole(role) {
+  return ['Administrador', 'Registrador', 'Consulta'].includes(role);
+}
+
 export async function createSession(env, user, ttlSeconds = 60 * 60 * 12) {
   const token = newId();
   const now = new Date();
@@ -87,14 +104,18 @@ export async function getSessionFromRequest(context) {
   if (!user) return null;
   if (Number(user.active) !== 1) return null;
 
-  const normalizedRole = user.role === 'Evaluador' ? 'Revisor' : user.role;
+  const normalized = normalizeRoleInput(user.role, user.programa || row.programa || '');
+
+  if (!isValidRole(normalized.role)) return null;
 
   return {
     token: row.token,
     email: user.email,
-    role: normalizedRole,
+    role: normalized.role,
+    rol: normalized.role,
     name: user.name || row.name || '',
-    programa: user.programa || row.programa || '',
+    nombre: user.name || row.name || '',
+    programa: normalized.programa || '',
     expiresAt: row.expires_at
   };
 }
