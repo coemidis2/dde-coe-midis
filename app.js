@@ -1,4 +1,4 @@
-// ================= VERSION 78 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 79 FIX LOGIN USUARIOS LOCALES =================
 const API_BASE = window.location.origin + '/api';
 
 let state = {
@@ -11,6 +11,7 @@ let ubigeoCache = [];
 let ubigeoInicializado = false;
 let adminPanelInicializado = false;
 let adminUsuariosLocales = [];
+let adminUsuariosVista = [];
 let dsEventosInicializados = false;
 const DECRETOS_STORAGE_KEY = 'decretos';
 const ACCIONES_STORAGE_KEY = 'accionesDS';
@@ -73,6 +74,7 @@ function programaSesionNormalizado() {
 
 // ================= USUARIOS LOCALES / LOGIN UNIFICADO =================
 const USUARIOS_STORAGE_KEY = 'usuarios';
+const USUARIOS_ELIMINADOS_KEY = 'usuariosEliminados';
 const SESSION_STORAGE_KEY = 'sessionUser';
 
 function normalizarEmail(email) {
@@ -105,6 +107,7 @@ function normalizarUsuario(raw) {
   const activo = estadoRaw === true || estadoRaw === 1 || estadoRaw === '1' || normalizarTexto(estadoRaw) === 'ACTIVO' || normalizarTexto(estadoRaw) === 'ACTIVE';
 
   return {
+    id: raw.id ?? raw.user_id ?? raw.userId ?? email,
     nombre: String(raw.nombre || raw.name || raw.fullName || email).trim(),
     name: String(raw.name || raw.nombre || raw.fullName || email).trim(),
     email,
@@ -117,9 +120,37 @@ function normalizarUsuario(raw) {
   };
 }
 
+
+function cargarUsuariosEliminados() {
+  try {
+    const lista = JSON.parse(localStorage.getItem(USUARIOS_ELIMINADOS_KEY) || '[]');
+    return new Set((Array.isArray(lista) ? lista : []).map(normalizarEmail).filter(Boolean));
+  } catch {
+    return new Set();
+  }
+}
+
+function marcarUsuarioEliminado(email) {
+  const eliminados = cargarUsuariosEliminados();
+  const limpio = normalizarEmail(email);
+  if (limpio) eliminados.add(limpio);
+  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
+}
+
+function usuarioEstaEliminado(email) {
+  return cargarUsuariosEliminados().has(normalizarEmail(email));
+}
+
+function quitarMarcaUsuarioEliminado(email) {
+  const eliminados = cargarUsuariosEliminados();
+  eliminados.delete(normalizarEmail(email));
+  localStorage.setItem(USUARIOS_ELIMINADOS_KEY, JSON.stringify([...eliminados]));
+}
+
 function cargarUsuariosLocales() {
   const fuentes = [USUARIOS_STORAGE_KEY, 'users', 'userList', 'usuariosSistema'];
   const mapa = new Map();
+  const eliminados = cargarUsuariosEliminados();
 
   fuentes.forEach(key => {
     try {
@@ -127,7 +158,7 @@ function cargarUsuariosLocales() {
       if (!Array.isArray(lista)) return;
       lista.forEach(item => {
         const u = normalizarUsuario(item);
-        if (u) mapa.set(u.email, u);
+        if (u && !eliminados.has(u.email)) mapa.set(u.email, u);
       });
     } catch (e) {
       console.warn('No se pudo leer localStorage.' + key, e);
@@ -147,6 +178,7 @@ function guardarUsuariosLocales(lista) {
     const u = normalizarUsuario(item);
     if (!u) return;
     if (normalizarTexto(u.rol) === 'EVALUADOR') return;
+    if (usuarioEstaEliminado(u.email)) return;
     if (vistos.has(u.email)) return;
     vistos.add(u.email);
     depurados.push(u);
@@ -158,6 +190,7 @@ function guardarUsuariosLocales(lista) {
 }
 
 function buscarUsuarioLocalPorEmail(email) {
+  if (usuarioEstaEliminado(email)) return null;
   const usuarios = cargarUsuariosLocales();
   return usuarios.find(u => u.email === normalizarEmail(email)) || null;
 }
@@ -572,6 +605,7 @@ function initAdminPanel() {
 
     if (e.target.dataset.adminToggleUser) toggleUsuarioAdmin(e.target.dataset.adminToggleUser);
     if (e.target.dataset.adminResetUser) resetClaveUsuarioAdmin(e.target.dataset.adminResetUser);
+    if (e.target.dataset.adminDeleteUser) eliminarUsuarioAdmin(e.target.dataset.adminDeleteUser);
     if (e.target.dataset.auditCopy) copiarTexto(e.target.dataset.auditCopy);
   });
 
@@ -639,7 +673,12 @@ async function cargarUsuariosAdmin() {
     usuarios = [...mapa.values()];
   }
 
-  usuarios = usuarios.filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR');
+  usuarios = usuarios
+    .map(u => normalizarUsuario(u) || u)
+    .filter(u => normalizarTexto(u.role || u.rol) !== 'EVALUADOR')
+    .filter(u => !usuarioEstaEliminado(u.email));
+
+  adminUsuariosVista = usuarios;
 
   const filtro = normalizarTexto($('adminBuscarUsuario')?.value || '');
   const filtrados = usuarios.filter(u => {
@@ -675,6 +714,12 @@ async function cargarUsuariosAdmin() {
                   data-admin-reset-user="${escapeHtmlAttr(email)}">
             Reset clave
           </button>
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  ${normalizarEmail(email) === 'admin@midis.gob.pe' ? 'disabled title="Usuario base protegido"' : ''}
+                  data-admin-delete-user="${escapeHtmlAttr(email)}">
+            Eliminar
+          </button>
         </td>
       </tr>
     `;
@@ -696,12 +741,10 @@ async function crearUsuarioAdmin() {
   const clave = generarClaveTemporal();
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
 
-  const usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
-  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
-  lista.push(usuario);
-  guardarUsuariosLocales(lista);
+  quitarMarcaUsuarioEliminado(email);
+  let usuario = normalizarUsuario({ nombre, name: nombre, email, rol, role: rol, password: clave, estado: 'activo', active: 1 });
 
-  await api('/users', 'POST', {
+  const res = await api('/users', 'POST', {
     name: usuario.name,
     nombre: usuario.nombre,
     email: usuario.email,
@@ -713,30 +756,107 @@ async function crearUsuarioAdmin() {
     active: usuario.active
   });
 
+  if (res.ok && res.data?.user) {
+    const remoto = normalizarUsuario({ ...res.data.user, password: res.data.temporaryPassword || clave });
+    if (remoto) usuario = remoto;
+    if (res.data.temporaryPassword && $('adminGeneratedPassword')) $('adminGeneratedPassword').value = res.data.temporaryPassword;
+  }
+
+  const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
+  lista.push(usuario);
+  guardarUsuariosLocales(lista);
+
   await cargarUsuariosAdmin();
 }
 
-function toggleUsuarioAdmin(email) {
+async function toggleUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+  if (!vista) return;
+
+  const activoActual = String(vista.estado || '').toLowerCase() === 'activo' || Number(vista.active) === 1;
+  const nuevoActivo = !activoActual;
+
+  await api('/users', 'PATCH', {
+    action: 'status',
+    id: vista.id || limpio,
+    email: limpio,
+    active: nuevoActivo
+  });
+
   const lista = cargarUsuariosLocales();
-  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  let usuario = lista.find(u => String(u.email) === limpio);
+  if (!usuario) {
+    usuario = normalizarUsuario({ ...vista, email: limpio, password: '' });
+    if (usuario) lista.push(usuario);
+  }
   if (usuario) {
-    usuario.estado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
-    usuario.active = usuario.estado === 'activo' ? 1 : 0;
+    usuario.estado = nuevoActivo ? 'activo' : 'inactivo';
+    usuario.active = nuevoActivo ? 1 : 0;
     guardarUsuariosLocales(lista);
   }
   cargarUsuariosAdmin();
 }
 
-function resetClaveUsuarioAdmin(email) {
-  const clave = generarClaveTemporal();
+async function resetClaveUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+  const claveLocal = generarClaveTemporal();
+
+  const res = await api('/users', 'PATCH', {
+    action: 'reset_password',
+    id: vista?.id || limpio,
+    email: limpio
+  });
+
+  const clave = (res.ok && res.data?.temporaryPassword) ? res.data.temporaryPassword : claveLocal;
   const lista = cargarUsuariosLocales();
-  const usuario = lista.find(u => String(u.email) === normalizarEmail(email));
+  let usuario = lista.find(u => String(u.email) === limpio);
+  if (!usuario && vista) {
+    usuario = normalizarUsuario({ ...vista, email: limpio, password: clave });
+    if (usuario) lista.push(usuario);
+  }
   if (usuario) {
     usuario.password = clave;
+    usuario.estado = 'activo';
+    usuario.active = 1;
     guardarUsuariosLocales(lista);
   }
   if ($('adminGeneratedPassword')) $('adminGeneratedPassword').value = clave;
-  alert(`Clave temporal generada para ${email}`);
+  alert(`Clave temporal generada para ${limpio}`);
+  cargarUsuariosAdmin();
+}
+
+async function eliminarUsuarioAdmin(email) {
+  const limpio = normalizarEmail(email);
+  if (!limpio) return;
+  if (limpio === 'admin@midis.gob.pe') {
+    alert('El usuario Administrador DEMO no se puede eliminar. Es el usuario base del sistema.');
+    return;
+  }
+  if (!confirm(`¿Eliminar el usuario ${limpio}? Ya no podrá iniciar sesión.`)) return;
+
+  const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
+
+  await api('/users', 'PATCH', {
+    action: 'delete',
+    id: vista?.id || limpio,
+    email: limpio
+  });
+
+  marcarUsuarioEliminado(limpio);
+  const lista = cargarUsuariosLocales().filter(u => normalizarEmail(u.email) !== limpio);
+  localStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(lista));
+  adminUsuariosLocales = lista;
+
+  if (normalizarEmail(state.session?.email) === limpio) {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    state.session = null;
+    showLogin();
+    return;
+  }
+
+  await cargarUsuariosAdmin();
 }
 
 function generarClaveTemporal() {
