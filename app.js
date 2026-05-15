@@ -1,5 +1,6 @@
-// ================= VERSION 79 FIX LOGIN USUARIOS LOCALES =================
+// ================= VERSION 79.1 - D1 SESSION FIX - 2026-05-15 =================
 const API_BASE = window.location.origin + '/api';
+const APP_BUILD_VERSION = '79-d1-session-fix-20260515';
 
 let state = {
   session: null,
@@ -11725,7 +11726,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
-// ================= PUENTE D1 FINAL v78.2: DECRETOS Y ACCIONES =================
+// ================= PUENTE D1 FINAL v79: DECRETOS Y ACCIONES =================
 // Objetivo: usar D1 como fuente principal para decretos, acciones, listado y dashboard.
 // localStorage queda solo como caché/respaldo temporal del navegador.
 let __DEE_D1_IMPORTANDO = false;
@@ -12154,4 +12155,4 @@ setTimeout(() => {
   if (state.session?.email) cargarDecretosParaOrigen().catch(err => console.warn('Carga inicial D1 fallida:', err));
 }, 1800);
 
-console.info('DEE MIDIS parche D1 activo: decretos y acciones usan D1 como fuente principal v78.2');
+console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones usan D1 como fuente principal');
