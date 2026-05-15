@@ -1,6 +1,6 @@
-// ================= VERSION 79.3 - COBERTURA PROGRAMAS EN REGISTRO ACCIONES - 2026-05-15 =================
+// ================= VERSION 79.4 - COBERTURA PROGRAMAS ALINEADA EN REGISTRO ACCIONES - 2026-05-15 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.3-cobertura-programas-registro-acciones-20260515';
+const APP_BUILD_VERSION = '79.4-cobertura-programas-alineada-20260515';
 
 let state = {
   session: null,
@@ -8401,7 +8401,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
     const distritos = territorioDSProgramaV571();
     if (!distritos.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>`;
       actualizarControlesPaginaV571(0);
       return;
     }
@@ -12165,7 +12165,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 (function(){
   'use strict';
 
-  const VERSION = 'v79.3-cobertura-programas-registro-acciones';
+  const VERSION = 'v79.4-cobertura-programas-alineada-registro-acciones';
   const q = (id) => document.getElementById(id);
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -12201,7 +12201,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     pae_iiee: 'PAE - N° IIEE',
     pae_ninos_atendidos: 'PAE - N° niños y niñas atendidos',
     contigo_usuarios: 'Contigo - N° usuarios',
-    pais_tambos: 'PAIS - N° Tambos prestando servicios'
+    pais_tambos: 'Tambos'
   };
 
   function normalizarUbigeo(v) {
@@ -12244,7 +12244,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (globalData) {
         indexarCoberturaProgramas(globalData);
       } else {
-        const res = await fetch('cobertura_programas.json?v=79.3-cobertura-programas-registro-acciones-20260515', { cache: 'no-store' });
+        const res = await fetch('cobertura_programas.json?v=79.4-cobertura-programas-alineada-20260515', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudo cargar cobertura_programas.json');
         indexarCoberturaProgramas(await res.json());
       }
@@ -12284,7 +12284,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       <th>Departamento</th>
       <th>Provincia</th>
       <th>Distrito</th>
-      ${columnas.map(c => `<th class="text-end">${esc(c.label)}</th>`).join('')}
+      ${columnas.map(c => `<th class="text-end cobertura-col" style="min-width:90px;white-space:nowrap">${esc(c.label)}</th>`).join('')}
       <th>Acciones específicas programadas y ejecutadas</th>
       <th>Descripción de actividades</th>`;
   }
@@ -12451,7 +12451,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     }
     let territorios = getTerritoriosDSPrograma();
     if (!territorios.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>`;
       return;
     }
     leerFiltrosDistritos();
@@ -12486,6 +12486,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
         <td>${esc(t.departamento)}</td>
         <td>${esc(t.provincia)}</td>
         <td><strong>${esc(t.distrito)}</strong><div class="small text-muted">${estadoFila}</div></td>
+        ${columnasCobertura.map(c => `<td class="text-end cobertura-col">${formatearCobertura(valorCobertura(t, c.key))}</td>`).join('')}
         <td>${detalle || '<span class="text-muted">Pendiente</span>'}</td>
         <td>${descripcion || '<span class="text-muted">Pendiente</span>'}</td>
       </tr>`;
@@ -12759,7 +12760,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-      try { initRegistroAccionesProgramasV792(); } catch (e) { console.warn('No se pudo inicializar v79.2 Registro Programas:', e); }
+      try { initRegistroAccionesProgramasV792(); } catch (e) { console.warn('No se pudo inicializar v79.4 Registro Programas:', e); }
       console.info('DEE MIDIS cierre aplicado:', VERSION);
     }, 1600);
   });
