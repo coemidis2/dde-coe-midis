@@ -161,27 +161,28 @@ export async function onRequestGet(context) {
       binds.push(dsId);
     }
     if (numeroReunion) {
-      sql += ' AND COALESCE(numero_reunion, '') = ?';
+
+      sql += " AND COALESCE(numero_reunion, '') = ?";
       binds.push(numeroReunion);
     }
     if (fechaReunion) {
-      sql += ' AND COALESCE(fecha_reunion, '') = ?';
+      sql += " AND COALESCE(fecha_reunion, '') = ?";
       binds.push(fechaReunion);
     }
     if (programa) {
-      sql += ' AND COALESCE(programa, '') = ?';
+      sql += " AND COALESCE(programa, '') = ?";
       binds.push(normalizePrograma(programa));
     }
     if (departamento) {
-      sql += ' AND COALESCE(departamento, '') = ?';
+      sql += " AND COALESCE(departamento, '') = ?";
       binds.push(departamento);
     }
     if (provincia) {
-      sql += ' AND COALESCE(provincia, '') = ?';
+      sql += " AND COALESCE(provincia, '') = ?";
       binds.push(provincia);
     }
     if (distrito) {
-      sql += ' AND COALESCE(distrito, '') = ?';
+      sql += " AND COALESCE(distrito, '') = ?";
       binds.push(distrito);
     }
 
