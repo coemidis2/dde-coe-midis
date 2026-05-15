@@ -1,6 +1,6 @@
-// ================= VERSION 79.2 - REGISTRO ACCIONES PROGRAMAS FILTROS - 2026-05-15 =================
+// ================= VERSION 79.3 - COBERTURA PROGRAMAS EN REGISTRO ACCIONES - 2026-05-15 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.2-registro-programas-filtros-20260515';
+const APP_BUILD_VERSION = '79.3-cobertura-programas-registro-acciones-20260515';
 
 let state = {
   session: null,
@@ -8049,7 +8049,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
     const distritos = territorioDecretoSeleccionadoPrograma();
     if (!distritos.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>`;
       return;
     }
 
@@ -8066,6 +8066,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <td>${esc(t.departamento)}</td>
         <td>${esc(t.provincia)}</td>
         <td><strong>${esc(t.distrito)}</strong><div class="small text-muted">${estadoFila}</div></td>
+        ${columnasCobertura.map(c => `<td class="text-end fw-semibold">${formatearCobertura(valorCobertura(t, c.key))}</td>`).join('')}
         <td>${detalle || '<span class="text-muted">Pendiente</span>'}</td>
         <td>${descripcion || '<span class="text-muted">Pendiente</span>'}</td>
       </tr>`;
@@ -12164,7 +12165,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 (function(){
   'use strict';
 
-  const VERSION = 'v79.2-filtros-registro-acciones-programas';
+  const VERSION = 'v79.3-cobertura-programas-registro-acciones';
   const q = (id) => document.getElementById(id);
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -12176,8 +12177,117 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     filtros: { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'' },
     paginaDistritos: 1,
     paginaRegistradas: 1,
-    seleccion: new Set()
+    seleccion: new Set(),
+    cobertura: { cargada:false, cargando:false, labels:{}, rows:[], porUbigeo:new Map(), porTerritorio:new Map() }
   };
+
+  const COBERTURA_PROGRAMA_KEYS = {
+    'CUNA MÁS': ['cuna_mas_cuidado_diurno', 'cuna_mas_acomp_familias'],
+    'JUNTOS': ['juntos_hogares_afiliados'],
+    'FONCODES': ['foncodes_proy_ejecucion', 'foncodes_haku_ejecucion'],
+    'PENSIÓN 65': ['pension65_usuarios'],
+    'PAE': ['pae_iiee', 'pae_ninos_atendidos'],
+    'CONTIGO': ['contigo_usuarios'],
+    'PAIS': ['pais_tambos']
+  };
+
+  const COBERTURA_LABELS_FALLBACK = {
+    cuna_mas_cuidado_diurno: 'Cuna Más - Cuidado Diurno (N° usuarios)',
+    cuna_mas_acomp_familias: 'Cuna Más - Acompañamiento de Familias (N° usuarios)',
+    juntos_hogares_afiliados: 'Juntos - Hogares afiliados',
+    foncodes_proy_ejecucion: 'Foncodes - N° proyectos en ejecución',
+    foncodes_haku_ejecucion: 'Foncodes - Haku Wiñay (hogares) en ejecución',
+    pension65_usuarios: 'Pensión 65 - N° usuarios',
+    pae_iiee: 'PAE - N° IIEE',
+    pae_ninos_atendidos: 'PAE - N° niños y niñas atendidos',
+    contigo_usuarios: 'Contigo - N° usuarios',
+    pais_tambos: 'PAIS - N° Tambos prestando servicios'
+  };
+
+  function normalizarUbigeo(v) {
+    const s = txt(v).replace(/\D/g, '');
+    return s ? s.padStart(6, '0') : '';
+  }
+
+  function keyTerritorioCobertura(obj) {
+    return [obj?.departamento, obj?.provincia, obj?.distrito].map(norm).join('|');
+  }
+
+  function getColumnasCoberturaPrograma() {
+    const programa = programaActual();
+    return (COBERTURA_PROGRAMA_KEYS[programa] || []).map(key => ({
+      key,
+      label: stateV792.cobertura.labels[key] || COBERTURA_LABELS_FALLBACK[key] || key
+    }));
+  }
+
+  function indexarCoberturaProgramas(data) {
+    const rows = Array.isArray(data?.rows) ? data.rows : (Array.isArray(data) ? data : []);
+    stateV792.cobertura.labels = { ...COBERTURA_LABELS_FALLBACK, ...(data?.labels || {}) };
+    stateV792.cobertura.rows = rows;
+    stateV792.cobertura.porUbigeo = new Map();
+    stateV792.cobertura.porTerritorio = new Map();
+    rows.forEach(r => {
+      const ubigeo = normalizarUbigeo(r?.ubigeo || r?.UBIGEO || r?.codigo || r?.cod_ubigeo);
+      if (ubigeo && !stateV792.cobertura.porUbigeo.has(ubigeo)) stateV792.cobertura.porUbigeo.set(ubigeo, r);
+      const kt = keyTerritorioCobertura(r);
+      if (kt && kt !== '||' && !stateV792.cobertura.porTerritorio.has(kt)) stateV792.cobertura.porTerritorio.set(kt, r);
+    });
+    stateV792.cobertura.cargada = true;
+  }
+
+  async function cargarCoberturaProgramas() {
+    if (stateV792.cobertura.cargada || stateV792.cobertura.cargando) return;
+    stateV792.cobertura.cargando = true;
+    try {
+      const globalData = window.coberturaProgramas || window.cobertura_programas || window.COBERTURA_PROGRAMAS;
+      if (globalData) {
+        indexarCoberturaProgramas(globalData);
+      } else {
+        const res = await fetch('cobertura_programas.json?v=79.3-cobertura-programas-registro-acciones-20260515', { cache: 'no-store' });
+        if (!res.ok) throw new Error('No se pudo cargar cobertura_programas.json');
+        indexarCoberturaProgramas(await res.json());
+      }
+      renderDistritosAccionesProgramaV792();
+    } catch (e) {
+      console.warn('Cobertura de Programas Nacionales no disponible:', e);
+    } finally {
+      stateV792.cobertura.cargando = false;
+    }
+  }
+
+  function coberturaTerritorio(t) {
+    const ubigeo = normalizarUbigeo(t?.ubigeo);
+    if (ubigeo && stateV792.cobertura.porUbigeo.has(ubigeo)) return stateV792.cobertura.porUbigeo.get(ubigeo);
+    return stateV792.cobertura.porTerritorio.get(keyTerritorioCobertura(t)) || null;
+  }
+
+  function valorCobertura(t, key) {
+    const row = coberturaTerritorio(t);
+    const valor = row?.cobertura?.[key];
+    if (valor === undefined || valor === null || valor === '') return 0;
+    return valor;
+  }
+
+  function formatearCobertura(valor) {
+    const n = Number(valor);
+    if (Number.isFinite(n)) return n.toLocaleString('es-PE');
+    return esc(valor ?? 0);
+  }
+
+  function actualizarCabeceraTablaDistritosCobertura() {
+    const theadRow = document.querySelector('#tablaDistritosAccionesPrograma thead tr');
+    if (!theadRow) return;
+    const columnas = getColumnasCoberturaPrograma();
+    theadRow.innerHTML = `
+      <th style="width:42px">Sel.</th>
+      <th>Departamento</th>
+      <th>Provincia</th>
+      <th>Distrito</th>
+      ${columnas.map(c => `<th class="text-end">${esc(c.label)}</th>`).join('')}
+      <th>Acciones específicas programadas y ejecutadas</th>
+      <th>Descripción de actividades</th>`;
+  }
 
   function keyTerritorio(t) {
     const ubigeo = txt(t?.ubigeo || t?.UBIGEO || t?.codigo || t?.cod_ubigeo);
@@ -12330,9 +12440,13 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     asegurarControlesDistritos();
     const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
     if (!tbody) return;
+    cargarCoberturaProgramas();
+    actualizarCabeceraTablaDistritosCobertura();
+    const columnasCobertura = getColumnasCoberturaPrograma();
+    const colspan = 6 + columnasCobertura.length;
     const d = getDSPrograma();
     if (!d) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Seleccione un Decreto Supremo activado.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">Seleccione un Decreto Supremo activado.</td></tr>`;
       return;
     }
     let territorios = getTerritoriosDSPrograma();
@@ -12357,7 +12471,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     if (q('btnProgDistritosSiguiente')) q('btnProgDistritosSiguiente').disabled = stateV792.paginaDistritos >= totalPaginas;
 
     if (!pagina.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-muted">No hay distritos que coincidan con la búsqueda.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">No hay distritos que coincidan con la búsqueda.</td></tr>`;
       return;
     }
 
@@ -12584,6 +12698,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
   function initV792() {
     asegurarControlesDistritos();
     asegurarControlesRegistradas();
+    cargarCoberturaProgramas();
 
     q('btnBuscarDistritosPrograma')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }, true);
     q('btnLimpiarBuscarDistritosPrograma')?.addEventListener('click', (e) => {
