@@ -1,6 +1,6 @@
-// ================= VERSION 79.5 - LOGIN/SESION 79.4 RESTAURADO + FILTROS COBERTURA - 2026-05-18 =================
+// ================= VERSION 79.6 - FILTROS COBERTURA PROGRAMAS - LOGIN/SESIÓN 79.4 RESTAURADO - 2026-05-18 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.5-login-sesion-79.4-filtros-cobertura-20260518';
+const APP_BUILD_VERSION = '79.5-filtros-cobertura-programas-login-794-20260518';
 
 let state = {
   session: null,
@@ -12165,7 +12165,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 (function(){
   'use strict';
 
-  const VERSION = 'v79.5-login-sesion-79.4-filtros-cobertura-programas-registro-acciones';
+  const VERSION = 'v79.5-filtros-cobertura-programas-registro-acciones-login-794';
   const q = (id) => document.getElementById(id);
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -12244,7 +12244,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (globalData) {
         indexarCoberturaProgramas(globalData);
       } else {
-        const res = await fetch('cobertura_programas.json?v=79.5-login-sesion-79.4-filtros-cobertura-20260518', { cache: 'no-store' });
+        const res = await fetch('cobertura_programas.json?v=79.5-filtros-cobertura-programas-login-794-20260518', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudo cargar cobertura_programas.json');
         indexarCoberturaProgramas(await res.json());
       }
@@ -12368,6 +12368,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     return [...new Set(valores)].join('<hr class="my-1">');
   }
 
+
   function valoresCoberturaTerritorio(t, columnas = getColumnasCoberturaPrograma()) {
     return columnas.map(c => {
       const n = Number(valorCobertura(t, c.key));
@@ -12376,74 +12377,64 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
   }
 
   function valoresCoberturaSegunFiltro(t, columnas = getColumnasCoberturaPrograma()) {
+    const f = stateV792.filtros || {};
     const valores = valoresCoberturaTerritorio(t, columnas);
-    const modo = stateV792.filtros.coberturaEn || 'cualquiera';
     if (columnas.length <= 1) return valores;
-    if (modo === 'primera') return valores.slice(0, 1);
-    if (modo === 'segunda') return valores.slice(1, 2);
+    if (f.coberturaEn === 'primera') return [valores[0] || 0];
+    if (f.coberturaEn === 'segunda') return [valores[1] || 0];
     return valores;
   }
 
-  function cumpleCoberturaEn(t, columnas = getColumnasCoberturaPrograma()) {
-    if (columnas.length <= 1) return true;
-    const valores = valoresCoberturaTerritorio(t, columnas);
-    const modo = stateV792.filtros.coberturaEn || 'cualquiera';
-    if (modo === 'primera') return (valores[0] || 0) > 0;
-    if (modo === 'segunda') return (valores[1] || 0) > 0;
-    if (modo === 'ambas') return valores.slice(0, 2).every(v => v > 0);
-    return true;
-  }
-
   function cumpleFiltroCobertura(t) {
+    const f = stateV792.filtros || {};
     const columnas = getColumnasCoberturaPrograma();
     if (!columnas.length) return true;
-    if (!cumpleCoberturaEn(t, columnas)) return false;
-
     const valores = valoresCoberturaSegunFiltro(t, columnas);
-    const hayCobertura = valores.some(v => v > 0);
-    const filtro = stateV792.filtros.cobertura || '';
-    const minimaManual = Number(stateV792.filtros.coberturaMinima || 0);
-    const minimaCombo = filtro.startsWith('mayor_') ? Number(filtro.replace('mayor_', '')) : 0;
-    const minima = Math.max(Number.isFinite(minimaManual) ? minimaManual : 0, Number.isFinite(minimaCombo) ? minimaCombo : 0);
-
-    if (filtro === 'con' && !hayCobertura) return false;
-    if (filtro === 'sin' && hayCobertura) return false;
-    if (minima > 0 && !valores.some(v => v > minima)) return false;
+    const suma = valores.reduce((a, b) => a + (Number(b) || 0), 0);
+    if (f.coberturaEn === 'ambas' && columnas.length > 1) {
+      const ambas = valores.length >= 2 && valores[0] > 0 && valores[1] > 0;
+      if ((f.cobertura === 'con' || f.cobertura === 'mayor_0') && !ambas) return false;
+      if (f.cobertura === 'sin' && ambas) return false;
+    } else {
+      if (f.cobertura === 'con' && suma <= 0) return false;
+      if (f.cobertura === 'sin' && suma > 0) return false;
+      if (f.cobertura === 'mayor_0' && suma <= 0) return false;
+    }
+    const umbrales = { mayor_100: 100, mayor_500: 500, mayor_1000: 1000 };
+    if (umbrales[f.cobertura] != null && Math.max(...valores, 0) <= umbrales[f.cobertura]) return false;
+    const min = Number(f.coberturaMinima || 0);
+    if (Number.isFinite(min) && min > 0 && Math.max(...valores, 0) < min) return false;
     return true;
   }
 
   function actualizarOpcionesCoberturaEn() {
+    const box = q('progFiltroCoberturaEn')?.closest('[data-cobertura-en-box]');
     const sel = q('progFiltroCoberturaEn');
-    if (!sel) return;
     const columnas = getColumnasCoberturaPrograma();
-    const valorActual = sel.value || 'cualquiera';
-    const box = sel.closest('[data-cobertura-en-box]') || sel.closest('.col-md-2, .col-md-3, .col-12');
-    if (box) box.style.display = columnas.length > 1 ? '' : 'none';
-    if (columnas.length > 1) {
-      const label1 = columnas[0]?.label || 'Primera columna';
-      const label2 = columnas[1]?.label || 'Segunda columna';
-      sel.innerHTML = `
-        <option value="cualquiera">Cualquiera</option>
-        <option value="primera">${esc(label1)}</option>
-        <option value="segunda">${esc(label2)}</option>
-        <option value="ambas">Ambas</option>`;
-    } else {
-      sel.innerHTML = '<option value="cualquiera">Cualquiera</option>';
+    if (!box || !sel) return;
+    const mostrar = columnas.length > 1;
+    box.style.display = mostrar ? '' : 'none';
+    if (!mostrar) {
+      sel.value = 'cualquiera';
+      stateV792.filtros.coberturaEn = 'cualquiera';
+      return;
     }
-    if (Array.from(sel.options).some(o => o.value === valorActual)) sel.value = valorActual;
-    else sel.value = 'cualquiera';
+    const primera = columnas[0]?.label || 'Primera columna';
+    const segunda = columnas[1]?.label || 'Segunda columna';
+    sel.innerHTML = `<option value="cualquiera">Cualquiera</option><option value="primera">${escapeHtml(primera)}</option><option value="segunda">${escapeHtml(segunda)}</option><option value="ambas">Ambas</option>`;
+    if (!['cualquiera','primera','segunda','ambas'].includes(sel.value)) sel.value = 'cualquiera';
   }
 
   function leerFiltrosDistritos() {
     stateV792.filtros.dep = norm(q('progFiltroDepartamento')?.value || '');
     stateV792.filtros.prov = norm(q('progFiltroProvincia')?.value || '');
     stateV792.filtros.dist = norm(q('progFiltroDistrito')?.value || '');
+    stateV792.filtros.detalleEstado = q('progFiltroDetalleEstado')?.value || '';
+    stateV792.filtros.descripcionEstado = q('progFiltroDescripcionEstado')?.value || '';
     stateV792.filtros.cobertura = q('progFiltroCobertura')?.value || '';
     stateV792.filtros.coberturaMinima = q('progFiltroCoberturaMinima')?.value || '';
     stateV792.filtros.coberturaEn = q('progFiltroCoberturaEn')?.value || 'cualquiera';
     stateV792.filtros.estadoAccion = q('progFiltroEstadoAccion')?.value || '';
-    stateV792.filtros.detalleEstado = q('progFiltroDetalleEstado')?.value || '';
-    stateV792.filtros.descripcionEstado = q('progFiltroDescripcionEstado')?.value || '';
   }
 
   function filtrarTerritorios(territorios) {
@@ -12453,13 +12444,13 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (f.dep && !norm(t.departamento).includes(f.dep)) return false;
       if (f.prov && !norm(t.provincia).includes(f.prov)) return false;
       if (f.dist && !norm(t.distrito).includes(f.dist)) return false;
-      if (!cumpleFiltroCobertura(t)) return false;
-      if (f.estadoAccion === 'pendiente' && acciones.length) return false;
-      if (f.estadoAccion === 'registrado' && !acciones.length) return false;
       if (f.detalleEstado === 'pendiente' && tieneTextoAccion(acciones)) return false;
       if (f.detalleEstado === 'no_pendiente' && !tieneTextoAccion(acciones)) return false;
       if (f.descripcionEstado === 'pendiente' && tieneTextoDescripcion(acciones)) return false;
       if (f.descripcionEstado === 'no_pendiente' && !tieneTextoDescripcion(acciones)) return false;
+      if (!cumpleFiltroCobertura(t)) return false;
+      if (f.estadoAccion === 'pendiente' && acciones.length) return false;
+      if (f.estadoAccion === 'registrado' && !acciones.length) return false;
       return true;
     });
   }
@@ -12518,8 +12509,8 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
     if (!tbody) return;
     cargarCoberturaProgramas();
-    actualizarOpcionesCoberturaEn();
     actualizarCabeceraTablaDistritosCobertura();
+    actualizarOpcionesCoberturaEn();
     const columnasCobertura = getColumnasCoberturaPrograma();
     const colspan = 6 + columnasCobertura.length;
     const d = getDSPrograma();
