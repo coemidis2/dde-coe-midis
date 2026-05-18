@@ -1,6 +1,6 @@
-// ================= VERSION 79.5 - COBERTURA PROGRAMAS ALINEADA EN REGISTRO ACCIONES - 2026-05-15 =================
+// ================= VERSION 79.4 - COBERTURA PROGRAMAS ALINEADA EN REGISTRO ACCIONES - 2026-05-15 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.5-filtros-cobertura-programas-20260518';
+const APP_BUILD_VERSION = '79.4-cobertura-programas-alineada-20260515';
 
 let state = {
   session: null,
@@ -12165,7 +12165,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 (function(){
   'use strict';
 
-  const VERSION = 'v79.5-filtros-cobertura-programas-registro-acciones';
+  const VERSION = 'v79.4-cobertura-programas-alineada-registro-acciones';
   const q = (id) => document.getElementById(id);
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -12174,7 +12174,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
   const programaActual = () => (typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '');
 
   const stateV792 = {
-    filtros: { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'', cobertura:'', coberturaMinima:'', coberturaEn:'cualquiera', estadoAccion:'' },
+    filtros: { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'' },
     paginaDistritos: 1,
     paginaRegistradas: 1,
     seleccion: new Set(),
@@ -12244,7 +12244,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (globalData) {
         indexarCoberturaProgramas(globalData);
       } else {
-        const res = await fetch('cobertura_programas.json?v=79.5-filtros-cobertura-programas-20260518', { cache: 'no-store' });
+        const res = await fetch('cobertura_programas.json?v=79.4-cobertura-programas-alineada-20260515', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudo cargar cobertura_programas.json');
         indexarCoberturaProgramas(await res.json());
       }
@@ -12368,80 +12368,10 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     return [...new Set(valores)].join('<hr class="my-1">');
   }
 
-  function valoresCoberturaTerritorio(t, columnas = getColumnasCoberturaPrograma()) {
-    return columnas.map(c => {
-      const n = Number(valorCobertura(t, c.key));
-      return Number.isFinite(n) ? n : 0;
-    });
-  }
-
-  function valoresCoberturaSegunFiltro(t, columnas = getColumnasCoberturaPrograma()) {
-    const valores = valoresCoberturaTerritorio(t, columnas);
-    const modo = stateV792.filtros.coberturaEn || 'cualquiera';
-    if (columnas.length <= 1) return valores;
-    if (modo === 'primera') return valores.slice(0, 1);
-    if (modo === 'segunda') return valores.slice(1, 2);
-    return valores;
-  }
-
-  function cumpleCoberturaEn(t, columnas = getColumnasCoberturaPrograma()) {
-    if (columnas.length <= 1) return true;
-    const valores = valoresCoberturaTerritorio(t, columnas);
-    const modo = stateV792.filtros.coberturaEn || 'cualquiera';
-    if (modo === 'primera') return (valores[0] || 0) > 0;
-    if (modo === 'segunda') return (valores[1] || 0) > 0;
-    if (modo === 'ambas') return valores.slice(0, 2).every(v => v > 0);
-    return true;
-  }
-
-  function cumpleFiltroCobertura(t) {
-    const columnas = getColumnasCoberturaPrograma();
-    if (!columnas.length) return true;
-    if (!cumpleCoberturaEn(t, columnas)) return false;
-
-    const valores = valoresCoberturaSegunFiltro(t, columnas);
-    const hayCobertura = valores.some(v => v > 0);
-    const filtro = stateV792.filtros.cobertura || '';
-    const minimaManual = Number(stateV792.filtros.coberturaMinima || 0);
-    const minimaCombo = filtro.startsWith('mayor_') ? Number(filtro.replace('mayor_', '')) : 0;
-    const minima = Math.max(Number.isFinite(minimaManual) ? minimaManual : 0, Number.isFinite(minimaCombo) ? minimaCombo : 0);
-
-    if (filtro === 'con' && !hayCobertura) return false;
-    if (filtro === 'sin' && hayCobertura) return false;
-    if (minima > 0 && !valores.some(v => v > minima)) return false;
-    return true;
-  }
-
-  function actualizarOpcionesCoberturaEn() {
-    const sel = q('progFiltroCoberturaEn');
-    if (!sel) return;
-    const columnas = getColumnasCoberturaPrograma();
-    const valorActual = sel.value || 'cualquiera';
-    const box = sel.closest('[data-cobertura-en-box]') || sel.closest('.col-md-2, .col-md-3, .col-12');
-    if (box) box.style.display = columnas.length > 1 ? '' : 'none';
-    if (columnas.length > 1) {
-      const label1 = columnas[0]?.label || 'Primera columna';
-      const label2 = columnas[1]?.label || 'Segunda columna';
-      sel.innerHTML = `
-        <option value="cualquiera">Cualquiera</option>
-        <option value="primera">${esc(label1)}</option>
-        <option value="segunda">${esc(label2)}</option>
-        <option value="ambas">Ambas</option>`;
-    } else {
-      sel.innerHTML = '<option value="cualquiera">Cualquiera</option>';
-    }
-    if (Array.from(sel.options).some(o => o.value === valorActual)) sel.value = valorActual;
-    else sel.value = 'cualquiera';
-  }
-
   function leerFiltrosDistritos() {
     stateV792.filtros.dep = norm(q('progFiltroDepartamento')?.value || '');
     stateV792.filtros.prov = norm(q('progFiltroProvincia')?.value || '');
     stateV792.filtros.dist = norm(q('progFiltroDistrito')?.value || '');
-    stateV792.filtros.cobertura = q('progFiltroCobertura')?.value || '';
-    stateV792.filtros.coberturaMinima = q('progFiltroCoberturaMinima')?.value || '';
-    stateV792.filtros.coberturaEn = q('progFiltroCoberturaEn')?.value || 'cualquiera';
-    stateV792.filtros.estadoAccion = q('progFiltroEstadoAccion')?.value || '';
     stateV792.filtros.detalleEstado = q('progFiltroDetalleEstado')?.value || '';
     stateV792.filtros.descripcionEstado = q('progFiltroDescripcionEstado')?.value || '';
   }
@@ -12453,9 +12383,6 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (f.dep && !norm(t.departamento).includes(f.dep)) return false;
       if (f.prov && !norm(t.provincia).includes(f.prov)) return false;
       if (f.dist && !norm(t.distrito).includes(f.dist)) return false;
-      if (!cumpleFiltroCobertura(t)) return false;
-      if (f.estadoAccion === 'pendiente' && acciones.length) return false;
-      if (f.estadoAccion === 'registrado' && !acciones.length) return false;
       if (f.detalleEstado === 'pendiente' && tieneTextoAccion(acciones)) return false;
       if (f.detalleEstado === 'no_pendiente' && !tieneTextoAccion(acciones)) return false;
       if (f.descripcionEstado === 'pendiente' && tieneTextoDescripcion(acciones)) return false;
@@ -12476,10 +12403,6 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
         <div class="col-md-2"><label class="form-label small mb-1">Departamento</label><input id="progFiltroDepartamento" class="form-control form-control-sm" placeholder="Departamento"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Provincia</label><input id="progFiltroProvincia" class="form-control form-control-sm" placeholder="Provincia"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Distrito</label><input id="progFiltroDistrito" class="form-control form-control-sm" placeholder="Distrito"></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Cobertura</label><select id="progFiltroCobertura" class="form-select form-select-sm"><option value="">Todos</option><option value="con">Con cobertura</option><option value="sin">Sin cobertura</option><option value="mayor_0">Mayor a 0</option><option value="mayor_100">Mayor a 100</option><option value="mayor_500">Mayor a 500</option><option value="mayor_1000">Mayor a 1000</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Cobertura mínima</label><input id="progFiltroCoberturaMinima" type="number" min="0" class="form-control form-control-sm" placeholder="N° mínimo"></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Estado de acción</label><select id="progFiltroEstadoAccion" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="registrado">Registrados</option></select></div>
-        <div class="col-md-2" data-cobertura-en-box><label class="form-label small mb-1">Cobertura en</label><select id="progFiltroCoberturaEn" class="form-select form-select-sm"><option value="cualquiera">Cualquiera</option><option value="primera">Primera columna</option><option value="segunda">Segunda columna</option><option value="ambas">Ambas</option></select></div>
         <div class="col-md-2"><label class="form-label small mb-1">Acciones específicas</label><select id="progFiltroDetalleEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
         <div class="col-md-2"><label class="form-label small mb-1">Descripción de actividades</label><select id="progFiltroDescripcionEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
         <div class="col-md-2 d-flex gap-2"><button id="btnBuscarDistritosPrograma" type="button" class="btn btn-sm btn-primary">Buscar</button><button id="btnLimpiarBuscarDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button></div>
@@ -12518,7 +12441,6 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
     if (!tbody) return;
     cargarCoberturaProgramas();
-    actualizarOpcionesCoberturaEn();
     actualizarCabeceraTablaDistritosCobertura();
     const columnasCobertura = getColumnasCoberturaPrograma();
     const colspan = 6 + columnasCobertura.length;
@@ -12782,14 +12704,13 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     q('btnBuscarDistritosPrograma')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }, true);
     q('btnLimpiarBuscarDistritosPrograma')?.addEventListener('click', (e) => {
       e.preventDefault(); e.stopImmediatePropagation();
-      ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroCobertura','progFiltroCoberturaMinima','progFiltroEstadoAccion','progFiltroDetalleEstado','progFiltroDescripcionEstado'].forEach(id => { if (q(id)) q(id).value = ''; });
-      if (q('progFiltroCoberturaEn')) q('progFiltroCoberturaEn').value = 'cualquiera';
-      stateV792.filtros = { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'', cobertura:'', coberturaMinima:'', coberturaEn:'cualquiera', estadoAccion:'' };
+      ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroDetalleEstado','progFiltroDescripcionEstado'].forEach(id => { if (q(id)) q(id).value = ''; });
+      stateV792.filtros = { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'' };
       stateV792.paginaDistritos = 1;
       renderDistritosAccionesProgramaV792();
     }, true);
-    ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroCoberturaMinima'].forEach(id => q(id)?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); } }));
-    ['progFiltroCobertura','progFiltroCoberturaEn','progFiltroEstadoAccion','progFiltroDetalleEstado','progFiltroDescripcionEstado','progDistritosPageSize'].forEach(id => q(id)?.addEventListener('change', () => { stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }));
+    ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito'].forEach(id => q(id)?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); } }));
+    ['progFiltroDetalleEstado','progFiltroDescripcionEstado','progDistritosPageSize'].forEach(id => q(id)?.addEventListener('change', () => { stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }));
     q('btnProgDistritosAnterior')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos = Math.max(1, stateV792.paginaDistritos - 1); renderDistritosAccionesProgramaV792(); }, true);
     q('btnProgDistritosSiguiente')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos += 1; renderDistritosAccionesProgramaV792(); }, true);
     q('btnSeleccionarTodosDistritosPrograma')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); seleccionarTodosDistritosV792(); }, true);
@@ -12839,7 +12760,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-      try { initRegistroAccionesProgramasV792(); } catch (e) { console.warn('No se pudo inicializar v79.5 Registro Programas:', e); }
+      try { initRegistroAccionesProgramasV792(); } catch (e) { console.warn('No se pudo inicializar v79.4 Registro Programas:', e); }
       console.info('DEE MIDIS cierre aplicado:', VERSION);
     }, 1600);
   });
