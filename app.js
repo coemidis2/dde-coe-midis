@@ -1,6 +1,6 @@
-// ================= VERSION 79.8 - CORRECCIÓN CRUCE COBERTURA TERRITORIAL - 2026-05-22 =================
+// ================= VERSION 79.9 - EXPORTACIÓN LISTADO DS CON TERRITORIO A4 HORIZONTAL - 2026-05-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.5-filtros-cobertura-programas-login-794-20260518';
+const APP_BUILD_VERSION = '79.9-export-listado-ds-territorio-a4-20260522';
 
 let state = {
   session: null,
@@ -6490,6 +6490,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!avance && metaProg > 0) avance = `${Math.min(100, Math.round((metaEjec/metaProg)*100))}%`;
     return {
       programa: valor(a,'programaNacional','programa'),
+      departamento: valor(a,'departamento','depto'),
+      provincia: valor(a,'provincia'),
+      distrito: valor(a,'distrito'),
       tipo: valor(a,'tipoAccion','tipo'),
       codigo: valor(a,'codigoAccion','codigo'),
       detalle: valor(a,'detalle','accionesEspecificas','accion','acciones'),
@@ -6841,6 +6844,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!avance && metaProg > 0) avance = `${Math.min(100, Math.round((metaEjec/metaProg)*100))}%`;
     return {
       programa: valor(a,'programaNacional','programa'),
+      departamento: valor(a,'departamento','depto'),
+      provincia: valor(a,'provincia'),
+      distrito: valor(a,'distrito'),
       tipo: valor(a,'tipoAccion','tipo'),
       codigo: valor(a,'codigoAccion','codigo'),
       detalle: valor(a,'detalle','accion','acciones'),
@@ -6973,14 +6979,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const ws = wb.addWorksheet(`DS_${numeroDSLimpio(d)}`.replace(/[\\/*?:\[\]]/g,'_').slice(0,31));
     ws.pageSetup = { paperSize:9, orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0, horizontalCentered:true };
     ws.pageMargins = { left:0.25, right:0.25, top:0.35, bottom:0.35, header:0.15, footer:0.15 };
-    ws.columns = [{width:24},{width:24},{width:18},{width:58},{width:16},{width:14},{width:12},{width:16},{width:16},{width:14},{width:12},{width:42}];
+    ws.columns = [{width:18},{width:16},{width:16},{width:16},{width:18},{width:15},{width:42},{width:13},{width:12},{width:10},{width:12},{width:12},{width:12},{width:10},{width:34}];
     let r = 1;
     [
       'MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA',
       info.tituloConReunion || info.titulo,
       'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL',
       `FECHA DE REPORTE: ${info.fechaReporte}`
-    ].forEach(v => { ws.mergeCells(`A${r}:L${r}`); ws.getCell(`A${r}`).value = v; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
+    ].forEach(v => { ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = v; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
     r++;
     const generales = [
       ['Número de Decreto Supremo', info.titulo],
@@ -6988,18 +6994,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ['Peligro o evento', info.peligroEvento]
     ].filter(row => txt(row[1]));
     if (generales.length) {
-      ws.mergeCells(`A${r}:L${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
-      generales.forEach(([k,v]) => { ws.mergeCells(`B${r}:L${r}`); ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; r++; });
+      ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
+      generales.forEach(([k,v]) => { ws.mergeCells(`B${r}:O${r}`); ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; r++; });
       r++;
     }
     if (txt(info.motivos)) {
-      ws.mergeCells(`B${r}:L${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
+      ws.mergeCells(`B${r}:O${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
     }
-    const headers = ['Programa Nacional','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
+    const headers = ['Programa Nacional','Departamento','Provincia','Distrito','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
     info.secciones.forEach(sec => {
-      ws.mergeCells(`A${r}:L${r}`); ws.getCell(`A${r}`).value = sec.titulo; estiloHeaderExcel(ws.getRow(r)); r++;
+      ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = sec.titulo; estiloHeaderExcel(ws.getRow(r)); r++;
       ws.getRow(r).values = headers; estiloHeaderExcel(ws.getRow(r)); r++;
-      sec.filas.forEach(f => { ws.getRow(r).values = [f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]; ws.getRow(r).eachCell(estiloCeldaExcel); r++; });
+      sec.filas.forEach(f => { ws.getRow(r).values = [f.programa, f.departamento, f.provincia, f.distrito, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]; ws.getRow(r).eachCell(estiloCeldaExcel); r++; });
       r++;
     });
     const buf = await wb.xlsx.writeBuffer();
@@ -7032,12 +7038,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       doc.autoTable({ startY:y, body:[['Acciones a realizar según exposición de motivos', info.motivos]], theme:'grid', styles:{ fontSize:6.5, cellPadding:1, overflow:'linebreak', valign:'top' }, columnStyles:{ 0:{ fontStyle:'bold', fillColor:[221,235,247], cellWidth:58 }, 1:{ cellWidth:214 } }, margin:{ left:11, right:11 } });
       y = doc.lastAutoTable.finalY + 4;
     }
-    const head = [['Programa','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
+    const head = [['Programa','Departamento','Provincia','Distrito','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
     info.secciones.forEach(sec => {
       if (y > 175) { doc.addPage(); y = 12; }
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(sec.titulo, 8, y); y += 2;
-      const body = sec.filas.map(f => [f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]);
-      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.6 }, styles:{ fontSize:5.3, cellPadding:0.6, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:25},1:{cellWidth:28},2:{cellWidth:18},3:{cellWidth:62},4:{cellWidth:16},5:{cellWidth:13},6:{cellWidth:11},7:{cellWidth:16},8:{cellWidth:16},9:{cellWidth:13},10:{cellWidth:12},11:{cellWidth:45} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocal()}`, 8, 204); } });
+      const body = sec.filas.map(f => [f.programa, f.departamento, f.provincia, f.distrito, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]);
+      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.0 }, styles:{ fontSize:4.8, cellPadding:0.6, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:18},1:{cellWidth:16},2:{cellWidth:16},3:{cellWidth:16},4:{cellWidth:17},5:{cellWidth:14},6:{cellWidth:42},7:{cellWidth:12},8:{cellWidth:11},9:{cellWidth:9},10:{cellWidth:12},11:{cellWidth:12},12:{cellWidth:11},13:{cellWidth:9},14:{cellWidth:31} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocal()}`, 8, 204); } });
       y = doc.lastAutoTable.finalY + 5;
     });
     doc.save(nombreArchivo(d,'pdf'));
