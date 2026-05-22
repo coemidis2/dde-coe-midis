@@ -1,4 +1,4 @@
-// ================= VERSION 79.6 - FILTROS COBERTURA PROGRAMAS - LOGIN/SESIÓN 79.4 RESTAURADO - 2026-05-18 =================
+// ================= VERSION 79.7 - FILTROS COBERTURA PROGRAMAS - LOGIN/SESIÓN 79.4 RESTAURADO - 2026-05-18 =================
 const API_BASE = window.location.origin + '/api';
 const APP_BUILD_VERSION = '79.5-filtros-cobertura-programas-login-794-20260518';
 
