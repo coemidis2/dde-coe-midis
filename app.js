@@ -1,6 +1,6 @@
-// ================= VERSION 79.7 - FILTROS COBERTURA PROGRAMAS - LOGIN/SESIÓN 79.4 RESTAURADO - 2026-05-18 =================
+// ================= VERSION 79.8 - CORRECCIÓN CRUCE COBERTURA TERRITORIAL - 2026-05-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.7-ubigeo-compatible-20260522';
+const APP_BUILD_VERSION = '79.5-filtros-cobertura-programas-login-794-20260518';
 
 let state = {
   session: null,
@@ -12156,7 +12156,7 @@ setTimeout(() => {
   if (state.session?.email) cargarDecretosParaOrigen().catch(err => console.warn('Carga inicial D1 fallida:', err));
 }, 1800);
 
-console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones usan D1 como fuente principal');
+console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decretos y acciones usan D1 como fuente principal');
 
 
 // ================= AJUSTE v79.2 - FILTROS Y PAGINACIÓN REGISTRO ACCIONES PROGRAMAS =================
@@ -12165,10 +12165,25 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
 (function(){
   'use strict';
 
-  const VERSION = 'v79.5-filtros-cobertura-programas-registro-acciones-login-794';
+  const VERSION = 'v79.8-cobertura-territorial-fix-registro-acciones-programas';
   const q = (id) => document.getElementById(id);
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  const canonTerritorial = (v) => {
+    // Normalización territorial fuerte para cruzar DS, ubigeoData.js y cobertura_programas.json.
+    // Corrige diferencias usuales como NASCA/NAZCA, tildes, espacios y signos.
+    let s = norm(v).replace(/[^A-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const alias = {
+      'NAZCA': 'NASCA',
+      'GRAL SANCHEZ CERRO': 'GENERAL SANCHEZ CERRO',
+      'MARISCAL NIETO': 'MARISCAL NIETO',
+      'PROV CONST DEL CALLAO': 'CALLAO',
+      'CALLAO': 'CALLAO'
+    };
+    return alias[s] || s;
+  };
+  const keyCanonTerritorio = (obj) => [obj?.departamento, obj?.provincia, obj?.distrito].map(canonTerritorial).join('|');
+  const keyCanonDepDist = (obj) => [obj?.departamento, obj?.distrito].map(canonTerritorial).join('|');
   const esc = (v) => (typeof escapeHtml === 'function' ? escapeHtml(v) : txt(v));
   const escAttr = (v) => (typeof escapeHtmlAttr === 'function' ? escapeHtmlAttr(v) : esc(v));
   const programaActual = () => (typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '');
@@ -12178,7 +12193,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     paginaDistritos: 1,
     paginaRegistradas: 1,
     seleccion: new Set(),
-    cobertura: { cargada:false, cargando:false, labels:{}, rows:[], porUbigeo:new Map(), porTerritorio:new Map() }
+    cobertura: { cargada:false, cargando:false, labels:{}, rows:[], porUbigeo:new Map(), porTerritorio:new Map(), porDepDist:new Map() }
   };
 
   const COBERTURA_PROGRAMA_KEYS = {
@@ -12210,14 +12225,18 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
   }
 
   function keyTerritorioCobertura(obj) {
-    return [obj?.departamento, obj?.provincia, obj?.distrito].map(norm).join('|');
+    return keyCanonTerritorio(obj);
+  }
+
+  function keyTerritorioCoberturaDepDist(obj) {
+    return keyCanonDepDist(obj);
   }
 
   function getColumnasCoberturaPrograma() {
     const programa = programaActual();
     return (COBERTURA_PROGRAMA_KEYS[programa] || []).map(key => ({
       key,
-      label: stateV792.cobertura.labels[key] || COBERTURA_LABELS_FALLBACK[key] || key
+      label: COBERTURA_LABELS_FALLBACK[key] || stateV792.cobertura.labels[key] || key
     }));
   }
 
@@ -12227,11 +12246,14 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
     stateV792.cobertura.rows = rows;
     stateV792.cobertura.porUbigeo = new Map();
     stateV792.cobertura.porTerritorio = new Map();
+    stateV792.cobertura.porDepDist = new Map();
     rows.forEach(r => {
       const ubigeo = normalizarUbigeo(r?.ubigeo || r?.UBIGEO || r?.codigo || r?.cod_ubigeo);
       if (ubigeo && !stateV792.cobertura.porUbigeo.has(ubigeo)) stateV792.cobertura.porUbigeo.set(ubigeo, r);
       const kt = keyTerritorioCobertura(r);
       if (kt && kt !== '||' && !stateV792.cobertura.porTerritorio.has(kt)) stateV792.cobertura.porTerritorio.set(kt, r);
+      const kd = keyTerritorioCoberturaDepDist(r);
+      if (kd && kd !== '|' && !stateV792.cobertura.porDepDist.has(kd)) stateV792.cobertura.porDepDist.set(kd, r);
     });
     stateV792.cobertura.cargada = true;
   }
@@ -12244,7 +12266,7 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
       if (globalData) {
         indexarCoberturaProgramas(globalData);
       } else {
-        const res = await fetch('cobertura_programas.json?v=79.5-filtros-cobertura-programas-login-794-20260518', { cache: 'no-store' });
+        const res = await fetch('cobertura_programas.json?v=79.8-cobertura-territorial-fix-20260522', { cache: 'no-store' });
         if (!res.ok) throw new Error('No se pudo cargar cobertura_programas.json');
         indexarCoberturaProgramas(await res.json());
       }
@@ -12259,14 +12281,22 @@ console.info('DEE MIDIS VERSION 79 - D1 SESSION FIX activo: decretos y acciones 
   function coberturaTerritorio(t) {
     const ubigeo = normalizarUbigeo(t?.ubigeo);
     if (ubigeo && stateV792.cobertura.porUbigeo.has(ubigeo)) return stateV792.cobertura.porUbigeo.get(ubigeo);
-    return stateV792.cobertura.porTerritorio.get(keyTerritorioCobertura(t)) || null;
+
+    const porTerritorio = stateV792.cobertura.porTerritorio.get(keyTerritorioCobertura(t));
+    if (porTerritorio) return porTerritorio;
+
+    // Respaldo controlado: solo se usa Departamento + Distrito cuando el nombre de provincia
+    // difiere entre fuentes oficiales, por ejemplo ICA / NASCA en el DS vs ICA / NAZCA en cobertura.
+    return stateV792.cobertura.porDepDist.get(keyTerritorioCoberturaDepDist(t)) || null;
   }
 
   function valorCobertura(t, key) {
     const row = coberturaTerritorio(t);
     const valor = row?.cobertura?.[key];
     if (valor === undefined || valor === null || valor === '') return 0;
-    return valor;
+    if (typeof valor === 'number') return valor;
+    const n = Number(String(valor).replace(/,/g, '').trim());
+    return Number.isFinite(n) ? n : valor;
   }
 
   function formatearCobertura(valor) {
