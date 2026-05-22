@@ -1,6 +1,6 @@
-// ================= VERSION 79.9 - EXPORTACIÓN LISTADO DS CON TERRITORIO A4 HORIZONTAL - 2026-05-22 =================
+// ================= VERSION 79.10 - FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.9-export-listado-ds-territorio-a4-20260522';
+const APP_BUILD_VERSION = '79.10-fix-seleccion-registro-grupal-programas-20260522';
 
 let state = {
   session: null,
@@ -8439,7 +8439,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function seleccionarTodosVisiblesV571() {
-    distritosVisiblesPaginaV571().forEach(t => seleccionV571.add(t.key));
+    // v79.10: el botón "Seleccionar todos" debe trabajar en bloque con TODO el territorio
+    // del DS, no solo con la página visible de 10/25/50/100 registros.
+    territorioDSProgramaV571().forEach(t => {
+      if (t && t.key) seleccionV571.add(String(t.key));
+    });
+
+    // También captura cualquier checkbox ya marcado en la tabla vigente, aunque haya sido
+    // renderizada por el bloque posterior V792.
+    document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
+      if (chk?.value) seleccionV571.add(String(chk.value));
+    });
+
     renderDistritosAccionesProgramaV571();
   }
 
@@ -8464,6 +8475,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       return;
     }
     if (!dsProgramaSeleccionadoId) return alert('Seleccione un Decreto Supremo activado.');
+
+    // v79.10: resincroniza la selección real antes de validar. Corrige el caso en que
+    // el usuario marca manualmente o usa paginación y el Set interno queda vacío.
+    document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
+      if (chk?.value) seleccionV571.add(String(chk.value));
+    });
+
     if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
     if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
     if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
@@ -8473,6 +8491,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function guardarGrupalV571() {
+    // v79.10: sincroniza checkboxes visibles antes de guardar, evitando que un registro
+    // marcado manualmente no sea reconocido por la validación.
+    document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
+      if (chk?.value) seleccionV571.add(String(chk.value));
+    });
+
     const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.');
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
@@ -12623,6 +12647,9 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   function abrirModalGrupalV792() {
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Esta opción corresponde a Registradores de Programas Nacionales.');
     if (!dsProgramaSeleccionadoId) return alert('Seleccione un Decreto Supremo activado.');
+    document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
+      if (chk?.value) stateV792.seleccion.add(String(chk.value));
+    });
     if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
     if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
     if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
@@ -12650,6 +12677,10 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   }
 
   async function guardarAccionesTerritorialesV792({ usarModal = false } = {}) {
+    document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
+      if (chk?.value) stateV792.seleccion.add(String(chk.value));
+    });
+
     const d = getDSPrograma();
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede guardar acciones en esta vista.');
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
