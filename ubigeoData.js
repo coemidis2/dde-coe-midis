@@ -1,13247 +1,1894 @@
-// Generado desde JOIN-UBIGEO-FORMULA - copia.xlsx
-// Estructura compatible con ubigeoData.js: const ubigeoData = [ ... ];
-// Campos: departamento, provincia, distrito, clave, ubigeo.
 const ubigeoData = [
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "CHACHAPOYAS",
-    "clave": "AMAZONASCHACHAPOYASCHACHAPOYAS",
-    "ubigeo": "010101"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "ASUNCION",
-    "clave": "AMAZONASCHACHAPOYASASUNCION",
-    "ubigeo": "010102"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "BALSAS",
-    "clave": "AMAZONASCHACHAPOYASBALSAS",
-    "ubigeo": "010103"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "CHETO",
-    "clave": "AMAZONASCHACHAPOYASCHETO",
-    "ubigeo": "010104"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "CHILIQUIN",
-    "clave": "AMAZONASCHACHAPOYASCHILIQUIN",
-    "ubigeo": "010105"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "CHUQUIBAMBA",
-    "clave": "AMAZONASCHACHAPOYASCHUQUIBAMBA",
-    "ubigeo": "010106"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "GRANADA",
-    "clave": "AMAZONASCHACHAPOYASGRANADA",
-    "ubigeo": "010107"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "HUANCAS",
-    "clave": "AMAZONASCHACHAPOYASHUANCAS",
-    "ubigeo": "010108"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "LA JALCA",
-    "clave": "AMAZONASCHACHAPOYASLA JALCA",
-    "ubigeo": "010109"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "LEIMEBAMBA",
-    "clave": "AMAZONASCHACHAPOYASLEIMEBAMBA",
-    "ubigeo": "010110"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "LEVANTO",
-    "clave": "AMAZONASCHACHAPOYASLEVANTO",
-    "ubigeo": "010111"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "MAGDALENA",
-    "clave": "AMAZONASCHACHAPOYASMAGDALENA",
-    "ubigeo": "010112"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "MARISCAL CASTILLA",
-    "clave": "AMAZONASCHACHAPOYASMARISCAL CASTILLA",
-    "ubigeo": "010113"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "MOLINOPAMPA",
-    "clave": "AMAZONASCHACHAPOYASMOLINOPAMPA",
-    "ubigeo": "010114"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "MONTEVIDEO",
-    "clave": "AMAZONASCHACHAPOYASMONTEVIDEO",
-    "ubigeo": "010115"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "OLLEROS",
-    "clave": "AMAZONASCHACHAPOYASOLLEROS",
-    "ubigeo": "010116"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "QUINJALCA",
-    "clave": "AMAZONASCHACHAPOYASQUINJALCA",
-    "ubigeo": "010117"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "SAN FRANCISCO DE DAGUAS",
-    "clave": "AMAZONASCHACHAPOYASSAN FRANCISCO DE DAGUAS",
-    "ubigeo": "010118"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "SAN ISIDRO DE MAINO",
-    "clave": "AMAZONASCHACHAPOYASSAN ISIDRO DE MAINO",
-    "ubigeo": "010119"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "SOLOCO",
-    "clave": "AMAZONASCHACHAPOYASSOLOCO",
-    "ubigeo": "010120"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CHACHAPOYAS",
-    "distrito": "SONCHE",
-    "clave": "AMAZONASCHACHAPOYASSONCHE",
-    "ubigeo": "010121"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "BAGUA",
-    "clave": "AMAZONASBAGUABAGUA",
-    "ubigeo": "010201"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "ARAMANGO",
-    "clave": "AMAZONASBAGUAARAMANGO",
-    "ubigeo": "010202"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "COPALLIN",
-    "clave": "AMAZONASBAGUACOPALLIN",
-    "ubigeo": "010203"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "EL PARCO",
-    "clave": "AMAZONASBAGUAEL PARCO",
-    "ubigeo": "010204"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "IMAZA",
-    "clave": "AMAZONASBAGUAIMAZA",
-    "ubigeo": "010205"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BAGUA",
-    "distrito": "LA PECA",
-    "clave": "AMAZONASBAGUALA PECA",
-    "ubigeo": "010206"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "JUMBILLA",
-    "clave": "AMAZONASBONGARAJUMBILLA",
-    "ubigeo": "010301"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "CHISQUILLA",
-    "clave": "AMAZONASBONGARACHISQUILLA",
-    "ubigeo": "010302"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "CHURUJA",
-    "clave": "AMAZONASBONGARACHURUJA",
-    "ubigeo": "010303"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "COROSHA",
-    "clave": "AMAZONASBONGARACOROSHA",
-    "ubigeo": "010304"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "CUISPES",
-    "clave": "AMAZONASBONGARACUISPES",
-    "ubigeo": "010305"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "FLORIDA",
-    "clave": "AMAZONASBONGARAFLORIDA",
-    "ubigeo": "010306"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "JAZAN",
-    "clave": "AMAZONASBONGARAJAZAN",
-    "ubigeo": "010307"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "RECTA",
-    "clave": "AMAZONASBONGARARECTA",
-    "ubigeo": "010308"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "SAN CARLOS",
-    "clave": "AMAZONASBONGARASAN CARLOS",
-    "ubigeo": "010309"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "SHIPASBAMBA",
-    "clave": "AMAZONASBONGARASHIPASBAMBA",
-    "ubigeo": "010310"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "VALERA",
-    "clave": "AMAZONASBONGARAVALERA",
-    "ubigeo": "010311"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "BONGARA",
-    "distrito": "YAMBRASBAMBA",
-    "clave": "AMAZONASBONGARAYAMBRASBAMBA",
-    "ubigeo": "010312"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CONDORCANQUI",
-    "distrito": "NIEVA",
-    "clave": "AMAZONASCONDORCANQUINIEVA",
-    "ubigeo": "010401"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CONDORCANQUI",
-    "distrito": "EL CENEPA",
-    "clave": "AMAZONASCONDORCANQUIEL CENEPA",
-    "ubigeo": "010402"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "CONDORCANQUI",
-    "distrito": "RIO SANTIAGO",
-    "clave": "AMAZONASCONDORCANQUIRIO SANTIAGO",
-    "ubigeo": "010403"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "LAMUD",
-    "clave": "AMAZONASLUYALAMUD",
-    "ubigeo": "010501"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "CAMPORREDONDO",
-    "clave": "AMAZONASLUYACAMPORREDONDO",
-    "ubigeo": "010502"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "COCABAMBA",
-    "clave": "AMAZONASLUYACOCABAMBA",
-    "ubigeo": "010503"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "COLCAMAR",
-    "clave": "AMAZONASLUYACOLCAMAR",
-    "ubigeo": "010504"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "CONILA",
-    "clave": "AMAZONASLUYACONILA",
-    "ubigeo": "010505"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "INGUILPATA",
-    "clave": "AMAZONASLUYAINGUILPATA",
-    "ubigeo": "010506"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "LONGUITA",
-    "clave": "AMAZONASLUYALONGUITA",
-    "ubigeo": "010507"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "LONYA CHICO",
-    "clave": "AMAZONASLUYALONYA CHICO",
-    "ubigeo": "010508"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "LUYA",
-    "clave": "AMAZONASLUYALUYA",
-    "ubigeo": "010509"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "LUYA VIEJO",
-    "clave": "AMAZONASLUYALUYA VIEJO",
-    "ubigeo": "010510"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "MARIA",
-    "clave": "AMAZONASLUYAMARIA",
-    "ubigeo": "010511"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "OCALLI",
-    "clave": "AMAZONASLUYAOCALLI",
-    "ubigeo": "010512"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "OCUMAL",
-    "clave": "AMAZONASLUYAOCUMAL",
-    "ubigeo": "010513"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "PISUQUIA",
-    "clave": "AMAZONASLUYAPISUQUIA",
-    "ubigeo": "010514"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "PROVIDENCIA",
-    "clave": "AMAZONASLUYAPROVIDENCIA",
-    "ubigeo": "010515"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SAN CRISTOBAL",
-    "clave": "AMAZONASLUYASAN CRISTOBAL",
-    "ubigeo": "010516"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SAN FRANCISCO DEL YESO",
-    "clave": "AMAZONASLUYASAN FRANCISCO DEL YESO",
-    "ubigeo": "010517"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SAN JERONIMO",
-    "clave": "AMAZONASLUYASAN JERONIMO",
-    "ubigeo": "010518"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SAN JUAN DE LOPECANCHA",
-    "clave": "AMAZONASLUYASAN JUAN DE LOPECANCHA",
-    "ubigeo": "010519"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SANTA CATALINA",
-    "clave": "AMAZONASLUYASANTA CATALINA",
-    "ubigeo": "010520"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "SANTO TOMAS",
-    "clave": "AMAZONASLUYASANTO TOMAS",
-    "ubigeo": "010521"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "TINGO",
-    "clave": "AMAZONASLUYATINGO",
-    "ubigeo": "010522"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "LUYA",
-    "distrito": "TRITA",
-    "clave": "AMAZONASLUYATRITA",
-    "ubigeo": "010523"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "SAN NICOLAS",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZASAN NICOLAS",
-    "ubigeo": "010601"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "CHIRIMOTO",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZACHIRIMOTO",
-    "ubigeo": "010602"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "COCHAMAL",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZACOCHAMAL",
-    "ubigeo": "010603"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "HUAMBO",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZAHUAMBO",
-    "ubigeo": "010604"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "LIMABAMBA",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZALIMABAMBA",
-    "ubigeo": "010605"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "LONGAR",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZALONGAR",
-    "ubigeo": "010606"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "MARISCAL BENAVIDES",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZAMARISCAL BENAVIDES",
-    "ubigeo": "010607"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "MILPUC",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZAMILPUC",
-    "ubigeo": "010608"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "OMIA",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZAOMIA",
-    "ubigeo": "010609"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "SANTA ROSA",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZASANTA ROSA",
-    "ubigeo": "010610"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "TOTORA",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZATOTORA",
-    "ubigeo": "010611"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "RODRIGUEZ DE MENDOZA",
-    "distrito": "VISTA ALEGRE",
-    "clave": "AMAZONASRODRIGUEZ DE MENDOZAVISTA ALEGRE",
-    "ubigeo": "010612"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "BAGUA GRANDE",
-    "clave": "AMAZONASUTCUBAMBABAGUA GRANDE",
-    "ubigeo": "010701"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "CAJARURO",
-    "clave": "AMAZONASUTCUBAMBACAJARURO",
-    "ubigeo": "010702"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "CUMBA",
-    "clave": "AMAZONASUTCUBAMBACUMBA",
-    "ubigeo": "010703"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "EL MILAGRO",
-    "clave": "AMAZONASUTCUBAMBAEL MILAGRO",
-    "ubigeo": "010704"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "JAMALCA",
-    "clave": "AMAZONASUTCUBAMBAJAMALCA",
-    "ubigeo": "010705"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "LONYA GRANDE",
-    "clave": "AMAZONASUTCUBAMBALONYA GRANDE",
-    "ubigeo": "010706"
-  },
-  {
-    "departamento": "AMAZONAS",
-    "provincia": "UTCUBAMBA",
-    "distrito": "YAMON",
-    "clave": "AMAZONASUTCUBAMBAYAMON",
-    "ubigeo": "010707"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "HUARAZ",
-    "clave": "ANCASHHUARAZHUARAZ",
-    "ubigeo": "020101"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "COCHABAMBA",
-    "clave": "ANCASHHUARAZCOCHABAMBA",
-    "ubigeo": "020102"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "COLCABAMBA",
-    "clave": "ANCASHHUARAZCOLCABAMBA",
-    "ubigeo": "020103"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "HUANCHAY",
-    "clave": "ANCASHHUARAZHUANCHAY",
-    "ubigeo": "020104"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "INDEPENDENCIA",
-    "clave": "ANCASHHUARAZINDEPENDENCIA",
-    "ubigeo": "020105"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "JANGAS",
-    "clave": "ANCASHHUARAZJANGAS",
-    "ubigeo": "020106"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "LA LIBERTAD",
-    "clave": "ANCASHHUARAZLA LIBERTAD",
-    "ubigeo": "020107"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "OLLEROS",
-    "clave": "ANCASHHUARAZOLLEROS",
-    "ubigeo": "020108"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "PAMPAS GRANDE",
-    "clave": "ANCASHHUARAZPAMPAS GRANDE",
-    "ubigeo": "020109"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "PARIACOTO",
-    "clave": "ANCASHHUARAZPARIACOTO",
-    "ubigeo": "020110"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "PIRA",
-    "clave": "ANCASHHUARAZPIRA",
-    "ubigeo": "020111"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARAZ",
-    "distrito": "TARICA",
-    "clave": "ANCASHHUARAZTARICA",
-    "ubigeo": "020112"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "AIJA",
-    "distrito": "AIJA",
-    "clave": "ANCASHAIJAAIJA",
-    "ubigeo": "020201"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "AIJA",
-    "distrito": "CORIS",
-    "clave": "ANCASHAIJACORIS",
-    "ubigeo": "020202"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "AIJA",
-    "distrito": "HUACLLAN",
-    "clave": "ANCASHAIJAHUACLLAN",
-    "ubigeo": "020203"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "AIJA",
-    "distrito": "LA MERCED",
-    "clave": "ANCASHAIJALA MERCED",
-    "ubigeo": "020204"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "AIJA",
-    "distrito": "SUCCHA",
-    "clave": "ANCASHAIJASUCCHA",
-    "ubigeo": "020205"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "LLAMELLIN",
-    "clave": "ANCASHANTONIO RAYMONDILLAMELLIN",
-    "ubigeo": "020301"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "ACZO",
-    "clave": "ANCASHANTONIO RAYMONDIACZO",
-    "ubigeo": "020302"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "CHACCHO",
-    "clave": "ANCASHANTONIO RAYMONDICHACCHO",
-    "ubigeo": "020303"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "CHINGAS",
-    "clave": "ANCASHANTONIO RAYMONDICHINGAS",
-    "ubigeo": "020304"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "MIRGAS",
-    "clave": "ANCASHANTONIO RAYMONDIMIRGAS",
-    "ubigeo": "020305"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ANTONIO RAYMONDI",
-    "distrito": "SAN JUAN DE RONTOY",
-    "clave": "ANCASHANTONIO RAYMONDISAN JUAN DE RONTOY",
-    "ubigeo": "020306"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ASUNCION",
-    "distrito": "CHACAS",
-    "clave": "ANCASHASUNCIONCHACAS",
-    "ubigeo": "020401"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "ASUNCION",
-    "distrito": "ACOCHACA",
-    "clave": "ANCASHASUNCIONACOCHACA",
-    "ubigeo": "020402"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "CHIQUIAN",
-    "clave": "ANCASHBOLOGNESICHIQUIAN",
-    "ubigeo": "020501"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "ABELARDO PARDO LEZAMETA",
-    "clave": "ANCASHBOLOGNESIABELARDO PARDO LEZAMETA",
-    "ubigeo": "020502"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "ANTONIO RAYMONDI",
-    "clave": "ANCASHBOLOGNESIANTONIO RAYMONDI",
-    "ubigeo": "020503"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "AQUIA",
-    "clave": "ANCASHBOLOGNESIAQUIA",
-    "ubigeo": "020504"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "CAJACAY",
-    "clave": "ANCASHBOLOGNESICAJACAY",
-    "ubigeo": "020505"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "CANIS",
-    "clave": "ANCASHBOLOGNESICANIS",
-    "ubigeo": "020506"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "COLQUIOC",
-    "clave": "ANCASHBOLOGNESICOLQUIOC",
-    "ubigeo": "020507"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "HUALLANCA",
-    "clave": "ANCASHBOLOGNESIHUALLANCA",
-    "ubigeo": "020508"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "HUASTA",
-    "clave": "ANCASHBOLOGNESIHUASTA",
-    "ubigeo": "020509"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "HUAYLLACAYAN",
-    "clave": "ANCASHBOLOGNESIHUAYLLACAYAN",
-    "ubigeo": "020510"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "LA PRIMAVERA",
-    "clave": "ANCASHBOLOGNESILA PRIMAVERA",
-    "ubigeo": "020511"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "MANGAS",
-    "clave": "ANCASHBOLOGNESIMANGAS",
-    "ubigeo": "020512"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "PACLLON",
-    "clave": "ANCASHBOLOGNESIPACLLON",
-    "ubigeo": "020513"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "SAN MIGUEL DE CORPANQUI",
-    "clave": "ANCASHBOLOGNESISAN MIGUEL DE CORPANQUI",
-    "ubigeo": "020514"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "BOLOGNESI",
-    "distrito": "TICLLOS",
-    "clave": "ANCASHBOLOGNESITICLLOS",
-    "ubigeo": "020515"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "CARHUAZ",
-    "clave": "ANCASHCARHUAZCARHUAZ",
-    "ubigeo": "020601"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "ACOPAMPA",
-    "clave": "ANCASHCARHUAZACOPAMPA",
-    "ubigeo": "020602"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "AMASHCA",
-    "clave": "ANCASHCARHUAZAMASHCA",
-    "ubigeo": "020603"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "ANTA",
-    "clave": "ANCASHCARHUAZANTA",
-    "ubigeo": "020604"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "ATAQUERO",
-    "clave": "ANCASHCARHUAZATAQUERO",
-    "ubigeo": "020605"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "MARCARA",
-    "clave": "ANCASHCARHUAZMARCARA",
-    "ubigeo": "020606"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "PARIAHUANCA",
-    "clave": "ANCASHCARHUAZPARIAHUANCA",
-    "ubigeo": "020607"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "SAN MIGUEL DE ACO",
-    "clave": "ANCASHCARHUAZSAN MIGUEL DE ACO",
-    "ubigeo": "020608"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "SHILLA",
-    "clave": "ANCASHCARHUAZSHILLA",
-    "ubigeo": "020609"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "TINCO",
-    "clave": "ANCASHCARHUAZTINCO",
-    "ubigeo": "020610"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARHUAZ",
-    "distrito": "YUNGAR",
-    "clave": "ANCASHCARHUAZYUNGAR",
-    "ubigeo": "020611"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARLOS FERMIN FITZCARRALD",
-    "distrito": "SAN LUIS",
-    "clave": "ANCASHCARLOS FERMIN FITZCARRALDSAN LUIS",
-    "ubigeo": "020701"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARLOS FERMIN FITZCARRALD",
-    "distrito": "SAN NICOLAS",
-    "clave": "ANCASHCARLOS FERMIN FITZCARRALDSAN NICOLAS",
-    "ubigeo": "020702"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CARLOS FERMIN FITZCARRALD",
-    "distrito": "YAUYA",
-    "clave": "ANCASHCARLOS FERMIN FITZCARRALDYAUYA",
-    "ubigeo": "020703"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CASMA",
-    "distrito": "CASMA",
-    "clave": "ANCASHCASMACASMA",
-    "ubigeo": "020801"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CASMA",
-    "distrito": "BUENA VISTA ALTA",
-    "clave": "ANCASHCASMABUENA VISTA ALTA",
-    "ubigeo": "020802"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CASMA",
-    "distrito": "COMANDANTE NOEL",
-    "clave": "ANCASHCASMACOMANDANTE NOEL",
-    "ubigeo": "020803"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CASMA",
-    "distrito": "YAUTAN",
-    "clave": "ANCASHCASMAYAUTAN",
-    "ubigeo": "020804"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "CORONGO",
-    "clave": "ANCASHCORONGOCORONGO",
-    "ubigeo": "020901"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "ACO",
-    "clave": "ANCASHCORONGOACO",
-    "ubigeo": "020902"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "BAMBAS",
-    "clave": "ANCASHCORONGOBAMBAS",
-    "ubigeo": "020903"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "CUSCA",
-    "clave": "ANCASHCORONGOCUSCA",
-    "ubigeo": "020904"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "LA PAMPA",
-    "clave": "ANCASHCORONGOLA PAMPA",
-    "ubigeo": "020905"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "YANAC",
-    "clave": "ANCASHCORONGOYANAC",
-    "ubigeo": "020906"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "CORONGO",
-    "distrito": "YUPAN",
-    "clave": "ANCASHCORONGOYUPAN",
-    "ubigeo": "020907"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "HUARI",
-    "clave": "ANCASHHUARIHUARI",
-    "ubigeo": "021001"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "ANRA",
-    "clave": "ANCASHHUARIANRA",
-    "ubigeo": "021002"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "CAJAY",
-    "clave": "ANCASHHUARICAJAY",
-    "ubigeo": "021003"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "CHAVIN DE HUANTAR",
-    "clave": "ANCASHHUARICHAVIN DE HUANTAR",
-    "ubigeo": "021004"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "HUACACHI",
-    "clave": "ANCASHHUARIHUACACHI",
-    "ubigeo": "021005"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "HUACCHIS",
-    "clave": "ANCASHHUARIHUACCHIS",
-    "ubigeo": "021006"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "HUACHIS",
-    "clave": "ANCASHHUARIHUACHIS",
-    "ubigeo": "021007"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "HUANTAR",
-    "clave": "ANCASHHUARIHUANTAR",
-    "ubigeo": "021008"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "MASIN",
-    "clave": "ANCASHHUARIMASIN",
-    "ubigeo": "021009"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "PAUCAS",
-    "clave": "ANCASHHUARIPAUCAS",
-    "ubigeo": "021010"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "PONTO",
-    "clave": "ANCASHHUARIPONTO",
-    "ubigeo": "021011"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "RAHUAPAMPA",
-    "clave": "ANCASHHUARIRAHUAPAMPA",
-    "ubigeo": "021012"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "RAPAYAN",
-    "clave": "ANCASHHUARIRAPAYAN",
-    "ubigeo": "021013"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "SAN MARCOS",
-    "clave": "ANCASHHUARISAN MARCOS",
-    "ubigeo": "021014"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "SAN PEDRO DE CHANA",
-    "clave": "ANCASHHUARISAN PEDRO DE CHANA",
-    "ubigeo": "021015"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARI",
-    "distrito": "UCO",
-    "clave": "ANCASHHUARIUCO",
-    "ubigeo": "021016"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARMEY",
-    "distrito": "HUARMEY",
-    "clave": "ANCASHHUARMEYHUARMEY",
-    "ubigeo": "021101"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARMEY",
-    "distrito": "COCHAPETI",
-    "clave": "ANCASHHUARMEYCOCHAPETI",
-    "ubigeo": "021102"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARMEY",
-    "distrito": "CULEBRAS",
-    "clave": "ANCASHHUARMEYCULEBRAS",
-    "ubigeo": "021103"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARMEY",
-    "distrito": "HUAYAN",
-    "clave": "ANCASHHUARMEYHUAYAN",
-    "ubigeo": "021104"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUARMEY",
-    "distrito": "MALVAS",
-    "clave": "ANCASHHUARMEYMALVAS",
-    "ubigeo": "021105"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "CARAZ",
-    "clave": "ANCASHHUAYLASCARAZ",
-    "ubigeo": "021201"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "HUALLANCA",
-    "clave": "ANCASHHUAYLASHUALLANCA",
-    "ubigeo": "021202"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "HUATA",
-    "clave": "ANCASHHUAYLASHUATA",
-    "ubigeo": "021203"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "HUAYLAS",
-    "clave": "ANCASHHUAYLASHUAYLAS",
-    "ubigeo": "021204"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "MATO",
-    "clave": "ANCASHHUAYLASMATO",
-    "ubigeo": "021205"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "PAMPAROMAS",
-    "clave": "ANCASHHUAYLASPAMPAROMAS",
-    "ubigeo": "021206"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "PUEBLO LIBRE",
-    "clave": "ANCASHHUAYLASPUEBLO LIBRE",
-    "ubigeo": "021207"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "SANTA CRUZ",
-    "clave": "ANCASHHUAYLASSANTA CRUZ",
-    "ubigeo": "021208"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "SANTO TORIBIO",
-    "clave": "ANCASHHUAYLASSANTO TORIBIO",
-    "ubigeo": "021209"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "HUAYLAS",
-    "distrito": "YURACMARCA",
-    "clave": "ANCASHHUAYLASYURACMARCA",
-    "ubigeo": "021210"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "PISCOBAMBA",
-    "clave": "ANCASHMARISCAL LUZURIAGAPISCOBAMBA",
-    "ubigeo": "021301"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "CASCA",
-    "clave": "ANCASHMARISCAL LUZURIAGACASCA",
-    "ubigeo": "021302"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "ELEAZAR GUZMAN BARRON",
-    "clave": "ANCASHMARISCAL LUZURIAGAELEAZAR GUZMAN BARRON",
-    "ubigeo": "021303"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "FIDEL OLIVAS ESCUDERO",
-    "clave": "ANCASHMARISCAL LUZURIAGAFIDEL OLIVAS ESCUDERO",
-    "ubigeo": "021304"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "LLAMA",
-    "clave": "ANCASHMARISCAL LUZURIAGALLAMA",
-    "ubigeo": "021305"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "LLUMPA",
-    "clave": "ANCASHMARISCAL LUZURIAGALLUMPA",
-    "ubigeo": "021306"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "LUCMA",
-    "clave": "ANCASHMARISCAL LUZURIAGALUCMA",
-    "ubigeo": "021307"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "MARISCAL LUZURIAGA",
-    "distrito": "MUSGA",
-    "clave": "ANCASHMARISCAL LUZURIAGAMUSGA",
-    "ubigeo": "021308"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "OCROS",
-    "clave": "ANCASHOCROSOCROS",
-    "ubigeo": "021401"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "ACAS",
-    "clave": "ANCASHOCROSACAS",
-    "ubigeo": "021402"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "CAJAMARQUILLA",
-    "clave": "ANCASHOCROSCAJAMARQUILLA",
-    "ubigeo": "021403"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "CARHUAPAMPA",
-    "clave": "ANCASHOCROSCARHUAPAMPA",
-    "ubigeo": "021404"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "COCHAS",
-    "clave": "ANCASHOCROSCOCHAS",
-    "ubigeo": "021405"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "CONGAS",
-    "clave": "ANCASHOCROSCONGAS",
-    "ubigeo": "021406"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "LLIPA",
-    "clave": "ANCASHOCROSLLIPA",
-    "ubigeo": "021407"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "SAN CRISTOBAL DE RAJAN",
-    "clave": "ANCASHOCROSSAN CRISTOBAL DE RAJAN",
-    "ubigeo": "021408"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "SAN PEDRO",
-    "clave": "ANCASHOCROSSAN PEDRO",
-    "ubigeo": "021409"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "OCROS",
-    "distrito": "SANTIAGO DE CHILCAS",
-    "clave": "ANCASHOCROSSANTIAGO DE CHILCAS",
-    "ubigeo": "021410"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "CABANA",
-    "clave": "ANCASHPALLASCACABANA",
-    "ubigeo": "021501"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "BOLOGNESI",
-    "clave": "ANCASHPALLASCABOLOGNESI",
-    "ubigeo": "021502"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "CONCHUCOS",
-    "clave": "ANCASHPALLASCACONCHUCOS",
-    "ubigeo": "021503"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "HUACASCHUQUE",
-    "clave": "ANCASHPALLASCAHUACASCHUQUE",
-    "ubigeo": "021504"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "HUANDOVAL",
-    "clave": "ANCASHPALLASCAHUANDOVAL",
-    "ubigeo": "021505"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "LACABAMBA",
-    "clave": "ANCASHPALLASCALACABAMBA",
-    "ubigeo": "021506"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "LLAPO",
-    "clave": "ANCASHPALLASCALLAPO",
-    "ubigeo": "021507"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "PALLASCA",
-    "clave": "ANCASHPALLASCAPALLASCA",
-    "ubigeo": "021508"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "PAMPAS",
-    "clave": "ANCASHPALLASCAPAMPAS",
-    "ubigeo": "021509"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "SANTA ROSA",
-    "clave": "ANCASHPALLASCASANTA ROSA",
-    "ubigeo": "021510"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "PALLASCA",
-    "distrito": "TAUCA",
-    "clave": "ANCASHPALLASCATAUCA",
-    "ubigeo": "021511"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "POMABAMBA",
-    "distrito": "POMABAMBA",
-    "clave": "ANCASHPOMABAMBAPOMABAMBA",
-    "ubigeo": "021601"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "POMABAMBA",
-    "distrito": "HUAYLLAN",
-    "clave": "ANCASHPOMABAMBAHUAYLLAN",
-    "ubigeo": "021602"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "POMABAMBA",
-    "distrito": "PAROBAMBA",
-    "clave": "ANCASHPOMABAMBAPAROBAMBA",
-    "ubigeo": "021603"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "POMABAMBA",
-    "distrito": "QUINUABAMBA",
-    "clave": "ANCASHPOMABAMBAQUINUABAMBA",
-    "ubigeo": "021604"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "RECUAY",
-    "clave": "ANCASHRECUAYRECUAY",
-    "ubigeo": "021701"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "CATAC",
-    "clave": "ANCASHRECUAYCATAC",
-    "ubigeo": "021702"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "COTAPARACO",
-    "clave": "ANCASHRECUAYCOTAPARACO",
-    "ubigeo": "021703"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "HUAYLLAPAMPA",
-    "clave": "ANCASHRECUAYHUAYLLAPAMPA",
-    "ubigeo": "021704"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "LLACLLIN",
-    "clave": "ANCASHRECUAYLLACLLIN",
-    "ubigeo": "021705"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "MARCA",
-    "clave": "ANCASHRECUAYMARCA",
-    "ubigeo": "021706"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "PAMPAS CHICO",
-    "clave": "ANCASHRECUAYPAMPAS CHICO",
-    "ubigeo": "021707"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "PARARIN",
-    "clave": "ANCASHRECUAYPARARIN",
-    "ubigeo": "021708"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "TAPACOCHA",
-    "clave": "ANCASHRECUAYTAPACOCHA",
-    "ubigeo": "021709"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "RECUAY",
-    "distrito": "TICAPAMPA",
-    "clave": "ANCASHRECUAYTICAPAMPA",
-    "ubigeo": "021710"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "CHIMBOTE",
-    "clave": "ANCASHSANTACHIMBOTE",
-    "ubigeo": "021801"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "CACERES DEL PERU",
-    "clave": "ANCASHSANTACACERES DEL PERU",
-    "ubigeo": "021802"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "COISHCO",
-    "clave": "ANCASHSANTACOISHCO",
-    "ubigeo": "021803"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "MACATE",
-    "clave": "ANCASHSANTAMACATE",
-    "ubigeo": "021804"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "MORO",
-    "clave": "ANCASHSANTAMORO",
-    "ubigeo": "021805"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "NEPEÑA",
-    "clave": "ANCASHSANTANEPEÑA",
-    "ubigeo": "021806"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "SAMANCO",
-    "clave": "ANCASHSANTASAMANCO",
-    "ubigeo": "021807"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "SANTA",
-    "clave": "ANCASHSANTASANTA",
-    "ubigeo": "021808"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SANTA",
-    "distrito": "NUEVO CHIMBOTE",
-    "clave": "ANCASHSANTANUEVO CHIMBOTE",
-    "ubigeo": "021809"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "SIHUAS",
-    "clave": "ANCASHSIHUASSIHUAS",
-    "ubigeo": "021901"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "ACOBAMBA",
-    "clave": "ANCASHSIHUASACOBAMBA",
-    "ubigeo": "021902"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "ALFONSO UGARTE",
-    "clave": "ANCASHSIHUASALFONSO UGARTE",
-    "ubigeo": "021903"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "CASHAPAMPA",
-    "clave": "ANCASHSIHUASCASHAPAMPA",
-    "ubigeo": "021904"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "CHINGALPO",
-    "clave": "ANCASHSIHUASCHINGALPO",
-    "ubigeo": "021905"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "HUAYLLABAMBA",
-    "clave": "ANCASHSIHUASHUAYLLABAMBA",
-    "ubigeo": "021906"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "QUICHES",
-    "clave": "ANCASHSIHUASQUICHES",
-    "ubigeo": "021907"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "RAGASH",
-    "clave": "ANCASHSIHUASRAGASH",
-    "ubigeo": "021908"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "SAN JUAN",
-    "clave": "ANCASHSIHUASSAN JUAN",
-    "ubigeo": "021909"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "SIHUAS",
-    "distrito": "SICSIBAMBA",
-    "clave": "ANCASHSIHUASSICSIBAMBA",
-    "ubigeo": "021910"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "YUNGAY",
-    "clave": "ANCASHYUNGAYYUNGAY",
-    "ubigeo": "022001"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "CASCAPARA",
-    "clave": "ANCASHYUNGAYCASCAPARA",
-    "ubigeo": "022002"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "MANCOS",
-    "clave": "ANCASHYUNGAYMANCOS",
-    "ubigeo": "022003"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "MATACOTO",
-    "clave": "ANCASHYUNGAYMATACOTO",
-    "ubigeo": "022004"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "QUILLO",
-    "clave": "ANCASHYUNGAYQUILLO",
-    "ubigeo": "022005"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "RANRAHIRCA",
-    "clave": "ANCASHYUNGAYRANRAHIRCA",
-    "ubigeo": "022006"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "SHUPLUY",
-    "clave": "ANCASHYUNGAYSHUPLUY",
-    "ubigeo": "022007"
-  },
-  {
-    "departamento": "ANCASH",
-    "provincia": "YUNGAY",
-    "distrito": "YANAMA",
-    "clave": "ANCASHYUNGAYYANAMA",
-    "ubigeo": "022008"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "ABANCAY",
-    "clave": "APURIMACABANCAYABANCAY",
-    "ubigeo": "030101"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "CHACOCHE",
-    "clave": "APURIMACABANCAYCHACOCHE",
-    "ubigeo": "030102"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "CIRCA",
-    "clave": "APURIMACABANCAYCIRCA",
-    "ubigeo": "030103"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "CURAHUASI",
-    "clave": "APURIMACABANCAYCURAHUASI",
-    "ubigeo": "030104"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "HUANIPACA",
-    "clave": "APURIMACABANCAYHUANIPACA",
-    "ubigeo": "030105"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "LAMBRAMA",
-    "clave": "APURIMACABANCAYLAMBRAMA",
-    "ubigeo": "030106"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "PICHIRHUA",
-    "clave": "APURIMACABANCAYPICHIRHUA",
-    "ubigeo": "030107"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "SAN PEDRO DE CACHORA",
-    "clave": "APURIMACABANCAYSAN PEDRO DE CACHORA",
-    "ubigeo": "030108"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ABANCAY",
-    "distrito": "TAMBURCO",
-    "clave": "APURIMACABANCAYTAMBURCO",
-    "ubigeo": "030109"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "ANDAHUAYLAS",
-    "clave": "APURIMACANDAHUAYLASANDAHUAYLAS",
-    "ubigeo": "030201"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "ANDARAPA",
-    "clave": "APURIMACANDAHUAYLASANDARAPA",
-    "ubigeo": "030202"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "CHIARA",
-    "clave": "APURIMACANDAHUAYLASCHIARA",
-    "ubigeo": "030203"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "HUANCARAMA",
-    "clave": "APURIMACANDAHUAYLASHUANCARAMA",
-    "ubigeo": "030204"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "HUANCARAY",
-    "clave": "APURIMACANDAHUAYLASHUANCARAY",
-    "ubigeo": "030205"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "HUAYANA",
-    "clave": "APURIMACANDAHUAYLASHUAYANA",
-    "ubigeo": "030206"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "KISHUARA",
-    "clave": "APURIMACANDAHUAYLASKISHUARA",
-    "ubigeo": "030207"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "PACOBAMBA",
-    "clave": "APURIMACANDAHUAYLASPACOBAMBA",
-    "ubigeo": "030208"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "PACUCHA",
-    "clave": "APURIMACANDAHUAYLASPACUCHA",
-    "ubigeo": "030209"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "PAMPACHIRI",
-    "clave": "APURIMACANDAHUAYLASPAMPACHIRI",
-    "ubigeo": "030210"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "POMACOCHA",
-    "clave": "APURIMACANDAHUAYLASPOMACOCHA",
-    "ubigeo": "030211"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "SAN ANTONIO DE CACHI",
-    "clave": "APURIMACANDAHUAYLASSAN ANTONIO DE CACHI",
-    "ubigeo": "030212"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "SAN JERONIMO",
-    "clave": "APURIMACANDAHUAYLASSAN JERONIMO",
-    "ubigeo": "030213"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "SAN MIGUEL DE CHACCRAMPA",
-    "clave": "APURIMACANDAHUAYLASSAN MIGUEL DE CHACCRAMPA",
-    "ubigeo": "030214"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "SANTA MARIA DE CHICMO",
-    "clave": "APURIMACANDAHUAYLASSANTA MARIA DE CHICMO",
-    "ubigeo": "030215"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "TALAVERA",
-    "clave": "APURIMACANDAHUAYLASTALAVERA",
-    "ubigeo": "030216"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "TUMAY HUARACA",
-    "clave": "APURIMACANDAHUAYLASTUMAY HUARACA",
-    "ubigeo": "030217"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "TURPO",
-    "clave": "APURIMACANDAHUAYLASTURPO",
-    "ubigeo": "030218"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "KAQUIABAMBA",
-    "clave": "APURIMACANDAHUAYLASKAQUIABAMBA",
-    "ubigeo": "030219"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANDAHUAYLAS",
-    "distrito": "JOSE MARIA ARGUEDAS",
-    "clave": "APURIMACANDAHUAYLASJOSE MARIA ARGUEDAS",
-    "ubigeo": "030220"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "ANTABAMBA",
-    "clave": "APURIMACANTABAMBAANTABAMBA",
-    "ubigeo": "030301"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "EL ORO",
-    "clave": "APURIMACANTABAMBAEL ORO",
-    "ubigeo": "030302"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "HUAQUIRCA",
-    "clave": "APURIMACANTABAMBAHUAQUIRCA",
-    "ubigeo": "030303"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "JUAN ESPINOZA MEDRANO",
-    "clave": "APURIMACANTABAMBAJUAN ESPINOZA MEDRANO",
-    "ubigeo": "030304"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "OROPESA",
-    "clave": "APURIMACANTABAMBAOROPESA",
-    "ubigeo": "030305"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "PACHACONAS",
-    "clave": "APURIMACANTABAMBAPACHACONAS",
-    "ubigeo": "030306"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "ANTABAMBA",
-    "distrito": "SABAINO",
-    "clave": "APURIMACANTABAMBASABAINO",
-    "ubigeo": "030307"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "CHALHUANCA",
-    "clave": "APURIMACAYMARAESCHALHUANCA",
-    "ubigeo": "030401"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "CAPAYA",
-    "clave": "APURIMACAYMARAESCAPAYA",
-    "ubigeo": "030402"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "CARAYBAMBA",
-    "clave": "APURIMACAYMARAESCARAYBAMBA",
-    "ubigeo": "030403"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "CHAPIMARCA",
-    "clave": "APURIMACAYMARAESCHAPIMARCA",
-    "ubigeo": "030404"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "COLCABAMBA",
-    "clave": "APURIMACAYMARAESCOLCABAMBA",
-    "ubigeo": "030405"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "COTARUSE",
-    "clave": "APURIMACAYMARAESCOTARUSE",
-    "ubigeo": "030406"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "IHUAYLLO",
-    "clave": "APURIMACAYMARAESIHUAYLLO",
-    "ubigeo": "030407"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "JUSTO APU SAHUARAURA",
-    "clave": "APURIMACAYMARAESJUSTO APU SAHUARAURA",
-    "ubigeo": "030408"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "LUCRE",
-    "clave": "APURIMACAYMARAESLUCRE",
-    "ubigeo": "030409"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "POCOHUANCA",
-    "clave": "APURIMACAYMARAESPOCOHUANCA",
-    "ubigeo": "030410"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "SAN JUAN DE CHACÑA",
-    "clave": "APURIMACAYMARAESSAN JUAN DE CHACÑA",
-    "ubigeo": "030411"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "SAÑAYCA",
-    "clave": "APURIMACAYMARAESSAÑAYCA",
-    "ubigeo": "030412"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "SORAYA",
-    "clave": "APURIMACAYMARAESSORAYA",
-    "ubigeo": "030413"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "TAPAIRIHUA",
-    "clave": "APURIMACAYMARAESTAPAIRIHUA",
-    "ubigeo": "030414"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "TINTAY",
-    "clave": "APURIMACAYMARAESTINTAY",
-    "ubigeo": "030415"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "TORAYA",
-    "clave": "APURIMACAYMARAESTORAYA",
-    "ubigeo": "030416"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "AYMARAES",
-    "distrito": "YANACA",
-    "clave": "APURIMACAYMARAESYANACA",
-    "ubigeo": "030417"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "TAMBOBAMBA",
-    "clave": "APURIMACCOTABAMBASTAMBOBAMBA",
-    "ubigeo": "030501"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "COTABAMBAS",
-    "clave": "APURIMACCOTABAMBASCOTABAMBAS",
-    "ubigeo": "030502"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "COYLLURQUI",
-    "clave": "APURIMACCOTABAMBASCOYLLURQUI",
-    "ubigeo": "030503"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "HAQUIRA",
-    "clave": "APURIMACCOTABAMBASHAQUIRA",
-    "ubigeo": "030504"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "MARA",
-    "clave": "APURIMACCOTABAMBASMARA",
-    "ubigeo": "030505"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "COTABAMBAS",
-    "distrito": "CHALLHUAHUACHO",
-    "clave": "APURIMACCOTABAMBASCHALLHUAHUACHO",
-    "ubigeo": "030506"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "CHINCHEROS",
-    "clave": "APURIMACCHINCHEROSCHINCHEROS",
-    "ubigeo": "030601"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "ANCO_HUALLO",
-    "clave": "APURIMACCHINCHEROSANCO_HUALLO",
-    "ubigeo": "030602"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "COCHARCAS",
-    "clave": "APURIMACCHINCHEROSCOCHARCAS",
-    "ubigeo": "030603"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "HUACCANA",
-    "clave": "APURIMACCHINCHEROSHUACCANA",
-    "ubigeo": "030604"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "OCOBAMBA",
-    "clave": "APURIMACCHINCHEROSOCOBAMBA",
-    "ubigeo": "030605"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "ONGOY",
-    "clave": "APURIMACCHINCHEROSONGOY",
-    "ubigeo": "030606"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "URANMARCA",
-    "clave": "APURIMACCHINCHEROSURANMARCA",
-    "ubigeo": "030607"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "RANRACANCHA",
-    "clave": "APURIMACCHINCHEROSRANRACANCHA",
-    "ubigeo": "030608"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "ROCCHACC",
-    "clave": "APURIMACCHINCHEROSROCCHACC",
-    "ubigeo": "030609"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "EL PORVENIR",
-    "clave": "APURIMACCHINCHEROSEL PORVENIR",
-    "ubigeo": "030610"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "LOS CHANKAS",
-    "clave": "APURIMACCHINCHEROSLOS CHANKAS",
-    "ubigeo": "030611"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "CHINCHEROS",
-    "distrito": "AHUAYRO",
-    "clave": "APURIMACCHINCHEROSAHUAYRO",
-    "ubigeo": "030612"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "CHUQUIBAMBILLA",
-    "clave": "APURIMACGRAUCHUQUIBAMBILLA",
-    "ubigeo": "030701"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "CURPAHUASI",
-    "clave": "APURIMACGRAUCURPAHUASI",
-    "ubigeo": "030702"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "GAMARRA",
-    "clave": "APURIMACGRAUGAMARRA",
-    "ubigeo": "030703"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "HUAYLLATI",
-    "clave": "APURIMACGRAUHUAYLLATI",
-    "ubigeo": "030704"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "MAMARA",
-    "clave": "APURIMACGRAUMAMARA",
-    "ubigeo": "030705"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "MICAELA BASTIDAS",
-    "clave": "APURIMACGRAUMICAELA BASTIDAS",
-    "ubigeo": "030706"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "PATAYPAMPA",
-    "clave": "APURIMACGRAUPATAYPAMPA",
-    "ubigeo": "030707"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "PROGRESO",
-    "clave": "APURIMACGRAUPROGRESO",
-    "ubigeo": "030708"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "SAN ANTONIO",
-    "clave": "APURIMACGRAUSAN ANTONIO",
-    "ubigeo": "030709"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "SANTA ROSA",
-    "clave": "APURIMACGRAUSANTA ROSA",
-    "ubigeo": "030710"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "TURPAY",
-    "clave": "APURIMACGRAUTURPAY",
-    "ubigeo": "030711"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "VILCABAMBA",
-    "clave": "APURIMACGRAUVILCABAMBA",
-    "ubigeo": "030712"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "VIRUNDO",
-    "clave": "APURIMACGRAUVIRUNDO",
-    "ubigeo": "030713"
-  },
-  {
-    "departamento": "APURIMAC",
-    "provincia": "GRAU",
-    "distrito": "CURASCO",
-    "clave": "APURIMACGRAUCURASCO",
-    "ubigeo": "030714"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "AREQUIPA",
-    "clave": "AREQUIPAAREQUIPAAREQUIPA",
-    "ubigeo": "040101"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "ALTO SELVA ALEGRE",
-    "clave": "AREQUIPAAREQUIPAALTO SELVA ALEGRE",
-    "ubigeo": "040102"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "CAYMA",
-    "clave": "AREQUIPAAREQUIPACAYMA",
-    "ubigeo": "040103"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "CERRO COLORADO",
-    "clave": "AREQUIPAAREQUIPACERRO COLORADO",
-    "ubigeo": "040104"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "CHARACATO",
-    "clave": "AREQUIPAAREQUIPACHARACATO",
-    "ubigeo": "040105"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "CHIGUATA",
-    "clave": "AREQUIPAAREQUIPACHIGUATA",
-    "ubigeo": "040106"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "JACOBO HUNTER",
-    "clave": "AREQUIPAAREQUIPAJACOBO HUNTER",
-    "ubigeo": "040107"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "LA JOYA",
-    "clave": "AREQUIPAAREQUIPALA JOYA",
-    "ubigeo": "040108"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "MARIANO MELGAR",
-    "clave": "AREQUIPAAREQUIPAMARIANO MELGAR",
-    "ubigeo": "040109"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "MIRAFLORES",
-    "clave": "AREQUIPAAREQUIPAMIRAFLORES",
-    "ubigeo": "040110"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "MOLLEBAYA",
-    "clave": "AREQUIPAAREQUIPAMOLLEBAYA",
-    "ubigeo": "040111"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "PAUCARPATA",
-    "clave": "AREQUIPAAREQUIPAPAUCARPATA",
-    "ubigeo": "040112"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "POCSI",
-    "clave": "AREQUIPAAREQUIPAPOCSI",
-    "ubigeo": "040113"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "POLOBAYA",
-    "clave": "AREQUIPAAREQUIPAPOLOBAYA",
-    "ubigeo": "040114"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "QUEQUEÑA",
-    "clave": "AREQUIPAAREQUIPAQUEQUEÑA",
-    "ubigeo": "040115"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SABANDIA",
-    "clave": "AREQUIPAAREQUIPASABANDIA",
-    "ubigeo": "040116"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SACHACA",
-    "clave": "AREQUIPAAREQUIPASACHACA",
-    "ubigeo": "040117"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SAN JUAN DE SIGUAS",
-    "clave": "AREQUIPAAREQUIPASAN JUAN DE SIGUAS",
-    "ubigeo": "040118"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SAN JUAN DE TARUCANI",
-    "clave": "AREQUIPAAREQUIPASAN JUAN DE TARUCANI",
-    "ubigeo": "040119"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SANTA ISABEL DE SIGUAS",
-    "clave": "AREQUIPAAREQUIPASANTA ISABEL DE SIGUAS",
-    "ubigeo": "040120"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SANTA RITA DE SIGUAS",
-    "clave": "AREQUIPAAREQUIPASANTA RITA DE SIGUAS",
-    "ubigeo": "040121"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "SOCABAYA",
-    "clave": "AREQUIPAAREQUIPASOCABAYA",
-    "ubigeo": "040122"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "TIABAYA",
-    "clave": "AREQUIPAAREQUIPATIABAYA",
-    "ubigeo": "040123"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "UCHUMAYO",
-    "clave": "AREQUIPAAREQUIPAUCHUMAYO",
-    "ubigeo": "040124"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "VITOR",
-    "clave": "AREQUIPAAREQUIPAVITOR",
-    "ubigeo": "040125"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "YANAHUARA",
-    "clave": "AREQUIPAAREQUIPAYANAHUARA",
-    "ubigeo": "040126"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "YARABAMBA",
-    "clave": "AREQUIPAAREQUIPAYARABAMBA",
-    "ubigeo": "040127"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "YURA",
-    "clave": "AREQUIPAAREQUIPAYURA",
-    "ubigeo": "040128"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "AREQUIPA",
-    "distrito": "JOSE LUIS BUSTAMANTE Y RIVERO",
-    "clave": "AREQUIPAAREQUIPAJOSE LUIS BUSTAMANTE Y RIVERO",
-    "ubigeo": "040129"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "CAMANA",
-    "clave": "AREQUIPACAMANACAMANA",
-    "ubigeo": "040201"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "JOSE MARIA QUIMPER",
-    "clave": "AREQUIPACAMANAJOSE MARIA QUIMPER",
-    "ubigeo": "040202"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "MARIANO NICOLAS VALCARCEL",
-    "clave": "AREQUIPACAMANAMARIANO NICOLAS VALCARCEL",
-    "ubigeo": "040203"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "MARISCAL CACERES",
-    "clave": "AREQUIPACAMANAMARISCAL CACERES",
-    "ubigeo": "040204"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "NICOLAS DE PIEROLA",
-    "clave": "AREQUIPACAMANANICOLAS DE PIEROLA",
-    "ubigeo": "040205"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "OCOÑA",
-    "clave": "AREQUIPACAMANAOCOÑA",
-    "ubigeo": "040206"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "QUILCA",
-    "clave": "AREQUIPACAMANAQUILCA",
-    "ubigeo": "040207"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAMANA",
-    "distrito": "SAMUEL PASTOR",
-    "clave": "AREQUIPACAMANASAMUEL PASTOR",
-    "ubigeo": "040208"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "CARAVELI",
-    "clave": "AREQUIPACARAVELICARAVELI",
-    "ubigeo": "040301"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "ACARI",
-    "clave": "AREQUIPACARAVELIACARI",
-    "ubigeo": "040302"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "ATICO",
-    "clave": "AREQUIPACARAVELIATICO",
-    "ubigeo": "040303"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "ATIQUIPA",
-    "clave": "AREQUIPACARAVELIATIQUIPA",
-    "ubigeo": "040304"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "BELLA UNION",
-    "clave": "AREQUIPACARAVELIBELLA UNION",
-    "ubigeo": "040305"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "CAHUACHO",
-    "clave": "AREQUIPACARAVELICAHUACHO",
-    "ubigeo": "040306"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "CHALA",
-    "clave": "AREQUIPACARAVELICHALA",
-    "ubigeo": "040307"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "CHAPARRA",
-    "clave": "AREQUIPACARAVELICHAPARRA",
-    "ubigeo": "040308"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "HUANUHUANU",
-    "clave": "AREQUIPACARAVELIHUANUHUANU",
-    "ubigeo": "040309"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "JAQUI",
-    "clave": "AREQUIPACARAVELIJAQUI",
-    "ubigeo": "040310"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "LOMAS",
-    "clave": "AREQUIPACARAVELILOMAS",
-    "ubigeo": "040311"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "QUICACHA",
-    "clave": "AREQUIPACARAVELIQUICACHA",
-    "ubigeo": "040312"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CARAVELI",
-    "distrito": "YAUCA",
-    "clave": "AREQUIPACARAVELIYAUCA",
-    "ubigeo": "040313"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "APLAO",
-    "clave": "AREQUIPACASTILLAAPLAO",
-    "ubigeo": "040401"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "ANDAGUA",
-    "clave": "AREQUIPACASTILLAANDAGUA",
-    "ubigeo": "040402"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "AYO",
-    "clave": "AREQUIPACASTILLAAYO",
-    "ubigeo": "040403"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "CHACHAS",
-    "clave": "AREQUIPACASTILLACHACHAS",
-    "ubigeo": "040404"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "CHILCAYMARCA",
-    "clave": "AREQUIPACASTILLACHILCAYMARCA",
-    "ubigeo": "040405"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "CHOCO",
-    "clave": "AREQUIPACASTILLACHOCO",
-    "ubigeo": "040406"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "HUANCARQUI",
-    "clave": "AREQUIPACASTILLAHUANCARQUI",
-    "ubigeo": "040407"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "MACHAGUAY",
-    "clave": "AREQUIPACASTILLAMACHAGUAY",
-    "ubigeo": "040408"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "ORCOPAMPA",
-    "clave": "AREQUIPACASTILLAORCOPAMPA",
-    "ubigeo": "040409"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "PAMPACOLCA",
-    "clave": "AREQUIPACASTILLAPAMPACOLCA",
-    "ubigeo": "040410"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "TIPAN",
-    "clave": "AREQUIPACASTILLATIPAN",
-    "ubigeo": "040411"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "UÑON",
-    "clave": "AREQUIPACASTILLAUÑON",
-    "ubigeo": "040412"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "URACA",
-    "clave": "AREQUIPACASTILLAURACA",
-    "ubigeo": "040413"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CASTILLA",
-    "distrito": "VIRACO",
-    "clave": "AREQUIPACASTILLAVIRACO",
-    "ubigeo": "040414"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "CHIVAY",
-    "clave": "AREQUIPACAYLLOMACHIVAY",
-    "ubigeo": "040501"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "ACHOMA",
-    "clave": "AREQUIPACAYLLOMAACHOMA",
-    "ubigeo": "040502"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "CABANACONDE",
-    "clave": "AREQUIPACAYLLOMACABANACONDE",
-    "ubigeo": "040503"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "CALLALLI",
-    "clave": "AREQUIPACAYLLOMACALLALLI",
-    "ubigeo": "040504"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "CAYLLOMA",
-    "clave": "AREQUIPACAYLLOMACAYLLOMA",
-    "ubigeo": "040505"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "COPORAQUE",
-    "clave": "AREQUIPACAYLLOMACOPORAQUE",
-    "ubigeo": "040506"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "HUAMBO",
-    "clave": "AREQUIPACAYLLOMAHUAMBO",
-    "ubigeo": "040507"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "HUANCA",
-    "clave": "AREQUIPACAYLLOMAHUANCA",
-    "ubigeo": "040508"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "ICHUPAMPA",
-    "clave": "AREQUIPACAYLLOMAICHUPAMPA",
-    "ubigeo": "040509"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "LARI",
-    "clave": "AREQUIPACAYLLOMALARI",
-    "ubigeo": "040510"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "LLUTA",
-    "clave": "AREQUIPACAYLLOMALLUTA",
-    "ubigeo": "040511"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "MACA",
-    "clave": "AREQUIPACAYLLOMAMACA",
-    "ubigeo": "040512"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "MADRIGAL",
-    "clave": "AREQUIPACAYLLOMAMADRIGAL",
-    "ubigeo": "040513"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "SAN ANTONIO DE CHUCA",
-    "clave": "AREQUIPACAYLLOMASAN ANTONIO DE CHUCA",
-    "ubigeo": "040514"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "SIBAYO",
-    "clave": "AREQUIPACAYLLOMASIBAYO",
-    "ubigeo": "040515"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "TAPAY",
-    "clave": "AREQUIPACAYLLOMATAPAY",
-    "ubigeo": "040516"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "TISCO",
-    "clave": "AREQUIPACAYLLOMATISCO",
-    "ubigeo": "040517"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "TUTI",
-    "clave": "AREQUIPACAYLLOMATUTI",
-    "ubigeo": "040518"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "YANQUE",
-    "clave": "AREQUIPACAYLLOMAYANQUE",
-    "ubigeo": "040519"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CAYLLOMA",
-    "distrito": "MAJES",
-    "clave": "AREQUIPACAYLLOMAMAJES",
-    "ubigeo": "040520"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "CHUQUIBAMBA",
-    "clave": "AREQUIPACONDESUYOSCHUQUIBAMBA",
-    "ubigeo": "040601"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "ANDARAY",
-    "clave": "AREQUIPACONDESUYOSANDARAY",
-    "ubigeo": "040602"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "CAYARANI",
-    "clave": "AREQUIPACONDESUYOSCAYARANI",
-    "ubigeo": "040603"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "CHICHAS",
-    "clave": "AREQUIPACONDESUYOSCHICHAS",
-    "ubigeo": "040604"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "IRAY",
-    "clave": "AREQUIPACONDESUYOSIRAY",
-    "ubigeo": "040605"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "RIO GRANDE",
-    "clave": "AREQUIPACONDESUYOSRIO GRANDE",
-    "ubigeo": "040606"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "SALAMANCA",
-    "clave": "AREQUIPACONDESUYOSSALAMANCA",
-    "ubigeo": "040607"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "CONDESUYOS",
-    "distrito": "YANAQUIHUA",
-    "clave": "AREQUIPACONDESUYOSYANAQUIHUA",
-    "ubigeo": "040608"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "MOLLENDO",
-    "clave": "AREQUIPAISLAYMOLLENDO",
-    "ubigeo": "040701"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "COCACHACRA",
-    "clave": "AREQUIPAISLAYCOCACHACRA",
-    "ubigeo": "040702"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "DEAN VALDIVIA",
-    "clave": "AREQUIPAISLAYDEAN VALDIVIA",
-    "ubigeo": "040703"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "ISLAY",
-    "clave": "AREQUIPAISLAYISLAY",
-    "ubigeo": "040704"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "MEJIA",
-    "clave": "AREQUIPAISLAYMEJIA",
-    "ubigeo": "040705"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "ISLAY",
-    "distrito": "PUNTA DE BOMBON",
-    "clave": "AREQUIPAISLAYPUNTA DE BOMBON",
-    "ubigeo": "040706"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "COTAHUASI",
-    "clave": "AREQUIPALA UNIONCOTAHUASI",
-    "ubigeo": "040801"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "ALCA",
-    "clave": "AREQUIPALA UNIONALCA",
-    "ubigeo": "040802"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "CHARCANA",
-    "clave": "AREQUIPALA UNIONCHARCANA",
-    "ubigeo": "040803"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "HUAYNACOTAS",
-    "clave": "AREQUIPALA UNIONHUAYNACOTAS",
-    "ubigeo": "040804"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "PAMPAMARCA",
-    "clave": "AREQUIPALA UNIONPAMPAMARCA",
-    "ubigeo": "040805"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "PUYCA",
-    "clave": "AREQUIPALA UNIONPUYCA",
-    "ubigeo": "040806"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "QUECHUALLA",
-    "clave": "AREQUIPALA UNIONQUECHUALLA",
-    "ubigeo": "040807"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "SAYLA",
-    "clave": "AREQUIPALA UNIONSAYLA",
-    "ubigeo": "040808"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "TAURIA",
-    "clave": "AREQUIPALA UNIONTAURIA",
-    "ubigeo": "040809"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "TOMEPAMPA",
-    "clave": "AREQUIPALA UNIONTOMEPAMPA",
-    "ubigeo": "040810"
-  },
-  {
-    "departamento": "AREQUIPA",
-    "provincia": "LA UNION",
-    "distrito": "TORO",
-    "clave": "AREQUIPALA UNIONTORO",
-    "ubigeo": "040811"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "AYACUCHO",
-    "clave": "AYACUCHOHUAMANGAAYACUCHO",
-    "ubigeo": "050101"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "ACOCRO",
-    "clave": "AYACUCHOHUAMANGAACOCRO",
-    "ubigeo": "050102"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "ACOS VINCHOS",
-    "clave": "AYACUCHOHUAMANGAACOS VINCHOS",
-    "ubigeo": "050103"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "CARMEN ALTO",
-    "clave": "AYACUCHOHUAMANGACARMEN ALTO",
-    "ubigeo": "050104"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "CHIARA",
-    "clave": "AYACUCHOHUAMANGACHIARA",
-    "ubigeo": "050105"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "OCROS",
-    "clave": "AYACUCHOHUAMANGAOCROS",
-    "ubigeo": "050106"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "PACAYCASA",
-    "clave": "AYACUCHOHUAMANGAPACAYCASA",
-    "ubigeo": "050107"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "QUINUA",
-    "clave": "AYACUCHOHUAMANGAQUINUA",
-    "ubigeo": "050108"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "SAN JOSE DE TICLLAS",
-    "clave": "AYACUCHOHUAMANGASAN JOSE DE TICLLAS",
-    "ubigeo": "050109"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "SAN JUAN BAUTISTA",
-    "clave": "AYACUCHOHUAMANGASAN JUAN BAUTISTA",
-    "ubigeo": "050110"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "SANTIAGO DE PISCHA",
-    "clave": "AYACUCHOHUAMANGASANTIAGO DE PISCHA",
-    "ubigeo": "050111"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "SOCOS",
-    "clave": "AYACUCHOHUAMANGASOCOS",
-    "ubigeo": "050112"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "TAMBILLO",
-    "clave": "AYACUCHOHUAMANGATAMBILLO",
-    "ubigeo": "050113"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "VINCHOS",
-    "clave": "AYACUCHOHUAMANGAVINCHOS",
-    "ubigeo": "050114"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "JESUS NAZARENO",
-    "clave": "AYACUCHOHUAMANGAJESUS NAZARENO",
-    "ubigeo": "050115"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUAMANGA",
-    "distrito": "ANDRES AVELINO CACERES DORREGARAY",
-    "clave": "AYACUCHOHUAMANGAANDRES AVELINO CACERES DORREGARAY",
-    "ubigeo": "050116"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "CANGALLO",
-    "clave": "AYACUCHOCANGALLOCANGALLO",
-    "ubigeo": "050201"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "CHUSCHI",
-    "clave": "AYACUCHOCANGALLOCHUSCHI",
-    "ubigeo": "050202"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "LOS MOROCHUCOS",
-    "clave": "AYACUCHOCANGALLOLOS MOROCHUCOS",
-    "ubigeo": "050203"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "MARIA PARADO DE BELLIDO",
-    "clave": "AYACUCHOCANGALLOMARIA PARADO DE BELLIDO",
-    "ubigeo": "050204"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "PARAS",
-    "clave": "AYACUCHOCANGALLOPARAS",
-    "ubigeo": "050205"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "CANGALLO",
-    "distrito": "TOTOS",
-    "clave": "AYACUCHOCANGALLOTOTOS",
-    "ubigeo": "050206"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANCA SANCOS",
-    "distrito": "SANCOS",
-    "clave": "AYACUCHOHUANCA SANCOSSANCOS",
-    "ubigeo": "050301"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANCA SANCOS",
-    "distrito": "CARAPO",
-    "clave": "AYACUCHOHUANCA SANCOSCARAPO",
-    "ubigeo": "050302"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANCA SANCOS",
-    "distrito": "SACSAMARCA",
-    "clave": "AYACUCHOHUANCA SANCOSSACSAMARCA",
-    "ubigeo": "050303"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANCA SANCOS",
-    "distrito": "SANTIAGO DE LUCANAMARCA",
-    "clave": "AYACUCHOHUANCA SANCOSSANTIAGO DE LUCANAMARCA",
-    "ubigeo": "050304"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "HUANTA",
-    "clave": "AYACUCHOHUANTAHUANTA",
-    "ubigeo": "050401"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "AYAHUANCO",
-    "clave": "AYACUCHOHUANTAAYAHUANCO",
-    "ubigeo": "050402"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "HUAMANGUILLA",
-    "clave": "AYACUCHOHUANTAHUAMANGUILLA",
-    "ubigeo": "050403"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "IGUAIN",
-    "clave": "AYACUCHOHUANTAIGUAIN",
-    "ubigeo": "050404"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "LURICOCHA",
-    "clave": "AYACUCHOHUANTALURICOCHA",
-    "ubigeo": "050405"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "SANTILLANA",
-    "clave": "AYACUCHOHUANTASANTILLANA",
-    "ubigeo": "050406"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "SIVIA",
-    "clave": "AYACUCHOHUANTASIVIA",
-    "ubigeo": "050407"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "LLOCHEGUA",
-    "clave": "AYACUCHOHUANTALLOCHEGUA",
-    "ubigeo": "050408"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "CANAYRE",
-    "clave": "AYACUCHOHUANTACANAYRE",
-    "ubigeo": "050409"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "UCHURACCAY",
-    "clave": "AYACUCHOHUANTAUCHURACCAY",
-    "ubigeo": "050410"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "PUCACOLPA",
-    "clave": "AYACUCHOHUANTAPUCACOLPA",
-    "ubigeo": "050411"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "CHACA",
-    "clave": "AYACUCHOHUANTACHACA",
-    "ubigeo": "050412"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "HUANTA",
-    "distrito": "PUTIS",
-    "clave": "AYACUCHOHUANTAPUTIS",
-    "ubigeo": "050413"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "SAN MIGUEL",
-    "clave": "AYACUCHOLA MARSAN MIGUEL",
-    "ubigeo": "050501"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "ANCO",
-    "clave": "AYACUCHOLA MARANCO",
-    "ubigeo": "050502"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "AYNA",
-    "clave": "AYACUCHOLA MARAYNA",
-    "ubigeo": "050503"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "CHILCAS",
-    "clave": "AYACUCHOLA MARCHILCAS",
-    "ubigeo": "050504"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "CHUNGUI",
-    "clave": "AYACUCHOLA MARCHUNGUI",
-    "ubigeo": "050505"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "LUIS CARRANZA",
-    "clave": "AYACUCHOLA MARLUIS CARRANZA",
-    "ubigeo": "050506"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "SANTA ROSA",
-    "clave": "AYACUCHOLA MARSANTA ROSA",
-    "ubigeo": "050507"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "TAMBO",
-    "clave": "AYACUCHOLA MARTAMBO",
-    "ubigeo": "050508"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "SAMUGARI",
-    "clave": "AYACUCHOLA MARSAMUGARI",
-    "ubigeo": "050509"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "ANCHIHUAY",
-    "clave": "AYACUCHOLA MARANCHIHUAY",
-    "ubigeo": "050510"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "ORONCCOY",
-    "clave": "AYACUCHOLA MARORONCCOY",
-    "ubigeo": "050511"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "UNION PROGRESO",
-    "clave": "AYACUCHOLA MARUNION PROGRESO",
-    "ubigeo": "050512"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "RIO MAGDALENA",
-    "clave": "AYACUCHOLA MARRIO MAGDALENA",
-    "ubigeo": "050513"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "NINABAMBA",
-    "clave": "AYACUCHOLA MARNINABAMBA",
-    "ubigeo": "050514"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LA MAR",
-    "distrito": "PATIBAMBA",
-    "clave": "AYACUCHOLA MARPATIBAMBA",
-    "ubigeo": "050515"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "PUQUIO",
-    "clave": "AYACUCHOLUCANASPUQUIO",
-    "ubigeo": "050601"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "AUCARA",
-    "clave": "AYACUCHOLUCANASAUCARA",
-    "ubigeo": "050602"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "CABANA",
-    "clave": "AYACUCHOLUCANASCABANA",
-    "ubigeo": "050603"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "CARMEN SALCEDO",
-    "clave": "AYACUCHOLUCANASCARMEN SALCEDO",
-    "ubigeo": "050604"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "CHAVIÑA",
-    "clave": "AYACUCHOLUCANASCHAVIÑA",
-    "ubigeo": "050605"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "CHIPAO",
-    "clave": "AYACUCHOLUCANASCHIPAO",
-    "ubigeo": "050606"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "HUAC-HUAS",
-    "clave": "AYACUCHOLUCANASHUAC-HUAS",
-    "ubigeo": "050607"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "LARAMATE",
-    "clave": "AYACUCHOLUCANASLARAMATE",
-    "ubigeo": "050608"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "LEONCIO PRADO",
-    "clave": "AYACUCHOLUCANASLEONCIO PRADO",
-    "ubigeo": "050609"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "LLAUTA",
-    "clave": "AYACUCHOLUCANASLLAUTA",
-    "ubigeo": "050610"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "LUCANAS",
-    "clave": "AYACUCHOLUCANASLUCANAS",
-    "ubigeo": "050611"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "OCAÑA",
-    "clave": "AYACUCHOLUCANASOCAÑA",
-    "ubigeo": "050612"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "OTOCA",
-    "clave": "AYACUCHOLUCANASOTOCA",
-    "ubigeo": "050613"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SAISA",
-    "clave": "AYACUCHOLUCANASSAISA",
-    "ubigeo": "050614"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SAN CRISTOBAL",
-    "clave": "AYACUCHOLUCANASSAN CRISTOBAL",
-    "ubigeo": "050615"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SAN JUAN",
-    "clave": "AYACUCHOLUCANASSAN JUAN",
-    "ubigeo": "050616"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SAN PEDRO",
-    "clave": "AYACUCHOLUCANASSAN PEDRO",
-    "ubigeo": "050617"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SAN PEDRO DE PALCO",
-    "clave": "AYACUCHOLUCANASSAN PEDRO DE PALCO",
-    "ubigeo": "050618"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SANCOS",
-    "clave": "AYACUCHOLUCANASSANCOS",
-    "ubigeo": "050619"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SANTA ANA DE HUAYCAHUACHO",
-    "clave": "AYACUCHOLUCANASSANTA ANA DE HUAYCAHUACHO",
-    "ubigeo": "050620"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "LUCANAS",
-    "distrito": "SANTA LUCIA",
-    "clave": "AYACUCHOLUCANASSANTA LUCIA",
-    "ubigeo": "050621"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "CORACORA",
-    "clave": "AYACUCHOPARINACOCHASCORACORA",
-    "ubigeo": "050701"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "CHUMPI",
-    "clave": "AYACUCHOPARINACOCHASCHUMPI",
-    "ubigeo": "050702"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "CORONEL CASTAÑEDA",
-    "clave": "AYACUCHOPARINACOCHASCORONEL CASTAÑEDA",
-    "ubigeo": "050703"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "PACAPAUSA",
-    "clave": "AYACUCHOPARINACOCHASPACAPAUSA",
-    "ubigeo": "050704"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "PULLO",
-    "clave": "AYACUCHOPARINACOCHASPULLO",
-    "ubigeo": "050705"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "PUYUSCA",
-    "clave": "AYACUCHOPARINACOCHASPUYUSCA",
-    "ubigeo": "050706"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "SAN FRANCISCO DE RIVACAYCO",
-    "clave": "AYACUCHOPARINACOCHASSAN FRANCISCO DE RIVACAYCO",
-    "ubigeo": "050707"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PARINACOCHAS",
-    "distrito": "UPAHUACHO",
-    "clave": "AYACUCHOPARINACOCHASUPAHUACHO",
-    "ubigeo": "050708"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "PAUSA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARAPAUSA",
-    "ubigeo": "050801"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "COLTA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARACOLTA",
-    "ubigeo": "050802"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "CORCULLA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARACORCULLA",
-    "ubigeo": "050803"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "LAMPA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARALAMPA",
-    "ubigeo": "050804"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "MARCABAMBA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARAMARCABAMBA",
-    "ubigeo": "050805"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "OYOLO",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARAOYOLO",
-    "ubigeo": "050806"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "PARARCA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARAPARARCA",
-    "ubigeo": "050807"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "SAN JAVIER DE ALPABAMBA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARASAN JAVIER DE ALPABAMBA",
-    "ubigeo": "050808"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "SAN JOSE DE USHUA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARASAN JOSE DE USHUA",
-    "ubigeo": "050809"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "PAUCAR DEL SARA SARA",
-    "distrito": "SARA SARA",
-    "clave": "AYACUCHOPAUCAR DEL SARA SARASARA SARA",
-    "ubigeo": "050810"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "QUEROBAMBA",
-    "clave": "AYACUCHOSUCREQUEROBAMBA",
-    "ubigeo": "050901"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "BELEN",
-    "clave": "AYACUCHOSUCREBELEN",
-    "ubigeo": "050902"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "CHALCOS",
-    "clave": "AYACUCHOSUCRECHALCOS",
-    "ubigeo": "050903"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "CHILCAYOC",
-    "clave": "AYACUCHOSUCRECHILCAYOC",
-    "ubigeo": "050904"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "HUACAÑA",
-    "clave": "AYACUCHOSUCREHUACAÑA",
-    "ubigeo": "050905"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "MORCOLLA",
-    "clave": "AYACUCHOSUCREMORCOLLA",
-    "ubigeo": "050906"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "PAICO",
-    "clave": "AYACUCHOSUCREPAICO",
-    "ubigeo": "050907"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "SAN PEDRO DE LARCAY",
-    "clave": "AYACUCHOSUCRESAN PEDRO DE LARCAY",
-    "ubigeo": "050908"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "SAN SALVADOR DE QUIJE",
-    "clave": "AYACUCHOSUCRESAN SALVADOR DE QUIJE",
-    "ubigeo": "050909"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "SANTIAGO DE PAUCARAY",
-    "clave": "AYACUCHOSUCRESANTIAGO DE PAUCARAY",
-    "ubigeo": "050910"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "SUCRE",
-    "distrito": "SORAS",
-    "clave": "AYACUCHOSUCRESORAS",
-    "ubigeo": "050911"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "HUANCAPI",
-    "clave": "AYACUCHOVICTOR FAJARDOHUANCAPI",
-    "ubigeo": "051001"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "ALCAMENCA",
-    "clave": "AYACUCHOVICTOR FAJARDOALCAMENCA",
-    "ubigeo": "051002"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "APONGO",
-    "clave": "AYACUCHOVICTOR FAJARDOAPONGO",
-    "ubigeo": "051003"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "ASQUIPATA",
-    "clave": "AYACUCHOVICTOR FAJARDOASQUIPATA",
-    "ubigeo": "051004"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "CANARIA",
-    "clave": "AYACUCHOVICTOR FAJARDOCANARIA",
-    "ubigeo": "051005"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "CAYARA",
-    "clave": "AYACUCHOVICTOR FAJARDOCAYARA",
-    "ubigeo": "051006"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "COLCA",
-    "clave": "AYACUCHOVICTOR FAJARDOCOLCA",
-    "ubigeo": "051007"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "HUAMANQUIQUIA",
-    "clave": "AYACUCHOVICTOR FAJARDOHUAMANQUIQUIA",
-    "ubigeo": "051008"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "HUANCARAYLLA",
-    "clave": "AYACUCHOVICTOR FAJARDOHUANCARAYLLA",
-    "ubigeo": "051009"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "HUALLA",
-    "clave": "AYACUCHOVICTOR FAJARDOHUALLA",
-    "ubigeo": "051010"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "SARHUA",
-    "clave": "AYACUCHOVICTOR FAJARDOSARHUA",
-    "ubigeo": "051011"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VICTOR FAJARDO",
-    "distrito": "VILCANCHOS",
-    "clave": "AYACUCHOVICTOR FAJARDOVILCANCHOS",
-    "ubigeo": "051012"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "VILCAS HUAMAN",
-    "clave": "AYACUCHOVILCAS HUAMANVILCAS HUAMAN",
-    "ubigeo": "051101"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "ACCOMARCA",
-    "clave": "AYACUCHOVILCAS HUAMANACCOMARCA",
-    "ubigeo": "051102"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "CARHUANCA",
-    "clave": "AYACUCHOVILCAS HUAMANCARHUANCA",
-    "ubigeo": "051103"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "CONCEPCION",
-    "clave": "AYACUCHOVILCAS HUAMANCONCEPCION",
-    "ubigeo": "051104"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "HUAMBALPA",
-    "clave": "AYACUCHOVILCAS HUAMANHUAMBALPA",
-    "ubigeo": "051105"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "INDEPENDENCIA",
-    "clave": "AYACUCHOVILCAS HUAMANINDEPENDENCIA",
-    "ubigeo": "051106"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "SAURAMA",
-    "clave": "AYACUCHOVILCAS HUAMANSAURAMA",
-    "ubigeo": "051107"
-  },
-  {
-    "departamento": "AYACUCHO",
-    "provincia": "VILCAS HUAMAN",
-    "distrito": "VISCHONGO",
-    "clave": "AYACUCHOVILCAS HUAMANVISCHONGO",
-    "ubigeo": "051108"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "CAJAMARCA",
-    "clave": "CAJAMARCACAJAMARCACAJAMARCA",
-    "ubigeo": "060101"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "ASUNCION",
-    "clave": "CAJAMARCACAJAMARCAASUNCION",
-    "ubigeo": "060102"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "CHETILLA",
-    "clave": "CAJAMARCACAJAMARCACHETILLA",
-    "ubigeo": "060103"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "COSPAN",
-    "clave": "CAJAMARCACAJAMARCACOSPAN",
-    "ubigeo": "060104"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "ENCAÑADA",
-    "clave": "CAJAMARCACAJAMARCAENCAÑADA",
-    "ubigeo": "060105"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "JESUS",
-    "clave": "CAJAMARCACAJAMARCAJESUS",
-    "ubigeo": "060106"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "LLACANORA",
-    "clave": "CAJAMARCACAJAMARCALLACANORA",
-    "ubigeo": "060107"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "LOS BAÑOS DEL INCA",
-    "clave": "CAJAMARCACAJAMARCALOS BAÑOS DEL INCA",
-    "ubigeo": "060108"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "MAGDALENA",
-    "clave": "CAJAMARCACAJAMARCAMAGDALENA",
-    "ubigeo": "060109"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "MATARA",
-    "clave": "CAJAMARCACAJAMARCAMATARA",
-    "ubigeo": "060110"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "NAMORA",
-    "clave": "CAJAMARCACAJAMARCANAMORA",
-    "ubigeo": "060111"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJAMARCA",
-    "distrito": "SAN JUAN",
-    "clave": "CAJAMARCACAJAMARCASAN JUAN",
-    "ubigeo": "060112"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJABAMBA",
-    "distrito": "CAJABAMBA",
-    "clave": "CAJAMARCACAJABAMBACAJABAMBA",
-    "ubigeo": "060201"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJABAMBA",
-    "distrito": "CACHACHI",
-    "clave": "CAJAMARCACAJABAMBACACHACHI",
-    "ubigeo": "060202"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJABAMBA",
-    "distrito": "CONDEBAMBA",
-    "clave": "CAJAMARCACAJABAMBACONDEBAMBA",
-    "ubigeo": "060203"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CAJABAMBA",
-    "distrito": "SITACOCHA",
-    "clave": "CAJAMARCACAJABAMBASITACOCHA",
-    "ubigeo": "060204"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "CELENDIN",
-    "clave": "CAJAMARCACELENDINCELENDIN",
-    "ubigeo": "060301"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "CHUMUCH",
-    "clave": "CAJAMARCACELENDINCHUMUCH",
-    "ubigeo": "060302"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "CORTEGANA",
-    "clave": "CAJAMARCACELENDINCORTEGANA",
-    "ubigeo": "060303"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "HUASMIN",
-    "clave": "CAJAMARCACELENDINHUASMIN",
-    "ubigeo": "060304"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "JORGE CHAVEZ",
-    "clave": "CAJAMARCACELENDINJORGE CHAVEZ",
-    "ubigeo": "060305"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "JOSE GALVEZ",
-    "clave": "CAJAMARCACELENDINJOSE GALVEZ",
-    "ubigeo": "060306"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "MIGUEL IGLESIAS",
-    "clave": "CAJAMARCACELENDINMIGUEL IGLESIAS",
-    "ubigeo": "060307"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "OXAMARCA",
-    "clave": "CAJAMARCACELENDINOXAMARCA",
-    "ubigeo": "060308"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "SOROCHUCO",
-    "clave": "CAJAMARCACELENDINSOROCHUCO",
-    "ubigeo": "060309"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "SUCRE",
-    "clave": "CAJAMARCACELENDINSUCRE",
-    "ubigeo": "060310"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "UTCO",
-    "clave": "CAJAMARCACELENDINUTCO",
-    "ubigeo": "060311"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CELENDIN",
-    "distrito": "LA LIBERTAD DE PALLAN",
-    "clave": "CAJAMARCACELENDINLA LIBERTAD DE PALLAN",
-    "ubigeo": "060312"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHOTA",
-    "clave": "CAJAMARCACHOTACHOTA",
-    "ubigeo": "060401"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "ANGUIA",
-    "clave": "CAJAMARCACHOTAANGUIA",
-    "ubigeo": "060402"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHADIN",
-    "clave": "CAJAMARCACHOTACHADIN",
-    "ubigeo": "060403"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHIGUIRIP",
-    "clave": "CAJAMARCACHOTACHIGUIRIP",
-    "ubigeo": "060404"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHIMBAN",
-    "clave": "CAJAMARCACHOTACHIMBAN",
-    "ubigeo": "060405"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHOROPAMPA",
-    "clave": "CAJAMARCACHOTACHOROPAMPA",
-    "ubigeo": "060406"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "COCHABAMBA",
-    "clave": "CAJAMARCACHOTACOCHABAMBA",
-    "ubigeo": "060407"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CONCHAN",
-    "clave": "CAJAMARCACHOTACONCHAN",
-    "ubigeo": "060408"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "HUAMBOS",
-    "clave": "CAJAMARCACHOTAHUAMBOS",
-    "ubigeo": "060409"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "LAJAS",
-    "clave": "CAJAMARCACHOTALAJAS",
-    "ubigeo": "060410"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "LLAMA",
-    "clave": "CAJAMARCACHOTALLAMA",
-    "ubigeo": "060411"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "MIRACOSTA",
-    "clave": "CAJAMARCACHOTAMIRACOSTA",
-    "ubigeo": "060412"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "PACCHA",
-    "clave": "CAJAMARCACHOTAPACCHA",
-    "ubigeo": "060413"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "PION",
-    "clave": "CAJAMARCACHOTAPION",
-    "ubigeo": "060414"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "QUEROCOTO",
-    "clave": "CAJAMARCACHOTAQUEROCOTO",
-    "ubigeo": "060415"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "SAN JUAN DE LICUPIS",
-    "clave": "CAJAMARCACHOTASAN JUAN DE LICUPIS",
-    "ubigeo": "060416"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "TACABAMBA",
-    "clave": "CAJAMARCACHOTATACABAMBA",
-    "ubigeo": "060417"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "TOCMOCHE",
-    "clave": "CAJAMARCACHOTATOCMOCHE",
-    "ubigeo": "060418"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CHOTA",
-    "distrito": "CHALAMARCA",
-    "clave": "CAJAMARCACHOTACHALAMARCA",
-    "ubigeo": "060419"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "CONTUMAZA",
-    "clave": "CAJAMARCACONTUMAZACONTUMAZA",
-    "ubigeo": "060501"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "CHILETE",
-    "clave": "CAJAMARCACONTUMAZACHILETE",
-    "ubigeo": "060502"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "CUPISNIQUE",
-    "clave": "CAJAMARCACONTUMAZACUPISNIQUE",
-    "ubigeo": "060503"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "GUZMANGO",
-    "clave": "CAJAMARCACONTUMAZAGUZMANGO",
-    "ubigeo": "060504"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "SAN BENITO",
-    "clave": "CAJAMARCACONTUMAZASAN BENITO",
-    "ubigeo": "060505"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "SANTA CRUZ DE TOLEDO",
-    "clave": "CAJAMARCACONTUMAZASANTA CRUZ DE TOLEDO",
-    "ubigeo": "060506"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "TANTARICA",
-    "clave": "CAJAMARCACONTUMAZATANTARICA",
-    "ubigeo": "060507"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CONTUMAZA",
-    "distrito": "YONAN",
-    "clave": "CAJAMARCACONTUMAZAYONAN",
-    "ubigeo": "060508"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "CUTERVO",
-    "clave": "CAJAMARCACUTERVOCUTERVO",
-    "ubigeo": "060601"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "CALLAYUC",
-    "clave": "CAJAMARCACUTERVOCALLAYUC",
-    "ubigeo": "060602"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "CHOROS",
-    "clave": "CAJAMARCACUTERVOCHOROS",
-    "ubigeo": "060603"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "CUJILLO",
-    "clave": "CAJAMARCACUTERVOCUJILLO",
-    "ubigeo": "060604"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "LA RAMADA",
-    "clave": "CAJAMARCACUTERVOLA RAMADA",
-    "ubigeo": "060605"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "PIMPINGOS",
-    "clave": "CAJAMARCACUTERVOPIMPINGOS",
-    "ubigeo": "060606"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "QUEROCOTILLO",
-    "clave": "CAJAMARCACUTERVOQUEROCOTILLO",
-    "ubigeo": "060607"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SAN ANDRES DE CUTERVO",
-    "clave": "CAJAMARCACUTERVOSAN ANDRES DE CUTERVO",
-    "ubigeo": "060608"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SAN JUAN DE CUTERVO",
-    "clave": "CAJAMARCACUTERVOSAN JUAN DE CUTERVO",
-    "ubigeo": "060609"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SAN LUIS DE LUCMA",
-    "clave": "CAJAMARCACUTERVOSAN LUIS DE LUCMA",
-    "ubigeo": "060610"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SANTA CRUZ",
-    "clave": "CAJAMARCACUTERVOSANTA CRUZ",
-    "ubigeo": "060611"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SANTO DOMINGO DE LA CAPILLA",
-    "clave": "CAJAMARCACUTERVOSANTO DOMINGO DE LA CAPILLA",
-    "ubigeo": "060612"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SANTO TOMAS",
-    "clave": "CAJAMARCACUTERVOSANTO TOMAS",
-    "ubigeo": "060613"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "SOCOTA",
-    "clave": "CAJAMARCACUTERVOSOCOTA",
-    "ubigeo": "060614"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "CUTERVO",
-    "distrito": "TORIBIO CASANOVA",
-    "clave": "CAJAMARCACUTERVOTORIBIO CASANOVA",
-    "ubigeo": "060615"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "HUALGAYOC",
-    "distrito": "BAMBAMARCA",
-    "clave": "CAJAMARCAHUALGAYOCBAMBAMARCA",
-    "ubigeo": "060701"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "HUALGAYOC",
-    "distrito": "CHUGUR",
-    "clave": "CAJAMARCAHUALGAYOCCHUGUR",
-    "ubigeo": "060702"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "HUALGAYOC",
-    "distrito": "HUALGAYOC",
-    "clave": "CAJAMARCAHUALGAYOCHUALGAYOC",
-    "ubigeo": "060703"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "JAEN",
-    "clave": "CAJAMARCAJAENJAEN",
-    "ubigeo": "060801"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "BELLAVISTA",
-    "clave": "CAJAMARCAJAENBELLAVISTA",
-    "ubigeo": "060802"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "CHONTALI",
-    "clave": "CAJAMARCAJAENCHONTALI",
-    "ubigeo": "060803"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "COLASAY",
-    "clave": "CAJAMARCAJAENCOLASAY",
-    "ubigeo": "060804"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "HUABAL",
-    "clave": "CAJAMARCAJAENHUABAL",
-    "ubigeo": "060805"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "LAS PIRIAS",
-    "clave": "CAJAMARCAJAENLAS PIRIAS",
-    "ubigeo": "060806"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "POMAHUACA",
-    "clave": "CAJAMARCAJAENPOMAHUACA",
-    "ubigeo": "060807"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "PUCARA",
-    "clave": "CAJAMARCAJAENPUCARA",
-    "ubigeo": "060808"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "SALLIQUE",
-    "clave": "CAJAMARCAJAENSALLIQUE",
-    "ubigeo": "060809"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "SAN FELIPE",
-    "clave": "CAJAMARCAJAENSAN FELIPE",
-    "ubigeo": "060810"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "SAN JOSE DEL ALTO",
-    "clave": "CAJAMARCAJAENSAN JOSE DEL ALTO",
-    "ubigeo": "060811"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "JAEN",
-    "distrito": "SANTA ROSA",
-    "clave": "CAJAMARCAJAENSANTA ROSA",
-    "ubigeo": "060812"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "SAN IGNACIO",
-    "clave": "CAJAMARCASAN IGNACIOSAN IGNACIO",
-    "ubigeo": "060901"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "CHIRINOS",
-    "clave": "CAJAMARCASAN IGNACIOCHIRINOS",
-    "ubigeo": "060902"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "HUARANGO",
-    "clave": "CAJAMARCASAN IGNACIOHUARANGO",
-    "ubigeo": "060903"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "LA COIPA",
-    "clave": "CAJAMARCASAN IGNACIOLA COIPA",
-    "ubigeo": "060904"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "NAMBALLE",
-    "clave": "CAJAMARCASAN IGNACIONAMBALLE",
-    "ubigeo": "060905"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "SAN JOSE DE LOURDES",
-    "clave": "CAJAMARCASAN IGNACIOSAN JOSE DE LOURDES",
-    "ubigeo": "060906"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN IGNACIO",
-    "distrito": "TABACONAS",
-    "clave": "CAJAMARCASAN IGNACIOTABACONAS",
-    "ubigeo": "060907"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "PEDRO GALVEZ",
-    "clave": "CAJAMARCASAN MARCOSPEDRO GALVEZ",
-    "ubigeo": "061001"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "CHANCAY",
-    "clave": "CAJAMARCASAN MARCOSCHANCAY",
-    "ubigeo": "061002"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "EDUARDO VILLANUEVA",
-    "clave": "CAJAMARCASAN MARCOSEDUARDO VILLANUEVA",
-    "ubigeo": "061003"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "GREGORIO PITA",
-    "clave": "CAJAMARCASAN MARCOSGREGORIO PITA",
-    "ubigeo": "061004"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "ICHOCAN",
-    "clave": "CAJAMARCASAN MARCOSICHOCAN",
-    "ubigeo": "061005"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "JOSE MANUEL QUIROZ",
-    "clave": "CAJAMARCASAN MARCOSJOSE MANUEL QUIROZ",
-    "ubigeo": "061006"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MARCOS",
-    "distrito": "JOSE SABOGAL",
-    "clave": "CAJAMARCASAN MARCOSJOSE SABOGAL",
-    "ubigeo": "061007"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "SAN MIGUEL",
-    "clave": "CAJAMARCASAN MIGUELSAN MIGUEL",
-    "ubigeo": "061101"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "BOLIVAR",
-    "clave": "CAJAMARCASAN MIGUELBOLIVAR",
-    "ubigeo": "061102"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "CALQUIS",
-    "clave": "CAJAMARCASAN MIGUELCALQUIS",
-    "ubigeo": "061103"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "CATILLUC",
-    "clave": "CAJAMARCASAN MIGUELCATILLUC",
-    "ubigeo": "061104"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "EL PRADO",
-    "clave": "CAJAMARCASAN MIGUELEL PRADO",
-    "ubigeo": "061105"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "LA FLORIDA",
-    "clave": "CAJAMARCASAN MIGUELLA FLORIDA",
-    "ubigeo": "061106"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "LLAPA",
-    "clave": "CAJAMARCASAN MIGUELLLAPA",
-    "ubigeo": "061107"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "NANCHOC",
-    "clave": "CAJAMARCASAN MIGUELNANCHOC",
-    "ubigeo": "061108"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "NIEPOS",
-    "clave": "CAJAMARCASAN MIGUELNIEPOS",
-    "ubigeo": "061109"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "SAN GREGORIO",
-    "clave": "CAJAMARCASAN MIGUELSAN GREGORIO",
-    "ubigeo": "061110"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "SAN SILVESTRE DE COCHAN",
-    "clave": "CAJAMARCASAN MIGUELSAN SILVESTRE DE COCHAN",
-    "ubigeo": "061111"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "TONGOD",
-    "clave": "CAJAMARCASAN MIGUELTONGOD",
-    "ubigeo": "061112"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN MIGUEL",
-    "distrito": "UNION AGUA BLANCA",
-    "clave": "CAJAMARCASAN MIGUELUNION AGUA BLANCA",
-    "ubigeo": "061113"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN PABLO",
-    "distrito": "SAN PABLO",
-    "clave": "CAJAMARCASAN PABLOSAN PABLO",
-    "ubigeo": "061201"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN PABLO",
-    "distrito": "SAN BERNARDINO",
-    "clave": "CAJAMARCASAN PABLOSAN BERNARDINO",
-    "ubigeo": "061202"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN PABLO",
-    "distrito": "SAN LUIS",
-    "clave": "CAJAMARCASAN PABLOSAN LUIS",
-    "ubigeo": "061203"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SAN PABLO",
-    "distrito": "TUMBADEN",
-    "clave": "CAJAMARCASAN PABLOTUMBADEN",
-    "ubigeo": "061204"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "SANTA CRUZ",
-    "clave": "CAJAMARCASANTA CRUZSANTA CRUZ",
-    "ubigeo": "061301"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "ANDABAMBA",
-    "clave": "CAJAMARCASANTA CRUZANDABAMBA",
-    "ubigeo": "061302"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "CATACHE",
-    "clave": "CAJAMARCASANTA CRUZCATACHE",
-    "ubigeo": "061303"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "CHANCAYBAÑOS",
-    "clave": "CAJAMARCASANTA CRUZCHANCAYBAÑOS",
-    "ubigeo": "061304"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "LA ESPERANZA",
-    "clave": "CAJAMARCASANTA CRUZLA ESPERANZA",
-    "ubigeo": "061305"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "NINABAMBA",
-    "clave": "CAJAMARCASANTA CRUZNINABAMBA",
-    "ubigeo": "061306"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "PULAN",
-    "clave": "CAJAMARCASANTA CRUZPULAN",
-    "ubigeo": "061307"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "SAUCEPAMPA",
-    "clave": "CAJAMARCASANTA CRUZSAUCEPAMPA",
-    "ubigeo": "061308"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "SEXI",
-    "clave": "CAJAMARCASANTA CRUZSEXI",
-    "ubigeo": "061309"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "UTICYACU",
-    "clave": "CAJAMARCASANTA CRUZUTICYACU",
-    "ubigeo": "061310"
-  },
-  {
-    "departamento": "CAJAMARCA",
-    "provincia": "SANTA CRUZ",
-    "distrito": "YAUYUCAN",
-    "clave": "CAJAMARCASANTA CRUZYAUYUCAN",
-    "ubigeo": "061311"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "CALLAO",
-    "clave": "CALLAOCALLAOCALLAO",
-    "ubigeo": "070101"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "BELLAVISTA",
-    "clave": "CALLAOCALLAOBELLAVISTA",
-    "ubigeo": "070102"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "CARMEN DE LA LEGUA REYNOSO",
-    "clave": "CALLAOCALLAOCARMEN DE LA LEGUA REYNOSO",
-    "ubigeo": "070103"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "LA PERLA",
-    "clave": "CALLAOCALLAOLA PERLA",
-    "ubigeo": "070104"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "LA PUNTA",
-    "clave": "CALLAOCALLAOLA PUNTA",
-    "ubigeo": "070105"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "VENTANILLA",
-    "clave": "CALLAOCALLAOVENTANILLA",
-    "ubigeo": "070106"
-  },
-  {
-    "departamento": "CALLAO",
-    "provincia": "CALLAO",
-    "distrito": "MI PERU",
-    "clave": "CALLAOCALLAOMI PERU",
-    "ubigeo": "070107"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "CUSCO",
-    "clave": "CUSCOCUSCOCUSCO",
-    "ubigeo": "080101"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "CCORCA",
-    "clave": "CUSCOCUSCOCCORCA",
-    "ubigeo": "080102"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "POROY",
-    "clave": "CUSCOCUSCOPOROY",
-    "ubigeo": "080103"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "SAN JERONIMO",
-    "clave": "CUSCOCUSCOSAN JERONIMO",
-    "ubigeo": "080104"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "SAN SEBASTIAN",
-    "clave": "CUSCOCUSCOSAN SEBASTIAN",
-    "ubigeo": "080105"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "SANTIAGO",
-    "clave": "CUSCOCUSCOSANTIAGO",
-    "ubigeo": "080106"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "SAYLLA",
-    "clave": "CUSCOCUSCOSAYLLA",
-    "ubigeo": "080107"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CUSCO",
-    "distrito": "WANCHAQ",
-    "clave": "CUSCOCUSCOWANCHAQ",
-    "ubigeo": "080108"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "ACOMAYO",
-    "clave": "CUSCOACOMAYOACOMAYO",
-    "ubigeo": "080201"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "ACOPIA",
-    "clave": "CUSCOACOMAYOACOPIA",
-    "ubigeo": "080202"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "ACOS",
-    "clave": "CUSCOACOMAYOACOS",
-    "ubigeo": "080203"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "MOSOC LLACTA",
-    "clave": "CUSCOACOMAYOMOSOC LLACTA",
-    "ubigeo": "080204"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "POMACANCHI",
-    "clave": "CUSCOACOMAYOPOMACANCHI",
-    "ubigeo": "080205"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "RONDOCAN",
-    "clave": "CUSCOACOMAYORONDOCAN",
-    "ubigeo": "080206"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ACOMAYO",
-    "distrito": "SANGARARA",
-    "clave": "CUSCOACOMAYOSANGARARA",
-    "ubigeo": "080207"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "ANTA",
-    "clave": "CUSCOANTAANTA",
-    "ubigeo": "080301"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "ANCAHUASI",
-    "clave": "CUSCOANTAANCAHUASI",
-    "ubigeo": "080302"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "CACHIMAYO",
-    "clave": "CUSCOANTACACHIMAYO",
-    "ubigeo": "080303"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "CHINCHAYPUJIO",
-    "clave": "CUSCOANTACHINCHAYPUJIO",
-    "ubigeo": "080304"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "HUAROCONDO",
-    "clave": "CUSCOANTAHUAROCONDO",
-    "ubigeo": "080305"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "LIMATAMBO",
-    "clave": "CUSCOANTALIMATAMBO",
-    "ubigeo": "080306"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "MOLLEPATA",
-    "clave": "CUSCOANTAMOLLEPATA",
-    "ubigeo": "080307"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "PUCYURA",
-    "clave": "CUSCOANTAPUCYURA",
-    "ubigeo": "080308"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ANTA",
-    "distrito": "ZURITE",
-    "clave": "CUSCOANTAZURITE",
-    "ubigeo": "080309"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "CALCA",
-    "clave": "CUSCOCALCACALCA",
-    "ubigeo": "080401"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "COYA",
-    "clave": "CUSCOCALCACOYA",
-    "ubigeo": "080402"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "LAMAY",
-    "clave": "CUSCOCALCALAMAY",
-    "ubigeo": "080403"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "LARES",
-    "clave": "CUSCOCALCALARES",
-    "ubigeo": "080404"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "PISAC",
-    "clave": "CUSCOCALCAPISAC",
-    "ubigeo": "080405"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "SAN SALVADOR",
-    "clave": "CUSCOCALCASAN SALVADOR",
-    "ubigeo": "080406"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "TARAY",
-    "clave": "CUSCOCALCATARAY",
-    "ubigeo": "080407"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CALCA",
-    "distrito": "YANATILE",
-    "clave": "CUSCOCALCAYANATILE",
-    "ubigeo": "080408"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "YANAOCA",
-    "clave": "CUSCOCANASYANAOCA",
-    "ubigeo": "080501"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "CHECCA",
-    "clave": "CUSCOCANASCHECCA",
-    "ubigeo": "080502"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "KUNTURKANKI",
-    "clave": "CUSCOCANASKUNTURKANKI",
-    "ubigeo": "080503"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "LANGUI",
-    "clave": "CUSCOCANASLANGUI",
-    "ubigeo": "080504"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "LAYO",
-    "clave": "CUSCOCANASLAYO",
-    "ubigeo": "080505"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "PAMPAMARCA",
-    "clave": "CUSCOCANASPAMPAMARCA",
-    "ubigeo": "080506"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "QUEHUE",
-    "clave": "CUSCOCANASQUEHUE",
-    "ubigeo": "080507"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANAS",
-    "distrito": "TUPAC AMARU",
-    "clave": "CUSCOCANASTUPAC AMARU",
-    "ubigeo": "080508"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "SICUANI",
-    "clave": "CUSCOCANCHISSICUANI",
-    "ubigeo": "080601"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "CHECACUPE",
-    "clave": "CUSCOCANCHISCHECACUPE",
-    "ubigeo": "080602"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "COMBAPATA",
-    "clave": "CUSCOCANCHISCOMBAPATA",
-    "ubigeo": "080603"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "MARANGANI",
-    "clave": "CUSCOCANCHISMARANGANI",
-    "ubigeo": "080604"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "PITUMARCA",
-    "clave": "CUSCOCANCHISPITUMARCA",
-    "ubigeo": "080605"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "SAN PABLO",
-    "clave": "CUSCOCANCHISSAN PABLO",
-    "ubigeo": "080606"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "SAN PEDRO",
-    "clave": "CUSCOCANCHISSAN PEDRO",
-    "ubigeo": "080607"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CANCHIS",
-    "distrito": "TINTA",
-    "clave": "CUSCOCANCHISTINTA",
-    "ubigeo": "080608"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "SANTO TOMAS",
-    "clave": "CUSCOCHUMBIVILCASSANTO TOMAS",
-    "ubigeo": "080701"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "CAPACMARCA",
-    "clave": "CUSCOCHUMBIVILCASCAPACMARCA",
-    "ubigeo": "080702"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "CHAMACA",
-    "clave": "CUSCOCHUMBIVILCASCHAMACA",
-    "ubigeo": "080703"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "COLQUEMARCA",
-    "clave": "CUSCOCHUMBIVILCASCOLQUEMARCA",
-    "ubigeo": "080704"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "LIVITACA",
-    "clave": "CUSCOCHUMBIVILCASLIVITACA",
-    "ubigeo": "080705"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "LLUSCO",
-    "clave": "CUSCOCHUMBIVILCASLLUSCO",
-    "ubigeo": "080706"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "QUIÑOTA",
-    "clave": "CUSCOCHUMBIVILCASQUIÑOTA",
-    "ubigeo": "080707"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "CHUMBIVILCAS",
-    "distrito": "VELILLE",
-    "clave": "CUSCOCHUMBIVILCASVELILLE",
-    "ubigeo": "080708"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "ESPINAR",
-    "clave": "CUSCOESPINARESPINAR",
-    "ubigeo": "080801"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "CONDOROMA",
-    "clave": "CUSCOESPINARCONDOROMA",
-    "ubigeo": "080802"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "COPORAQUE",
-    "clave": "CUSCOESPINARCOPORAQUE",
-    "ubigeo": "080803"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "OCORURO",
-    "clave": "CUSCOESPINAROCORURO",
-    "ubigeo": "080804"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "PALLPATA",
-    "clave": "CUSCOESPINARPALLPATA",
-    "ubigeo": "080805"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "PICHIGUA",
-    "clave": "CUSCOESPINARPICHIGUA",
-    "ubigeo": "080806"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "SUYCKUTAMBO",
-    "clave": "CUSCOESPINARSUYCKUTAMBO",
-    "ubigeo": "080807"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "ESPINAR",
-    "distrito": "ALTO PICHIGUA",
-    "clave": "CUSCOESPINARALTO PICHIGUA",
-    "ubigeo": "080808"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "SANTA ANA",
-    "clave": "CUSCOLA CONVENCIONSANTA ANA",
-    "ubigeo": "080901"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "ECHARATE",
-    "clave": "CUSCOLA CONVENCIONECHARATE",
-    "ubigeo": "080902"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "HUAYOPATA",
-    "clave": "CUSCOLA CONVENCIONHUAYOPATA",
-    "ubigeo": "080903"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "MARANURA",
-    "clave": "CUSCOLA CONVENCIONMARANURA",
-    "ubigeo": "080904"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "OCOBAMBA",
-    "clave": "CUSCOLA CONVENCIONOCOBAMBA",
-    "ubigeo": "080905"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "QUELLOUNO",
-    "clave": "CUSCOLA CONVENCIONQUELLOUNO",
-    "ubigeo": "080906"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "KIMBIRI",
-    "clave": "CUSCOLA CONVENCIONKIMBIRI",
-    "ubigeo": "080907"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "SANTA TERESA",
-    "clave": "CUSCOLA CONVENCIONSANTA TERESA",
-    "ubigeo": "080908"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "VILCABAMBA",
-    "clave": "CUSCOLA CONVENCIONVILCABAMBA",
-    "ubigeo": "080909"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "PICHARI",
-    "clave": "CUSCOLA CONVENCIONPICHARI",
-    "ubigeo": "080910"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "INKAWASI",
-    "clave": "CUSCOLA CONVENCIONINKAWASI",
-    "ubigeo": "080911"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "VILLA VIRGEN",
-    "clave": "CUSCOLA CONVENCIONVILLA VIRGEN",
-    "ubigeo": "080912"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "VILLA KINTIARINA",
-    "clave": "CUSCOLA CONVENCIONVILLA KINTIARINA",
-    "ubigeo": "080913"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "MEGANTONI",
-    "clave": "CUSCOLA CONVENCIONMEGANTONI",
-    "ubigeo": "080914"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "KUMPIRUSHIATO",
-    "clave": "CUSCOLA CONVENCIONKUMPIRUSHIATO",
-    "ubigeo": "080915"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "CIELO PUNCO",
-    "clave": "CUSCOLA CONVENCIONCIELO PUNCO",
-    "ubigeo": "080916"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "MANITEA",
-    "clave": "CUSCOLA CONVENCIONMANITEA",
-    "ubigeo": "080917"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "LA CONVENCION",
-    "distrito": "UNION ASHANINKA",
-    "clave": "CUSCOLA CONVENCIONUNION ASHANINKA",
-    "ubigeo": "080918"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "PARURO",
-    "clave": "CUSCOPARUROPARURO",
-    "ubigeo": "081001"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "ACCHA",
-    "clave": "CUSCOPARUROACCHA",
-    "ubigeo": "081002"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "CCAPI",
-    "clave": "CUSCOPARUROCCAPI",
-    "ubigeo": "081003"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "COLCHA",
-    "clave": "CUSCOPARUROCOLCHA",
-    "ubigeo": "081004"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "HUANOQUITE",
-    "clave": "CUSCOPARUROHUANOQUITE",
-    "ubigeo": "081005"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "OMACHA",
-    "clave": "CUSCOPARUROOMACHA",
-    "ubigeo": "081006"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "PACCARITAMBO",
-    "clave": "CUSCOPARUROPACCARITAMBO",
-    "ubigeo": "081007"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "PILLPINTO",
-    "clave": "CUSCOPARUROPILLPINTO",
-    "ubigeo": "081008"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PARURO",
-    "distrito": "YAURISQUE",
-    "clave": "CUSCOPARUROYAURISQUE",
-    "ubigeo": "081009"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "PAUCARTAMBO",
-    "clave": "CUSCOPAUCARTAMBOPAUCARTAMBO",
-    "ubigeo": "081101"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "CAICAY",
-    "clave": "CUSCOPAUCARTAMBOCAICAY",
-    "ubigeo": "081102"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "CHALLABAMBA",
-    "clave": "CUSCOPAUCARTAMBOCHALLABAMBA",
-    "ubigeo": "081103"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "COLQUEPATA",
-    "clave": "CUSCOPAUCARTAMBOCOLQUEPATA",
-    "ubigeo": "081104"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "HUANCARANI",
-    "clave": "CUSCOPAUCARTAMBOHUANCARANI",
-    "ubigeo": "081105"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "PAUCARTAMBO",
-    "distrito": "KOSÑIPATA",
-    "clave": "CUSCOPAUCARTAMBOKOSÑIPATA",
-    "ubigeo": "081106"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "URCOS",
-    "clave": "CUSCOQUISPICANCHIURCOS",
-    "ubigeo": "081201"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "ANDAHUAYLILLAS",
-    "clave": "CUSCOQUISPICANCHIANDAHUAYLILLAS",
-    "ubigeo": "081202"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "CAMANTI",
-    "clave": "CUSCOQUISPICANCHICAMANTI",
-    "ubigeo": "081203"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "CCARHUAYO",
-    "clave": "CUSCOQUISPICANCHICCARHUAYO",
-    "ubigeo": "081204"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "CCATCA",
-    "clave": "CUSCOQUISPICANCHICCATCA",
-    "ubigeo": "081205"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "CUSIPATA",
-    "clave": "CUSCOQUISPICANCHICUSIPATA",
-    "ubigeo": "081206"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "HUARO",
-    "clave": "CUSCOQUISPICANCHIHUARO",
-    "ubigeo": "081207"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "LUCRE",
-    "clave": "CUSCOQUISPICANCHILUCRE",
-    "ubigeo": "081208"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "MARCAPATA",
-    "clave": "CUSCOQUISPICANCHIMARCAPATA",
-    "ubigeo": "081209"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "OCONGATE",
-    "clave": "CUSCOQUISPICANCHIOCONGATE",
-    "ubigeo": "081210"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "OROPESA",
-    "clave": "CUSCOQUISPICANCHIOROPESA",
-    "ubigeo": "081211"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "QUISPICANCHI",
-    "distrito": "QUIQUIJANA",
-    "clave": "CUSCOQUISPICANCHIQUIQUIJANA",
-    "ubigeo": "081212"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "URUBAMBA",
-    "clave": "CUSCOURUBAMBAURUBAMBA",
-    "ubigeo": "081301"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "CHINCHERO",
-    "clave": "CUSCOURUBAMBACHINCHERO",
-    "ubigeo": "081302"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "HUAYLLABAMBA",
-    "clave": "CUSCOURUBAMBAHUAYLLABAMBA",
-    "ubigeo": "081303"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "MACHUPICCHU",
-    "clave": "CUSCOURUBAMBAMACHUPICCHU",
-    "ubigeo": "081304"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "MARAS",
-    "clave": "CUSCOURUBAMBAMARAS",
-    "ubigeo": "081305"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "OLLANTAYTAMBO",
-    "clave": "CUSCOURUBAMBAOLLANTAYTAMBO",
-    "ubigeo": "081306"
-  },
-  {
-    "departamento": "CUSCO",
-    "provincia": "URUBAMBA",
-    "distrito": "YUCAY",
-    "clave": "CUSCOURUBAMBAYUCAY",
-    "ubigeo": "081307"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "HUANCAVELICA",
-    "clave": "HUANCAVELICAHUANCAVELICAHUANCAVELICA",
-    "ubigeo": "090101"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "ACOBAMBILLA",
-    "clave": "HUANCAVELICAHUANCAVELICAACOBAMBILLA",
-    "ubigeo": "090102"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "ACORIA",
-    "clave": "HUANCAVELICAHUANCAVELICAACORIA",
-    "ubigeo": "090103"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "CONAYCA",
-    "clave": "HUANCAVELICAHUANCAVELICACONAYCA",
-    "ubigeo": "090104"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "CUENCA",
-    "clave": "HUANCAVELICAHUANCAVELICACUENCA",
-    "ubigeo": "090105"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "HUACHOCOLPA",
-    "clave": "HUANCAVELICAHUANCAVELICAHUACHOCOLPA",
-    "ubigeo": "090106"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "HUAYLLAHUARA",
-    "clave": "HUANCAVELICAHUANCAVELICAHUAYLLAHUARA",
-    "ubigeo": "090107"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "IZCUCHACA",
-    "clave": "HUANCAVELICAHUANCAVELICAIZCUCHACA",
-    "ubigeo": "090108"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "LARIA",
-    "clave": "HUANCAVELICAHUANCAVELICALARIA",
-    "ubigeo": "090109"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "MANTA",
-    "clave": "HUANCAVELICAHUANCAVELICAMANTA",
-    "ubigeo": "090110"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "MARISCAL CACERES",
-    "clave": "HUANCAVELICAHUANCAVELICAMARISCAL CACERES",
-    "ubigeo": "090111"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "MOYA",
-    "clave": "HUANCAVELICAHUANCAVELICAMOYA",
-    "ubigeo": "090112"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "NUEVO OCCORO",
-    "clave": "HUANCAVELICAHUANCAVELICANUEVO OCCORO",
-    "ubigeo": "090113"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "PALCA",
-    "clave": "HUANCAVELICAHUANCAVELICAPALCA",
-    "ubigeo": "090114"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "PILCHACA",
-    "clave": "HUANCAVELICAHUANCAVELICAPILCHACA",
-    "ubigeo": "090115"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "VILCA",
-    "clave": "HUANCAVELICAHUANCAVELICAVILCA",
-    "ubigeo": "090116"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "YAULI",
-    "clave": "HUANCAVELICAHUANCAVELICAYAULI",
-    "ubigeo": "090117"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "ASCENSION",
-    "clave": "HUANCAVELICAHUANCAVELICAASCENSION",
-    "ubigeo": "090118"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUANCAVELICA",
-    "distrito": "HUANDO",
-    "clave": "HUANCAVELICAHUANCAVELICAHUANDO",
-    "ubigeo": "090119"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "ACOBAMBA",
-    "clave": "HUANCAVELICAACOBAMBAACOBAMBA",
-    "ubigeo": "090201"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "ANDABAMBA",
-    "clave": "HUANCAVELICAACOBAMBAANDABAMBA",
-    "ubigeo": "090202"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "ANTA",
-    "clave": "HUANCAVELICAACOBAMBAANTA",
-    "ubigeo": "090203"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "CAJA",
-    "clave": "HUANCAVELICAACOBAMBACAJA",
-    "ubigeo": "090204"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "MARCAS",
-    "clave": "HUANCAVELICAACOBAMBAMARCAS",
-    "ubigeo": "090205"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "PAUCARA",
-    "clave": "HUANCAVELICAACOBAMBAPAUCARA",
-    "ubigeo": "090206"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "POMACOCHA",
-    "clave": "HUANCAVELICAACOBAMBAPOMACOCHA",
-    "ubigeo": "090207"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ACOBAMBA",
-    "distrito": "ROSARIO",
-    "clave": "HUANCAVELICAACOBAMBAROSARIO",
-    "ubigeo": "090208"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "LIRCAY",
-    "clave": "HUANCAVELICAANGARAESLIRCAY",
-    "ubigeo": "090301"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "ANCHONGA",
-    "clave": "HUANCAVELICAANGARAESANCHONGA",
-    "ubigeo": "090302"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "CALLANMARCA",
-    "clave": "HUANCAVELICAANGARAESCALLANMARCA",
-    "ubigeo": "090303"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "CCOCHACCASA",
-    "clave": "HUANCAVELICAANGARAESCCOCHACCASA",
-    "ubigeo": "090304"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "CHINCHO",
-    "clave": "HUANCAVELICAANGARAESCHINCHO",
-    "ubigeo": "090305"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "CONGALLA",
-    "clave": "HUANCAVELICAANGARAESCONGALLA",
-    "ubigeo": "090306"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "HUANCA-HUANCA",
-    "clave": "HUANCAVELICAANGARAESHUANCA-HUANCA",
-    "ubigeo": "090307"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "HUAYLLAY GRANDE",
-    "clave": "HUANCAVELICAANGARAESHUAYLLAY GRANDE",
-    "ubigeo": "090308"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "JULCAMARCA",
-    "clave": "HUANCAVELICAANGARAESJULCAMARCA",
-    "ubigeo": "090309"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "SAN ANTONIO DE ANTAPARCO",
-    "clave": "HUANCAVELICAANGARAESSAN ANTONIO DE ANTAPARCO",
-    "ubigeo": "090310"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "SANTO TOMAS DE PATA",
-    "clave": "HUANCAVELICAANGARAESSANTO TOMAS DE PATA",
-    "ubigeo": "090311"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "ANGARAES",
-    "distrito": "SECCLLA",
-    "clave": "HUANCAVELICAANGARAESSECCLLA",
-    "ubigeo": "090312"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "CASTROVIRREYNA",
-    "clave": "HUANCAVELICACASTROVIRREYNACASTROVIRREYNA",
-    "ubigeo": "090401"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "ARMA",
-    "clave": "HUANCAVELICACASTROVIRREYNAARMA",
-    "ubigeo": "090402"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "AURAHUA",
-    "clave": "HUANCAVELICACASTROVIRREYNAAURAHUA",
-    "ubigeo": "090403"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "CAPILLAS",
-    "clave": "HUANCAVELICACASTROVIRREYNACAPILLAS",
-    "ubigeo": "090404"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "CHUPAMARCA",
-    "clave": "HUANCAVELICACASTROVIRREYNACHUPAMARCA",
-    "ubigeo": "090405"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "COCAS",
-    "clave": "HUANCAVELICACASTROVIRREYNACOCAS",
-    "ubigeo": "090406"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "HUACHOS",
-    "clave": "HUANCAVELICACASTROVIRREYNAHUACHOS",
-    "ubigeo": "090407"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "HUAMATAMBO",
-    "clave": "HUANCAVELICACASTROVIRREYNAHUAMATAMBO",
-    "ubigeo": "090408"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "MOLLEPAMPA",
-    "clave": "HUANCAVELICACASTROVIRREYNAMOLLEPAMPA",
-    "ubigeo": "090409"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "SAN JUAN",
-    "clave": "HUANCAVELICACASTROVIRREYNASAN JUAN",
-    "ubigeo": "090410"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "SANTA ANA",
-    "clave": "HUANCAVELICACASTROVIRREYNASANTA ANA",
-    "ubigeo": "090411"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "TANTARA",
-    "clave": "HUANCAVELICACASTROVIRREYNATANTARA",
-    "ubigeo": "090412"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CASTROVIRREYNA",
-    "distrito": "TICRAPO",
-    "clave": "HUANCAVELICACASTROVIRREYNATICRAPO",
-    "ubigeo": "090413"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "CHURCAMPA",
-    "clave": "HUANCAVELICACHURCAMPACHURCAMPA",
-    "ubigeo": "090501"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "ANCO",
-    "clave": "HUANCAVELICACHURCAMPAANCO",
-    "ubigeo": "090502"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "CHINCHIHUASI",
-    "clave": "HUANCAVELICACHURCAMPACHINCHIHUASI",
-    "ubigeo": "090503"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "EL CARMEN",
-    "clave": "HUANCAVELICACHURCAMPAEL CARMEN",
-    "ubigeo": "090504"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "LA MERCED",
-    "clave": "HUANCAVELICACHURCAMPALA MERCED",
-    "ubigeo": "090505"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "LOCROJA",
-    "clave": "HUANCAVELICACHURCAMPALOCROJA",
-    "ubigeo": "090506"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "PAUCARBAMBA",
-    "clave": "HUANCAVELICACHURCAMPAPAUCARBAMBA",
-    "ubigeo": "090507"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "SAN MIGUEL DE MAYOCC",
-    "clave": "HUANCAVELICACHURCAMPASAN MIGUEL DE MAYOCC",
-    "ubigeo": "090508"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "SAN PEDRO DE CORIS",
-    "clave": "HUANCAVELICACHURCAMPASAN PEDRO DE CORIS",
-    "ubigeo": "090509"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "PACHAMARCA",
-    "clave": "HUANCAVELICACHURCAMPAPACHAMARCA",
-    "ubigeo": "090510"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "CHURCAMPA",
-    "distrito": "COSME",
-    "clave": "HUANCAVELICACHURCAMPACOSME",
-    "ubigeo": "090511"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "HUAYTARA",
-    "clave": "HUANCAVELICAHUAYTARAHUAYTARA",
-    "ubigeo": "090601"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "AYAVI",
-    "clave": "HUANCAVELICAHUAYTARAAYAVI",
-    "ubigeo": "090602"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "CORDOVA",
-    "clave": "HUANCAVELICAHUAYTARACORDOVA",
-    "ubigeo": "090603"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "HUAYACUNDO ARMA",
-    "clave": "HUANCAVELICAHUAYTARAHUAYACUNDO ARMA",
-    "ubigeo": "090604"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "LARAMARCA",
-    "clave": "HUANCAVELICAHUAYTARALARAMARCA",
-    "ubigeo": "090605"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "OCOYO",
-    "clave": "HUANCAVELICAHUAYTARAOCOYO",
-    "ubigeo": "090606"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "PILPICHACA",
-    "clave": "HUANCAVELICAHUAYTARAPILPICHACA",
-    "ubigeo": "090607"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "QUERCO",
-    "clave": "HUANCAVELICAHUAYTARAQUERCO",
-    "ubigeo": "090608"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "QUITO-ARMA",
-    "clave": "HUANCAVELICAHUAYTARAQUITO-ARMA",
-    "ubigeo": "090609"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SAN ANTONIO DE CUSICANCHA",
-    "clave": "HUANCAVELICAHUAYTARASAN ANTONIO DE CUSICANCHA",
-    "ubigeo": "090610"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SAN FRANCISCO DE SANGAYAICO",
-    "clave": "HUANCAVELICAHUAYTARASAN FRANCISCO DE SANGAYAICO",
-    "ubigeo": "090611"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SAN ISIDRO",
-    "clave": "HUANCAVELICAHUAYTARASAN ISIDRO",
-    "ubigeo": "090612"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SANTIAGO DE CHOCORVOS",
-    "clave": "HUANCAVELICAHUAYTARASANTIAGO DE CHOCORVOS",
-    "ubigeo": "090613"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SANTIAGO DE QUIRAHUARA",
-    "clave": "HUANCAVELICAHUAYTARASANTIAGO DE QUIRAHUARA",
-    "ubigeo": "090614"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "SANTO DOMINGO DE CAPILLAS",
-    "clave": "HUANCAVELICAHUAYTARASANTO DOMINGO DE CAPILLAS",
-    "ubigeo": "090615"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "HUAYTARA",
-    "distrito": "TAMBO",
-    "clave": "HUANCAVELICAHUAYTARATAMBO",
-    "ubigeo": "090616"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "PAMPAS",
-    "clave": "HUANCAVELICATAYACAJAPAMPAS",
-    "ubigeo": "090701"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "ACOSTAMBO",
-    "clave": "HUANCAVELICATAYACAJAACOSTAMBO",
-    "ubigeo": "090702"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "ACRAQUIA",
-    "clave": "HUANCAVELICATAYACAJAACRAQUIA",
-    "ubigeo": "090703"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "AHUAYCHA",
-    "clave": "HUANCAVELICATAYACAJAAHUAYCHA",
-    "ubigeo": "090704"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "COLCABAMBA",
-    "clave": "HUANCAVELICATAYACAJACOLCABAMBA",
-    "ubigeo": "090705"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "DANIEL HERNANDEZ",
-    "clave": "HUANCAVELICATAYACAJADANIEL HERNANDEZ",
-    "ubigeo": "090706"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "HUACHOCOLPA",
-    "clave": "HUANCAVELICATAYACAJAHUACHOCOLPA",
-    "ubigeo": "090707"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "HUARIBAMBA",
-    "clave": "HUANCAVELICATAYACAJAHUARIBAMBA",
-    "ubigeo": "090709"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "ÑAHUIMPUQUIO",
-    "clave": "HUANCAVELICATAYACAJAÑAHUIMPUQUIO",
-    "ubigeo": "090710"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "PAZOS",
-    "clave": "HUANCAVELICATAYACAJAPAZOS",
-    "ubigeo": "090711"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "QUISHUAR",
-    "clave": "HUANCAVELICATAYACAJAQUISHUAR",
-    "ubigeo": "090713"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "SALCABAMBA",
-    "clave": "HUANCAVELICATAYACAJASALCABAMBA",
-    "ubigeo": "090714"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "SALCAHUASI",
-    "clave": "HUANCAVELICATAYACAJASALCAHUASI",
-    "ubigeo": "090715"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "SAN MARCOS DE ROCCHAC",
-    "clave": "HUANCAVELICATAYACAJASAN MARCOS DE ROCCHAC",
-    "ubigeo": "090716"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "SURCUBAMBA",
-    "clave": "HUANCAVELICATAYACAJASURCUBAMBA",
-    "ubigeo": "090717"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "TINTAY PUNCU",
-    "clave": "HUANCAVELICATAYACAJATINTAY PUNCU",
-    "ubigeo": "090718"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "QUICHUAS",
-    "clave": "HUANCAVELICATAYACAJAQUICHUAS",
-    "ubigeo": "090719"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "ANDAYMARCA",
-    "clave": "HUANCAVELICATAYACAJAANDAYMARCA",
-    "ubigeo": "090720"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "ROBLE",
-    "clave": "HUANCAVELICATAYACAJAROBLE",
-    "ubigeo": "090721"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "PICHOS",
-    "clave": "HUANCAVELICATAYACAJAPICHOS",
-    "ubigeo": "090722"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "SANTIAGO DE TUCUMA",
-    "clave": "HUANCAVELICATAYACAJASANTIAGO DE TUCUMA",
-    "ubigeo": "090723"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "LAMBRAS",
-    "clave": "HUANCAVELICATAYACAJALAMBRAS",
-    "ubigeo": "090724"
-  },
-  {
-    "departamento": "HUANCAVELICA",
-    "provincia": "TAYACAJA",
-    "distrito": "COCHABAMBA",
-    "clave": "HUANCAVELICATAYACAJACOCHABAMBA",
-    "ubigeo": "090725"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "HUANUCO",
-    "clave": "HUANUCOHUANUCOHUANUCO",
-    "ubigeo": "100101"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "AMARILIS",
-    "clave": "HUANUCOHUANUCOAMARILIS",
-    "ubigeo": "100102"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "CHINCHAO",
-    "clave": "HUANUCOHUANUCOCHINCHAO",
-    "ubigeo": "100103"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "CHURUBAMBA",
-    "clave": "HUANUCOHUANUCOCHURUBAMBA",
-    "ubigeo": "100104"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "MARGOS",
-    "clave": "HUANUCOHUANUCOMARGOS",
-    "ubigeo": "100105"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "QUISQUI (KICHKI)",
-    "clave": "HUANUCOHUANUCOQUISQUI (KICHKI)",
-    "ubigeo": "100106"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "SAN FRANCISCO DE CAYRAN",
-    "clave": "HUANUCOHUANUCOSAN FRANCISCO DE CAYRAN",
-    "ubigeo": "100107"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "SAN PEDRO DE CHAULAN",
-    "clave": "HUANUCOHUANUCOSAN PEDRO DE CHAULAN",
-    "ubigeo": "100108"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "SANTA MARIA DEL VALLE",
-    "clave": "HUANUCOHUANUCOSANTA MARIA DEL VALLE",
-    "ubigeo": "100109"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "YARUMAYO",
-    "clave": "HUANUCOHUANUCOYARUMAYO",
-    "ubigeo": "100110"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "PILLCO MARCA",
-    "clave": "HUANUCOHUANUCOPILLCO MARCA",
-    "ubigeo": "100111"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "YACUS",
-    "clave": "HUANUCOHUANUCOYACUS",
-    "ubigeo": "100112"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUANUCO",
-    "distrito": "SAN PABLO DE PILLAO",
-    "clave": "HUANUCOHUANUCOSAN PABLO DE PILLAO",
-    "ubigeo": "100113"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "AMBO",
-    "clave": "HUANUCOAMBOAMBO",
-    "ubigeo": "100201"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "CAYNA",
-    "clave": "HUANUCOAMBOCAYNA",
-    "ubigeo": "100202"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "COLPAS",
-    "clave": "HUANUCOAMBOCOLPAS",
-    "ubigeo": "100203"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "CONCHAMARCA",
-    "clave": "HUANUCOAMBOCONCHAMARCA",
-    "ubigeo": "100204"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "HUACAR",
-    "clave": "HUANUCOAMBOHUACAR",
-    "ubigeo": "100205"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "SAN FRANCISCO",
-    "clave": "HUANUCOAMBOSAN FRANCISCO",
-    "ubigeo": "100206"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "SAN RAFAEL",
-    "clave": "HUANUCOAMBOSAN RAFAEL",
-    "ubigeo": "100207"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "AMBO",
-    "distrito": "TOMAY KICHWA",
-    "clave": "HUANUCOAMBOTOMAY KICHWA",
-    "ubigeo": "100208"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "LA UNION",
-    "clave": "HUANUCODOS DE MAYOLA UNION",
-    "ubigeo": "100301"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "CHUQUIS",
-    "clave": "HUANUCODOS DE MAYOCHUQUIS",
-    "ubigeo": "100307"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "MARIAS",
-    "clave": "HUANUCODOS DE MAYOMARIAS",
-    "ubigeo": "100311"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "PACHAS",
-    "clave": "HUANUCODOS DE MAYOPACHAS",
-    "ubigeo": "100313"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "QUIVILLA",
-    "clave": "HUANUCODOS DE MAYOQUIVILLA",
-    "ubigeo": "100316"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "RIPAN",
-    "clave": "HUANUCODOS DE MAYORIPAN",
-    "ubigeo": "100317"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "SHUNQUI",
-    "clave": "HUANUCODOS DE MAYOSHUNQUI",
-    "ubigeo": "100321"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "SILLAPATA",
-    "clave": "HUANUCODOS DE MAYOSILLAPATA",
-    "ubigeo": "100322"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "DOS DE MAYO",
-    "distrito": "YANAS",
-    "clave": "HUANUCODOS DE MAYOYANAS",
-    "ubigeo": "100323"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUACAYBAMBA",
-    "distrito": "HUACAYBAMBA",
-    "clave": "HUANUCOHUACAYBAMBAHUACAYBAMBA",
-    "ubigeo": "100401"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUACAYBAMBA",
-    "distrito": "CANCHABAMBA",
-    "clave": "HUANUCOHUACAYBAMBACANCHABAMBA",
-    "ubigeo": "100402"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUACAYBAMBA",
-    "distrito": "COCHABAMBA",
-    "clave": "HUANUCOHUACAYBAMBACOCHABAMBA",
-    "ubigeo": "100403"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUACAYBAMBA",
-    "distrito": "PINRA",
-    "clave": "HUANUCOHUACAYBAMBAPINRA",
-    "ubigeo": "100404"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "LLATA",
-    "clave": "HUANUCOHUAMALIESLLATA",
-    "ubigeo": "100501"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "ARANCAY",
-    "clave": "HUANUCOHUAMALIESARANCAY",
-    "ubigeo": "100502"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "CHAVIN DE PARIARCA",
-    "clave": "HUANUCOHUAMALIESCHAVIN DE PARIARCA",
-    "ubigeo": "100503"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "JACAS GRANDE",
-    "clave": "HUANUCOHUAMALIESJACAS GRANDE",
-    "ubigeo": "100504"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "JIRCAN",
-    "clave": "HUANUCOHUAMALIESJIRCAN",
-    "ubigeo": "100505"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "MIRAFLORES",
-    "clave": "HUANUCOHUAMALIESMIRAFLORES",
-    "ubigeo": "100506"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "MONZON",
-    "clave": "HUANUCOHUAMALIESMONZON",
-    "ubigeo": "100507"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "PUNCHAO",
-    "clave": "HUANUCOHUAMALIESPUNCHAO",
-    "ubigeo": "100508"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "PUÑOS",
-    "clave": "HUANUCOHUAMALIESPUÑOS",
-    "ubigeo": "100509"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "SINGA",
-    "clave": "HUANUCOHUAMALIESSINGA",
-    "ubigeo": "100510"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "HUAMALIES",
-    "distrito": "TANTAMAYO",
-    "clave": "HUANUCOHUAMALIESTANTAMAYO",
-    "ubigeo": "100511"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "RUPA-RUPA",
-    "clave": "HUANUCOLEONCIO PRADORUPA-RUPA",
-    "ubigeo": "100601"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "DANIEL ALOMIA ROBLES",
-    "clave": "HUANUCOLEONCIO PRADODANIEL ALOMIA ROBLES",
-    "ubigeo": "100602"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "HERMILIO VALDIZAN",
-    "clave": "HUANUCOLEONCIO PRADOHERMILIO VALDIZAN",
-    "ubigeo": "100603"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "JOSE CRESPO Y CASTILLO",
-    "clave": "HUANUCOLEONCIO PRADOJOSE CRESPO Y CASTILLO",
-    "ubigeo": "100604"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "LUYANDO",
-    "clave": "HUANUCOLEONCIO PRADOLUYANDO",
-    "ubigeo": "100605"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "MARIANO DAMASO BERAUN",
-    "clave": "HUANUCOLEONCIO PRADOMARIANO DAMASO BERAUN",
-    "ubigeo": "100606"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "PUCAYACU",
-    "clave": "HUANUCOLEONCIO PRADOPUCAYACU",
-    "ubigeo": "100607"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "CASTILLO GRANDE",
-    "clave": "HUANUCOLEONCIO PRADOCASTILLO GRANDE",
-    "ubigeo": "100608"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "PUEBLO NUEVO",
-    "clave": "HUANUCOLEONCIO PRADOPUEBLO NUEVO",
-    "ubigeo": "100609"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LEONCIO PRADO",
-    "distrito": "SANTO DOMINGO DE ANDA",
-    "clave": "HUANUCOLEONCIO PRADOSANTO DOMINGO DE ANDA",
-    "ubigeo": "100610"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "MARAÑON",
-    "distrito": "HUACRACHUCO",
-    "clave": "HUANUCOMARAÑONHUACRACHUCO",
-    "ubigeo": "100701"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "MARAÑON",
-    "distrito": "CHOLON",
-    "clave": "HUANUCOMARAÑONCHOLON",
-    "ubigeo": "100702"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "MARAÑON",
-    "distrito": "SAN BUENAVENTURA",
-    "clave": "HUANUCOMARAÑONSAN BUENAVENTURA",
-    "ubigeo": "100703"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "MARAÑON",
-    "distrito": "LA MORADA",
-    "clave": "HUANUCOMARAÑONLA MORADA",
-    "ubigeo": "100704"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "MARAÑON",
-    "distrito": "SANTA ROSA DE ALTO YANAJANCA",
-    "clave": "HUANUCOMARAÑONSANTA ROSA DE ALTO YANAJANCA",
-    "ubigeo": "100705"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PACHITEA",
-    "distrito": "PANAO",
-    "clave": "HUANUCOPACHITEAPANAO",
-    "ubigeo": "100801"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PACHITEA",
-    "distrito": "CHAGLLA",
-    "clave": "HUANUCOPACHITEACHAGLLA",
-    "ubigeo": "100802"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PACHITEA",
-    "distrito": "MOLINO",
-    "clave": "HUANUCOPACHITEAMOLINO",
-    "ubigeo": "100803"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PACHITEA",
-    "distrito": "UMARI",
-    "clave": "HUANUCOPACHITEAUMARI",
-    "ubigeo": "100804"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PUERTO INCA",
-    "distrito": "PUERTO INCA",
-    "clave": "HUANUCOPUERTO INCAPUERTO INCA",
-    "ubigeo": "100901"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PUERTO INCA",
-    "distrito": "CODO DEL POZUZO",
-    "clave": "HUANUCOPUERTO INCACODO DEL POZUZO",
-    "ubigeo": "100902"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PUERTO INCA",
-    "distrito": "HONORIA",
-    "clave": "HUANUCOPUERTO INCAHONORIA",
-    "ubigeo": "100903"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PUERTO INCA",
-    "distrito": "TOURNAVISTA",
-    "clave": "HUANUCOPUERTO INCATOURNAVISTA",
-    "ubigeo": "100904"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "PUERTO INCA",
-    "distrito": "YUYAPICHIS",
-    "clave": "HUANUCOPUERTO INCAYUYAPICHIS",
-    "ubigeo": "100905"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "JESUS",
-    "clave": "HUANUCOLAURICOCHAJESUS",
-    "ubigeo": "101001"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "BAÑOS",
-    "clave": "HUANUCOLAURICOCHABAÑOS",
-    "ubigeo": "101002"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "JIVIA",
-    "clave": "HUANUCOLAURICOCHAJIVIA",
-    "ubigeo": "101003"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "QUEROPALCA",
-    "clave": "HUANUCOLAURICOCHAQUEROPALCA",
-    "ubigeo": "101004"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "RONDOS",
-    "clave": "HUANUCOLAURICOCHARONDOS",
-    "ubigeo": "101005"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "SAN FRANCISCO DE ASIS",
-    "clave": "HUANUCOLAURICOCHASAN FRANCISCO DE ASIS",
-    "ubigeo": "101006"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "LAURICOCHA",
-    "distrito": "SAN MIGUEL DE CAURI",
-    "clave": "HUANUCOLAURICOCHASAN MIGUEL DE CAURI",
-    "ubigeo": "101007"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "CHAVINILLO",
-    "clave": "HUANUCOYAROWILCACHAVINILLO",
-    "ubigeo": "101101"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "CAHUAC",
-    "clave": "HUANUCOYAROWILCACAHUAC",
-    "ubigeo": "101102"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "CHACABAMBA",
-    "clave": "HUANUCOYAROWILCACHACABAMBA",
-    "ubigeo": "101103"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "APARICIO POMARES",
-    "clave": "HUANUCOYAROWILCAAPARICIO POMARES",
-    "ubigeo": "101104"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "JACAS CHICO",
-    "clave": "HUANUCOYAROWILCAJACAS CHICO",
-    "ubigeo": "101105"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "OBAS",
-    "clave": "HUANUCOYAROWILCAOBAS",
-    "ubigeo": "101106"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "PAMPAMARCA",
-    "clave": "HUANUCOYAROWILCAPAMPAMARCA",
-    "ubigeo": "101107"
-  },
-  {
-    "departamento": "HUANUCO",
-    "provincia": "YAROWILCA",
-    "distrito": "CHORAS",
-    "clave": "HUANUCOYAROWILCACHORAS",
-    "ubigeo": "101108"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "ICA",
-    "clave": "ICAICAICA",
-    "ubigeo": "110101"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "LA TINGUIÑA",
-    "clave": "ICAICALA TINGUIÑA",
-    "ubigeo": "110102"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "LOS AQUIJES",
-    "clave": "ICAICALOS AQUIJES",
-    "ubigeo": "110103"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "OCUCAJE",
-    "clave": "ICAICAOCUCAJE",
-    "ubigeo": "110104"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "PACHACUTEC",
-    "clave": "ICAICAPACHACUTEC",
-    "ubigeo": "110105"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "PARCONA",
-    "clave": "ICAICAPARCONA",
-    "ubigeo": "110106"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "PUEBLO NUEVO",
-    "clave": "ICAICAPUEBLO NUEVO",
-    "ubigeo": "110107"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "SALAS",
-    "clave": "ICAICASALAS",
-    "ubigeo": "110108"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "SAN JOSE DE LOS MOLINOS",
-    "clave": "ICAICASAN JOSE DE LOS MOLINOS",
-    "ubigeo": "110109"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "SAN JUAN BAUTISTA",
-    "clave": "ICAICASAN JUAN BAUTISTA",
-    "ubigeo": "110110"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "SANTIAGO",
-    "clave": "ICAICASANTIAGO",
-    "ubigeo": "110111"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "SUBTANJALLA",
-    "clave": "ICAICASUBTANJALLA",
-    "ubigeo": "110112"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "TATE",
-    "clave": "ICAICATATE",
-    "ubigeo": "110113"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "ICA",
-    "distrito": "YAUCA DEL ROSARIO",
-    "clave": "ICAICAYAUCA DEL ROSARIO",
-    "ubigeo": "110114"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "CHINCHA ALTA",
-    "clave": "ICACHINCHACHINCHA ALTA",
-    "ubigeo": "110201"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "ALTO LARAN",
-    "clave": "ICACHINCHAALTO LARAN",
-    "ubigeo": "110202"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "CHAVIN",
-    "clave": "ICACHINCHACHAVIN",
-    "ubigeo": "110203"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "CHINCHA BAJA",
-    "clave": "ICACHINCHACHINCHA BAJA",
-    "ubigeo": "110204"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "EL CARMEN",
-    "clave": "ICACHINCHAEL CARMEN",
-    "ubigeo": "110205"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "GROCIO PRADO",
-    "clave": "ICACHINCHAGROCIO PRADO",
-    "ubigeo": "110206"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "PUEBLO NUEVO",
-    "clave": "ICACHINCHAPUEBLO NUEVO",
-    "ubigeo": "110207"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "SAN JUAN DE YANAC",
-    "clave": "ICACHINCHASAN JUAN DE YANAC",
-    "ubigeo": "110208"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "SAN PEDRO DE HUACARPANA",
-    "clave": "ICACHINCHASAN PEDRO DE HUACARPANA",
-    "ubigeo": "110209"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "SUNAMPE",
-    "clave": "ICACHINCHASUNAMPE",
-    "ubigeo": "110210"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "CHINCHA",
-    "distrito": "TAMBO DE MORA",
-    "clave": "ICACHINCHATAMBO DE MORA",
-    "ubigeo": "110211"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "NASCA",
-    "distrito": "NASCA",
-    "clave": "ICANASCANASCA",
-    "ubigeo": "110301"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "NASCA",
-    "distrito": "CHANGUILLO",
-    "clave": "ICANASCACHANGUILLO",
-    "ubigeo": "110302"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "NASCA",
-    "distrito": "EL INGENIO",
-    "clave": "ICANASCAEL INGENIO",
-    "ubigeo": "110303"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "NASCA",
-    "distrito": "MARCONA",
-    "clave": "ICANASCAMARCONA",
-    "ubigeo": "110304"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "NASCA",
-    "distrito": "VISTA ALEGRE",
-    "clave": "ICANASCAVISTA ALEGRE",
-    "ubigeo": "110305"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PALPA",
-    "distrito": "PALPA",
-    "clave": "ICAPALPAPALPA",
-    "ubigeo": "110401"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PALPA",
-    "distrito": "LLIPATA",
-    "clave": "ICAPALPALLIPATA",
-    "ubigeo": "110402"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PALPA",
-    "distrito": "RIO GRANDE",
-    "clave": "ICAPALPARIO GRANDE",
-    "ubigeo": "110403"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PALPA",
-    "distrito": "SANTA CRUZ",
-    "clave": "ICAPALPASANTA CRUZ",
-    "ubigeo": "110404"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PALPA",
-    "distrito": "TIBILLO",
-    "clave": "ICAPALPATIBILLO",
-    "ubigeo": "110405"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "PISCO",
-    "clave": "ICAPISCOPISCO",
-    "ubigeo": "110501"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "HUANCANO",
-    "clave": "ICAPISCOHUANCANO",
-    "ubigeo": "110502"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "HUMAY",
-    "clave": "ICAPISCOHUMAY",
-    "ubigeo": "110503"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "INDEPENDENCIA",
-    "clave": "ICAPISCOINDEPENDENCIA",
-    "ubigeo": "110504"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "PARACAS",
-    "clave": "ICAPISCOPARACAS",
-    "ubigeo": "110505"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "SAN ANDRES",
-    "clave": "ICAPISCOSAN ANDRES",
-    "ubigeo": "110506"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "SAN CLEMENTE",
-    "clave": "ICAPISCOSAN CLEMENTE",
-    "ubigeo": "110507"
-  },
-  {
-    "departamento": "ICA",
-    "provincia": "PISCO",
-    "distrito": "TUPAC AMARU INCA",
-    "clave": "ICAPISCOTUPAC AMARU INCA",
-    "ubigeo": "110508"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUANCAYO",
-    "clave": "JUNINHUANCAYOHUANCAYO",
-    "ubigeo": "120101"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CARHUACALLANGA",
-    "clave": "JUNINHUANCAYOCARHUACALLANGA",
-    "ubigeo": "120104"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CHACAPAMPA",
-    "clave": "JUNINHUANCAYOCHACAPAMPA",
-    "ubigeo": "120105"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CHICCHE",
-    "clave": "JUNINHUANCAYOCHICCHE",
-    "ubigeo": "120106"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CHILCA",
-    "clave": "JUNINHUANCAYOCHILCA",
-    "ubigeo": "120107"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CHONGOS ALTO",
-    "clave": "JUNINHUANCAYOCHONGOS ALTO",
-    "ubigeo": "120108"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CHUPURO",
-    "clave": "JUNINHUANCAYOCHUPURO",
-    "ubigeo": "120111"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "COLCA",
-    "clave": "JUNINHUANCAYOCOLCA",
-    "ubigeo": "120112"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "CULLHUAS",
-    "clave": "JUNINHUANCAYOCULLHUAS",
-    "ubigeo": "120113"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "EL TAMBO",
-    "clave": "JUNINHUANCAYOEL TAMBO",
-    "ubigeo": "120114"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUACRAPUQUIO",
-    "clave": "JUNINHUANCAYOHUACRAPUQUIO",
-    "ubigeo": "120116"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUALHUAS",
-    "clave": "JUNINHUANCAYOHUALHUAS",
-    "ubigeo": "120117"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUANCAN",
-    "clave": "JUNINHUANCAYOHUANCAN",
-    "ubigeo": "120119"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUASICANCHA",
-    "clave": "JUNINHUANCAYOHUASICANCHA",
-    "ubigeo": "120120"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "HUAYUCACHI",
-    "clave": "JUNINHUANCAYOHUAYUCACHI",
-    "ubigeo": "120121"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "INGENIO",
-    "clave": "JUNINHUANCAYOINGENIO",
-    "ubigeo": "120122"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "PARIAHUANCA",
-    "clave": "JUNINHUANCAYOPARIAHUANCA",
-    "ubigeo": "120124"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "PILCOMAYO",
-    "clave": "JUNINHUANCAYOPILCOMAYO",
-    "ubigeo": "120125"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "PUCARA",
-    "clave": "JUNINHUANCAYOPUCARA",
-    "ubigeo": "120126"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "QUICHUAY",
-    "clave": "JUNINHUANCAYOQUICHUAY",
-    "ubigeo": "120127"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "QUILCAS",
-    "clave": "JUNINHUANCAYOQUILCAS",
-    "ubigeo": "120128"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SAN AGUSTIN",
-    "clave": "JUNINHUANCAYOSAN AGUSTIN",
-    "ubigeo": "120129"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SAN JERONIMO DE TUNAN",
-    "clave": "JUNINHUANCAYOSAN JERONIMO DE TUNAN",
-    "ubigeo": "120130"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SAÑO",
-    "clave": "JUNINHUANCAYOSAÑO",
-    "ubigeo": "120132"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SAPALLANGA",
-    "clave": "JUNINHUANCAYOSAPALLANGA",
-    "ubigeo": "120133"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SICAYA",
-    "clave": "JUNINHUANCAYOSICAYA",
-    "ubigeo": "120134"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "SANTO DOMINGO DE ACOBAMBA",
-    "clave": "JUNINHUANCAYOSANTO DOMINGO DE ACOBAMBA",
-    "ubigeo": "120135"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "HUANCAYO",
-    "distrito": "VIQUES",
-    "clave": "JUNINHUANCAYOVIQUES",
-    "ubigeo": "120136"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "CONCEPCION",
-    "clave": "JUNINCONCEPCIONCONCEPCION",
-    "ubigeo": "120201"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "ACO",
-    "clave": "JUNINCONCEPCIONACO",
-    "ubigeo": "120202"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "ANDAMARCA",
-    "clave": "JUNINCONCEPCIONANDAMARCA",
-    "ubigeo": "120203"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "CHAMBARA",
-    "clave": "JUNINCONCEPCIONCHAMBARA",
-    "ubigeo": "120204"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "COCHAS",
-    "clave": "JUNINCONCEPCIONCOCHAS",
-    "ubigeo": "120205"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "COMAS",
-    "clave": "JUNINCONCEPCIONCOMAS",
-    "ubigeo": "120206"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "HEROINAS TOLEDO",
-    "clave": "JUNINCONCEPCIONHEROINAS TOLEDO",
-    "ubigeo": "120207"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "MANZANARES",
-    "clave": "JUNINCONCEPCIONMANZANARES",
-    "ubigeo": "120208"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "MARISCAL CASTILLA",
-    "clave": "JUNINCONCEPCIONMARISCAL CASTILLA",
-    "ubigeo": "120209"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "MATAHUASI",
-    "clave": "JUNINCONCEPCIONMATAHUASI",
-    "ubigeo": "120210"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "MITO",
-    "clave": "JUNINCONCEPCIONMITO",
-    "ubigeo": "120211"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "NUEVE DE JULIO",
-    "clave": "JUNINCONCEPCIONNUEVE DE JULIO",
-    "ubigeo": "120212"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "ORCOTUNA",
-    "clave": "JUNINCONCEPCIONORCOTUNA",
-    "ubigeo": "120213"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "SAN JOSE DE QUERO",
-    "clave": "JUNINCONCEPCIONSAN JOSE DE QUERO",
-    "ubigeo": "120214"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CONCEPCION",
-    "distrito": "SANTA ROSA DE OCOPA",
-    "clave": "JUNINCONCEPCIONSANTA ROSA DE OCOPA",
-    "ubigeo": "120215"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "CHANCHAMAYO",
-    "clave": "JUNINCHANCHAMAYOCHANCHAMAYO",
-    "ubigeo": "120301"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "PERENE",
-    "clave": "JUNINCHANCHAMAYOPERENE",
-    "ubigeo": "120302"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "PICHANAQUI",
-    "clave": "JUNINCHANCHAMAYOPICHANAQUI",
-    "ubigeo": "120303"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "SAN LUIS DE SHUARO",
-    "clave": "JUNINCHANCHAMAYOSAN LUIS DE SHUARO",
-    "ubigeo": "120304"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "SAN RAMON",
-    "clave": "JUNINCHANCHAMAYOSAN RAMON",
-    "ubigeo": "120305"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHANCHAMAYO",
-    "distrito": "VITOC",
-    "clave": "JUNINCHANCHAMAYOVITOC",
-    "ubigeo": "120306"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "JAUJA",
-    "clave": "JUNINJAUJAJAUJA",
-    "ubigeo": "120401"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "ACOLLA",
-    "clave": "JUNINJAUJAACOLLA",
-    "ubigeo": "120402"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "APATA",
-    "clave": "JUNINJAUJAAPATA",
-    "ubigeo": "120403"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "ATAURA",
-    "clave": "JUNINJAUJAATAURA",
-    "ubigeo": "120404"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "CANCHAYLLO",
-    "clave": "JUNINJAUJACANCHAYLLO",
-    "ubigeo": "120405"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "CURICACA",
-    "clave": "JUNINJAUJACURICACA",
-    "ubigeo": "120406"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "EL MANTARO",
-    "clave": "JUNINJAUJAEL MANTARO",
-    "ubigeo": "120407"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "HUAMALI",
-    "clave": "JUNINJAUJAHUAMALI",
-    "ubigeo": "120408"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "HUARIPAMPA",
-    "clave": "JUNINJAUJAHUARIPAMPA",
-    "ubigeo": "120409"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "HUERTAS",
-    "clave": "JUNINJAUJAHUERTAS",
-    "ubigeo": "120410"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "JANJAILLO",
-    "clave": "JUNINJAUJAJANJAILLO",
-    "ubigeo": "120411"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "JULCAN",
-    "clave": "JUNINJAUJAJULCAN",
-    "ubigeo": "120412"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "LEONOR ORDOÑEZ",
-    "clave": "JUNINJAUJALEONOR ORDOÑEZ",
-    "ubigeo": "120413"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "LLOCLLAPAMPA",
-    "clave": "JUNINJAUJALLOCLLAPAMPA",
-    "ubigeo": "120414"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MARCO",
-    "clave": "JUNINJAUJAMARCO",
-    "ubigeo": "120415"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MASMA",
-    "clave": "JUNINJAUJAMASMA",
-    "ubigeo": "120416"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MASMA CHICCHE",
-    "clave": "JUNINJAUJAMASMA CHICCHE",
-    "ubigeo": "120417"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MOLINOS",
-    "clave": "JUNINJAUJAMOLINOS",
-    "ubigeo": "120418"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MONOBAMBA",
-    "clave": "JUNINJAUJAMONOBAMBA",
-    "ubigeo": "120419"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MUQUI",
-    "clave": "JUNINJAUJAMUQUI",
-    "ubigeo": "120420"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "MUQUIYAUYO",
-    "clave": "JUNINJAUJAMUQUIYAUYO",
-    "ubigeo": "120421"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "PACA",
-    "clave": "JUNINJAUJAPACA",
-    "ubigeo": "120422"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "PACCHA",
-    "clave": "JUNINJAUJAPACCHA",
-    "ubigeo": "120423"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "PANCAN",
-    "clave": "JUNINJAUJAPANCAN",
-    "ubigeo": "120424"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "PARCO",
-    "clave": "JUNINJAUJAPARCO",
-    "ubigeo": "120425"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "POMACANCHA",
-    "clave": "JUNINJAUJAPOMACANCHA",
-    "ubigeo": "120426"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "RICRAN",
-    "clave": "JUNINJAUJARICRAN",
-    "ubigeo": "120427"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "SAN LORENZO",
-    "clave": "JUNINJAUJASAN LORENZO",
-    "ubigeo": "120428"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "SAN PEDRO DE CHUNAN",
-    "clave": "JUNINJAUJASAN PEDRO DE CHUNAN",
-    "ubigeo": "120429"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "SAUSA",
-    "clave": "JUNINJAUJASAUSA",
-    "ubigeo": "120430"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "SINCOS",
-    "clave": "JUNINJAUJASINCOS",
-    "ubigeo": "120431"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "TUNAN MARCA",
-    "clave": "JUNINJAUJATUNAN MARCA",
-    "ubigeo": "120432"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "YAULI",
-    "clave": "JUNINJAUJAYAULI",
-    "ubigeo": "120433"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JAUJA",
-    "distrito": "YAUYOS",
-    "clave": "JUNINJAUJAYAUYOS",
-    "ubigeo": "120434"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JUNIN",
-    "distrito": "JUNIN",
-    "clave": "JUNINJUNINJUNIN",
-    "ubigeo": "120501"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JUNIN",
-    "distrito": "CARHUAMAYO",
-    "clave": "JUNINJUNINCARHUAMAYO",
-    "ubigeo": "120502"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JUNIN",
-    "distrito": "ONDORES",
-    "clave": "JUNINJUNINONDORES",
-    "ubigeo": "120503"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "JUNIN",
-    "distrito": "ULCUMAYO",
-    "clave": "JUNINJUNINULCUMAYO",
-    "ubigeo": "120504"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "SATIPO",
-    "clave": "JUNINSATIPOSATIPO",
-    "ubigeo": "120601"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "COVIRIALI",
-    "clave": "JUNINSATIPOCOVIRIALI",
-    "ubigeo": "120602"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "LLAYLLA",
-    "clave": "JUNINSATIPOLLAYLLA",
-    "ubigeo": "120603"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "MAZAMARI",
-    "clave": "JUNINSATIPOMAZAMARI",
-    "ubigeo": "120604"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "PAMPA HERMOSA",
-    "clave": "JUNINSATIPOPAMPA HERMOSA",
-    "ubigeo": "120605"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "PANGOA",
-    "clave": "JUNINSATIPOPANGOA",
-    "ubigeo": "120606"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "RIO NEGRO",
-    "clave": "JUNINSATIPORIO NEGRO",
-    "ubigeo": "120607"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "RIO TAMBO",
-    "clave": "JUNINSATIPORIO TAMBO",
-    "ubigeo": "120608"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "SATIPO",
-    "distrito": "VIZCATÁN DEL ENE",
-    "clave": "JUNINSATIPOVIZCATÁN DEL ENE",
-    "ubigeo": "120609"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "TARMA",
-    "clave": "JUNINTARMATARMA",
-    "ubigeo": "120701"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "ACOBAMBA",
-    "clave": "JUNINTARMAACOBAMBA",
-    "ubigeo": "120702"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "HUARICOLCA",
-    "clave": "JUNINTARMAHUARICOLCA",
-    "ubigeo": "120703"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "HUASAHUASI",
-    "clave": "JUNINTARMAHUASAHUASI",
-    "ubigeo": "120704"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "LA UNION",
-    "clave": "JUNINTARMALA UNION",
-    "ubigeo": "120705"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "PALCA",
-    "clave": "JUNINTARMAPALCA",
-    "ubigeo": "120706"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "PALCAMAYO",
-    "clave": "JUNINTARMAPALCAMAYO",
-    "ubigeo": "120707"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "SAN PEDRO DE CAJAS",
-    "clave": "JUNINTARMASAN PEDRO DE CAJAS",
-    "ubigeo": "120708"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "TARMA",
-    "distrito": "TAPO",
-    "clave": "JUNINTARMATAPO",
-    "ubigeo": "120709"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "LA OROYA",
-    "clave": "JUNINYAULILA OROYA",
-    "ubigeo": "120801"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "CHACAPALPA",
-    "clave": "JUNINYAULICHACAPALPA",
-    "ubigeo": "120802"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "HUAY-HUAY",
-    "clave": "JUNINYAULIHUAY-HUAY",
-    "ubigeo": "120803"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "MARCAPOMACOCHA",
-    "clave": "JUNINYAULIMARCAPOMACOCHA",
-    "ubigeo": "120804"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "MOROCOCHA",
-    "clave": "JUNINYAULIMOROCOCHA",
-    "ubigeo": "120805"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "PACCHA",
-    "clave": "JUNINYAULIPACCHA",
-    "ubigeo": "120806"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "SANTA BARBARA DE CARHUACAYAN",
-    "clave": "JUNINYAULISANTA BARBARA DE CARHUACAYAN",
-    "ubigeo": "120807"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "SANTA ROSA DE SACCO",
-    "clave": "JUNINYAULISANTA ROSA DE SACCO",
-    "ubigeo": "120808"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "SUITUCANCHA",
-    "clave": "JUNINYAULISUITUCANCHA",
-    "ubigeo": "120809"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "YAULI",
-    "distrito": "YAULI",
-    "clave": "JUNINYAULIYAULI",
-    "ubigeo": "120810"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "CHUPACA",
-    "clave": "JUNINCHUPACACHUPACA",
-    "ubigeo": "120901"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "AHUAC",
-    "clave": "JUNINCHUPACAAHUAC",
-    "ubigeo": "120902"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "CHONGOS BAJO",
-    "clave": "JUNINCHUPACACHONGOS BAJO",
-    "ubigeo": "120903"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "HUACHAC",
-    "clave": "JUNINCHUPACAHUACHAC",
-    "ubigeo": "120904"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "HUAMANCACA CHICO",
-    "clave": "JUNINCHUPACAHUAMANCACA CHICO",
-    "ubigeo": "120905"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "SAN JUAN DE ISCOS",
-    "clave": "JUNINCHUPACASAN JUAN DE ISCOS",
-    "ubigeo": "120906"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "SAN JUAN DE JARPA",
-    "clave": "JUNINCHUPACASAN JUAN DE JARPA",
-    "ubigeo": "120907"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "TRES DE DICIEMBRE",
-    "clave": "JUNINCHUPACATRES DE DICIEMBRE",
-    "ubigeo": "120908"
-  },
-  {
-    "departamento": "JUNIN",
-    "provincia": "CHUPACA",
-    "distrito": "YANACANCHA",
-    "clave": "JUNINCHUPACAYANACANCHA",
-    "ubigeo": "120909"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "TRUJILLO",
-    "clave": "LA LIBERTADTRUJILLOTRUJILLO",
-    "ubigeo": "130101"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "EL PORVENIR",
-    "clave": "LA LIBERTADTRUJILLOEL PORVENIR",
-    "ubigeo": "130102"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "FLORENCIA DE MORA",
-    "clave": "LA LIBERTADTRUJILLOFLORENCIA DE MORA",
-    "ubigeo": "130103"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "HUANCHACO",
-    "clave": "LA LIBERTADTRUJILLOHUANCHACO",
-    "ubigeo": "130104"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "LA ESPERANZA",
-    "clave": "LA LIBERTADTRUJILLOLA ESPERANZA",
-    "ubigeo": "130105"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "LAREDO",
-    "clave": "LA LIBERTADTRUJILLOLAREDO",
-    "ubigeo": "130106"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "MOCHE",
-    "clave": "LA LIBERTADTRUJILLOMOCHE",
-    "ubigeo": "130107"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "POROTO",
-    "clave": "LA LIBERTADTRUJILLOPOROTO",
-    "ubigeo": "130108"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "SALAVERRY",
-    "clave": "LA LIBERTADTRUJILLOSALAVERRY",
-    "ubigeo": "130109"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "SIMBAL",
-    "clave": "LA LIBERTADTRUJILLOSIMBAL",
-    "ubigeo": "130110"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "VICTOR LARCO HERRERA",
-    "clave": "LA LIBERTADTRUJILLOVICTOR LARCO HERRERA",
-    "ubigeo": "130111"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "TRUJILLO",
-    "distrito": "ALTO TRUJILLO",
-    "clave": "LA LIBERTADTRUJILLOALTO TRUJILLO",
-    "ubigeo": "130112"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "ASCOPE",
-    "clave": "LA LIBERTADASCOPEASCOPE",
-    "ubigeo": "130201"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "CHICAMA",
-    "clave": "LA LIBERTADASCOPECHICAMA",
-    "ubigeo": "130202"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "CHOCOPE",
-    "clave": "LA LIBERTADASCOPECHOCOPE",
-    "ubigeo": "130203"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "MAGDALENA DE CAO",
-    "clave": "LA LIBERTADASCOPEMAGDALENA DE CAO",
-    "ubigeo": "130204"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "PAIJAN",
-    "clave": "LA LIBERTADASCOPEPAIJAN",
-    "ubigeo": "130205"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "RAZURI",
-    "clave": "LA LIBERTADASCOPERAZURI",
-    "ubigeo": "130206"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "SANTIAGO DE CAO",
-    "clave": "LA LIBERTADASCOPESANTIAGO DE CAO",
-    "ubigeo": "130207"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "ASCOPE",
-    "distrito": "CASA GRANDE",
-    "clave": "LA LIBERTADASCOPECASA GRANDE",
-    "ubigeo": "130208"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "BOLIVAR",
-    "clave": "LA LIBERTADBOLIVARBOLIVAR",
-    "ubigeo": "130301"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "BAMBAMARCA",
-    "clave": "LA LIBERTADBOLIVARBAMBAMARCA",
-    "ubigeo": "130302"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "CONDORMARCA",
-    "clave": "LA LIBERTADBOLIVARCONDORMARCA",
-    "ubigeo": "130303"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "LONGOTEA",
-    "clave": "LA LIBERTADBOLIVARLONGOTEA",
-    "ubigeo": "130304"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "UCHUMARCA",
-    "clave": "LA LIBERTADBOLIVARUCHUMARCA",
-    "ubigeo": "130305"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "BOLIVAR",
-    "distrito": "UCUNCHA",
-    "clave": "LA LIBERTADBOLIVARUCUNCHA",
-    "ubigeo": "130306"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "CHEPEN",
-    "distrito": "CHEPEN",
-    "clave": "LA LIBERTADCHEPENCHEPEN",
-    "ubigeo": "130401"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "CHEPEN",
-    "distrito": "PACANGA",
-    "clave": "LA LIBERTADCHEPENPACANGA",
-    "ubigeo": "130402"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "CHEPEN",
-    "distrito": "PUEBLO NUEVO",
-    "clave": "LA LIBERTADCHEPENPUEBLO NUEVO",
-    "ubigeo": "130403"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "JULCAN",
-    "distrito": "JULCAN",
-    "clave": "LA LIBERTADJULCANJULCAN",
-    "ubigeo": "130501"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "JULCAN",
-    "distrito": "CALAMARCA",
-    "clave": "LA LIBERTADJULCANCALAMARCA",
-    "ubigeo": "130502"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "JULCAN",
-    "distrito": "CARABAMBA",
-    "clave": "LA LIBERTADJULCANCARABAMBA",
-    "ubigeo": "130503"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "JULCAN",
-    "distrito": "HUASO",
-    "clave": "LA LIBERTADJULCANHUASO",
-    "ubigeo": "130504"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "OTUZCO",
-    "clave": "LA LIBERTADOTUZCOOTUZCO",
-    "ubigeo": "130601"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "AGALLPAMPA",
-    "clave": "LA LIBERTADOTUZCOAGALLPAMPA",
-    "ubigeo": "130602"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "CHARAT",
-    "clave": "LA LIBERTADOTUZCOCHARAT",
-    "ubigeo": "130604"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "HUARANCHAL",
-    "clave": "LA LIBERTADOTUZCOHUARANCHAL",
-    "ubigeo": "130605"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "LA CUESTA",
-    "clave": "LA LIBERTADOTUZCOLA CUESTA",
-    "ubigeo": "130606"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "MACHE",
-    "clave": "LA LIBERTADOTUZCOMACHE",
-    "ubigeo": "130608"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "PARANDAY",
-    "clave": "LA LIBERTADOTUZCOPARANDAY",
-    "ubigeo": "130610"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "SALPO",
-    "clave": "LA LIBERTADOTUZCOSALPO",
-    "ubigeo": "130611"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "SINSICAP",
-    "clave": "LA LIBERTADOTUZCOSINSICAP",
-    "ubigeo": "130613"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "OTUZCO",
-    "distrito": "USQUIL",
-    "clave": "LA LIBERTADOTUZCOUSQUIL",
-    "ubigeo": "130614"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PACASMAYO",
-    "distrito": "SAN PEDRO DE LLOC",
-    "clave": "LA LIBERTADPACASMAYOSAN PEDRO DE LLOC",
-    "ubigeo": "130701"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PACASMAYO",
-    "distrito": "GUADALUPE",
-    "clave": "LA LIBERTADPACASMAYOGUADALUPE",
-    "ubigeo": "130702"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PACASMAYO",
-    "distrito": "JEQUETEPEQUE",
-    "clave": "LA LIBERTADPACASMAYOJEQUETEPEQUE",
-    "ubigeo": "130703"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PACASMAYO",
-    "distrito": "PACASMAYO",
-    "clave": "LA LIBERTADPACASMAYOPACASMAYO",
-    "ubigeo": "130704"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PACASMAYO",
-    "distrito": "SAN JOSE",
-    "clave": "LA LIBERTADPACASMAYOSAN JOSE",
-    "ubigeo": "130705"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "TAYABAMBA",
-    "clave": "LA LIBERTADPATAZTAYABAMBA",
-    "ubigeo": "130801"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "BULDIBUYO",
-    "clave": "LA LIBERTADPATAZBULDIBUYO",
-    "ubigeo": "130802"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "CHILLIA",
-    "clave": "LA LIBERTADPATAZCHILLIA",
-    "ubigeo": "130803"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "HUANCASPATA",
-    "clave": "LA LIBERTADPATAZHUANCASPATA",
-    "ubigeo": "130804"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "HUAYLILLAS",
-    "clave": "LA LIBERTADPATAZHUAYLILLAS",
-    "ubigeo": "130805"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "HUAYO",
-    "clave": "LA LIBERTADPATAZHUAYO",
-    "ubigeo": "130806"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "ONGON",
-    "clave": "LA LIBERTADPATAZONGON",
-    "ubigeo": "130807"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "PARCOY",
-    "clave": "LA LIBERTADPATAZPARCOY",
-    "ubigeo": "130808"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "PATAZ",
-    "clave": "LA LIBERTADPATAZPATAZ",
-    "ubigeo": "130809"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "PIAS",
-    "clave": "LA LIBERTADPATAZPIAS",
-    "ubigeo": "130810"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "SANTIAGO DE CHALLAS",
-    "clave": "LA LIBERTADPATAZSANTIAGO DE CHALLAS",
-    "ubigeo": "130811"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "TAURIJA",
-    "clave": "LA LIBERTADPATAZTAURIJA",
-    "ubigeo": "130812"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "PATAZ",
-    "distrito": "URPAY",
-    "clave": "LA LIBERTADPATAZURPAY",
-    "ubigeo": "130813"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "HUAMACHUCO",
-    "clave": "LA LIBERTADSANCHEZ CARRIONHUAMACHUCO",
-    "ubigeo": "130901"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "CHUGAY",
-    "clave": "LA LIBERTADSANCHEZ CARRIONCHUGAY",
-    "ubigeo": "130902"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "COCHORCO",
-    "clave": "LA LIBERTADSANCHEZ CARRIONCOCHORCO",
-    "ubigeo": "130903"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "CURGOS",
-    "clave": "LA LIBERTADSANCHEZ CARRIONCURGOS",
-    "ubigeo": "130904"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "MARCABAL",
-    "clave": "LA LIBERTADSANCHEZ CARRIONMARCABAL",
-    "ubigeo": "130905"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "SANAGORAN",
-    "clave": "LA LIBERTADSANCHEZ CARRIONSANAGORAN",
-    "ubigeo": "130906"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "SARIN",
-    "clave": "LA LIBERTADSANCHEZ CARRIONSARIN",
-    "ubigeo": "130907"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANCHEZ CARRION",
-    "distrito": "SARTIMBAMBA",
-    "clave": "LA LIBERTADSANCHEZ CARRIONSARTIMBAMBA",
-    "ubigeo": "130908"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "SANTIAGO DE CHUCO",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOSANTIAGO DE CHUCO",
-    "ubigeo": "131001"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "ANGASMARCA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOANGASMARCA",
-    "ubigeo": "131002"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "CACHICADAN",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOCACHICADAN",
-    "ubigeo": "131003"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "MOLLEBAMBA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOMOLLEBAMBA",
-    "ubigeo": "131004"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "MOLLEPATA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOMOLLEPATA",
-    "ubigeo": "131005"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "QUIRUVILCA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOQUIRUVILCA",
-    "ubigeo": "131006"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "SANTA CRUZ DE CHUCA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOSANTA CRUZ DE CHUCA",
-    "ubigeo": "131007"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "SANTIAGO DE CHUCO",
-    "distrito": "SITABAMBA",
-    "clave": "LA LIBERTADSANTIAGO DE CHUCOSITABAMBA",
-    "ubigeo": "131008"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "GRAN CHIMU",
-    "distrito": "CASCAS",
-    "clave": "LA LIBERTADGRAN CHIMUCASCAS",
-    "ubigeo": "131101"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "GRAN CHIMU",
-    "distrito": "LUCMA",
-    "clave": "LA LIBERTADGRAN CHIMULUCMA",
-    "ubigeo": "131102"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "GRAN CHIMU",
-    "distrito": "MARMOT",
-    "clave": "LA LIBERTADGRAN CHIMUMARMOT",
-    "ubigeo": "131103"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "GRAN CHIMU",
-    "distrito": "SAYAPULLO",
-    "clave": "LA LIBERTADGRAN CHIMUSAYAPULLO",
-    "ubigeo": "131104"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "VIRU",
-    "distrito": "VIRU",
-    "clave": "LA LIBERTADVIRUVIRU",
-    "ubigeo": "131201"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "VIRU",
-    "distrito": "CHAO",
-    "clave": "LA LIBERTADVIRUCHAO",
-    "ubigeo": "131202"
-  },
-  {
-    "departamento": "LA LIBERTAD",
-    "provincia": "VIRU",
-    "distrito": "GUADALUPITO",
-    "clave": "LA LIBERTADVIRUGUADALUPITO",
-    "ubigeo": "131203"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "CHICLAYO",
-    "clave": "LAMBAYEQUECHICLAYOCHICLAYO",
-    "ubigeo": "140101"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "CHONGOYAPE",
-    "clave": "LAMBAYEQUECHICLAYOCHONGOYAPE",
-    "ubigeo": "140102"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "ETEN",
-    "clave": "LAMBAYEQUECHICLAYOETEN",
-    "ubigeo": "140103"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "ETEN PUERTO",
-    "clave": "LAMBAYEQUECHICLAYOETEN PUERTO",
-    "ubigeo": "140104"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "JOSE LEONARDO ORTIZ",
-    "clave": "LAMBAYEQUECHICLAYOJOSE LEONARDO ORTIZ",
-    "ubigeo": "140105"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "LA VICTORIA",
-    "clave": "LAMBAYEQUECHICLAYOLA VICTORIA",
-    "ubigeo": "140106"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "LAGUNAS",
-    "clave": "LAMBAYEQUECHICLAYOLAGUNAS",
-    "ubigeo": "140107"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "MONSEFU",
-    "clave": "LAMBAYEQUECHICLAYOMONSEFU",
-    "ubigeo": "140108"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "NUEVA ARICA",
-    "clave": "LAMBAYEQUECHICLAYONUEVA ARICA",
-    "ubigeo": "140109"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "OYOTUN",
-    "clave": "LAMBAYEQUECHICLAYOOYOTUN",
-    "ubigeo": "140110"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "PICSI",
-    "clave": "LAMBAYEQUECHICLAYOPICSI",
-    "ubigeo": "140111"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "PIMENTEL",
-    "clave": "LAMBAYEQUECHICLAYOPIMENTEL",
-    "ubigeo": "140112"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "REQUE",
-    "clave": "LAMBAYEQUECHICLAYOREQUE",
-    "ubigeo": "140113"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "SANTA ROSA",
-    "clave": "LAMBAYEQUECHICLAYOSANTA ROSA",
-    "ubigeo": "140114"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "SAÑA",
-    "clave": "LAMBAYEQUECHICLAYOSAÑA",
-    "ubigeo": "140115"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "CAYALTI",
-    "clave": "LAMBAYEQUECHICLAYOCAYALTI",
-    "ubigeo": "140116"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "PATAPO",
-    "clave": "LAMBAYEQUECHICLAYOPATAPO",
-    "ubigeo": "140117"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "POMALCA",
-    "clave": "LAMBAYEQUECHICLAYOPOMALCA",
-    "ubigeo": "140118"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "PUCALA",
-    "clave": "LAMBAYEQUECHICLAYOPUCALA",
-    "ubigeo": "140119"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "CHICLAYO",
-    "distrito": "TUMAN",
-    "clave": "LAMBAYEQUECHICLAYOTUMAN",
-    "ubigeo": "140120"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "FERREÑAFE",
-    "clave": "LAMBAYEQUEFERREÑAFEFERREÑAFE",
-    "ubigeo": "140201"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "CAÑARIS",
-    "clave": "LAMBAYEQUEFERREÑAFECAÑARIS",
-    "ubigeo": "140202"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "INCAHUASI",
-    "clave": "LAMBAYEQUEFERREÑAFEINCAHUASI",
-    "ubigeo": "140203"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "MANUEL ANTONIO MESONES MURO",
-    "clave": "LAMBAYEQUEFERREÑAFEMANUEL ANTONIO MESONES MURO",
-    "ubigeo": "140204"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "PITIPO",
-    "clave": "LAMBAYEQUEFERREÑAFEPITIPO",
-    "ubigeo": "140205"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "FERREÑAFE",
-    "distrito": "PUEBLO NUEVO",
-    "clave": "LAMBAYEQUEFERREÑAFEPUEBLO NUEVO",
-    "ubigeo": "140206"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "LAMBAYEQUE",
-    "clave": "LAMBAYEQUELAMBAYEQUELAMBAYEQUE",
-    "ubigeo": "140301"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "CHOCHOPE",
-    "clave": "LAMBAYEQUELAMBAYEQUECHOCHOPE",
-    "ubigeo": "140302"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "ILLIMO",
-    "clave": "LAMBAYEQUELAMBAYEQUEILLIMO",
-    "ubigeo": "140303"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "JAYANCA",
-    "clave": "LAMBAYEQUELAMBAYEQUEJAYANCA",
-    "ubigeo": "140304"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "MOCHUMI",
-    "clave": "LAMBAYEQUELAMBAYEQUEMOCHUMI",
-    "ubigeo": "140305"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "MORROPE",
-    "clave": "LAMBAYEQUELAMBAYEQUEMORROPE",
-    "ubigeo": "140306"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "MOTUPE",
-    "clave": "LAMBAYEQUELAMBAYEQUEMOTUPE",
-    "ubigeo": "140307"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "OLMOS",
-    "clave": "LAMBAYEQUELAMBAYEQUEOLMOS",
-    "ubigeo": "140308"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "PACORA",
-    "clave": "LAMBAYEQUELAMBAYEQUEPACORA",
-    "ubigeo": "140309"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "SALAS",
-    "clave": "LAMBAYEQUELAMBAYEQUESALAS",
-    "ubigeo": "140310"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "SAN JOSE",
-    "clave": "LAMBAYEQUELAMBAYEQUESAN JOSE",
-    "ubigeo": "140311"
-  },
-  {
-    "departamento": "LAMBAYEQUE",
-    "provincia": "LAMBAYEQUE",
-    "distrito": "TUCUME",
-    "clave": "LAMBAYEQUELAMBAYEQUETUCUME",
-    "ubigeo": "140312"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LIMA",
-    "clave": "LIMALIMALIMA",
-    "ubigeo": "150101"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "ANCON",
-    "clave": "LIMALIMAANCON",
-    "ubigeo": "150102"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "ATE",
-    "clave": "LIMALIMAATE",
-    "ubigeo": "150103"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "BARRANCO",
-    "clave": "LIMALIMABARRANCO",
-    "ubigeo": "150104"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "BREÑA",
-    "clave": "LIMALIMABREÑA",
-    "ubigeo": "150105"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "CARABAYLLO",
-    "clave": "LIMALIMACARABAYLLO",
-    "ubigeo": "150106"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "CHACLACAYO",
-    "clave": "LIMALIMACHACLACAYO",
-    "ubigeo": "150107"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "CHORRILLOS",
-    "clave": "LIMALIMACHORRILLOS",
-    "ubigeo": "150108"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "CIENEGUILLA",
-    "clave": "LIMALIMACIENEGUILLA",
-    "ubigeo": "150109"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "COMAS",
-    "clave": "LIMALIMACOMAS",
-    "ubigeo": "150110"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "EL AGUSTINO",
-    "clave": "LIMALIMAEL AGUSTINO",
-    "ubigeo": "150111"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "INDEPENDENCIA",
-    "clave": "LIMALIMAINDEPENDENCIA",
-    "ubigeo": "150112"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "JESUS MARIA",
-    "clave": "LIMALIMAJESUS MARIA",
-    "ubigeo": "150113"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LA MOLINA",
-    "clave": "LIMALIMALA MOLINA",
-    "ubigeo": "150114"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LA VICTORIA",
-    "clave": "LIMALIMALA VICTORIA",
-    "ubigeo": "150115"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LINCE",
-    "clave": "LIMALIMALINCE",
-    "ubigeo": "150116"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LOS OLIVOS",
-    "clave": "LIMALIMALOS OLIVOS",
-    "ubigeo": "150117"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LURIGANCHO",
-    "clave": "LIMALIMALURIGANCHO",
-    "ubigeo": "150118"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "LURIN",
-    "clave": "LIMALIMALURIN",
-    "ubigeo": "150119"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "MAGDALENA DEL MAR",
-    "clave": "LIMALIMAMAGDALENA DEL MAR",
-    "ubigeo": "150120"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PUEBLO LIBRE",
-    "clave": "LIMALIMAPUEBLO LIBRE",
-    "ubigeo": "150121"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "MIRAFLORES",
-    "clave": "LIMALIMAMIRAFLORES",
-    "ubigeo": "150122"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PACHACAMAC",
-    "clave": "LIMALIMAPACHACAMAC",
-    "ubigeo": "150123"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PUCUSANA",
-    "clave": "LIMALIMAPUCUSANA",
-    "ubigeo": "150124"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PUENTE PIEDRA",
-    "clave": "LIMALIMAPUENTE PIEDRA",
-    "ubigeo": "150125"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PUNTA HERMOSA",
-    "clave": "LIMALIMAPUNTA HERMOSA",
-    "ubigeo": "150126"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "PUNTA NEGRA",
-    "clave": "LIMALIMAPUNTA NEGRA",
-    "ubigeo": "150127"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "RIMAC",
-    "clave": "LIMALIMARIMAC",
-    "ubigeo": "150128"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN BARTOLO",
-    "clave": "LIMALIMASAN BARTOLO",
-    "ubigeo": "150129"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN BORJA",
-    "clave": "LIMALIMASAN BORJA",
-    "ubigeo": "150130"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN ISIDRO",
-    "clave": "LIMALIMASAN ISIDRO",
-    "ubigeo": "150131"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN JUAN DE LURIGANCHO",
-    "clave": "LIMALIMASAN JUAN DE LURIGANCHO",
-    "ubigeo": "150132"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN JUAN DE MIRAFLORES",
-    "clave": "LIMALIMASAN JUAN DE MIRAFLORES",
-    "ubigeo": "150133"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN LUIS",
-    "clave": "LIMALIMASAN LUIS",
-    "ubigeo": "150134"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN MARTIN DE PORRES",
-    "clave": "LIMALIMASAN MARTIN DE PORRES",
-    "ubigeo": "150135"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SAN MIGUEL",
-    "clave": "LIMALIMASAN MIGUEL",
-    "ubigeo": "150136"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SANTA ANITA",
-    "clave": "LIMALIMASANTA ANITA",
-    "ubigeo": "150137"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SANTA MARIA DEL MAR",
-    "clave": "LIMALIMASANTA MARIA DEL MAR",
-    "ubigeo": "150138"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SANTA ROSA",
-    "clave": "LIMALIMASANTA ROSA",
-    "ubigeo": "150139"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SANTIAGO DE SURCO",
-    "clave": "LIMALIMASANTIAGO DE SURCO",
-    "ubigeo": "150140"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "SURQUILLO",
-    "clave": "LIMALIMASURQUILLO",
-    "ubigeo": "150141"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "VILLA EL SALVADOR",
-    "clave": "LIMALIMAVILLA EL SALVADOR",
-    "ubigeo": "150142"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "LIMA",
-    "distrito": "VILLA MARIA DEL TRIUNFO",
-    "clave": "LIMALIMAVILLA MARIA DEL TRIUNFO",
-    "ubigeo": "150143"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "BARRANCA",
-    "distrito": "BARRANCA",
-    "clave": "LIMABARRANCABARRANCA",
-    "ubigeo": "150201"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "BARRANCA",
-    "distrito": "PARAMONGA",
-    "clave": "LIMABARRANCAPARAMONGA",
-    "ubigeo": "150202"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "BARRANCA",
-    "distrito": "PATIVILCA",
-    "clave": "LIMABARRANCAPATIVILCA",
-    "ubigeo": "150203"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "BARRANCA",
-    "distrito": "SUPE",
-    "clave": "LIMABARRANCASUPE",
-    "ubigeo": "150204"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "BARRANCA",
-    "distrito": "SUPE PUERTO",
-    "clave": "LIMABARRANCASUPE PUERTO",
-    "ubigeo": "150205"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAJATAMBO",
-    "distrito": "CAJATAMBO",
-    "clave": "LIMACAJATAMBOCAJATAMBO",
-    "ubigeo": "150301"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAJATAMBO",
-    "distrito": "COPA",
-    "clave": "LIMACAJATAMBOCOPA",
-    "ubigeo": "150302"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAJATAMBO",
-    "distrito": "GORGOR",
-    "clave": "LIMACAJATAMBOGORGOR",
-    "ubigeo": "150303"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAJATAMBO",
-    "distrito": "HUANCAPON",
-    "clave": "LIMACAJATAMBOHUANCAPON",
-    "ubigeo": "150304"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAJATAMBO",
-    "distrito": "MANAS",
-    "clave": "LIMACAJATAMBOMANAS",
-    "ubigeo": "150305"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "CANTA",
-    "clave": "LIMACANTACANTA",
-    "ubigeo": "150401"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "ARAHUAY",
-    "clave": "LIMACANTAARAHUAY",
-    "ubigeo": "150402"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "HUAMANTANGA",
-    "clave": "LIMACANTAHUAMANTANGA",
-    "ubigeo": "150403"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "HUAROS",
-    "clave": "LIMACANTAHUAROS",
-    "ubigeo": "150404"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "LACHAQUI",
-    "clave": "LIMACANTALACHAQUI",
-    "ubigeo": "150405"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "SAN BUENAVENTURA",
-    "clave": "LIMACANTASAN BUENAVENTURA",
-    "ubigeo": "150406"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CANTA",
-    "distrito": "SANTA ROSA DE QUIVES",
-    "clave": "LIMACANTASANTA ROSA DE QUIVES",
-    "ubigeo": "150407"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "SAN VICENTE DE CAÑETE",
-    "clave": "LIMACAÑETESAN VICENTE DE CAÑETE",
-    "ubigeo": "150501"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "ASIA",
-    "clave": "LIMACAÑETEASIA",
-    "ubigeo": "150502"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "CALANGO",
-    "clave": "LIMACAÑETECALANGO",
-    "ubigeo": "150503"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "CERRO AZUL",
-    "clave": "LIMACAÑETECERRO AZUL",
-    "ubigeo": "150504"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "CHILCA",
-    "clave": "LIMACAÑETECHILCA",
-    "ubigeo": "150505"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "COAYLLO",
-    "clave": "LIMACAÑETECOAYLLO",
-    "ubigeo": "150506"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "IMPERIAL",
-    "clave": "LIMACAÑETEIMPERIAL",
-    "ubigeo": "150507"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "LUNAHUANA",
-    "clave": "LIMACAÑETELUNAHUANA",
-    "ubigeo": "150508"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "MALA",
-    "clave": "LIMACAÑETEMALA",
-    "ubigeo": "150509"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "NUEVO IMPERIAL",
-    "clave": "LIMACAÑETENUEVO IMPERIAL",
-    "ubigeo": "150510"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "PACARAN",
-    "clave": "LIMACAÑETEPACARAN",
-    "ubigeo": "150511"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "QUILMANA",
-    "clave": "LIMACAÑETEQUILMANA",
-    "ubigeo": "150512"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "SAN ANTONIO",
-    "clave": "LIMACAÑETESAN ANTONIO",
-    "ubigeo": "150513"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "SAN LUIS",
-    "clave": "LIMACAÑETESAN LUIS",
-    "ubigeo": "150514"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "SANTA CRUZ DE FLORES",
-    "clave": "LIMACAÑETESANTA CRUZ DE FLORES",
-    "ubigeo": "150515"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "CAÑETE",
-    "distrito": "ZUÑIGA",
-    "clave": "LIMACAÑETEZUÑIGA",
-    "ubigeo": "150516"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "HUARAL",
-    "clave": "LIMAHUARALHUARAL",
-    "ubigeo": "150601"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "ATAVILLOS ALTO",
-    "clave": "LIMAHUARALATAVILLOS ALTO",
-    "ubigeo": "150602"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "ATAVILLOS BAJO",
-    "clave": "LIMAHUARALATAVILLOS BAJO",
-    "ubigeo": "150603"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "AUCALLAMA",
-    "clave": "LIMAHUARALAUCALLAMA",
-    "ubigeo": "150604"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "CHANCAY",
-    "clave": "LIMAHUARALCHANCAY",
-    "ubigeo": "150605"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "IHUARI",
-    "clave": "LIMAHUARALIHUARI",
-    "ubigeo": "150606"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "LAMPIAN",
-    "clave": "LIMAHUARALLAMPIAN",
-    "ubigeo": "150607"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "PACARAOS",
-    "clave": "LIMAHUARALPACARAOS",
-    "ubigeo": "150608"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "SAN MIGUEL DE ACOS",
-    "clave": "LIMAHUARALSAN MIGUEL DE ACOS",
-    "ubigeo": "150609"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "SANTA CRUZ DE ANDAMARCA",
-    "clave": "LIMAHUARALSANTA CRUZ DE ANDAMARCA",
-    "ubigeo": "150610"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "SUMBILCA",
-    "clave": "LIMAHUARALSUMBILCA",
-    "ubigeo": "150611"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUARAL",
-    "distrito": "VEINTISIETE DE NOVIEMBRE",
-    "clave": "LIMAHUARALVEINTISIETE DE NOVIEMBRE",
-    "ubigeo": "150612"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "MATUCANA",
-    "clave": "LIMAHUAROCHIRIMATUCANA",
-    "ubigeo": "150701"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "ANTIOQUIA",
-    "clave": "LIMAHUAROCHIRIANTIOQUIA",
-    "ubigeo": "150702"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "CALLAHUANCA",
-    "clave": "LIMAHUAROCHIRICALLAHUANCA",
-    "ubigeo": "150703"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "CARAMPOMA",
-    "clave": "LIMAHUAROCHIRICARAMPOMA",
-    "ubigeo": "150704"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "CHICLA",
-    "clave": "LIMAHUAROCHIRICHICLA",
-    "ubigeo": "150705"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "CUENCA",
-    "clave": "LIMAHUAROCHIRICUENCA",
-    "ubigeo": "150706"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "HUACHUPAMPA",
-    "clave": "LIMAHUAROCHIRIHUACHUPAMPA",
-    "ubigeo": "150707"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "HUANZA",
-    "clave": "LIMAHUAROCHIRIHUANZA",
-    "ubigeo": "150708"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "HUAROCHIRI",
-    "clave": "LIMAHUAROCHIRIHUAROCHIRI",
-    "ubigeo": "150709"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "LAHUAYTAMBO",
-    "clave": "LIMAHUAROCHIRILAHUAYTAMBO",
-    "ubigeo": "150710"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "LANGA",
-    "clave": "LIMAHUAROCHIRILANGA",
-    "ubigeo": "150711"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN PEDRO DE LARAOS",
-    "clave": "LIMAHUAROCHIRISAN PEDRO DE LARAOS",
-    "ubigeo": "150712"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "MARIATANA",
-    "clave": "LIMAHUAROCHIRIMARIATANA",
-    "ubigeo": "150713"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "RICARDO PALMA",
-    "clave": "LIMAHUAROCHIRIRICARDO PALMA",
-    "ubigeo": "150714"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN ANDRES DE TUPICOCHA",
-    "clave": "LIMAHUAROCHIRISAN ANDRES DE TUPICOCHA",
-    "ubigeo": "150715"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN ANTONIO",
-    "clave": "LIMAHUAROCHIRISAN ANTONIO",
-    "ubigeo": "150716"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN BARTOLOME",
-    "clave": "LIMAHUAROCHIRISAN BARTOLOME",
-    "ubigeo": "150717"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN DAMIAN",
-    "clave": "LIMAHUAROCHIRISAN DAMIAN",
-    "ubigeo": "150718"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN JUAN DE IRIS",
-    "clave": "LIMAHUAROCHIRISAN JUAN DE IRIS",
-    "ubigeo": "150719"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN JUAN DE TANTARANCHE",
-    "clave": "LIMAHUAROCHIRISAN JUAN DE TANTARANCHE",
-    "ubigeo": "150720"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN LORENZO DE QUINTI",
-    "clave": "LIMAHUAROCHIRISAN LORENZO DE QUINTI",
-    "ubigeo": "150721"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN MATEO",
-    "clave": "LIMAHUAROCHIRISAN MATEO",
-    "ubigeo": "150722"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN MATEO DE OTAO",
-    "clave": "LIMAHUAROCHIRISAN MATEO DE OTAO",
-    "ubigeo": "150723"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN PEDRO DE CASTA",
-    "clave": "LIMAHUAROCHIRISAN PEDRO DE CASTA",
-    "ubigeo": "150724"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SAN PEDRO DE HUANCAYRE",
-    "clave": "LIMAHUAROCHIRISAN PEDRO DE HUANCAYRE",
-    "ubigeo": "150725"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANGALLAYA",
-    "clave": "LIMAHUAROCHIRISANGALLAYA",
-    "ubigeo": "150726"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANTA CRUZ DE COCACHACRA",
-    "clave": "LIMAHUAROCHIRISANTA CRUZ DE COCACHACRA",
-    "ubigeo": "150727"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANTA EULALIA",
-    "clave": "LIMAHUAROCHIRISANTA EULALIA",
-    "ubigeo": "150728"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANTIAGO DE ANCHUCAYA",
-    "clave": "LIMAHUAROCHIRISANTIAGO DE ANCHUCAYA",
-    "ubigeo": "150729"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANTIAGO DE TUNA",
-    "clave": "LIMAHUAROCHIRISANTIAGO DE TUNA",
-    "ubigeo": "150730"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SANTO DOMINGO DE LOS OLLEROS",
-    "clave": "LIMAHUAROCHIRISANTO DOMINGO DE LOS OLLEROS",
-    "ubigeo": "150731"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAROCHIRI",
-    "distrito": "SURCO",
-    "clave": "LIMAHUAROCHIRISURCO",
-    "ubigeo": "150732"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "HUACHO",
-    "clave": "LIMAHUAURAHUACHO",
-    "ubigeo": "150801"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "AMBAR",
-    "clave": "LIMAHUAURAAMBAR",
-    "ubigeo": "150802"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "CALETA DE CARQUIN",
-    "clave": "LIMAHUAURACALETA DE CARQUIN",
-    "ubigeo": "150803"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "CHECRAS",
-    "clave": "LIMAHUAURACHECRAS",
-    "ubigeo": "150804"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "HUALMAY",
-    "clave": "LIMAHUAURAHUALMAY",
-    "ubigeo": "150805"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "HUAURA",
-    "clave": "LIMAHUAURAHUAURA",
-    "ubigeo": "150806"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "LEONCIO PRADO",
-    "clave": "LIMAHUAURALEONCIO PRADO",
-    "ubigeo": "150807"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "PACCHO",
-    "clave": "LIMAHUAURAPACCHO",
-    "ubigeo": "150808"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "SANTA LEONOR",
-    "clave": "LIMAHUAURASANTA LEONOR",
-    "ubigeo": "150809"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "SANTA MARIA",
-    "clave": "LIMAHUAURASANTA MARIA",
-    "ubigeo": "150810"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "SAYAN",
-    "clave": "LIMAHUAURASAYAN",
-    "ubigeo": "150811"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "HUAURA",
-    "distrito": "VEGUETA",
-    "clave": "LIMAHUAURAVEGUETA",
-    "ubigeo": "150812"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "OYON",
-    "clave": "LIMAOYONOYON",
-    "ubigeo": "150901"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "ANDAJES",
-    "clave": "LIMAOYONANDAJES",
-    "ubigeo": "150902"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "CAUJUL",
-    "clave": "LIMAOYONCAUJUL",
-    "ubigeo": "150903"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "COCHAMARCA",
-    "clave": "LIMAOYONCOCHAMARCA",
-    "ubigeo": "150904"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "NAVAN",
-    "clave": "LIMAOYONNAVAN",
-    "ubigeo": "150905"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "OYON",
-    "distrito": "PACHANGARA",
-    "clave": "LIMAOYONPACHANGARA",
-    "ubigeo": "150906"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "YAUYOS",
-    "clave": "LIMAYAUYOSYAUYOS",
-    "ubigeo": "151001"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "ALIS",
-    "clave": "LIMAYAUYOSALIS",
-    "ubigeo": "151002"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "ALLAUCA",
-    "clave": "LIMAYAUYOSALLAUCA",
-    "ubigeo": "151003"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "AYAVIRI",
-    "clave": "LIMAYAUYOSAYAVIRI",
-    "ubigeo": "151004"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "AZANGARO",
-    "clave": "LIMAYAUYOSAZANGARO",
-    "ubigeo": "151005"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "CACRA",
-    "clave": "LIMAYAUYOSCACRA",
-    "ubigeo": "151006"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "CARANIA",
-    "clave": "LIMAYAUYOSCARANIA",
-    "ubigeo": "151007"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "CATAHUASI",
-    "clave": "LIMAYAUYOSCATAHUASI",
-    "ubigeo": "151008"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "CHOCOS",
-    "clave": "LIMAYAUYOSCHOCOS",
-    "ubigeo": "151009"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "COCHAS",
-    "clave": "LIMAYAUYOSCOCHAS",
-    "ubigeo": "151010"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "COLONIA",
-    "clave": "LIMAYAUYOSCOLONIA",
-    "ubigeo": "151011"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HONGOS",
-    "clave": "LIMAYAUYOSHONGOS",
-    "ubigeo": "151012"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HUAMPARA",
-    "clave": "LIMAYAUYOSHUAMPARA",
-    "ubigeo": "151013"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HUANCAYA",
-    "clave": "LIMAYAUYOSHUANCAYA",
-    "ubigeo": "151014"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HUANGASCAR",
-    "clave": "LIMAYAUYOSHUANGASCAR",
-    "ubigeo": "151015"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HUANTAN",
-    "clave": "LIMAYAUYOSHUANTAN",
-    "ubigeo": "151016"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "HUAÑEC",
-    "clave": "LIMAYAUYOSHUAÑEC",
-    "ubigeo": "151017"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "LARAOS",
-    "clave": "LIMAYAUYOSLARAOS",
-    "ubigeo": "151018"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "LINCHA",
-    "clave": "LIMAYAUYOSLINCHA",
-    "ubigeo": "151019"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "MADEAN",
-    "clave": "LIMAYAUYOSMADEAN",
-    "ubigeo": "151020"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "MIRAFLORES",
-    "clave": "LIMAYAUYOSMIRAFLORES",
-    "ubigeo": "151021"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "OMAS",
-    "clave": "LIMAYAUYOSOMAS",
-    "ubigeo": "151022"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "PUTINZA",
-    "clave": "LIMAYAUYOSPUTINZA",
-    "ubigeo": "151023"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "QUINCHES",
-    "clave": "LIMAYAUYOSQUINCHES",
-    "ubigeo": "151024"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "QUINOCAY",
-    "clave": "LIMAYAUYOSQUINOCAY",
-    "ubigeo": "151025"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "SAN JOAQUIN",
-    "clave": "LIMAYAUYOSSAN JOAQUIN",
-    "ubigeo": "151026"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "SAN PEDRO DE PILAS",
-    "clave": "LIMAYAUYOSSAN PEDRO DE PILAS",
-    "ubigeo": "151027"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "TANTA",
-    "clave": "LIMAYAUYOSTANTA",
-    "ubigeo": "151028"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "TAURIPAMPA",
-    "clave": "LIMAYAUYOSTAURIPAMPA",
-    "ubigeo": "151029"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "TOMAS",
-    "clave": "LIMAYAUYOSTOMAS",
-    "ubigeo": "151030"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "TUPE",
-    "clave": "LIMAYAUYOSTUPE",
-    "ubigeo": "151031"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "VIÑAC",
-    "clave": "LIMAYAUYOSVIÑAC",
-    "ubigeo": "151032"
-  },
-  {
-    "departamento": "LIMA",
-    "provincia": "YAUYOS",
-    "distrito": "VITIS",
-    "clave": "LIMAYAUYOSVITIS",
-    "ubigeo": "151033"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "IQUITOS",
-    "clave": "LORETOMAYNASIQUITOS",
-    "ubigeo": "160101"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "ALTO NANAY",
-    "clave": "LORETOMAYNASALTO NANAY",
-    "ubigeo": "160102"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "FERNANDO LORES",
-    "clave": "LORETOMAYNASFERNANDO LORES",
-    "ubigeo": "160103"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "INDIANA",
-    "clave": "LORETOMAYNASINDIANA",
-    "ubigeo": "160104"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "LAS AMAZONAS",
-    "clave": "LORETOMAYNASLAS AMAZONAS",
-    "ubigeo": "160105"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "MAZAN",
-    "clave": "LORETOMAYNASMAZAN",
-    "ubigeo": "160106"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "NAPO",
-    "clave": "LORETOMAYNASNAPO",
-    "ubigeo": "160107"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "PUNCHANA",
-    "clave": "LORETOMAYNASPUNCHANA",
-    "ubigeo": "160108"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "TORRES CAUSANA",
-    "clave": "LORETOMAYNASTORRES CAUSANA",
-    "ubigeo": "160110"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "BELEN",
-    "clave": "LORETOMAYNASBELEN",
-    "ubigeo": "160112"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MAYNAS",
-    "distrito": "SAN JUAN BAUTISTA",
-    "clave": "LORETOMAYNASSAN JUAN BAUTISTA",
-    "ubigeo": "160113"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "YURIMAGUAS",
-    "clave": "LORETOALTO AMAZONASYURIMAGUAS",
-    "ubigeo": "160201"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "BALSAPUERTO",
-    "clave": "LORETOALTO AMAZONASBALSAPUERTO",
-    "ubigeo": "160202"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "JEBEROS",
-    "clave": "LORETOALTO AMAZONASJEBEROS",
-    "ubigeo": "160205"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "LAGUNAS",
-    "clave": "LORETOALTO AMAZONASLAGUNAS",
-    "ubigeo": "160206"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "SANTA CRUZ",
-    "clave": "LORETOALTO AMAZONASSANTA CRUZ",
-    "ubigeo": "160210"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "ALTO AMAZONAS",
-    "distrito": "TENIENTE CESAR LOPEZ ROJAS",
-    "clave": "LORETOALTO AMAZONASTENIENTE CESAR LOPEZ ROJAS",
-    "ubigeo": "160211"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "LORETO",
-    "distrito": "NAUTA",
-    "clave": "LORETOLORETONAUTA",
-    "ubigeo": "160301"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "LORETO",
-    "distrito": "PARINARI",
-    "clave": "LORETOLORETOPARINARI",
-    "ubigeo": "160302"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "LORETO",
-    "distrito": "TIGRE",
-    "clave": "LORETOLORETOTIGRE",
-    "ubigeo": "160303"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "LORETO",
-    "distrito": "TROMPETEROS",
-    "clave": "LORETOLORETOTROMPETEROS",
-    "ubigeo": "160304"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "LORETO",
-    "distrito": "URARINAS",
-    "clave": "LORETOLORETOURARINAS",
-    "ubigeo": "160305"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MARISCAL RAMON CASTILLA",
-    "distrito": "RAMON CASTILLA",
-    "clave": "LORETOMARISCAL RAMON CASTILLARAMON CASTILLA",
-    "ubigeo": "160401"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MARISCAL RAMON CASTILLA",
-    "distrito": "PEBAS",
-    "clave": "LORETOMARISCAL RAMON CASTILLAPEBAS",
-    "ubigeo": "160402"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MARISCAL RAMON CASTILLA",
-    "distrito": "YAVARI",
-    "clave": "LORETOMARISCAL RAMON CASTILLAYAVARI",
-    "ubigeo": "160403"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "MARISCAL RAMON CASTILLA",
-    "distrito": "SAN PABLO",
-    "clave": "LORETOMARISCAL RAMON CASTILLASAN PABLO",
-    "ubigeo": "160404"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "REQUENA",
-    "clave": "LORETOREQUENAREQUENA",
-    "ubigeo": "160501"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "ALTO TAPICHE",
-    "clave": "LORETOREQUENAALTO TAPICHE",
-    "ubigeo": "160502"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "CAPELO",
-    "clave": "LORETOREQUENACAPELO",
-    "ubigeo": "160503"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "EMILIO SAN MARTIN",
-    "clave": "LORETOREQUENAEMILIO SAN MARTIN",
-    "ubigeo": "160504"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "MAQUIA",
-    "clave": "LORETOREQUENAMAQUIA",
-    "ubigeo": "160505"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "PUINAHUA",
-    "clave": "LORETOREQUENAPUINAHUA",
-    "ubigeo": "160506"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "SAQUENA",
-    "clave": "LORETOREQUENASAQUENA",
-    "ubigeo": "160507"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "SOPLIN",
-    "clave": "LORETOREQUENASOPLIN",
-    "ubigeo": "160508"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "TAPICHE",
-    "clave": "LORETOREQUENATAPICHE",
-    "ubigeo": "160509"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "JENARO HERRERA",
-    "clave": "LORETOREQUENAJENARO HERRERA",
-    "ubigeo": "160510"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "REQUENA",
-    "distrito": "YAQUERANA",
-    "clave": "LORETOREQUENAYAQUERANA",
-    "ubigeo": "160511"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "CONTAMANA",
-    "clave": "LORETOUCAYALICONTAMANA",
-    "ubigeo": "160601"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "INAHUAYA",
-    "clave": "LORETOUCAYALIINAHUAYA",
-    "ubigeo": "160602"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "PADRE MARQUEZ",
-    "clave": "LORETOUCAYALIPADRE MARQUEZ",
-    "ubigeo": "160603"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "PAMPA HERMOSA",
-    "clave": "LORETOUCAYALIPAMPA HERMOSA",
-    "ubigeo": "160604"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "SARAYACU",
-    "clave": "LORETOUCAYALISARAYACU",
-    "ubigeo": "160605"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "UCAYALI",
-    "distrito": "VARGAS GUERRA",
-    "clave": "LORETOUCAYALIVARGAS GUERRA",
-    "ubigeo": "160606"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "BARRANCA",
-    "clave": "LORETODATEM DEL MARAÑONBARRANCA",
-    "ubigeo": "160701"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "CAHUAPANAS",
-    "clave": "LORETODATEM DEL MARAÑONCAHUAPANAS",
-    "ubigeo": "160702"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "MANSERICHE",
-    "clave": "LORETODATEM DEL MARAÑONMANSERICHE",
-    "ubigeo": "160703"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "MORONA",
-    "clave": "LORETODATEM DEL MARAÑONMORONA",
-    "ubigeo": "160704"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "PASTAZA",
-    "clave": "LORETODATEM DEL MARAÑONPASTAZA",
-    "ubigeo": "160705"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "DATEM DEL MARAÑON",
-    "distrito": "ANDOAS",
-    "clave": "LORETODATEM DEL MARAÑONANDOAS",
-    "ubigeo": "160706"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "PUTUMAYO",
-    "distrito": "PUTUMAYO",
-    "clave": "LORETOPUTUMAYOPUTUMAYO",
-    "ubigeo": "160801"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "PUTUMAYO",
-    "distrito": "ROSA PANDURO",
-    "clave": "LORETOPUTUMAYOROSA PANDURO",
-    "ubigeo": "160802"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "PUTUMAYO",
-    "distrito": "TENIENTE MANUEL CLAVERO",
-    "clave": "LORETOPUTUMAYOTENIENTE MANUEL CLAVERO",
-    "ubigeo": "160803"
-  },
-  {
-    "departamento": "LORETO",
-    "provincia": "PUTUMAYO",
-    "distrito": "YAGUAS",
-    "clave": "LORETOPUTUMAYOYAGUAS",
-    "ubigeo": "160804"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAMBOPATA",
-    "distrito": "TAMBOPATA",
-    "clave": "MADRE DE DIOSTAMBOPATATAMBOPATA",
-    "ubigeo": "170101"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAMBOPATA",
-    "distrito": "INAMBARI",
-    "clave": "MADRE DE DIOSTAMBOPATAINAMBARI",
-    "ubigeo": "170102"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAMBOPATA",
-    "distrito": "LAS PIEDRAS",
-    "clave": "MADRE DE DIOSTAMBOPATALAS PIEDRAS",
-    "ubigeo": "170103"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAMBOPATA",
-    "distrito": "LABERINTO",
-    "clave": "MADRE DE DIOSTAMBOPATALABERINTO",
-    "ubigeo": "170104"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "MANU",
-    "distrito": "MANU",
-    "clave": "MADRE DE DIOSMANUMANU",
-    "ubigeo": "170201"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "MANU",
-    "distrito": "FITZCARRALD",
-    "clave": "MADRE DE DIOSMANUFITZCARRALD",
-    "ubigeo": "170202"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "MANU",
-    "distrito": "MADRE DE DIOS",
-    "clave": "MADRE DE DIOSMANUMADRE DE DIOS",
-    "ubigeo": "170203"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "MANU",
-    "distrito": "HUEPETUHE",
-    "clave": "MADRE DE DIOSMANUHUEPETUHE",
-    "ubigeo": "170204"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAHUAMANU",
-    "distrito": "IÑAPARI",
-    "clave": "MADRE DE DIOSTAHUAMANUIÑAPARI",
-    "ubigeo": "170301"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAHUAMANU",
-    "distrito": "IBERIA",
-    "clave": "MADRE DE DIOSTAHUAMANUIBERIA",
-    "ubigeo": "170302"
-  },
-  {
-    "departamento": "MADRE DE DIOS",
-    "provincia": "TAHUAMANU",
-    "distrito": "TAHUAMANU",
-    "clave": "MADRE DE DIOSTAHUAMANUTAHUAMANU",
-    "ubigeo": "170303"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "MOQUEGUA",
-    "clave": "MOQUEGUAMARISCAL NIETOMOQUEGUA",
-    "ubigeo": "180101"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "CARUMAS",
-    "clave": "MOQUEGUAMARISCAL NIETOCARUMAS",
-    "ubigeo": "180102"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "CUCHUMBAYA",
-    "clave": "MOQUEGUAMARISCAL NIETOCUCHUMBAYA",
-    "ubigeo": "180103"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "SAMEGUA",
-    "clave": "MOQUEGUAMARISCAL NIETOSAMEGUA",
-    "ubigeo": "180104"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "SAN CRISTOBAL",
-    "clave": "MOQUEGUAMARISCAL NIETOSAN CRISTOBAL",
-    "ubigeo": "180105"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "TORATA",
-    "clave": "MOQUEGUAMARISCAL NIETOTORATA",
-    "ubigeo": "180106"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "MARISCAL NIETO",
-    "distrito": "SAN ANTONIO",
-    "clave": "MOQUEGUAMARISCAL NIETOSAN ANTONIO",
-    "ubigeo": "180107"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "OMATE",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROOMATE",
-    "ubigeo": "180201"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "CHOJATA",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROCHOJATA",
-    "ubigeo": "180202"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "COALAQUE",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROCOALAQUE",
-    "ubigeo": "180203"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "ICHUÑA",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROICHUÑA",
-    "ubigeo": "180204"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "LA CAPILLA",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROLA CAPILLA",
-    "ubigeo": "180205"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "LLOQUE",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROLLOQUE",
-    "ubigeo": "180206"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "MATALAQUE",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROMATALAQUE",
-    "ubigeo": "180207"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "PUQUINA",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROPUQUINA",
-    "ubigeo": "180208"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "QUINISTAQUILLAS",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROQUINISTAQUILLAS",
-    "ubigeo": "180209"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "UBINAS",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROUBINAS",
-    "ubigeo": "180210"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "GENERAL SANCHEZ CERRO",
-    "distrito": "YUNGA",
-    "clave": "MOQUEGUAGENERAL SANCHEZ CERROYUNGA",
-    "ubigeo": "180211"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "ILO",
-    "distrito": "ILO",
-    "clave": "MOQUEGUAILOILO",
-    "ubigeo": "180301"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "ILO",
-    "distrito": "EL ALGARROBAL",
-    "clave": "MOQUEGUAILOEL ALGARROBAL",
-    "ubigeo": "180302"
-  },
-  {
-    "departamento": "MOQUEGUA",
-    "provincia": "ILO",
-    "distrito": "PACOCHA",
-    "clave": "MOQUEGUAILOPACOCHA",
-    "ubigeo": "180303"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "CHAUPIMARCA",
-    "clave": "PASCOPASCOCHAUPIMARCA",
-    "ubigeo": "190101"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "HUACHON",
-    "clave": "PASCOPASCOHUACHON",
-    "ubigeo": "190102"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "HUARIACA",
-    "clave": "PASCOPASCOHUARIACA",
-    "ubigeo": "190103"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "HUAYLLAY",
-    "clave": "PASCOPASCOHUAYLLAY",
-    "ubigeo": "190104"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "NINACACA",
-    "clave": "PASCOPASCONINACACA",
-    "ubigeo": "190105"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "PALLANCHACRA",
-    "clave": "PASCOPASCOPALLANCHACRA",
-    "ubigeo": "190106"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "PAUCARTAMBO",
-    "clave": "PASCOPASCOPAUCARTAMBO",
-    "ubigeo": "190107"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "SAN FRANCISCO DE ASIS DE YARUSYACAN",
-    "clave": "PASCOPASCOSAN FRANCISCO DE ASIS DE YARUSYACAN",
-    "ubigeo": "190108"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "SIMON BOLIVAR",
-    "clave": "PASCOPASCOSIMON BOLIVAR",
-    "ubigeo": "190109"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "TICLACAYAN",
-    "clave": "PASCOPASCOTICLACAYAN",
-    "ubigeo": "190110"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "TINYAHUARCO",
-    "clave": "PASCOPASCOTINYAHUARCO",
-    "ubigeo": "190111"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "VICCO",
-    "clave": "PASCOPASCOVICCO",
-    "ubigeo": "190112"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "PASCO",
-    "distrito": "YANACANCHA",
-    "clave": "PASCOPASCOYANACANCHA",
-    "ubigeo": "190113"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "YANAHUANCA",
-    "clave": "PASCODANIEL ALCIDES CARRIONYANAHUANCA",
-    "ubigeo": "190201"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "CHACAYAN",
-    "clave": "PASCODANIEL ALCIDES CARRIONCHACAYAN",
-    "ubigeo": "190202"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "GOYLLARISQUIZGA",
-    "clave": "PASCODANIEL ALCIDES CARRIONGOYLLARISQUIZGA",
-    "ubigeo": "190203"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "PAUCAR",
-    "clave": "PASCODANIEL ALCIDES CARRIONPAUCAR",
-    "ubigeo": "190204"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "SAN PEDRO DE PILLAO",
-    "clave": "PASCODANIEL ALCIDES CARRIONSAN PEDRO DE PILLAO",
-    "ubigeo": "190205"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "SANTA ANA DE TUSI",
-    "clave": "PASCODANIEL ALCIDES CARRIONSANTA ANA DE TUSI",
-    "ubigeo": "190206"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "TAPUC",
-    "clave": "PASCODANIEL ALCIDES CARRIONTAPUC",
-    "ubigeo": "190207"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "DANIEL ALCIDES CARRION",
-    "distrito": "VILCABAMBA",
-    "clave": "PASCODANIEL ALCIDES CARRIONVILCABAMBA",
-    "ubigeo": "190208"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "OXAPAMPA",
-    "clave": "PASCOOXAPAMPAOXAPAMPA",
-    "ubigeo": "190301"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "CHONTABAMBA",
-    "clave": "PASCOOXAPAMPACHONTABAMBA",
-    "ubigeo": "190302"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "HUANCABAMBA",
-    "clave": "PASCOOXAPAMPAHUANCABAMBA",
-    "ubigeo": "190303"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "PALCAZU",
-    "clave": "PASCOOXAPAMPAPALCAZU",
-    "ubigeo": "190304"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "POZUZO",
-    "clave": "PASCOOXAPAMPAPOZUZO",
-    "ubigeo": "190305"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "PUERTO BERMUDEZ",
-    "clave": "PASCOOXAPAMPAPUERTO BERMUDEZ",
-    "ubigeo": "190306"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "VILLA RICA",
-    "clave": "PASCOOXAPAMPAVILLA RICA",
-    "ubigeo": "190307"
-  },
-  {
-    "departamento": "PASCO",
-    "provincia": "OXAPAMPA",
-    "distrito": "CONSTITUCION",
-    "clave": "PASCOOXAPAMPACONSTITUCION",
-    "ubigeo": "190308"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "PIURA",
-    "clave": "PIURAPIURAPIURA",
-    "ubigeo": "200101"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "CASTILLA",
-    "clave": "PIURAPIURACASTILLA",
-    "ubigeo": "200104"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "CATACAOS",
-    "clave": "PIURAPIURACATACAOS",
-    "ubigeo": "200105"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "CURA MORI",
-    "clave": "PIURAPIURACURA MORI",
-    "ubigeo": "200107"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "EL TALLAN",
-    "clave": "PIURAPIURAEL TALLAN",
-    "ubigeo": "200108"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "LA ARENA",
-    "clave": "PIURAPIURALA ARENA",
-    "ubigeo": "200109"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "LA UNION",
-    "clave": "PIURAPIURALA UNION",
-    "ubigeo": "200110"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "LAS LOMAS",
-    "clave": "PIURAPIURALAS LOMAS",
-    "ubigeo": "200111"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "TAMBO GRANDE",
-    "clave": "PIURAPIURATAMBO GRANDE",
-    "ubigeo": "200114"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PIURA",
-    "distrito": "VEINTISEIS DE OCTUBRE",
-    "clave": "PIURAPIURAVEINTISEIS DE OCTUBRE",
-    "ubigeo": "200115"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "AYABACA",
-    "clave": "PIURAAYABACAAYABACA",
-    "ubigeo": "200201"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "FRIAS",
-    "clave": "PIURAAYABACAFRIAS",
-    "ubigeo": "200202"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "JILILI",
-    "clave": "PIURAAYABACAJILILI",
-    "ubigeo": "200203"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "LAGUNAS",
-    "clave": "PIURAAYABACALAGUNAS",
-    "ubigeo": "200204"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "MONTERO",
-    "clave": "PIURAAYABACAMONTERO",
-    "ubigeo": "200205"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "PACAIPAMPA",
-    "clave": "PIURAAYABACAPACAIPAMPA",
-    "ubigeo": "200206"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "PAIMAS",
-    "clave": "PIURAAYABACAPAIMAS",
-    "ubigeo": "200207"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "SAPILLICA",
-    "clave": "PIURAAYABACASAPILLICA",
-    "ubigeo": "200208"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "SICCHEZ",
-    "clave": "PIURAAYABACASICCHEZ",
-    "ubigeo": "200209"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "AYABACA",
-    "distrito": "SUYO",
-    "clave": "PIURAAYABACASUYO",
-    "ubigeo": "200210"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "HUANCABAMBA",
-    "clave": "PIURAHUANCABAMBAHUANCABAMBA",
-    "ubigeo": "200301"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "CANCHAQUE",
-    "clave": "PIURAHUANCABAMBACANCHAQUE",
-    "ubigeo": "200302"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "EL CARMEN DE LA FRONTERA",
-    "clave": "PIURAHUANCABAMBAEL CARMEN DE LA FRONTERA",
-    "ubigeo": "200303"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "HUARMACA",
-    "clave": "PIURAHUANCABAMBAHUARMACA",
-    "ubigeo": "200304"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "LALAQUIZ",
-    "clave": "PIURAHUANCABAMBALALAQUIZ",
-    "ubigeo": "200305"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "SAN MIGUEL DE EL FAIQUE",
-    "clave": "PIURAHUANCABAMBASAN MIGUEL DE EL FAIQUE",
-    "ubigeo": "200306"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "SONDOR",
-    "clave": "PIURAHUANCABAMBASONDOR",
-    "ubigeo": "200307"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "HUANCABAMBA",
-    "distrito": "SONDORILLO",
-    "clave": "PIURAHUANCABAMBASONDORILLO",
-    "ubigeo": "200308"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "CHULUCANAS",
-    "clave": "PIURAMORROPONCHULUCANAS",
-    "ubigeo": "200401"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "BUENOS AIRES",
-    "clave": "PIURAMORROPONBUENOS AIRES",
-    "ubigeo": "200402"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "CHALACO",
-    "clave": "PIURAMORROPONCHALACO",
-    "ubigeo": "200403"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "LA MATANZA",
-    "clave": "PIURAMORROPONLA MATANZA",
-    "ubigeo": "200404"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "MORROPON",
-    "clave": "PIURAMORROPONMORROPON",
-    "ubigeo": "200405"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "SALITRAL",
-    "clave": "PIURAMORROPONSALITRAL",
-    "ubigeo": "200406"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "SAN JUAN DE BIGOTE",
-    "clave": "PIURAMORROPONSAN JUAN DE BIGOTE",
-    "ubigeo": "200407"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "SANTA CATALINA DE MOSSA",
-    "clave": "PIURAMORROPONSANTA CATALINA DE MOSSA",
-    "ubigeo": "200408"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "SANTO DOMINGO",
-    "clave": "PIURAMORROPONSANTO DOMINGO",
-    "ubigeo": "200409"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "MORROPON",
-    "distrito": "YAMANGO",
-    "clave": "PIURAMORROPONYAMANGO",
-    "ubigeo": "200410"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "PAITA",
-    "clave": "PIURAPAITAPAITA",
-    "ubigeo": "200501"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "AMOTAPE",
-    "clave": "PIURAPAITAAMOTAPE",
-    "ubigeo": "200502"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "ARENAL",
-    "clave": "PIURAPAITAARENAL",
-    "ubigeo": "200503"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "COLAN",
-    "clave": "PIURAPAITACOLAN",
-    "ubigeo": "200504"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "LA HUACA",
-    "clave": "PIURAPAITALA HUACA",
-    "ubigeo": "200505"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "TAMARINDO",
-    "clave": "PIURAPAITATAMARINDO",
-    "ubigeo": "200506"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "PAITA",
-    "distrito": "VICHAYAL",
-    "clave": "PIURAPAITAVICHAYAL",
-    "ubigeo": "200507"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "SULLANA",
-    "clave": "PIURASULLANASULLANA",
-    "ubigeo": "200601"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "BELLAVISTA",
-    "clave": "PIURASULLANABELLAVISTA",
-    "ubigeo": "200602"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "IGNACIO ESCUDERO",
-    "clave": "PIURASULLANAIGNACIO ESCUDERO",
-    "ubigeo": "200603"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "LANCONES",
-    "clave": "PIURASULLANALANCONES",
-    "ubigeo": "200604"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "MARCAVELICA",
-    "clave": "PIURASULLANAMARCAVELICA",
-    "ubigeo": "200605"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "MIGUEL CHECA",
-    "clave": "PIURASULLANAMIGUEL CHECA",
-    "ubigeo": "200606"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "QUERECOTILLO",
-    "clave": "PIURASULLANAQUERECOTILLO",
-    "ubigeo": "200607"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SULLANA",
-    "distrito": "SALITRAL",
-    "clave": "PIURASULLANASALITRAL",
-    "ubigeo": "200608"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "PARIÑAS",
-    "clave": "PIURATALARAPARIÑAS",
-    "ubigeo": "200701"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "EL ALTO",
-    "clave": "PIURATALARAEL ALTO",
-    "ubigeo": "200702"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "LA BREA",
-    "clave": "PIURATALARALA BREA",
-    "ubigeo": "200703"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "LOBITOS",
-    "clave": "PIURATALARALOBITOS",
-    "ubigeo": "200704"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "LOS ORGANOS",
-    "clave": "PIURATALARALOS ORGANOS",
-    "ubigeo": "200705"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "TALARA",
-    "distrito": "MANCORA",
-    "clave": "PIURATALARAMANCORA",
-    "ubigeo": "200706"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "SECHURA",
-    "clave": "PIURASECHURASECHURA",
-    "ubigeo": "200801"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "BELLAVISTA DE LA UNION",
-    "clave": "PIURASECHURABELLAVISTA DE LA UNION",
-    "ubigeo": "200802"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "BERNAL",
-    "clave": "PIURASECHURABERNAL",
-    "ubigeo": "200803"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "CRISTO NOS VALGA",
-    "clave": "PIURASECHURACRISTO NOS VALGA",
-    "ubigeo": "200804"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "VICE",
-    "clave": "PIURASECHURAVICE",
-    "ubigeo": "200805"
-  },
-  {
-    "departamento": "PIURA",
-    "provincia": "SECHURA",
-    "distrito": "RINCONADA LLICUAR",
-    "clave": "PIURASECHURARINCONADA LLICUAR",
-    "ubigeo": "200806"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "PUNO",
-    "clave": "PUNOPUNOPUNO",
-    "ubigeo": "210101"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "ACORA",
-    "clave": "PUNOPUNOACORA",
-    "ubigeo": "210102"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "AMANTANI",
-    "clave": "PUNOPUNOAMANTANI",
-    "ubigeo": "210103"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "ATUNCOLLA",
-    "clave": "PUNOPUNOATUNCOLLA",
-    "ubigeo": "210104"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "CAPACHICA",
-    "clave": "PUNOPUNOCAPACHICA",
-    "ubigeo": "210105"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "CHUCUITO",
-    "clave": "PUNOPUNOCHUCUITO",
-    "ubigeo": "210106"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "COATA",
-    "clave": "PUNOPUNOCOATA",
-    "ubigeo": "210107"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "HUATA",
-    "clave": "PUNOPUNOHUATA",
-    "ubigeo": "210108"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "MAÑAZO",
-    "clave": "PUNOPUNOMAÑAZO",
-    "ubigeo": "210109"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "PAUCARCOLLA",
-    "clave": "PUNOPUNOPAUCARCOLLA",
-    "ubigeo": "210110"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "PICHACANI",
-    "clave": "PUNOPUNOPICHACANI",
-    "ubigeo": "210111"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "PLATERIA",
-    "clave": "PUNOPUNOPLATERIA",
-    "ubigeo": "210112"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "SAN ANTONIO",
-    "clave": "PUNOPUNOSAN ANTONIO",
-    "ubigeo": "210113"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "TIQUILLACA",
-    "clave": "PUNOPUNOTIQUILLACA",
-    "ubigeo": "210114"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "PUNO",
-    "distrito": "VILQUE",
-    "clave": "PUNOPUNOVILQUE",
-    "ubigeo": "210115"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "AZANGARO",
-    "clave": "PUNOAZANGAROAZANGARO",
-    "ubigeo": "210201"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "ACHAYA",
-    "clave": "PUNOAZANGAROACHAYA",
-    "ubigeo": "210202"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "ARAPA",
-    "clave": "PUNOAZANGAROARAPA",
-    "ubigeo": "210203"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "ASILLO",
-    "clave": "PUNOAZANGAROASILLO",
-    "ubigeo": "210204"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "CAMINACA",
-    "clave": "PUNOAZANGAROCAMINACA",
-    "ubigeo": "210205"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "CHUPA",
-    "clave": "PUNOAZANGAROCHUPA",
-    "ubigeo": "210206"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "JOSE DOMINGO CHOQUEHUANCA",
-    "clave": "PUNOAZANGAROJOSE DOMINGO CHOQUEHUANCA",
-    "ubigeo": "210207"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "MUÑANI",
-    "clave": "PUNOAZANGAROMUÑANI",
-    "ubigeo": "210208"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "POTONI",
-    "clave": "PUNOAZANGAROPOTONI",
-    "ubigeo": "210209"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "SAMAN",
-    "clave": "PUNOAZANGAROSAMAN",
-    "ubigeo": "210210"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "SAN ANTON",
-    "clave": "PUNOAZANGAROSAN ANTON",
-    "ubigeo": "210211"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "SAN JOSE",
-    "clave": "PUNOAZANGAROSAN JOSE",
-    "ubigeo": "210212"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "SAN JUAN DE SALINAS",
-    "clave": "PUNOAZANGAROSAN JUAN DE SALINAS",
-    "ubigeo": "210213"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "SANTIAGO DE PUPUJA",
-    "clave": "PUNOAZANGAROSANTIAGO DE PUPUJA",
-    "ubigeo": "210214"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "AZANGARO",
-    "distrito": "TIRAPATA",
-    "clave": "PUNOAZANGAROTIRAPATA",
-    "ubigeo": "210215"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "MACUSANI",
-    "clave": "PUNOCARABAYAMACUSANI",
-    "ubigeo": "210301"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "AJOYANI",
-    "clave": "PUNOCARABAYAAJOYANI",
-    "ubigeo": "210302"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "AYAPATA",
-    "clave": "PUNOCARABAYAAYAPATA",
-    "ubigeo": "210303"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "COASA",
-    "clave": "PUNOCARABAYACOASA",
-    "ubigeo": "210304"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "CORANI",
-    "clave": "PUNOCARABAYACORANI",
-    "ubigeo": "210305"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "CRUCERO",
-    "clave": "PUNOCARABAYACRUCERO",
-    "ubigeo": "210306"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "ITUATA",
-    "clave": "PUNOCARABAYAITUATA",
-    "ubigeo": "210307"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "OLLACHEA",
-    "clave": "PUNOCARABAYAOLLACHEA",
-    "ubigeo": "210308"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "SAN GABAN",
-    "clave": "PUNOCARABAYASAN GABAN",
-    "ubigeo": "210309"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CARABAYA",
-    "distrito": "USICAYOS",
-    "clave": "PUNOCARABAYAUSICAYOS",
-    "ubigeo": "210310"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "JULI",
-    "clave": "PUNOCHUCUITOJULI",
-    "ubigeo": "210401"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "DESAGUADERO",
-    "clave": "PUNOCHUCUITODESAGUADERO",
-    "ubigeo": "210402"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "HUACULLANI",
-    "clave": "PUNOCHUCUITOHUACULLANI",
-    "ubigeo": "210403"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "KELLUYO",
-    "clave": "PUNOCHUCUITOKELLUYO",
-    "ubigeo": "210404"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "PISACOMA",
-    "clave": "PUNOCHUCUITOPISACOMA",
-    "ubigeo": "210405"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "POMATA",
-    "clave": "PUNOCHUCUITOPOMATA",
-    "ubigeo": "210406"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "CHUCUITO",
-    "distrito": "ZEPITA",
-    "clave": "PUNOCHUCUITOZEPITA",
-    "ubigeo": "210407"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "EL COLLAO",
-    "distrito": "ILAVE",
-    "clave": "PUNOEL COLLAOILAVE",
-    "ubigeo": "210501"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "EL COLLAO",
-    "distrito": "CAPAZO",
-    "clave": "PUNOEL COLLAOCAPAZO",
-    "ubigeo": "210502"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "EL COLLAO",
-    "distrito": "PILCUYO",
-    "clave": "PUNOEL COLLAOPILCUYO",
-    "ubigeo": "210503"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "EL COLLAO",
-    "distrito": "SANTA ROSA",
-    "clave": "PUNOEL COLLAOSANTA ROSA",
-    "ubigeo": "210504"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "EL COLLAO",
-    "distrito": "CONDURIRI",
-    "clave": "PUNOEL COLLAOCONDURIRI",
-    "ubigeo": "210505"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "HUANCANE",
-    "clave": "PUNOHUANCANEHUANCANE",
-    "ubigeo": "210601"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "COJATA",
-    "clave": "PUNOHUANCANECOJATA",
-    "ubigeo": "210602"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "HUATASANI",
-    "clave": "PUNOHUANCANEHUATASANI",
-    "ubigeo": "210603"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "INCHUPALLA",
-    "clave": "PUNOHUANCANEINCHUPALLA",
-    "ubigeo": "210604"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "PUSI",
-    "clave": "PUNOHUANCANEPUSI",
-    "ubigeo": "210605"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "ROSASPATA",
-    "clave": "PUNOHUANCANEROSASPATA",
-    "ubigeo": "210606"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "TARACO",
-    "clave": "PUNOHUANCANETARACO",
-    "ubigeo": "210607"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "HUANCANE",
-    "distrito": "VILQUE CHICO",
-    "clave": "PUNOHUANCANEVILQUE CHICO",
-    "ubigeo": "210608"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "LAMPA",
-    "clave": "PUNOLAMPALAMPA",
-    "ubigeo": "210701"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "CABANILLA",
-    "clave": "PUNOLAMPACABANILLA",
-    "ubigeo": "210702"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "CALAPUJA",
-    "clave": "PUNOLAMPACALAPUJA",
-    "ubigeo": "210703"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "NICASIO",
-    "clave": "PUNOLAMPANICASIO",
-    "ubigeo": "210704"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "OCUVIRI",
-    "clave": "PUNOLAMPAOCUVIRI",
-    "ubigeo": "210705"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "PALCA",
-    "clave": "PUNOLAMPAPALCA",
-    "ubigeo": "210706"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "PARATIA",
-    "clave": "PUNOLAMPAPARATIA",
-    "ubigeo": "210707"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "PUCARA",
-    "clave": "PUNOLAMPAPUCARA",
-    "ubigeo": "210708"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "SANTA LUCIA",
-    "clave": "PUNOLAMPASANTA LUCIA",
-    "ubigeo": "210709"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "LAMPA",
-    "distrito": "VILAVILA",
-    "clave": "PUNOLAMPAVILAVILA",
-    "ubigeo": "210710"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "AYAVIRI",
-    "clave": "PUNOMELGARAYAVIRI",
-    "ubigeo": "210801"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "ANTAUTA",
-    "clave": "PUNOMELGARANTAUTA",
-    "ubigeo": "210802"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "CUPI",
-    "clave": "PUNOMELGARCUPI",
-    "ubigeo": "210803"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "LLALLI",
-    "clave": "PUNOMELGARLLALLI",
-    "ubigeo": "210804"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "MACARI",
-    "clave": "PUNOMELGARMACARI",
-    "ubigeo": "210805"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "NUÑOA",
-    "clave": "PUNOMELGARNUÑOA",
-    "ubigeo": "210806"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "ORURILLO",
-    "clave": "PUNOMELGARORURILLO",
-    "ubigeo": "210807"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "SANTA ROSA",
-    "clave": "PUNOMELGARSANTA ROSA",
-    "ubigeo": "210808"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MELGAR",
-    "distrito": "UMACHIRI",
-    "clave": "PUNOMELGARUMACHIRI",
-    "ubigeo": "210809"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MOHO",
-    "distrito": "MOHO",
-    "clave": "PUNOMOHOMOHO",
-    "ubigeo": "210901"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MOHO",
-    "distrito": "CONIMA",
-    "clave": "PUNOMOHOCONIMA",
-    "ubigeo": "210902"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MOHO",
-    "distrito": "HUAYRAPATA",
-    "clave": "PUNOMOHOHUAYRAPATA",
-    "ubigeo": "210903"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "MOHO",
-    "distrito": "TILALI",
-    "clave": "PUNOMOHOTILALI",
-    "ubigeo": "210904"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ANTONIO DE PUTINA",
-    "distrito": "PUTINA",
-    "clave": "PUNOSAN ANTONIO DE PUTINAPUTINA",
-    "ubigeo": "211001"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ANTONIO DE PUTINA",
-    "distrito": "ANANEA",
-    "clave": "PUNOSAN ANTONIO DE PUTINAANANEA",
-    "ubigeo": "211002"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ANTONIO DE PUTINA",
-    "distrito": "PEDRO VILCA APAZA",
-    "clave": "PUNOSAN ANTONIO DE PUTINAPEDRO VILCA APAZA",
-    "ubigeo": "211003"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ANTONIO DE PUTINA",
-    "distrito": "QUILCAPUNCU",
-    "clave": "PUNOSAN ANTONIO DE PUTINAQUILCAPUNCU",
-    "ubigeo": "211004"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ANTONIO DE PUTINA",
-    "distrito": "SINA",
-    "clave": "PUNOSAN ANTONIO DE PUTINASINA",
-    "ubigeo": "211005"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ROMAN",
-    "distrito": "JULIACA",
-    "clave": "PUNOSAN ROMANJULIACA",
-    "ubigeo": "211101"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ROMAN",
-    "distrito": "CABANA",
-    "clave": "PUNOSAN ROMANCABANA",
-    "ubigeo": "211102"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ROMAN",
-    "distrito": "CABANILLAS",
-    "clave": "PUNOSAN ROMANCABANILLAS",
-    "ubigeo": "211103"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ROMAN",
-    "distrito": "CARACOTO",
-    "clave": "PUNOSAN ROMANCARACOTO",
-    "ubigeo": "211104"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SAN ROMAN",
-    "distrito": "SAN MIGUEL",
-    "clave": "PUNOSAN ROMANSAN MIGUEL",
-    "ubigeo": "211105"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "SANDIA",
-    "clave": "PUNOSANDIASANDIA",
-    "ubigeo": "211201"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "CUYOCUYO",
-    "clave": "PUNOSANDIACUYOCUYO",
-    "ubigeo": "211202"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "LIMBANI",
-    "clave": "PUNOSANDIALIMBANI",
-    "ubigeo": "211203"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "PATAMBUCO",
-    "clave": "PUNOSANDIAPATAMBUCO",
-    "ubigeo": "211204"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "PHARA",
-    "clave": "PUNOSANDIAPHARA",
-    "ubigeo": "211205"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "QUIACA",
-    "clave": "PUNOSANDIAQUIACA",
-    "ubigeo": "211206"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "SAN JUAN DEL ORO",
-    "clave": "PUNOSANDIASAN JUAN DEL ORO",
-    "ubigeo": "211207"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "YANAHUAYA",
-    "clave": "PUNOSANDIAYANAHUAYA",
-    "ubigeo": "211208"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "ALTO INAMBARI",
-    "clave": "PUNOSANDIAALTO INAMBARI",
-    "ubigeo": "211209"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "SANDIA",
-    "distrito": "SAN PEDRO DE PUTINA PUNCO",
-    "clave": "PUNOSANDIASAN PEDRO DE PUTINA PUNCO",
-    "ubigeo": "211210"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "YUNGUYO",
-    "clave": "PUNOYUNGUYOYUNGUYO",
-    "ubigeo": "211301"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "ANAPIA",
-    "clave": "PUNOYUNGUYOANAPIA",
-    "ubigeo": "211302"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "COPANI",
-    "clave": "PUNOYUNGUYOCOPANI",
-    "ubigeo": "211303"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "CUTURAPI",
-    "clave": "PUNOYUNGUYOCUTURAPI",
-    "ubigeo": "211304"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "OLLARAYA",
-    "clave": "PUNOYUNGUYOOLLARAYA",
-    "ubigeo": "211305"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "TINICACHI",
-    "clave": "PUNOYUNGUYOTINICACHI",
-    "ubigeo": "211306"
-  },
-  {
-    "departamento": "PUNO",
-    "provincia": "YUNGUYO",
-    "distrito": "UNICACHI",
-    "clave": "PUNOYUNGUYOUNICACHI",
-    "ubigeo": "211307"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "MOYOBAMBA",
-    "clave": "SAN MARTINMOYOBAMBAMOYOBAMBA",
-    "ubigeo": "220101"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "CALZADA",
-    "clave": "SAN MARTINMOYOBAMBACALZADA",
-    "ubigeo": "220102"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "HABANA",
-    "clave": "SAN MARTINMOYOBAMBAHABANA",
-    "ubigeo": "220103"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "JEPELACIO",
-    "clave": "SAN MARTINMOYOBAMBAJEPELACIO",
-    "ubigeo": "220104"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "SORITOR",
-    "clave": "SAN MARTINMOYOBAMBASORITOR",
-    "ubigeo": "220105"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MOYOBAMBA",
-    "distrito": "YANTALO",
-    "clave": "SAN MARTINMOYOBAMBAYANTALO",
-    "ubigeo": "220106"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "BELLAVISTA",
-    "clave": "SAN MARTINBELLAVISTABELLAVISTA",
-    "ubigeo": "220201"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "ALTO BIAVO",
-    "clave": "SAN MARTINBELLAVISTAALTO BIAVO",
-    "ubigeo": "220202"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "BAJO BIAVO",
-    "clave": "SAN MARTINBELLAVISTABAJO BIAVO",
-    "ubigeo": "220203"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "HUALLAGA",
-    "clave": "SAN MARTINBELLAVISTAHUALLAGA",
-    "ubigeo": "220204"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "SAN PABLO",
-    "clave": "SAN MARTINBELLAVISTASAN PABLO",
-    "ubigeo": "220205"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "BELLAVISTA",
-    "distrito": "SAN RAFAEL",
-    "clave": "SAN MARTINBELLAVISTASAN RAFAEL",
-    "ubigeo": "220206"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "EL DORADO",
-    "distrito": "SAN JOSE DE SISA",
-    "clave": "SAN MARTINEL DORADOSAN JOSE DE SISA",
-    "ubigeo": "220301"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "EL DORADO",
-    "distrito": "AGUA BLANCA",
-    "clave": "SAN MARTINEL DORADOAGUA BLANCA",
-    "ubigeo": "220302"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "EL DORADO",
-    "distrito": "SAN MARTIN",
-    "clave": "SAN MARTINEL DORADOSAN MARTIN",
-    "ubigeo": "220303"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "EL DORADO",
-    "distrito": "SANTA ROSA",
-    "clave": "SAN MARTINEL DORADOSANTA ROSA",
-    "ubigeo": "220304"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "EL DORADO",
-    "distrito": "SHATOJA",
-    "clave": "SAN MARTINEL DORADOSHATOJA",
-    "ubigeo": "220305"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "SAPOSOA",
-    "clave": "SAN MARTINHUALLAGASAPOSOA",
-    "ubigeo": "220401"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "ALTO SAPOSOA",
-    "clave": "SAN MARTINHUALLAGAALTO SAPOSOA",
-    "ubigeo": "220402"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "EL ESLABON",
-    "clave": "SAN MARTINHUALLAGAEL ESLABON",
-    "ubigeo": "220403"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "PISCOYACU",
-    "clave": "SAN MARTINHUALLAGAPISCOYACU",
-    "ubigeo": "220404"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "SACANCHE",
-    "clave": "SAN MARTINHUALLAGASACANCHE",
-    "ubigeo": "220405"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "HUALLAGA",
-    "distrito": "TINGO DE SAPOSOA",
-    "clave": "SAN MARTINHUALLAGATINGO DE SAPOSOA",
-    "ubigeo": "220406"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "LAMAS",
-    "clave": "SAN MARTINLAMASLAMAS",
-    "ubigeo": "220501"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "ALONSO DE ALVARADO",
-    "clave": "SAN MARTINLAMASALONSO DE ALVARADO",
-    "ubigeo": "220502"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "BARRANQUITA",
-    "clave": "SAN MARTINLAMASBARRANQUITA",
-    "ubigeo": "220503"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "CAYNARACHI",
-    "clave": "SAN MARTINLAMASCAYNARACHI",
-    "ubigeo": "220504"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "CUÑUMBUQUI",
-    "clave": "SAN MARTINLAMASCUÑUMBUQUI",
-    "ubigeo": "220505"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "PINTO RECODO",
-    "clave": "SAN MARTINLAMASPINTO RECODO",
-    "ubigeo": "220506"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "RUMISAPA",
-    "clave": "SAN MARTINLAMASRUMISAPA",
-    "ubigeo": "220507"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "SAN ROQUE DE CUMBAZA",
-    "clave": "SAN MARTINLAMASSAN ROQUE DE CUMBAZA",
-    "ubigeo": "220508"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "SHANAO",
-    "clave": "SAN MARTINLAMASSHANAO",
-    "ubigeo": "220509"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "TABALOSOS",
-    "clave": "SAN MARTINLAMASTABALOSOS",
-    "ubigeo": "220510"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "LAMAS",
-    "distrito": "ZAPATERO",
-    "clave": "SAN MARTINLAMASZAPATERO",
-    "ubigeo": "220511"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MARISCAL CACERES",
-    "distrito": "JUANJUI",
-    "clave": "SAN MARTINMARISCAL CACERESJUANJUI",
-    "ubigeo": "220601"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MARISCAL CACERES",
-    "distrito": "CAMPANILLA",
-    "clave": "SAN MARTINMARISCAL CACERESCAMPANILLA",
-    "ubigeo": "220602"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MARISCAL CACERES",
-    "distrito": "HUICUNGO",
-    "clave": "SAN MARTINMARISCAL CACERESHUICUNGO",
-    "ubigeo": "220603"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MARISCAL CACERES",
-    "distrito": "PACHIZA",
-    "clave": "SAN MARTINMARISCAL CACERESPACHIZA",
-    "ubigeo": "220604"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "MARISCAL CACERES",
-    "distrito": "PAJARILLO",
-    "clave": "SAN MARTINMARISCAL CACERESPAJARILLO",
-    "ubigeo": "220605"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "PICOTA",
-    "clave": "SAN MARTINPICOTAPICOTA",
-    "ubigeo": "220701"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "BUENOS AIRES",
-    "clave": "SAN MARTINPICOTABUENOS AIRES",
-    "ubigeo": "220702"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "CASPISAPA",
-    "clave": "SAN MARTINPICOTACASPISAPA",
-    "ubigeo": "220703"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "PILLUANA",
-    "clave": "SAN MARTINPICOTAPILLUANA",
-    "ubigeo": "220704"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "PUCACACA",
-    "clave": "SAN MARTINPICOTAPUCACACA",
-    "ubigeo": "220705"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "SAN CRISTOBAL",
-    "clave": "SAN MARTINPICOTASAN CRISTOBAL",
-    "ubigeo": "220706"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "SAN HILARION",
-    "clave": "SAN MARTINPICOTASAN HILARION",
-    "ubigeo": "220707"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "SHAMBOYACU",
-    "clave": "SAN MARTINPICOTASHAMBOYACU",
-    "ubigeo": "220708"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "TINGO DE PONASA",
-    "clave": "SAN MARTINPICOTATINGO DE PONASA",
-    "ubigeo": "220709"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "PICOTA",
-    "distrito": "TRES UNIDOS",
-    "clave": "SAN MARTINPICOTATRES UNIDOS",
-    "ubigeo": "220710"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "RIOJA",
-    "clave": "SAN MARTINRIOJARIOJA",
-    "ubigeo": "220801"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "AWAJUN",
-    "clave": "SAN MARTINRIOJAAWAJUN",
-    "ubigeo": "220802"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "ELIAS SOPLIN VARGAS",
-    "clave": "SAN MARTINRIOJAELIAS SOPLIN VARGAS",
-    "ubigeo": "220803"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "NUEVA CAJAMARCA",
-    "clave": "SAN MARTINRIOJANUEVA CAJAMARCA",
-    "ubigeo": "220804"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "PARDO MIGUEL",
-    "clave": "SAN MARTINRIOJAPARDO MIGUEL",
-    "ubigeo": "220805"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "POSIC",
-    "clave": "SAN MARTINRIOJAPOSIC",
-    "ubigeo": "220806"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "SAN FERNANDO",
-    "clave": "SAN MARTINRIOJASAN FERNANDO",
-    "ubigeo": "220807"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "YORONGOS",
-    "clave": "SAN MARTINRIOJAYORONGOS",
-    "ubigeo": "220808"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "RIOJA",
-    "distrito": "YURACYACU",
-    "clave": "SAN MARTINRIOJAYURACYACU",
-    "ubigeo": "220809"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "TARAPOTO",
-    "clave": "SAN MARTINSAN MARTINTARAPOTO",
-    "ubigeo": "220901"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "ALBERTO LEVEAU",
-    "clave": "SAN MARTINSAN MARTINALBERTO LEVEAU",
-    "ubigeo": "220902"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "CACATACHI",
-    "clave": "SAN MARTINSAN MARTINCACATACHI",
-    "ubigeo": "220903"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "CHAZUTA",
-    "clave": "SAN MARTINSAN MARTINCHAZUTA",
-    "ubigeo": "220904"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "CHIPURANA",
-    "clave": "SAN MARTINSAN MARTINCHIPURANA",
-    "ubigeo": "220905"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "EL PORVENIR",
-    "clave": "SAN MARTINSAN MARTINEL PORVENIR",
-    "ubigeo": "220906"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "HUIMBAYOC",
-    "clave": "SAN MARTINSAN MARTINHUIMBAYOC",
-    "ubigeo": "220907"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "JUAN GUERRA",
-    "clave": "SAN MARTINSAN MARTINJUAN GUERRA",
-    "ubigeo": "220908"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "LA BANDA DE SHILCAYO",
-    "clave": "SAN MARTINSAN MARTINLA BANDA DE SHILCAYO",
-    "ubigeo": "220909"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "MORALES",
-    "clave": "SAN MARTINSAN MARTINMORALES",
-    "ubigeo": "220910"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "PAPAPLAYA",
-    "clave": "SAN MARTINSAN MARTINPAPAPLAYA",
-    "ubigeo": "220911"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "SAN ANTONIO",
-    "clave": "SAN MARTINSAN MARTINSAN ANTONIO",
-    "ubigeo": "220912"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "SAUCE",
-    "clave": "SAN MARTINSAN MARTINSAUCE",
-    "ubigeo": "220913"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "SAN MARTIN",
-    "distrito": "SHAPAJA",
-    "clave": "SAN MARTINSAN MARTINSHAPAJA",
-    "ubigeo": "220914"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "TOCACHE",
-    "clave": "SAN MARTINTOCACHETOCACHE",
-    "ubigeo": "221001"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "NUEVO PROGRESO",
-    "clave": "SAN MARTINTOCACHENUEVO PROGRESO",
-    "ubigeo": "221002"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "POLVORA",
-    "clave": "SAN MARTINTOCACHEPOLVORA",
-    "ubigeo": "221003"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "SHUNTE",
-    "clave": "SAN MARTINTOCACHESHUNTE",
-    "ubigeo": "221004"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "UCHIZA",
-    "clave": "SAN MARTINTOCACHEUCHIZA",
-    "ubigeo": "221005"
-  },
-  {
-    "departamento": "SAN MARTIN",
-    "provincia": "TOCACHE",
-    "distrito": "SANTA LUCIA",
-    "clave": "SAN MARTINTOCACHESANTA LUCIA",
-    "ubigeo": "221006"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "TACNA",
-    "clave": "TACNATACNATACNA",
-    "ubigeo": "230101"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "ALTO DE LA ALIANZA",
-    "clave": "TACNATACNAALTO DE LA ALIANZA",
-    "ubigeo": "230102"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "CALANA",
-    "clave": "TACNATACNACALANA",
-    "ubigeo": "230103"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "CIUDAD NUEVA",
-    "clave": "TACNATACNACIUDAD NUEVA",
-    "ubigeo": "230104"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "INCLAN",
-    "clave": "TACNATACNAINCLAN",
-    "ubigeo": "230105"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "PACHIA",
-    "clave": "TACNATACNAPACHIA",
-    "ubigeo": "230106"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "PALCA",
-    "clave": "TACNATACNAPALCA",
-    "ubigeo": "230107"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "POCOLLAY",
-    "clave": "TACNATACNAPOCOLLAY",
-    "ubigeo": "230108"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "SAMA",
-    "clave": "TACNATACNASAMA",
-    "ubigeo": "230109"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "CORONEL GREGORIO ALBARRACIN LANCHIPA",
-    "clave": "TACNATACNACORONEL GREGORIO ALBARRACIN LANCHIPA",
-    "ubigeo": "230110"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TACNA",
-    "distrito": "LA YARADA LOS PALOS",
-    "clave": "TACNATACNALA YARADA LOS PALOS",
-    "ubigeo": "230111"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "CANDARAVE",
-    "clave": "TACNACANDARAVECANDARAVE",
-    "ubigeo": "230201"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "CAIRANI",
-    "clave": "TACNACANDARAVECAIRANI",
-    "ubigeo": "230202"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "CAMILACA",
-    "clave": "TACNACANDARAVECAMILACA",
-    "ubigeo": "230203"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "CURIBAYA",
-    "clave": "TACNACANDARAVECURIBAYA",
-    "ubigeo": "230204"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "HUANUARA",
-    "clave": "TACNACANDARAVEHUANUARA",
-    "ubigeo": "230205"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "CANDARAVE",
-    "distrito": "QUILAHUANI",
-    "clave": "TACNACANDARAVEQUILAHUANI",
-    "ubigeo": "230206"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "JORGE BASADRE",
-    "distrito": "LOCUMBA",
-    "clave": "TACNAJORGE BASADRELOCUMBA",
-    "ubigeo": "230301"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "JORGE BASADRE",
-    "distrito": "ILABAYA",
-    "clave": "TACNAJORGE BASADREILABAYA",
-    "ubigeo": "230302"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "JORGE BASADRE",
-    "distrito": "ITE",
-    "clave": "TACNAJORGE BASADREITE",
-    "ubigeo": "230303"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "TARATA",
-    "clave": "TACNATARATATARATA",
-    "ubigeo": "230401"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "HEROES ALBARRACIN",
-    "clave": "TACNATARATAHEROES ALBARRACIN",
-    "ubigeo": "230402"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "ESTIQUE",
-    "clave": "TACNATARATAESTIQUE",
-    "ubigeo": "230403"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "ESTIQUE-PAMPA",
-    "clave": "TACNATARATAESTIQUE-PAMPA",
-    "ubigeo": "230404"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "SITAJARA",
-    "clave": "TACNATARATASITAJARA",
-    "ubigeo": "230405"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "SUSAPAYA",
-    "clave": "TACNATARATASUSAPAYA",
-    "ubigeo": "230406"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "TARUCACHI",
-    "clave": "TACNATARATATARUCACHI",
-    "ubigeo": "230407"
-  },
-  {
-    "departamento": "TACNA",
-    "provincia": "TARATA",
-    "distrito": "TICACO",
-    "clave": "TACNATARATATICACO",
-    "ubigeo": "230408"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "TUMBES",
-    "clave": "TUMBESTUMBESTUMBES",
-    "ubigeo": "240101"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "CORRALES",
-    "clave": "TUMBESTUMBESCORRALES",
-    "ubigeo": "240102"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "LA CRUZ",
-    "clave": "TUMBESTUMBESLA CRUZ",
-    "ubigeo": "240103"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "PAMPAS DE HOSPITAL",
-    "clave": "TUMBESTUMBESPAMPAS DE HOSPITAL",
-    "ubigeo": "240104"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "SAN JACINTO",
-    "clave": "TUMBESTUMBESSAN JACINTO",
-    "ubigeo": "240105"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "TUMBES",
-    "distrito": "SAN JUAN DE LA VIRGEN",
-    "clave": "TUMBESTUMBESSAN JUAN DE LA VIRGEN",
-    "ubigeo": "240106"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "CONTRALMIRANTE VILLAR",
-    "distrito": "ZORRITOS",
-    "clave": "TUMBESCONTRALMIRANTE VILLARZORRITOS",
-    "ubigeo": "240201"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "CONTRALMIRANTE VILLAR",
-    "distrito": "CASITAS",
-    "clave": "TUMBESCONTRALMIRANTE VILLARCASITAS",
-    "ubigeo": "240202"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "CONTRALMIRANTE VILLAR",
-    "distrito": "CANOAS DE PUNTA SAL",
-    "clave": "TUMBESCONTRALMIRANTE VILLARCANOAS DE PUNTA SAL",
-    "ubigeo": "240203"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "ZARUMILLA",
-    "distrito": "ZARUMILLA",
-    "clave": "TUMBESZARUMILLAZARUMILLA",
-    "ubigeo": "240301"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "ZARUMILLA",
-    "distrito": "AGUAS VERDES",
-    "clave": "TUMBESZARUMILLAAGUAS VERDES",
-    "ubigeo": "240302"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "ZARUMILLA",
-    "distrito": "MATAPALO",
-    "clave": "TUMBESZARUMILLAMATAPALO",
-    "ubigeo": "240303"
-  },
-  {
-    "departamento": "TUMBES",
-    "provincia": "ZARUMILLA",
-    "distrito": "PAPAYAL",
-    "clave": "TUMBESZARUMILLAPAPAYAL",
-    "ubigeo": "240304"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "CALLERIA",
-    "clave": "UCAYALICORONEL PORTILLOCALLERIA",
-    "ubigeo": "250101"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "CAMPOVERDE",
-    "clave": "UCAYALICORONEL PORTILLOCAMPOVERDE",
-    "ubigeo": "250102"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "IPARIA",
-    "clave": "UCAYALICORONEL PORTILLOIPARIA",
-    "ubigeo": "250103"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "MASISEA",
-    "clave": "UCAYALICORONEL PORTILLOMASISEA",
-    "ubigeo": "250104"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "YARINACOCHA",
-    "clave": "UCAYALICORONEL PORTILLOYARINACOCHA",
-    "ubigeo": "250105"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "NUEVA REQUENA",
-    "clave": "UCAYALICORONEL PORTILLONUEVA REQUENA",
-    "ubigeo": "250106"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "CORONEL PORTILLO",
-    "distrito": "MANANTAY",
-    "clave": "UCAYALICORONEL PORTILLOMANANTAY",
-    "ubigeo": "250107"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "ATALAYA",
-    "distrito": "RAIMONDI",
-    "clave": "UCAYALIATALAYARAIMONDI",
-    "ubigeo": "250201"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "ATALAYA",
-    "distrito": "SEPAHUA",
-    "clave": "UCAYALIATALAYASEPAHUA",
-    "ubigeo": "250202"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "ATALAYA",
-    "distrito": "TAHUANIA",
-    "clave": "UCAYALIATALAYATAHUANIA",
-    "ubigeo": "250203"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "ATALAYA",
-    "distrito": "YURUA",
-    "clave": "UCAYALIATALAYAYURUA",
-    "ubigeo": "250204"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "PADRE ABAD",
-    "clave": "UCAYALIPADRE ABADPADRE ABAD",
-    "ubigeo": "250301"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "IRAZOLA",
-    "clave": "UCAYALIPADRE ABADIRAZOLA",
-    "ubigeo": "250302"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "CURIMANA",
-    "clave": "UCAYALIPADRE ABADCURIMANA",
-    "ubigeo": "250303"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "NESHUYA",
-    "clave": "UCAYALIPADRE ABADNESHUYA",
-    "ubigeo": "250304"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "ALEXANDER VON HUMBOLDT",
-    "clave": "UCAYALIPADRE ABADALEXANDER VON HUMBOLDT",
-    "ubigeo": "250305"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "HUIPOCA",
-    "clave": "UCAYALIPADRE ABADHUIPOCA",
-    "ubigeo": "250306"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PADRE ABAD",
-    "distrito": "BOQUERON",
-    "clave": "UCAYALIPADRE ABADBOQUERON",
-    "ubigeo": "250307"
-  },
-  {
-    "departamento": "UCAYALI",
-    "provincia": "PURUS",
-    "distrito": "PURUS",
-    "clave": "UCAYALIPURUSPURUS",
-    "ubigeo": "250401"
-  }
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "CHACHAPOYAS", "lat": -6.247743, "lon": -77.856488},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "ASUNCION", "lat": -5.996133, "lon": -77.743204},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "BALSAS", "lat": -6.807726, "lon": -77.949166},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "CHETO", "lat": -6.29797, "lon": -77.677166},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "CHILIQUIN", "lat": -6.078208, "lon": -77.755866},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "CHUQUIBAMBA", "lat": -6.934894, "lon": -77.895071},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "GRANADA", "lat": -6.099981, "lon": -77.576583},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "HUANCAS", "lat": -6.156145, "lon": -77.874979},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "LA JALCA", "lat": -6.503594, "lon": -77.784397},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "LEIMEBAMBA", "lat": -6.808897, "lon": -77.798707},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "LEVANTO", "lat": -6.314297, "lon": -77.864554},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "MAGDALENA", "lat": -6.420566, "lon": -77.823817},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "MARISCAL CASTILLA", "lat": -6.578903, "lon": -77.770002},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "MOLINOPAMPA", "lat": -6.212441, "lon": -77.607253},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "MONTEVIDEO", "lat": -6.628106, "lon": -77.718378},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "OLLEROS", "lat": -6.008413, "lon": -77.670984},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "QUINJALCA", "lat": -6.108161, "lon": -77.685491},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "SAN FRANCISCO DE DAGUAS", "lat": -6.232236, "lon": -77.733575},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "SAN ISIDRO DE MAINO", "lat": -6.354417, "lon": -77.822567},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "SOLOCO", "lat": -6.309114, "lon": -77.746354},
+  {"departamento": "AMAZONAS", "provincia": "CHACHAPOYAS", "distrito": "SONCHE", "lat": -6.175974, "lon": -77.796405},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "BAGUA", "lat": -5.580913, "lon": -78.520983},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "ARAMANGO", "lat": -5.378771, "lon": -78.444391},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "COPALLIN", "lat": -5.647705, "lon": -78.399757},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "EL PARCO", "lat": -5.622638, "lon": -78.47397},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "IMAZA", "lat": -4.99134, "lon": -78.389587},
+  {"departamento": "AMAZONAS", "provincia": "BAGUA", "distrito": "LA PECA", "lat": -5.591978, "lon": -78.445406},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "JUMBILLA", "lat": -5.951743, "lon": -77.825658},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "CHISQUILLA", "lat": -5.894847, "lon": -77.725795},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "CHURUJA", "lat": -6.007797, "lon": -77.930364},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "COROSHA", "lat": -5.817519, "lon": -77.810724},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "CUISPES", "lat": -5.911145, "lon": -77.914793},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "FLORIDA", "lat": -5.823604, "lon": -77.959202},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "JAZAN", "lat": -5.945374, "lon": -78.023432},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "RECTA", "lat": -5.939221, "lon": -77.775359},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "SAN CARLOS", "lat": -5.996389, "lon": -77.879059},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "SHIPASBAMBA", "lat": -5.883747, "lon": -78.052089},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "VALERA", "lat": -6.080634, "lon": -77.869171},
+  {"departamento": "AMAZONAS", "provincia": "BONGARA", "distrito": "YAMBRASBAMBA", "lat": -5.524329, "lon": -77.860549},
+  {"departamento": "AMAZONAS", "provincia": "CONDORCANQUI", "distrito": "NIEVA", "lat": -4.845424, "lon": -77.930373},
+  {"departamento": "AMAZONAS", "provincia": "CONDORCANQUI", "distrito": "EL CENEPA", "lat": -4.168538, "lon": -78.335893},
+  {"departamento": "AMAZONAS", "provincia": "CONDORCANQUI", "distrito": "RIO SANTIAGO", "lat": -3.81345, "lon": -77.888115},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "LAMUD", "lat": -6.11988, "lon": -77.943559},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "CAMPORREDONDO", "lat": -6.177798, "lon": -78.33448},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "COCABAMBA", "lat": -6.626973, "lon": -78.015374},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "COLCAMAR", "lat": -6.310032, "lon": -78.010639},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "CONILA", "lat": -6.126535, "lon": -78.191194},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "INGUILPATA", "lat": -6.248102, "lon": -78.028568},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "LONGUITA", "lat": -6.407304, "lon": -78.004809},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "LONYA CHICO", "lat": -6.207429, "lon": -78.012397},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "LUYA", "lat": -6.178747, "lon": -77.966645},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "LUYA VIEJO", "lat": -6.11738, "lon": -78.102592},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "MARIA", "lat": -6.496565, "lon": -77.960797},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "OCALLI", "lat": -6.221806, "lon": -78.216858},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "OCUMAL", "lat": -6.345784, "lon": -78.163993},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "PISUQUIA", "lat": -6.474745, "lon": -78.086282},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "PROVIDENCIA", "lat": -6.307571, "lon": -78.291848},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SAN CRISTOBAL", "lat": -6.084081, "lon": -77.963362},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SAN FRANCISCO DEL YESO", "lat": -6.65902, "lon": -77.859532},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SAN JERONIMO", "lat": -6.004594, "lon": -78.045807},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SAN JUAN DE LOPECANCHA", "lat": -6.482744, "lon": -77.891756},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SANTA CATALINA", "lat": -6.056965, "lon": -78.093516},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "SANTO TOMAS", "lat": -6.569059, "lon": -77.892477},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "TINGO", "lat": -6.386865, "lon": -77.943525},
+  {"departamento": "AMAZONAS", "provincia": "LUYA", "distrito": "TRITA", "lat": -6.144069, "lon": -78.01939},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "SAN NICOLAS", "lat": -6.372806, "lon": -77.438958},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "CHIRIMOTO", "lat": -6.547471, "lon": -77.420011},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "COCHAMAL", "lat": -6.386222, "lon": -77.665449},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "HUAMBO", "lat": -6.435571, "lon": -77.530564},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "LIMABAMBA", "lat": -6.553079, "lon": -77.576031},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "LONGAR", "lat": -6.351044, "lon": -77.56609},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "MARISCAL BENAVIDES", "lat": -6.291664, "lon": -77.485115},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "MILPUC", "lat": -6.498659, "lon": -77.413645},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "OMIA", "lat": -6.405407, "lon": -77.354431},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "SANTA ROSA", "lat": -6.455234, "lon": -77.458416},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "TOTORA", "lat": -6.491351, "lon": -77.467157},
+  {"departamento": "AMAZONAS", "provincia": "RODRIGUEZ DE MENDOZA", "distrito": "VISTA ALEGRE", "lat": -6.207199, "lon": -77.334225},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "BAGUA GRANDE", "lat": -5.838842, "lon": -78.44},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "CAJARURO", "lat": -5.614313, "lon": -78.174779},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "CUMBA", "lat": -5.916725, "lon": -78.607707},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "EL MILAGRO", "lat": -5.717311, "lon": -78.611246},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "JAMALCA", "lat": -5.952463, "lon": -78.234958},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "LONYA GRANDE", "lat": -6.063472, "lon": -78.410673},
+  {"departamento": "AMAZONAS", "provincia": "UTCUBAMBA", "distrito": "YAMON", "lat": -6.011998, "lon": -78.523368},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "HUARAZ", "lat": -9.570416, "lon": -77.471537},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "COCHABAMBA", "lat": -9.466071, "lon": -77.851562},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "COLCABAMBA", "lat": -9.576326, "lon": -77.82164},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "HUANCHAY", "lat": -9.731057, "lon": -77.819333},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "INDEPENDENCIA", "lat": -9.471359, "lon": -77.484715},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "JANGAS", "lat": -9.44133, "lon": -77.603839},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "LA LIBERTAD", "lat": -9.636772, "lon": -77.717884},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "OLLEROS", "lat": -9.621852, "lon": -77.371644},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "PAMPAS GRANDE", "lat": -9.645743, "lon": -77.910312},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "PARIACOTO", "lat": -9.481229, "lon": -77.794617},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "PIRA", "lat": -9.520963, "lon": -77.693977},
+  {"departamento": "ANCASH", "provincia": "HUARAZ", "distrito": "TARICA", "lat": -9.392607, "lon": -77.482028},
+  {"departamento": "ANCASH", "provincia": "AIJA", "distrito": "AIJA", "lat": -9.800422, "lon": -77.567629},
+  {"departamento": "ANCASH", "provincia": "AIJA", "distrito": "CORIS", "lat": -9.807593, "lon": -77.796147},
+  {"departamento": "ANCASH", "provincia": "AIJA", "distrito": "HUACLLAN", "lat": -9.786084, "lon": -77.678744},
+  {"departamento": "ANCASH", "provincia": "AIJA", "distrito": "LA MERCED", "lat": -9.703053, "lon": -77.615423},
+  {"departamento": "ANCASH", "provincia": "AIJA", "distrito": "SUCCHA", "lat": -9.838002, "lon": -77.635762},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "LLAMELLIN", "lat": -9.081831, "lon": -77.007345},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "ACZO", "lat": -9.220128, "lon": -76.998621},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "CHACCHO", "lat": -9.027739, "lon": -77.072042},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "CHINGAS", "lat": -9.139328, "lon": -77.00744},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "MIRGAS", "lat": -9.116037, "lon": -77.112924},
+  {"departamento": "ANCASH", "provincia": "ANTONIO RAYMONDI", "distrito": "SAN JUAN DE RONTOY", "lat": -9.21843, "lon": -77.04174},
+  {"departamento": "ANCASH", "provincia": "ASUNCION", "distrito": "CHACAS", "lat": -9.205581, "lon": -77.397598},
+  {"departamento": "ANCASH", "provincia": "ASUNCION", "distrito": "ACOCHACA", "lat": -9.097209, "lon": -77.405748},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "CHIQUIAN", "lat": -10.178171, "lon": -77.179237},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "ABELARDO PARDO LEZAMETA", "lat": -10.309949, "lon": -77.159759},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "ANTONIO RAYMONDI", "lat": -10.203244, "lon": -77.499868},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "AQUIA", "lat": -9.965788, "lon": -77.130966},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "CAJACAY", "lat": -10.190446, "lon": -77.342482},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "CANIS", "lat": -10.334455, "lon": -77.190979},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "COLQUIOC", "lat": -10.301392, "lon": -77.585534},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "HUALLANCA", "lat": -9.917183, "lon": -76.943814},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "HUASTA", "lat": -10.113929, "lon": -77.031539},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "HUAYLLACAYAN", "lat": -10.246943, "lon": -77.410773},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "LA PRIMAVERA", "lat": -10.301866, "lon": -77.106289},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "MANGAS", "lat": -10.360928, "lon": -77.104746},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "PACLLON", "lat": -10.238924, "lon": -77.003412},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "SAN MIGUEL DE CORPANQUI", "lat": -10.291529, "lon": -77.209854},
+  {"departamento": "ANCASH", "provincia": "BOLOGNESI", "distrito": "TICLLOS", "lat": -10.232477, "lon": -77.208034},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "CARHUAZ", "lat": -9.293597, "lon": -77.639636},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "ACOPAMPA", "lat": -9.290034, "lon": -77.61001},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "AMASHCA", "lat": -9.223526, "lon": -77.644884},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "ANTA", "lat": -9.361036, "lon": -77.63243},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "ATAQUERO", "lat": -9.290194, "lon": -77.729299},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "MARCARA", "lat": -9.303714, "lon": -77.495538},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "PARIAHUANCA", "lat": -9.356019, "lon": -77.574196},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "SAN MIGUEL DE ACO", "lat": -9.343929, "lon": -77.433001},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "SHILLA", "lat": -9.154423, "lon": -77.564719},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "TINCO", "lat": -9.258939, "lon": -77.661797},
+  {"departamento": "ANCASH", "provincia": "CARHUAZ", "distrito": "YUNGAR", "lat": -9.404083, "lon": -77.630928},
+  {"departamento": "ANCASH", "provincia": "CARLOS FERMIN FITZCARRALD", "distrito": "SAN LUIS", "lat": -9.097163, "lon": -77.290962},
+  {"departamento": "ANCASH", "provincia": "CARLOS FERMIN FITZCARRALD", "distrito": "SAN NICOLAS", "lat": -9.011206, "lon": -77.169574},
+  {"departamento": "ANCASH", "provincia": "CARLOS FERMIN FITZCARRALD", "distrito": "YAUYA", "lat": -9.007665, "lon": -77.256435},
+  {"departamento": "ANCASH", "provincia": "CASMA", "distrito": "CASMA", "lat": -9.518151, "lon": -78.223198},
+  {"departamento": "ANCASH", "provincia": "CASMA", "distrito": "BUENA VISTA ALTA", "lat": -9.372988, "lon": -78.142711},
+  {"departamento": "ANCASH", "provincia": "CASMA", "distrito": "COMANDANTE NOEL", "lat": -9.509798, "lon": -78.355388},
+  {"departamento": "ANCASH", "provincia": "CASMA", "distrito": "YAUTAN", "lat": -9.5059, "lon": -78.020306},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "CORONGO", "lat": -8.548915, "lon": -77.929033},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "ACO", "lat": -8.508033, "lon": -77.883485},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "BAMBAS", "lat": -8.604811, "lon": -78.046856},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "CUSCA", "lat": -8.523294, "lon": -77.788933},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "LA PAMPA", "lat": -8.678118, "lon": -77.892993},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "YANAC", "lat": -8.625091, "lon": -77.847152},
+  {"departamento": "ANCASH", "provincia": "CORONGO", "distrito": "YUPAN", "lat": -8.641491, "lon": -77.970095},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "HUARI", "lat": -9.32314, "lon": -77.232896},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "ANRA", "lat": -9.252511, "lon": -76.904671},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "CAJAY", "lat": -9.257031, "lon": -77.131409},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "CHAVIN DE HUANTAR", "lat": -9.655432, "lon": -77.211725},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "HUACACHI", "lat": -9.30854, "lon": -76.929632},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "HUACCHIS", "lat": -9.188563, "lon": -76.808921},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "HUACHIS", "lat": -9.42639, "lon": -77.078153},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "HUANTAR", "lat": -9.467826, "lon": -77.236165},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "MASIN", "lat": -9.33162, "lon": -77.092537},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "PAUCAS", "lat": -9.151016, "lon": -76.884609},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "PONTO", "lat": -9.347451, "lon": -76.984901},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "RAHUAPAMPA", "lat": -9.355631, "lon": -77.062711},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "RAPAYAN", "lat": -9.272109, "lon": -76.776655},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "SAN MARCOS", "lat": -9.628152, "lon": -77.091897},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "SAN PEDRO DE CHANA", "lat": -9.466578, "lon": -76.982342},
+  {"departamento": "ANCASH", "provincia": "HUARI", "distrito": "UCO", "lat": -9.191127, "lon": -76.931541},
+  {"departamento": "ANCASH", "provincia": "HUARMEY", "distrito": "HUARMEY", "lat": -10.173879, "lon": -77.918638},
+  {"departamento": "ANCASH", "provincia": "HUARMEY", "distrito": "COCHAPETI", "lat": -9.985848, "lon": -77.692272},
+  {"departamento": "ANCASH", "provincia": "HUARMEY", "distrito": "CULEBRAS", "lat": -9.822734, "lon": -78.1036},
+  {"departamento": "ANCASH", "provincia": "HUARMEY", "distrito": "HUAYAN", "lat": -9.897481, "lon": -77.744625},
+  {"departamento": "ANCASH", "provincia": "HUARMEY", "distrito": "MALVAS", "lat": -9.921036, "lon": -77.664727},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "CARAZ", "lat": -9.022519, "lon": -77.749774},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "HUALLANCA", "lat": -8.787925, "lon": -77.917484},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "HUATA", "lat": -9.030069, "lon": -77.876582},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "HUAYLAS", "lat": -8.889693, "lon": -77.894018},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "MATO", "lat": -8.958028, "lon": -77.890965},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "PAMPAROMAS", "lat": -9.143242, "lon": -77.957027},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "PUEBLO LIBRE", "lat": -9.148707, "lon": -77.818722},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "SANTA CRUZ", "lat": -8.908671, "lon": -77.722572},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "SANTO TORIBIO", "lat": -8.846398, "lon": -77.952495},
+  {"departamento": "ANCASH", "provincia": "HUAYLAS", "distrito": "YURACMARCA", "lat": -8.76195, "lon": -77.741145},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "PISCOBAMBA", "lat": -8.862121, "lon": -77.353234},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "CASCA", "lat": -8.823139, "lon": -77.387664},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "ELEAZAR GUZMAN BARRON", "lat": -8.886066, "lon": -77.220344},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "FIDEL OLIVAS ESCUDERO", "lat": -8.784921, "lon": -77.277203},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "LLAMA", "lat": -8.909571, "lon": -77.290141},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "LLUMPA", "lat": -8.967481, "lon": -77.456373},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "LUCMA", "lat": -8.925152, "lon": -77.445179},
+  {"departamento": "ANCASH", "provincia": "MARISCAL LUZURIAGA", "distrito": "MUSGA", "lat": -8.893033, "lon": -77.324564},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "OCROS", "lat": -10.380616, "lon": -77.364425},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "ACAS", "lat": -10.518304, "lon": -77.339458},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "CAJAMARQUILLA", "lat": -10.320914, "lon": -77.240039},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "CARHUAPAMPA", "lat": -10.503472, "lon": -77.224829},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "COCHAS", "lat": -10.649256, "lon": -77.48703},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "CONGAS", "lat": -10.319373, "lon": -77.424082},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "LLIPA", "lat": -10.379112, "lon": -77.214446},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "SAN CRISTOBAL DE RAJAN", "lat": -10.415664, "lon": -77.228433},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "SAN PEDRO", "lat": -10.474724, "lon": -77.568871},
+  {"departamento": "ANCASH", "provincia": "OCROS", "distrito": "SANTIAGO DE CHILCAS", "lat": -10.440157, "lon": -77.358673},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "CABANA", "lat": -8.403876, "lon": -77.959318},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "BOLOGNESI", "lat": -8.342727, "lon": -78.069963},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "CONCHUCOS", "lat": -8.258111, "lon": -77.730644},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "HUACASCHUQUE", "lat": -8.302837, "lon": -77.992366},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "HUANDOVAL", "lat": -8.334568, "lon": -77.945598},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "LACABAMBA", "lat": -8.265803, "lon": -77.905532},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "LLAPO", "lat": -8.515618, "lon": -78.030288},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "PALLASCA", "lat": -8.263449, "lon": -78.004851},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "PAMPAS", "lat": -8.138515, "lon": -77.798854},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "SANTA ROSA", "lat": -8.568457, "lon": -78.138443},
+  {"departamento": "ANCASH", "provincia": "PALLASCA", "distrito": "TAUCA", "lat": -8.446069, "lon": -78.055568},
+  {"departamento": "ANCASH", "provincia": "POMABAMBA", "distrito": "POMABAMBA", "lat": -8.790369, "lon": -77.506526},
+  {"departamento": "ANCASH", "provincia": "POMABAMBA", "distrito": "HUAYLLAN", "lat": -8.889717, "lon": -77.466279},
+  {"departamento": "ANCASH", "provincia": "POMABAMBA", "distrito": "PAROBAMBA", "lat": -8.612757, "lon": -77.395319},
+  {"departamento": "ANCASH", "provincia": "POMABAMBA", "distrito": "QUINUABAMBA", "lat": -8.702326, "lon": -77.343694},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "RECUAY", "lat": -9.706465, "lon": -77.44743},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "CATAC", "lat": -9.911212, "lon": -77.317058},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "COTAPARACO", "lat": -9.937555, "lon": -77.540931},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "HUAYLLAPAMPA", "lat": -10.057732, "lon": -77.514689},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "LLACLLIN", "lat": -10.108037, "lon": -77.587487},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "MARCA", "lat": -10.074222, "lon": -77.454342},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "PAMPAS CHICO", "lat": -10.094083, "lon": -77.373234},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "PARARIN", "lat": -10.119215, "lon": -77.653817},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "TAPACOCHA", "lat": -10.002753, "lon": -77.539887},
+  {"departamento": "ANCASH", "provincia": "RECUAY", "distrito": "TICAPAMPA", "lat": -9.737833, "lon": -77.392285},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "CHIMBOTE", "lat": -8.877597, "lon": -78.401116},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "CACERES DEL PERU", "lat": -8.961002, "lon": -78.076415},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "COISHCO", "lat": -9.027582, "lon": -78.618452},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "MACATE", "lat": -8.776547, "lon": -78.12199},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "MORO", "lat": -9.163291, "lon": -78.123971},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "NEPEÑA", "lat": -9.141493, "lon": -78.303192},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "SAMANCO", "lat": -9.27946, "lon": -78.442504},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "SANTA", "lat": -8.992212, "lon": -78.609254},
+  {"departamento": "ANCASH", "provincia": "SANTA", "distrito": "NUEVO CHIMBOTE", "lat": -9.100106, "lon": -78.436156},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "SIHUAS", "lat": -8.540291, "lon": -77.615435},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "ACOBAMBA", "lat": -8.300209, "lon": -77.56075},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "ALFONSO UGARTE", "lat": -8.467756, "lon": -77.443521},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "CASHAPAMPA", "lat": -8.587811, "lon": -77.653205},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "CHINGALPO", "lat": -8.362876, "lon": -77.645984},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "HUAYLLABAMBA", "lat": -8.512134, "lon": -77.530054},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "QUICHES", "lat": -8.395979, "lon": -77.509756},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "RAGASH", "lat": -8.454797, "lon": -77.696031},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "SAN JUAN", "lat": -8.671637, "lon": -77.620477},
+  {"departamento": "ANCASH", "provincia": "SIHUAS", "distrito": "SICSIBAMBA", "lat": -8.630532, "lon": -77.529284},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "YUNGAY", "lat": -9.093486, "lon": -77.666401},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "CASCAPARA", "lat": -9.316127, "lon": -77.832713},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "MANCOS", "lat": -9.192299, "lon": -77.650135},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "MATACOTO", "lat": -9.177489, "lon": -77.758965},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "QUILLO", "lat": -9.316866, "lon": -77.949031},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "RANRAHIRCA", "lat": -9.160102, "lon": -77.696672},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "SHUPLUY", "lat": -9.344445, "lon": -77.789499},
+  {"departamento": "ANCASH", "provincia": "YUNGAY", "distrito": "YANAMA", "lat": -9.024116, "lon": -77.498055},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "ABANCAY", "lat": -13.635842, "lon": -72.871612},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "CHACOCHE", "lat": -13.997426, "lon": -72.991289},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "CIRCA", "lat": -13.974194, "lon": -72.891521},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "CURAHUASI", "lat": -13.638853, "lon": -72.61812},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "HUANIPACA", "lat": -13.476092, "lon": -72.97529},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "LAMBRAMA", "lat": -13.80402, "lon": -72.788134},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "PICHIRHUA", "lat": -13.784788, "lon": -73.031732},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "SAN PEDRO DE CACHORA", "lat": -13.488846, "lon": -72.814003},
+  {"departamento": "APURIMAC", "provincia": "ABANCAY", "distrito": "TAMBURCO", "lat": -13.578137, "lon": -72.871964},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "ANDAHUAYLAS", "lat": -13.768378, "lon": -73.387912},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "ANDARAPA", "lat": -13.497293, "lon": -73.388577},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "CHIARA", "lat": -13.879845, "lon": -73.615565},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "HUANCARAMA", "lat": -13.656863, "lon": -73.028309},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "HUANCARAY", "lat": -13.769623, "lon": -73.5472},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "HUAYANA", "lat": -13.98959, "lon": -73.550968},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "KISHUARA", "lat": -13.665252, "lon": -73.162479},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "PACOBAMBA", "lat": -13.536041, "lon": -73.129695},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "PACUCHA", "lat": -13.598191, "lon": -73.309291},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "PAMPACHIRI", "lat": -14.296043, "lon": -73.478526},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "POMACOCHA", "lat": -14.096281, "lon": -73.492098},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "SAN ANTONIO DE CACHI", "lat": -13.789481, "lon": -73.657583},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "SAN JERONIMO", "lat": -13.716632, "lon": -73.274055},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "SAN MIGUEL DE CHACCRAMPA", "lat": -13.962148, "lon": -73.603013},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "SANTA MARIA DE CHICMO", "lat": -13.661157, "lon": -73.54627},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "TALAVERA", "lat": -13.627505, "lon": -73.453028},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "TUMAY HUARACA", "lat": -13.969235, "lon": -73.4582},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "TURPO", "lat": -13.790594, "lon": -73.472205},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "KAQUIABAMBA", "lat": -13.511546, "lon": -73.279406},
+  {"departamento": "APURIMAC", "provincia": "ANDAHUAYLAS", "distrito": "JOSE MARIA ARGUEDAS", "lat": -13.809255, "lon": -73.323964},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "ANTABAMBA", "lat": -14.517997, "lon": -72.750119},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "EL ORO", "lat": -14.157809, "lon": -73.035216},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "HUAQUIRCA", "lat": -14.340271, "lon": -72.786688},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "JUAN ESPINOZA MEDRANO", "lat": -14.558611, "lon": -72.908388},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "OROPESA", "lat": -14.435992, "lon": -72.523126},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "PACHACONAS", "lat": -14.219006, "lon": -72.979122},
+  {"departamento": "APURIMAC", "provincia": "ANTABAMBA", "distrito": "SABAINO", "lat": -14.322972, "lon": -72.980158},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "CHALHUANCA", "lat": -14.294255, "lon": -73.229284},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "CAPAYA", "lat": -14.115599, "lon": -73.353855},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "CARAYBAMBA", "lat": -14.419368, "lon": -73.094503},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "CHAPIMARCA", "lat": -14.007806, "lon": -73.086776},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "COLCABAMBA", "lat": -13.976934, "lon": -73.258259},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "COTARUSE", "lat": -14.58892, "lon": -73.295175},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "IHUAYLLO", "lat": -14.097938, "lon": -73.244033},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "JUSTO APU SAHUARAURA", "lat": -14.130439, "lon": -73.197818},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "LUCRE", "lat": -13.915877, "lon": -73.245454},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "POCOHUANCA", "lat": -14.224012, "lon": -73.087678},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "SAN JUAN DE CHACÑA", "lat": -13.884987, "lon": -73.193821},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "SAÑAYCA", "lat": -14.332566, "lon": -73.358265},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "SORAYA", "lat": -14.170751, "lon": -73.284007},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "TAPAIRIHUA", "lat": -14.10562, "lon": -73.117937},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "TINTAY", "lat": -13.903496, "lon": -73.134484},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "TORAYA", "lat": -14.024655, "lon": -73.313727},
+  {"departamento": "APURIMAC", "provincia": "AYMARAES", "distrito": "YANACA", "lat": -14.231325, "lon": -73.159804},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "TAMBOBAMBA", "lat": -13.917071, "lon": -72.212916},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "COTABAMBAS", "lat": -13.751283, "lon": -72.341286},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "COYLLURQUI", "lat": -13.91897, "lon": -72.395261},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "HAQUIRA", "lat": -14.27717, "lon": -72.230587},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "MARA", "lat": -14.045141, "lon": -72.115371},
+  {"departamento": "APURIMAC", "provincia": "COTABAMBAS", "distrito": "CHALLHUAHUACHO", "lat": -14.171437, "lon": -72.310413},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "CHINCHEROS", "lat": -13.518639, "lon": -73.748177},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "ANCO-HUALLO", "lat": -13.5443, "lon": -73.669271},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "COCHARCAS", "lat": -13.611555, "lon": -73.74785},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "HUACCANA", "lat": -13.3057, "lon": -73.725763},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "OCOBAMBA", "lat": -13.506117, "lon": -73.519602},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "ONGOY", "lat": -13.415322, "lon": -73.650663},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "URANMARCA", "lat": -13.668459, "lon": -73.652501},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "RANRACANCHA", "lat": -13.547638, "lon": -73.596302},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "ROCCHACC", "lat": -13.455582, "lon": -73.617353},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "EL PORVENIR", "lat": -13.397706, "lon": -73.555043},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "LOS CHANKAS", "lat": -13.389921, "lon": -73.791354},
+  {"departamento": "APURIMAC", "provincia": "CHINCHEROS", "distrito": "AHUAYRO", "lat": -13.466934, "lon": -73.789632},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "CHUQUIBAMBILLA", "lat": -14.117372, "lon": -72.774626},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "CURPAHUASI", "lat": -13.968879, "lon": -72.649819},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "GAMARRA", "lat": -13.830665, "lon": -72.55967},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "HUAYLLATI", "lat": -13.966491, "lon": -72.495824},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "MAMARA", "lat": -14.212017, "lon": -72.566796},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "MICAELA BASTIDAS", "lat": -14.139931, "lon": -72.5747},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "PATAYPAMPA", "lat": -14.226059, "lon": -72.757739},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "PROGRESO", "lat": -14.098684, "lon": -72.447015},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "SAN ANTONIO", "lat": -14.17565, "lon": -72.606242},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "SANTA ROSA", "lat": -14.125957, "lon": -72.660444},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "TURPAY", "lat": -14.232004, "lon": -72.637045},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "VILCABAMBA", "lat": -14.078646, "lon": -72.636234},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "VIRUNDO", "lat": -14.291056, "lon": -72.677336},
+  {"departamento": "APURIMAC", "provincia": "GRAU", "distrito": "CURASCO", "lat": -14.10278, "lon": -72.532038},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "AREQUIPA", "lat": -16.406658, "lon": -71.53846},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "ALTO SELVA ALEGRE", "lat": -16.330962, "lon": -71.485858},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "CAYMA", "lat": -16.252682, "lon": -71.456948},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "CERRO COLORADO", "lat": -16.304467, "lon": -71.576599},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "CHARACATO", "lat": -16.457742, "lon": -71.38286},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "CHIGUATA", "lat": -16.375627, "lon": -71.358614},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "JACOBO HUNTER", "lat": -16.458702, "lon": -71.562613},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "LA JOYA", "lat": -16.58844, "lon": -71.7958},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "MARIANO MELGAR", "lat": -16.375385, "lon": -71.462878},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "MIRAFLORES", "lat": -16.356468, "lon": -71.471279},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "MOLLEBAYA", "lat": -16.504079, "lon": -71.473845},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "PAUCARPATA", "lat": -16.42005, "lon": -71.477982},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "POCSI", "lat": -16.498887, "lon": -71.332176},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "POLOBAYA", "lat": -16.641987, "lon": -71.357423},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "QUEQUEÑA", "lat": -16.544175, "lon": -71.443213},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SABANDIA", "lat": -16.448262, "lon": -71.460231},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SACHACA", "lat": -16.421169, "lon": -71.576245},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SAN JUAN DE SIGUAS", "lat": -16.405059, "lon": -72.163422},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SAN JUAN DE TARUCANI", "lat": -16.193846, "lon": -71.09712},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SANTA ISABEL DE SIGUAS", "lat": -16.26769, "lon": -72.063225},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SANTA RITA DE SIGUAS", "lat": -16.522827, "lon": -72.144121},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "SOCABAYA", "lat": -16.473642, "lon": -71.53468},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "TIABAYA", "lat": -16.46345, "lon": -71.598988},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "UCHUMAYO", "lat": -16.460931, "lon": -71.690539},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "VITOR", "lat": -16.489312, "lon": -71.987801},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "YANAHUARA", "lat": -16.394745, "lon": -71.550406},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "YARABAMBA", "lat": -16.613521, "lon": -71.549875},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "YURA", "lat": -16.130943, "lon": -71.606345},
+  {"departamento": "AREQUIPA", "provincia": "AREQUIPA", "distrito": "JOSE LUIS BUSTAMANTE Y RIVERO", "lat": -16.431492, "lon": -71.523473},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "CAMANA", "lat": -16.630914, "lon": -72.71288},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "JOSE MARIA QUIMPER", "lat": -16.59649, "lon": -72.736606},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "MARIANO NICOLAS VALCARCEL", "lat": -16.078263, "lon": -73.136118},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "MARISCAL CACERES", "lat": -16.45563, "lon": -72.832258},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "NICOLAS DE PIEROLA", "lat": -16.479401, "lon": -72.634094},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "OCOÑA", "lat": -16.277978, "lon": -73.010907},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "QUILCA", "lat": -16.700772, "lon": -72.351915},
+  {"departamento": "AREQUIPA", "provincia": "CAMANA", "distrito": "SAMUEL PASTOR", "lat": -16.601339, "lon": -72.652448},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "CARAVELI", "lat": -15.829179, "lon": -73.331818},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "ACARI", "lat": -15.390965, "lon": -74.527489},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "ATICO", "lat": -16.053027, "lon": -73.538275},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "ATIQUIPA", "lat": -15.689201, "lon": -74.30368},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "BELLA UNION", "lat": -15.343011, "lon": -74.727408},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "CAHUACHO", "lat": -15.540647, "lon": -73.431758},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "CHALA", "lat": -15.769366, "lon": -74.189605},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "CHAPARRA", "lat": -15.824856, "lon": -73.945165},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "HUANUHUANU", "lat": -15.555741, "lon": -74.062827},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "JAQUI", "lat": -15.449102, "lon": -74.398165},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "LOMAS", "lat": -15.386726, "lon": -74.935158},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "QUICACHA", "lat": -15.567361, "lon": -73.73038},
+  {"departamento": "AREQUIPA", "provincia": "CARAVELI", "distrito": "YAUCA", "lat": -15.633522, "lon": -74.428768},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "APLAO", "lat": -16.027237, "lon": -72.568233},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "ANDAGUA", "lat": -15.485047, "lon": -72.376818},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "AYO", "lat": -15.640957, "lon": -72.285089},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "CHACHAS", "lat": -15.182138, "lon": -72.116192},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "CHILCAYMARCA", "lat": -15.350621, "lon": -72.385276},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "CHOCO", "lat": -15.414138, "lon": -72.068755},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "HUANCARQUI", "lat": -16.012401, "lon": -72.368187},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "MACHAGUAY", "lat": -15.601131, "lon": -72.471759},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "ORCOPAMPA", "lat": -15.116098, "lon": -72.248496},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "PAMPACOLCA", "lat": -15.670776, "lon": -72.619059},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "TIPAN", "lat": -15.750768, "lon": -72.499684},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "UÑON", "lat": -15.757089, "lon": -72.383146},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "URACA", "lat": -16.261591, "lon": -72.525573},
+  {"departamento": "AREQUIPA", "provincia": "CASTILLA", "distrito": "VIRACO", "lat": -15.616374, "lon": -72.566902},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "CHIVAY", "lat": -15.640095, "lon": -71.550148},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "ACHOMA", "lat": -15.822141, "lon": -71.695845},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "CABANACONDE", "lat": -15.67464, "lon": -71.959411},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "CALLALLI", "lat": -15.521168, "lon": -71.248426},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "CAYLLOMA", "lat": -15.151689, "lon": -71.796615},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "COPORAQUE", "lat": -15.591324, "lon": -71.641227},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "HUAMBO", "lat": -15.79625, "lon": -72.160483},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "HUANCA", "lat": -16.006431, "lon": -71.827966},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "ICHUPAMPA", "lat": -15.586192, "lon": -71.705308},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "LARI", "lat": -15.479948, "lon": -71.760446},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "LLUTA", "lat": -15.967623, "lon": -72.018445},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "MACA", "lat": -15.731311, "lon": -71.797274},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "MADRIGAL", "lat": -15.54134, "lon": -71.857443},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "SAN ANTONIO DE CHUCA", "lat": -15.830918, "lon": -71.097488},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "SIBAYO", "lat": -15.361765, "lon": -71.545952},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "TAPAY", "lat": -15.426829, "lon": -71.936012},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "TISCO", "lat": -15.2127, "lon": -71.392266},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "TUTI", "lat": -15.483067, "lon": -71.597614},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "YANQUE", "lat": -15.790097, "lon": -71.455323},
+  {"departamento": "AREQUIPA", "provincia": "CAYLLOMA", "distrito": "MAJES", "lat": -16.352851, "lon": -72.29637},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "CHUQUIBAMBA", "lat": -16.04338, "lon": -72.72086},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "ANDARAY", "lat": -15.852531, "lon": -72.843952},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "CAYARANI", "lat": -15.014713, "lon": -72.289139},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "CHICHAS", "lat": -15.534512, "lon": -72.945738},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "IRAY", "lat": -15.912643, "lon": -72.600599},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "RIO GRANDE", "lat": -15.88088, "lon": -73.126632},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "SALAMANCA", "lat": -15.406167, "lon": -72.697443},
+  {"departamento": "AREQUIPA", "provincia": "CONDESUYOS", "distrito": "YANAQUIHUA", "lat": -15.701963, "lon": -73.02911},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "MOLLENDO", "lat": -16.85747, "lon": -71.878902},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "COCACHACRA", "lat": -16.928844, "lon": -71.599438},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "DEAN VALDIVIA", "lat": -17.098003, "lon": -71.829418},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "ISLAY", "lat": -16.876326, "lon": -72.102232},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "MEJIA", "lat": -17.035724, "lon": -71.878628},
+  {"departamento": "AREQUIPA", "provincia": "ISLAY", "distrito": "PUNTA DE BOMBON", "lat": -17.160037, "lon": -71.550723},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "COTAHUASI", "lat": -15.276316, "lon": -72.86146},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "ALCA", "lat": -15.167485, "lon": -72.711867},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "CHARCANA", "lat": -15.21087, "lon": -73.048783},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "HUAYNACOTAS", "lat": -14.874962, "lon": -72.761481},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "PAMPAMARCA", "lat": -14.989573, "lon": -72.930221},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "PUYCA", "lat": -14.93896, "lon": -72.547182},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "QUECHUALLA", "lat": -15.28981, "lon": -73.070427},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "SAYLA", "lat": -15.324982, "lon": -73.245333},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "TAURIA", "lat": -15.404208, "lon": -73.172646},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "TOMEPAMPA", "lat": -15.213268, "lon": -72.785303},
+  {"departamento": "AREQUIPA", "provincia": "LA UNION", "distrito": "TORO", "lat": -15.404762, "lon": -73.016123},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "AYACUCHO", "lat": -13.134562, "lon": -74.252088},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "ACOCRO", "lat": -13.304299, "lon": -74.020956},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "ACOS VINCHOS", "lat": -13.127943, "lon": -74.055609},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "CARMEN ALTO", "lat": -13.206096, "lon": -74.22987},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "CHIARA", "lat": -13.375748, "lon": -74.158626},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "OCROS", "lat": -13.392617, "lon": -73.900323},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "PACAYCASA", "lat": -13.053188, "lon": -74.232689},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "QUINUA", "lat": -13.061391, "lon": -74.134537},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "SAN JOSE DE TICLLAS", "lat": -13.125112, "lon": -74.326421},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "SAN JUAN BAUTISTA", "lat": -13.180397, "lon": -74.205685},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "SANTIAGO DE PISCHA", "lat": -13.074716, "lon": -74.364179},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "SOCOS", "lat": -13.261457, "lon": -74.284427},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "TAMBILLO", "lat": -13.190225, "lon": -74.14217},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "VINCHOS", "lat": -13.306298, "lon": -74.456437},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "JESUS NAZARENO", "lat": -13.12189, "lon": -74.208564},
+  {"departamento": "AYACUCHO", "provincia": "HUAMANGA", "distrito": "ANDRES AVELINO CACERES DORREGARAY", "lat": -13.154594, "lon": -74.200201},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "CANGALLO", "lat": -13.599735, "lon": -74.110073},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "CHUSCHI", "lat": -13.493131, "lon": -74.436205},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "LOS MOROCHUCOS", "lat": -13.494226, "lon": -74.225661},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "MARIA PARADO DE BELLIDO", "lat": -13.568064, "lon": -74.275663},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "PARAS", "lat": -13.460769, "lon": -74.719577},
+  {"departamento": "AYACUCHO", "provincia": "CANGALLO", "distrito": "TOTOS", "lat": -13.556167, "lon": -74.501185},
+  {"departamento": "AYACUCHO", "provincia": "HUANCA SANCOS", "distrito": "SANCOS", "lat": -14.001017, "lon": -74.559735},
+  {"departamento": "AYACUCHO", "provincia": "HUANCA SANCOS", "distrito": "CARAPO", "lat": -13.81206, "lon": -74.303438},
+  {"departamento": "AYACUCHO", "provincia": "HUANCA SANCOS", "distrito": "SACSAMARCA", "lat": -13.983975, "lon": -74.222563},
+  {"departamento": "AYACUCHO", "provincia": "HUANCA SANCOS", "distrito": "SANTIAGO DE LUCANAMARCA", "lat": -13.826285, "lon": -74.532925},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "HUANTA", "lat": -12.912034, "lon": -74.211454},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "AYAHUANCO", "lat": -12.531494, "lon": -74.305363},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "HUAMANGUILLA", "lat": -12.992655, "lon": -74.158947},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "IGUAIN", "lat": -12.983083, "lon": -74.218235},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "LURICOCHA", "lat": -12.860811, "lon": -74.274432},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "SANTILLANA", "lat": -12.702617, "lon": -74.26854},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "SIVIA", "lat": -12.603824, "lon": -73.996448},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "LLOCHEGUA", "lat": -12.444438, "lon": -74.082544},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "CANAYRE", "lat": -12.34062, "lon": -74.102115},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "UCHURACCAY", "lat": -12.784558, "lon": -74.093163},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "PUCACOLPA", "lat": -12.339476, "lon": -74.383053},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "CHACA", "lat": -12.783519, "lon": -74.191559},
+  {"departamento": "AYACUCHO", "provincia": "HUANTA", "distrito": "PUTIS", "lat": -12.606939, "lon": -74.187706},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "SAN MIGUEL", "lat": -12.996098, "lon": -73.942124},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "ANCO", "lat": -13.071884, "lon": -73.648089},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "AYNA", "lat": -12.728468, "lon": -73.890891},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "CHILCAS", "lat": -13.16861, "lon": -73.866039},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "CHUNGUI", "lat": -13.230007, "lon": -73.570405},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "LUIS CARRANZA", "lat": -13.239381, "lon": -73.891004},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "SANTA ROSA", "lat": -12.764625, "lon": -73.7893},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "TAMBO", "lat": -12.912296, "lon": -74.0231},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "SAMUGARI", "lat": -12.850078, "lon": -73.738919},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "ANCHIHUAY", "lat": -12.956494, "lon": -73.712724},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "ORONCCOY", "lat": -13.346327, "lon": -73.392609},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "UNION PROGRESO", "lat": -12.927316, "lon": -73.552522},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "RIO MAGDALENA", "lat": -12.884656, "lon": -73.677424},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "NINABAMBA", "lat": -13.110918, "lon": -73.927315},
+  {"departamento": "AYACUCHO", "provincia": "LA MAR", "distrito": "PATIBAMBA", "lat": -13.064219, "lon": -73.960083},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "PUQUIO", "lat": -14.676302, "lon": -74.016282},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "AUCARA", "lat": -14.194463, "lon": -74.15395},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "CABANA", "lat": -14.362138, "lon": -74.077504},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "CARMEN SALCEDO", "lat": -14.465819, "lon": -73.981786},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "CHAVIÑA", "lat": -14.982725, "lon": -73.883666},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "CHIPAO", "lat": -14.477165, "lon": -73.757418},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "HUAC-HUAS", "lat": -14.166403, "lon": -74.993662},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "LARAMATE", "lat": -14.249974, "lon": -74.76623},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "LEONCIO PRADO", "lat": -14.671481, "lon": -74.615723},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "LLAUTA", "lat": -14.249789, "lon": -74.940547},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "LUCANAS", "lat": -14.48745, "lon": -74.304406},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "OCAÑA", "lat": -14.427463, "lon": -74.847166},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "OTOCA", "lat": -14.49214, "lon": -74.660211},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SAISA", "lat": -14.955884, "lon": -74.374485},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SAN CRISTOBAL", "lat": -14.791783, "lon": -74.254358},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SAN JUAN", "lat": -14.653992, "lon": -74.186403},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SAN PEDRO", "lat": -14.971119, "lon": -74.20794},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SAN PEDRO DE PALCO", "lat": -14.291308, "lon": -74.494261},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SANCOS", "lat": -15.147087, "lon": -74.158414},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SANTA ANA DE HUAYCAHUACHO", "lat": -14.220873, "lon": -73.925609},
+  {"departamento": "AYACUCHO", "provincia": "LUCANAS", "distrito": "SANTA LUCIA", "lat": -14.932795, "lon": -74.545804},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "CORACORA", "lat": -14.81576, "lon": -73.69934},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "CHUMPI", "lat": -15.105816, "lon": -73.699928},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "CORONEL CASTAÑEDA", "lat": -14.778279, "lon": -73.164269},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "PACAPAUSA", "lat": -14.951981, "lon": -73.363028},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "PULLO", "lat": -15.333175, "lon": -73.984493},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "PUYUSCA", "lat": -15.282081, "lon": -73.597626},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "SAN FRANCISCO DE RAVACAYCO", "lat": -15.005838, "lon": -73.363191},
+  {"departamento": "AYACUCHO", "provincia": "PARINACOCHAS", "distrito": "UPAHUACHO", "lat": -14.883648, "lon": -73.529647},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "PAUSA", "lat": -15.320708, "lon": -73.357932},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "COLTA", "lat": -15.127762, "lon": -73.250571},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "CORCULLA", "lat": -15.261824, "lon": -73.218653},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "LAMPA", "lat": -15.148468, "lon": -73.449675},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "MARCABAMBA", "lat": -15.091726, "lon": -73.379159},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "OYOLO", "lat": -15.023051, "lon": -73.118599},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "PARARCA", "lat": -15.205722, "lon": -73.452313},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "SAN JAVIER DE ALPABAMBA", "lat": -15.04821, "lon": -73.294388},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "SAN JOSE DE USHUA", "lat": -15.223544, "lon": -73.196132},
+  {"departamento": "AYACUCHO", "provincia": "PAUCAR DEL SARA SARA", "distrito": "SARA SARA", "lat": -15.260029, "lon": -73.459492},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "QUEROBAMBA", "lat": -13.994817, "lon": -73.804828},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "BELEN", "lat": -13.804315, "lon": -73.767258},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "CHALCOS", "lat": -13.850955, "lon": -73.752606},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "CHILCAYOC", "lat": -13.891238, "lon": -73.72176},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "HUACAÑA", "lat": -14.214128, "lon": -73.864668},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "MORCOLLA", "lat": -14.154759, "lon": -73.834459},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "PAICO", "lat": -14.012591, "lon": -73.666591},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "SAN PEDRO DE LARCAY", "lat": -14.283503, "lon": -73.589583},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "SAN SALVADOR DE QUIJE", "lat": -13.983271, "lon": -73.717764},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "SANTIAGO DE PAUCARAY", "lat": -14.087477, "lon": -73.653381},
+  {"departamento": "AYACUCHO", "provincia": "SUCRE", "distrito": "SORAS", "lat": -14.209561, "lon": -73.690993},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "HUANCAPI", "lat": -13.804659, "lon": -74.089841},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "ALCAMENCA", "lat": -13.665536, "lon": -74.210451},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "APONGO", "lat": -14.064957, "lon": -74.006857},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "ASQUIPATA", "lat": -14.075818, "lon": -73.93781},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "CANARIA", "lat": -13.96155, "lon": -73.994556},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "CAYARA", "lat": -13.792846, "lon": -73.988679},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "COLCA", "lat": -13.71486, "lon": -74.037933},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "HUAMANQUIQUIA", "lat": -13.716078, "lon": -74.275716},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "HUANCARAYLLA", "lat": -13.749076, "lon": -74.169871},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "HUALLA", "lat": -13.87803, "lon": -73.979199},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "SARHUA", "lat": -13.690285, "lon": -74.40984},
+  {"departamento": "AYACUCHO", "provincia": "VICTOR FAJARDO", "distrito": "VILCANCHOS", "lat": -13.652381, "lon": -74.643184},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "VILCAS HUAMAN", "lat": -13.655701, "lon": -73.896321},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "ACCOMARCA", "lat": -13.806237, "lon": -73.867402},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "CARHUANCA", "lat": -13.739438, "lon": -73.782067},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "CONCEPCION", "lat": -13.542102, "lon": -73.880408},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "HUAMBALPA", "lat": -13.744309, "lon": -73.887909},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "INDEPENDENCIA", "lat": -13.875657, "lon": -73.858471},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "SAURAMA", "lat": -13.701022, "lon": -73.750347},
+  {"departamento": "AYACUCHO", "provincia": "VILCAS HUAMAN", "distrito": "VISCHONGO", "lat": -13.553711, "lon": -74.013691},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "CAJAMARCA", "lat": -7.077477, "lon": -78.561104},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "ASUNCION", "lat": -7.338233, "lon": -78.527186},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "CHETILLA", "lat": -7.142505, "lon": -78.654029},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "COSPAN", "lat": -7.453029, "lon": -78.516865},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "ENCAÑADA", "lat": -6.98522, "lon": -78.40292},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "JESUS", "lat": -7.29831, "lon": -78.366647},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "LLACANORA", "lat": -7.189599, "lon": -78.411842},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "LOS BAÑOS DEL INCA", "lat": -7.090123, "lon": -78.455973},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "MAGDALENA", "lat": -7.224726, "lon": -78.622386},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "MATARA", "lat": -7.272019, "lon": -78.259478},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "NAMORA", "lat": -7.184364, "lon": -78.284076},
+  {"departamento": "CAJAMARCA", "provincia": "CAJAMARCA", "distrito": "SAN JUAN", "lat": -7.273909, "lon": -78.481979},
+  {"departamento": "CAJAMARCA", "provincia": "CAJABAMBA", "distrito": "CAJABAMBA", "lat": -7.631451, "lon": -78.032147},
+  {"departamento": "CAJAMARCA", "provincia": "CAJABAMBA", "distrito": "CACHACHI", "lat": -7.567702, "lon": -78.253329},
+  {"departamento": "CAJAMARCA", "provincia": "CAJABAMBA", "distrito": "CONDEBAMBA", "lat": -7.530125, "lon": -78.091138},
+  {"departamento": "CAJAMARCA", "provincia": "CAJABAMBA", "distrito": "SITACOCHA", "lat": -7.474393, "lon": -77.906327},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "CELENDIN", "lat": -6.774947, "lon": -78.117277},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "CHUMUCH", "lat": -6.570581, "lon": -78.187058},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "CORTEGANA", "lat": -6.487697, "lon": -78.285522},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "HUASMIN", "lat": -6.828303, "lon": -78.325628},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "JORGE CHAVEZ", "lat": -6.939516, "lon": -78.069493},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "JOSE GALVEZ", "lat": -6.919896, "lon": -78.158775},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "MIGUEL IGLESIAS", "lat": -6.651032, "lon": -78.265336},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "OXAMARCA", "lat": -7.059295, "lon": -78.061344},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "SOROCHUCO", "lat": -6.934216, "lon": -78.297183},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "SUCRE", "lat": -7.018752, "lon": -78.17131},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "UTCO", "lat": -6.881324, "lon": -78.05761},
+  {"departamento": "CAJAMARCA", "provincia": "CELENDIN", "distrito": "LA LIBERTAD DE PALLAN", "lat": -6.708803, "lon": -78.286085},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHOTA", "lat": -6.55998, "lon": -78.64275},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "ANGUIA", "lat": -6.337966, "lon": -78.575805},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHADIN", "lat": -6.439865, "lon": -78.412793},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHIGUIRIP", "lat": -6.425081, "lon": -78.708037},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHIMBAN", "lat": -6.284591, "lon": -78.448145},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHOROPAMPA", "lat": -6.370064, "lon": -78.369042},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "COCHABAMBA", "lat": -6.483028, "lon": -78.852259},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CONCHAN", "lat": -6.470609, "lon": -78.602451},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "HUAMBOS", "lat": -6.443696, "lon": -78.970404},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "LAJAS", "lat": -6.574493, "lon": -78.727567},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "LLAMA", "lat": -6.539018, "lon": -79.172906},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "MIRACOSTA", "lat": -6.357827, "lon": -79.302637},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "PACCHA", "lat": -6.533927, "lon": -78.398079},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "PION", "lat": -6.184196, "lon": -78.478182},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "QUEROCOTO", "lat": -6.352216, "lon": -79.092945},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "SAN JUAN DE LICUPIS", "lat": -6.484364, "lon": -79.245519},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "TACABAMBA", "lat": -6.398351, "lon": -78.55571},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "TOCMOCHE", "lat": -6.456836, "lon": -79.375985},
+  {"departamento": "CAJAMARCA", "provincia": "CHOTA", "distrito": "CHALAMARCA", "lat": -6.51761, "lon": -78.49524},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "CONTUMAZA", "lat": -7.334749, "lon": -78.736805},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "CHILETE", "lat": -7.256343, "lon": -78.821664},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "CUPISNIQUE", "lat": -7.373466, "lon": -79.066572},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "GUZMANGO", "lat": -7.364304, "lon": -78.917689},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "SAN BENITO", "lat": -7.502794, "lon": -78.962327},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "SANTA CRUZ DE TOLED", "lat": -7.327662, "lon": -78.863398},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "TANTARICA", "lat": -7.275312, "lon": -78.949852},
+  {"departamento": "CAJAMARCA", "provincia": "CONTUMAZA", "distrito": "YONAN", "lat": -7.277622, "lon": -79.169139},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "CUTERVO", "lat": -6.380199, "lon": -78.833001},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "CALLAYUC", "lat": -6.127411, "lon": -78.930947},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "CHOROS", "lat": -5.924621, "lon": -78.773445},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "CUJILLO", "lat": -6.116752, "lon": -78.558857},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "LA RAMADA", "lat": -6.230899, "lon": -78.569701},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "PIMPINGOS", "lat": -6.070897, "lon": -78.768292},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "QUEROCOTILLO", "lat": -6.196786, "lon": -79.091637},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SAN ANDRES DE CUTERVO", "lat": -6.224067, "lon": -78.742281},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SAN JUAN DE CUTERVO", "lat": -6.174219, "lon": -78.600093},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SAN LUIS DE LUCMA", "lat": -6.279101, "lon": -78.578757},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SANTA CRUZ", "lat": -6.10634, "lon": -78.841446},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SANTO DOMINGO DE LA CAPILLA", "lat": -6.25795, "lon": -78.842723},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SANTO TOMAS", "lat": -6.118082, "lon": -78.677111},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "SOCOTA", "lat": -6.287365, "lon": -78.696724},
+  {"departamento": "CAJAMARCA", "provincia": "CUTERVO", "distrito": "TORIBIO CASANOVA", "lat": -5.987989, "lon": -78.692425},
+  {"departamento": "CAJAMARCA", "provincia": "HUALGAYOC", "distrito": "BAMBAMARCA", "lat": -6.693068, "lon": -78.4795},
+  {"departamento": "CAJAMARCA", "provincia": "HUALGAYOC", "distrito": "CHUGUR", "lat": -6.685519, "lon": -78.707682},
+  {"departamento": "CAJAMARCA", "provincia": "HUALGAYOC", "distrito": "HUALGAYOC", "lat": -6.752735, "lon": -78.600254},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "JAEN", "lat": -5.770184, "lon": -78.852553},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "BELLAVISTA", "lat": -5.564674, "lon": -78.742626},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "CHONTALI", "lat": -5.633937, "lon": -79.133354},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "COLASAY", "lat": -5.901061, "lon": -78.979455},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "HUABAL", "lat": -5.604927, "lon": -78.905856},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "LAS PIRIAS", "lat": -5.636342, "lon": -78.84959},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "POMAHUACA", "lat": -5.87541, "lon": -79.195026},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "PUCARA", "lat": -6.039991, "lon": -79.123659},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "SALLIQUE", "lat": -5.62569, "lon": -79.312429},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "SAN FELIPE", "lat": -5.78648, "lon": -79.310215},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "SAN JOSE DEL ALTO", "lat": -5.517367, "lon": -79.055058},
+  {"departamento": "CAJAMARCA", "provincia": "JAEN", "distrito": "SANTA ROSA", "lat": -5.426283, "lon": -78.587541},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "SAN IGNACIO", "lat": -5.140404, "lon": -79.007895},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "CHIRINOS", "lat": -5.307552, "lon": -78.882454},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "HUARANGO", "lat": -5.097588, "lon": -78.714712},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "LA COIPA", "lat": -5.389636, "lon": -78.973484},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "NAMBALLE", "lat": -5.107283, "lon": -79.180983},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "SAN JOSE DE LOURDES", "lat": -4.916066, "lon": -78.831872},
+  {"departamento": "CAJAMARCA", "provincia": "SAN IGNACIO", "distrito": "TABACONAS", "lat": -5.324344, "lon": -79.215125},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "PEDRO GALVEZ", "lat": -7.329158, "lon": -78.171248},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "CHANCAY", "lat": -7.409439, "lon": -78.117308},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "EDUARDO VILLANUEVA", "lat": -7.441245, "lon": -78.143399},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "GREGORIO PITA", "lat": -7.222074, "lon": -78.161244},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "ICHOCAN", "lat": -7.406082, "lon": -78.059791},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "JOSE MANUEL QUIROZ", "lat": -7.356017, "lon": -78.020971},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MARCOS", "distrito": "JOSE SABOGAL", "lat": -7.226792, "lon": -77.968184},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "SAN MIGUEL", "lat": -7.077488, "lon": -78.922365},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "BOLIVAR", "lat": -6.975912, "lon": -79.162487},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "CALQUIS", "lat": -6.913738, "lon": -78.953114},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "CATILLUC", "lat": -6.804278, "lon": -78.733846},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "EL PRADO", "lat": -7.038042, "lon": -79.003317},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "LA FLORIDA", "lat": -6.86888, "lon": -79.148833},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "LLAPA", "lat": -6.891372, "lon": -78.748704},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "NANCHOC", "lat": -7.008518, "lon": -79.247775},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "NIEPOS", "lat": -6.926715, "lon": -79.131432},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "SAN GREGORIO", "lat": -7.117981, "lon": -79.160978},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "SAN SILVESTRE DE COCHAN", "lat": -6.931435, "lon": -78.72527},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "TONGOD", "lat": -6.788166, "lon": -78.83355},
+  {"departamento": "CAJAMARCA", "provincia": "SAN MIGUEL", "distrito": "UNION AGUA BLANCA", "lat": -7.118908, "lon": -79.054197},
+  {"departamento": "CAJAMARCA", "provincia": "SAN PABLO", "distrito": "SAN PABLO", "lat": -7.086012, "lon": -78.785784},
+  {"departamento": "CAJAMARCA", "provincia": "SAN PABLO", "distrito": "SAN BERNARDINO", "lat": -7.174981, "lon": -78.785657},
+  {"departamento": "CAJAMARCA", "provincia": "SAN PABLO", "distrito": "SAN LUIS", "lat": -7.159048, "lon": -78.873085},
+  {"departamento": "CAJAMARCA", "provincia": "SAN PABLO", "distrito": "TUMBADEN", "lat": -6.987539, "lon": -78.676205},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "SANTA CRUZ", "lat": -6.627556, "lon": -78.941916},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "ANDABAMBA", "lat": -6.664009, "lon": -78.809722},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "CATACHE", "lat": -6.749359, "lon": -79.076904},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "CHANCAYBAÑOS", "lat": -6.555961, "lon": -78.877938},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "LA ESPERANZA", "lat": -6.620917, "lon": -78.859379},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "NINABAMBA", "lat": -6.695732, "lon": -78.768689},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "PULAN", "lat": -6.746566, "lon": -78.92116},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "SAUCEPAMPA", "lat": -6.68286, "lon": -78.908469},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "SEXI", "lat": -6.585585, "lon": -79.036357},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "UTICYACU", "lat": -6.614701, "lon": -78.790538},
+  {"departamento": "CAJAMARCA", "provincia": "SANTA CRUZ", "distrito": "YAUYUCAN", "lat": -6.68286, "lon": -78.84944},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "CALLAO", "lat": -12.016535, "lon": -77.121629},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "BELLAVISTA", "lat": -12.06, "lon": -77.109946},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "CARMEN DE LA LEGUA REYNOSO", "lat": -12.042821, "lon": -77.090494},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "LA PERLA", "lat": -12.070289, "lon": -77.116138},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "LA PUNTA", "lat": -12.071665, "lon": -77.162831},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "VENTANILLA", "lat": -11.879155, "lon": -77.130874},
+  {"departamento": "CALLAO", "provincia": "CALLAO", "distrito": "MI PERU", "lat": -11.854339, "lon": -77.120556},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "CUSCO", "lat": -13.490303, "lon": -71.9814},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "CCORCA", "lat": -13.589565, "lon": -72.087107},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "POROY", "lat": -13.503456, "lon": -72.031138},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "SAN JERONIMO", "lat": -13.557396, "lon": -71.867456},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "SAN SEBASTIAN", "lat": -13.533217, "lon": -71.925762},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "SANTIAGO", "lat": -13.573105, "lon": -71.978558},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "SAYLLA", "lat": -13.553004, "lon": -71.831756},
+  {"departamento": "CUSCO", "provincia": "CUSCO", "distrito": "WANCHAQ", "lat": -13.531682, "lon": -71.950676},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "ACOMAYO", "lat": -13.893151, "lon": -71.672478},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "ACOPIA", "lat": -14.049533, "lon": -71.501308},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "ACOS", "lat": -13.939297, "lon": -71.730244},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "MOSOC LLACTA", "lat": -14.106546, "lon": -71.484382},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "POMACANCHI", "lat": -14.053636, "lon": -71.623898},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "RONDOCAN", "lat": -13.78763, "lon": -71.765402},
+  {"departamento": "CUSCO", "provincia": "ACOMAYO", "distrito": "SANGARARA", "lat": -13.953937, "lon": -71.570766},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "ANTA", "lat": -13.487909, "lon": -72.159977},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "ANCAHUASI", "lat": -13.461625, "lon": -72.32223},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "CACHIMAYO", "lat": -13.463501, "lon": -72.055387},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "CHINCHAYPUJIO", "lat": -13.612931, "lon": -72.271552},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "HUAROCONDO", "lat": -13.369655, "lon": -72.276706},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "LIMATAMBO", "lat": -13.475105, "lon": -72.445526},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "MOLLEPATA", "lat": -13.463581, "lon": -72.623161},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "PUCYURA", "lat": -13.484682, "lon": -72.093632},
+  {"departamento": "CUSCO", "provincia": "ANTA", "distrito": "ZURITE", "lat": -13.465723, "lon": -72.246619},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "CALCA", "lat": -13.268722, "lon": -71.957777},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "COYA", "lat": -13.402416, "lon": -71.915327},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "LAMAY", "lat": -13.322061, "lon": -71.881088},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "LARES", "lat": -13.086007, "lon": -72.026032},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "PISAC", "lat": -13.389139, "lon": -71.808346},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "SAN SALVADOR", "lat": -13.488215, "lon": -71.774203},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "TARAY", "lat": -13.460219, "lon": -71.88383},
+  {"departamento": "CUSCO", "provincia": "CALCA", "distrito": "YANATILE", "lat": -12.795697, "lon": -72.105086},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "YANAOCA", "lat": -14.273779, "lon": -71.442044},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "CHECCA", "lat": -14.491605, "lon": -71.47773},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "KUNTURKANKI", "lat": -14.552344, "lon": -71.291172},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "LANGUI", "lat": -14.38534, "lon": -71.297402},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "LAYO", "lat": -14.528798, "lon": -71.091965},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "PAMPAMARCA", "lat": -14.141804, "lon": -71.446558},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "QUEHUE", "lat": -14.36569, "lon": -71.489506},
+  {"departamento": "CUSCO", "provincia": "CANAS", "distrito": "TUPAC AMARU", "lat": -14.151011, "lon": -71.527052},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "SICUANI", "lat": -14.251017, "lon": -71.103609},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "CHECACUPE", "lat": -14.005939, "lon": -71.066787},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "COMBAPATA", "lat": -14.088143, "lon": -71.334154},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "MARANGANI", "lat": -14.373633, "lon": -71.095631},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "PITUMARCA", "lat": -13.888791, "lon": -71.158167},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "SAN PABLO", "lat": -14.151762, "lon": -71.087604},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "SAN PEDRO", "lat": -14.166053, "lon": -71.332823},
+  {"departamento": "CUSCO", "provincia": "CANCHIS", "distrito": "TINTA", "lat": -14.158741, "lon": -71.392298},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "SANTO TOMAS", "lat": -14.650797, "lon": -72.208707},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "CAPACMARCA", "lat": -14.043834, "lon": -71.993487},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "CHAMACA", "lat": -14.333491, "lon": -71.881569},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "COLQUEMARCA", "lat": -14.237722, "lon": -72.014632},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "LIVITACA", "lat": -14.381386, "lon": -71.671067},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "LLUSCO", "lat": -14.462348, "lon": -72.236491},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "QUIÑOTA", "lat": -14.377231, "lon": -72.205239},
+  {"departamento": "CUSCO", "provincia": "CHUMBIVILCAS", "distrito": "VELILLE", "lat": -14.5416, "lon": -71.878737},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "ESPINAR", "lat": -14.925337, "lon": -71.35289},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "CONDOROMA", "lat": -15.300785, "lon": -71.074042},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "COPORAQUE", "lat": -14.757195, "lon": -71.635379},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "OCORURO", "lat": -15.087897, "lon": -71.138993},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "PALLPATA", "lat": -14.907357, "lon": -71.091116},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "PICHIGUA", "lat": -14.679341, "lon": -71.343755},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "SUYCKUTAMBO", "lat": -15.001152, "lon": -71.658227},
+  {"departamento": "CUSCO", "provincia": "ESPINAR", "distrito": "ALTO PICHIGUA", "lat": -14.73792, "lon": -71.222664},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "SANTA ANA", "lat": -12.876811, "lon": -72.743373},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "ECHARATE", "lat": -12.355022, "lon": -72.832803},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "HUAYOPATA", "lat": -13.050953, "lon": -72.473286},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "MARANURA", "lat": -12.937561, "lon": -72.643822},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "OCOBAMBA", "lat": -12.916321, "lon": -72.362044},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "QUELLOUNO", "lat": -12.507122, "lon": -72.44507},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "KIMBIRI", "lat": -12.551552, "lon": -73.66877},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "SANTA TERESA", "lat": -13.244382, "lon": -72.732981},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "VILCABAMBA", "lat": -13.048775, "lon": -73.053124},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "PICHARI", "lat": -12.393391, "lon": -73.789105},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "INKAWASI", "lat": -13.30194, "lon": -73.208978},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "VILLA VIRGEN", "lat": -13.054389, "lon": -73.339765},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "VILLA KINTIARINA", "lat": -12.909403, "lon": -73.477931},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "MEGANTONI", "lat": -11.751133, "lon": -72.858915},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "KUMPIRUSHIATO", "lat": -12.577363, "lon": -73.368958},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "CIELO PUNCO", "lat": -12.797074, "lon": -73.545327},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "MANITEA", "lat": -12.724498, "lon": -73.588953},
+  {"departamento": "CUSCO", "provincia": "LA CONVENCION", "distrito": "UNION ASHANINKA", "lat": -12.326531, "lon": -73.845356},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "PARURO", "lat": -13.726686, "lon": -71.855702},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "ACCHA", "lat": -13.988494, "lon": -71.862647},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "CCAPI", "lat": -13.860681, "lon": -72.019424},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "COLCHA", "lat": -13.870942, "lon": -71.86701},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "HUANOQUITE", "lat": -13.698809, "lon": -72.079213},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "OMACHA", "lat": -14.13971, "lon": -71.786341},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "PACCARITAMBO", "lat": -13.768671, "lon": -71.93713},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "PILLPINTO", "lat": -13.974826, "lon": -71.769144},
+  {"departamento": "CUSCO", "provincia": "PARURO", "distrito": "YAURISQUE", "lat": -13.650918, "lon": -71.91259},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "PAUCARTAMBO", "lat": -13.301373, "lon": -71.464061},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "CAICAY", "lat": -13.564307, "lon": -71.676449},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "CHALLABAMBA", "lat": -13.139282, "lon": -71.769311},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "COLQUEPATA", "lat": -13.403035, "lon": -71.654227},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "HUANCARANI", "lat": -13.510999, "lon": -71.631143},
+  {"departamento": "CUSCO", "provincia": "PAUCARTAMBO", "distrito": "KOSÑIPATA", "lat": -13.045055, "lon": -71.463517},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "URCOS", "lat": -13.687874, "lon": -71.599139},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "ANDAHUAYLILLAS", "lat": -13.665769, "lon": -71.700324},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "CAMANTI", "lat": -13.342309, "lon": -70.748918},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "CCARHUAYO", "lat": -13.536981, "lon": -71.343994},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "CCATCA", "lat": -13.600378, "lon": -71.505763},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "CUSIPATA", "lat": -13.885975, "lon": -71.437917},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "HUARO", "lat": -13.755319, "lon": -71.6724},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "LUCRE", "lat": -13.644985, "lon": -71.767828},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "MARCAPATA", "lat": -13.639799, "lon": -70.912679},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "OCONGATE", "lat": -13.687675, "lon": -71.268961},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "OROPESA", "lat": -13.57409, "lon": -71.788651},
+  {"departamento": "CUSCO", "provincia": "QUISPICANCHI", "distrito": "QUIQUIJANA", "lat": -13.805612, "lon": -71.533169},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "URUBAMBA", "lat": -13.244944, "lon": -72.131268},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "CHINCHERO", "lat": -13.409383, "lon": -72.038778},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "HUAYLLABAMBA", "lat": -13.341893, "lon": -72.04981},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "MACHUPICCHU", "lat": -13.201471, "lon": -72.500159},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "MARAS", "lat": -13.337003, "lon": -72.162185},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "OLLANTAYTAMBO", "lat": -13.236473, "lon": -72.316419},
+  {"departamento": "CUSCO", "provincia": "URUBAMBA", "distrito": "YUCAY", "lat": -13.29424, "lon": -72.073227},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "HUANCAVELICA", "lat": -12.862849, "lon": -75.008641},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "ACOBAMBILLA", "lat": -12.704092, "lon": -75.371273},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "ACORIA", "lat": -12.599577, "lon": -74.823528},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "CONAYCA", "lat": -12.517957, "lon": -75.039818},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "CUENCA", "lat": -12.459903, "lon": -75.055802},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "HUACHOCOLPA", "lat": -13.045893, "lon": -74.957005},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "HUAYLLAHUARA", "lat": -12.401473, "lon": -75.182966},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "IZCUCHACA", "lat": -12.496345, "lon": -75.013555},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "LARIA", "lat": -12.553246, "lon": -75.080249},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "MANTA", "lat": -12.608765, "lon": -75.160499},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "MARISCAL CACERES", "lat": -12.547921, "lon": -74.935306},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "MOYA", "lat": -12.463779, "lon": -75.13177},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "NUEVO OCCORO", "lat": -12.707747, "lon": -75.139243},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "PALCA", "lat": -12.669581, "lon": -74.979137},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "PILCHACA", "lat": -12.413614, "lon": -75.088992},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "VILCA", "lat": -12.533027, "lon": -75.268879},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "YAULI", "lat": -12.817179, "lon": -74.829016},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "ASCENSION", "lat": -12.828434, "lon": -75.186618},
+  {"departamento": "HUANCAVELICA", "provincia": "HUANCAVELICA", "distrito": "HUANDO", "lat": -12.627286, "lon": -75.013609},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "ACOBAMBA", "lat": -12.823313, "lon": -74.566396},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "ANDABAMBA", "lat": -12.661188, "lon": -74.654928},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "ANTA", "lat": -12.817852, "lon": -74.664004},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "CAJA", "lat": -12.872879, "lon": -74.47342},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "MARCAS", "lat": -12.874426, "lon": -74.397784},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "PAUCARA", "lat": -12.723062, "lon": -74.727388},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "POMACOCHA", "lat": -12.861571, "lon": -74.520015},
+  {"departamento": "HUANCAVELICA", "provincia": "ACOBAMBA", "distrito": "ROSARIO", "lat": -12.742767, "lon": -74.600625},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "LIRCAY", "lat": -13.103732, "lon": -74.737547},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "ANCHONGA", "lat": -12.887324, "lon": -74.706039},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "CALLANMARCA", "lat": -12.878573, "lon": -74.624541},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "CCOCHACCASA", "lat": -12.935057, "lon": -74.805184},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "CHINCHO", "lat": -12.984768, "lon": -74.34319},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "CONGALLA", "lat": -12.981804, "lon": -74.540476},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "HUANCA-HUANCA", "lat": -12.9648, "lon": -74.626465},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "HUAYLLAY GRANDE", "lat": -12.92357, "lon": -74.671084},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "JULCAMARCA", "lat": -13.012517, "lon": -74.430954},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "SAN ANTONIO DE ANTAPARCO", "lat": -13.065521, "lon": -74.430668},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "SANTO TOMAS DE PATA", "lat": -13.143554, "lon": -74.470992},
+  {"departamento": "HUANCAVELICA", "provincia": "ANGARAES", "distrito": "SECCLLA", "lat": -13.08084, "lon": -74.541517},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "CASTROVIRREYNA", "lat": -13.153666, "lon": -75.29138},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "ARMA", "lat": -13.110485, "lon": -75.511149},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "AURAHUA", "lat": -12.956672, "lon": -75.442795},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "CAPILLAS", "lat": -13.342448, "lon": -75.611054},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "CHUPAMARCA", "lat": -12.894031, "lon": -75.529656},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "COCAS", "lat": -13.274171, "lon": -75.363088},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "HUACHOS", "lat": -13.214711, "lon": -75.483404},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "HUAMATAMBO", "lat": -13.111835, "lon": -75.683649},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "MOLLEPAMPA", "lat": -13.291888, "lon": -75.431993},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "SAN JUAN", "lat": -13.272139, "lon": -75.688502},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "SANTA ANA", "lat": -13.088163, "lon": -75.13118},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "TANTARA", "lat": -13.126559, "lon": -75.621361},
+  {"departamento": "HUANCAVELICA", "provincia": "CASTROVIRREYNA", "distrito": "TICRAPO", "lat": -13.418064, "lon": -75.409744},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "CHURCAMPA", "lat": -12.710498, "lon": -74.384877},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "ANCO", "lat": -12.643533, "lon": -74.563053},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "CHINCHIHUASI", "lat": -12.452262, "lon": -74.569947},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "EL CARMEN", "lat": -12.71143, "lon": -74.497408},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "LA MERCED", "lat": -12.794901, "lon": -74.329779},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "LOCROJA", "lat": -12.717356, "lon": -74.454718},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "PAUCARBAMBA", "lat": -12.569145, "lon": -74.526194},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "SAN MIGUEL DE MAYOCC", "lat": -12.787891, "lon": -74.410004},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "SAN PEDRO DE CORIS", "lat": -12.607344, "lon": -74.400235},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "PACHAMARCA", "lat": -12.505341, "lon": -74.460484},
+  {"departamento": "HUANCAVELICA", "provincia": "CHURCAMPA", "distrito": "COSME", "lat": -12.570512, "lon": -74.645241},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "HUAYTARA", "lat": -13.653544, "lon": -75.39275},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "AYAVI", "lat": -13.714586, "lon": -75.36826},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "CORDOVA", "lat": -14.011559, "lon": -75.151974},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "HUAYACUNDO ARMA", "lat": -13.55488, "lon": -75.311747},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "LARAMARCA", "lat": -13.906012, "lon": -75.057274},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "OCOYO", "lat": -14.023293, "lon": -75.034808},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "PILPICHACA", "lat": -13.409545, "lon": -74.946202},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "QUERCO", "lat": -13.882866, "lon": -74.882724},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "QUITO-ARMA", "lat": -13.538639, "lon": -75.406013},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SAN ANTONIO DE CUSICANCHA", "lat": -13.465418, "lon": -75.237682},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SAN FRANCISCO DE SANGAYAICO", "lat": -13.726528, "lon": -75.167321},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SAN ISIDRO", "lat": -13.973559, "lon": -75.234435},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SANTIAGO DE CHOCORVOS", "lat": -13.828183, "lon": -75.229444},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SANTIAGO DE QUIRAHUARA", "lat": -14.055397, "lon": -74.892276},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "SANTO DOMINGO DE CAPILLAS", "lat": -13.67123, "lon": -75.183813},
+  {"departamento": "HUANCAVELICA", "provincia": "HUAYTARA", "distrito": "TAMBO", "lat": -13.589716, "lon": -75.176262},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "PAMPAS", "lat": -12.451365, "lon": -74.85169},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "ACOSTAMBO", "lat": -12.412682, "lon": -75.01176},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "ACRAQUIA", "lat": -12.396381, "lon": -74.939269},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "AHUAYCHA", "lat": -12.444155, "lon": -74.906159},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "COLCABAMBA", "lat": -12.385131, "lon": -74.700463},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "DANIEL HERNANDEZ", "lat": -12.345339, "lon": -74.833657},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "HUACHOCOLPA", "lat": -12.057719, "lon": -74.528165},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "HUARIBAMBA", "lat": -12.262101, "lon": -74.908894},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "ÑAHUIMPUQUIO", "lat": -12.329187, "lon": -75.091105},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "PAZOS", "lat": -12.221569, "lon": -75.026253},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "QUISHUAR", "lat": -12.249781, "lon": -74.767203},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "SALCABAMBA", "lat": -12.194907, "lon": -74.78322},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "SALCAHUASI", "lat": -12.106507, "lon": -74.751441},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "SAN MARCOS DE ROCCHAC", "lat": -12.07924, "lon": -74.948876},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "SURCUBAMBA", "lat": -12.164047, "lon": -74.651315},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "TINTAY PUNCU", "lat": -12.161017, "lon": -74.489935},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "QUICHUAS", "lat": -12.467826, "lon": -74.727393},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "ANDAYMARCA", "lat": -12.298542, "lon": -74.632737},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "ROBLE", "lat": -12.235948, "lon": -74.457784},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "PICHOS", "lat": -12.181583, "lon": -74.933282},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "SANTIAGO DE TUCUMA", "lat": -12.317571, "lon": -74.886954},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "LAMBRAS", "lat": -12.058961, "lon": -74.640761},
+  {"departamento": "HUANCAVELICA", "provincia": "TAYACAJA", "distrito": "COCHABAMBA", "lat": -12.21473, "lon": -74.536744},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "HUANUCO", "lat": -9.896571, "lon": -76.296697},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "AMARILIS", "lat": -9.95024, "lon": -76.188225},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "CHINCHAO", "lat": -9.615373, "lon": -76.110759},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "CHURUBAMBA", "lat": -9.685261, "lon": -76.265729},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "MARGOS", "lat": -10.063237, "lon": -76.53319},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "QUISQUI (KICHKI)", "lat": -9.86924, "lon": -76.420806},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "SAN FRANCISCO DE CAYRAN", "lat": -9.996755, "lon": -76.330529},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "SAN PEDRO DE CHAULAN", "lat": -10.078525, "lon": -76.421822},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "SANTA MARIA DEL VALLE", "lat": -9.793376, "lon": -76.312655},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "YARUMAYO", "lat": -9.95582, "lon": -76.440144},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "PILLCO MARCA", "lat": -10.040384, "lon": -76.281248},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "YACUS", "lat": -9.946054, "lon": -76.511246},
+  {"departamento": "HUANUCO", "provincia": "HUANUCO", "distrito": "SAN PABLO DE PILLAO", "lat": -9.707736, "lon": -75.93845},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "AMBO", "lat": -10.150139, "lon": -76.141177},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "CAYNA", "lat": -10.215213, "lon": -76.370602},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "COLPAS", "lat": -10.244398, "lon": -76.464358},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "CONCHAMARCA", "lat": -10.048684, "lon": -76.209594},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "HUACAR", "lat": -10.195303, "lon": -76.269604},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "SAN FRANCISCO", "lat": -10.33239, "lon": -76.287331},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "SAN RAFAEL", "lat": -10.328936, "lon": -76.126336},
+  {"departamento": "HUANUCO", "provincia": "AMBO", "distrito": "TOMAY KICHWA", "lat": -10.064874, "lon": -76.179146},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "LA UNION", "lat": -9.907892, "lon": -76.794695},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "CHUQUIS", "lat": -9.648277, "lon": -76.63233},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "MARIAS", "lat": -9.546919, "lon": -76.423514},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "PACHAS", "lat": -9.691975, "lon": -76.830741},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "QUIVILLA", "lat": -9.576025, "lon": -76.687273},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "RIPAN", "lat": -9.810533, "lon": -76.843691},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "SHUNQUI", "lat": -9.750516, "lon": -76.809773},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "SILLAPATA", "lat": -9.793826, "lon": -76.766863},
+  {"departamento": "HUANUCO", "provincia": "DOS DE MAYO", "distrito": "YANAS", "lat": -9.71466, "lon": -76.731535},
+  {"departamento": "HUANUCO", "provincia": "HUACAYBAMBA", "distrito": "HUACAYBAMBA", "lat": -8.958639, "lon": -76.8393},
+  {"departamento": "HUANUCO", "provincia": "HUACAYBAMBA", "distrito": "CANCHABAMBA", "lat": -8.847418, "lon": -77.107757},
+  {"departamento": "HUANUCO", "provincia": "HUACAYBAMBA", "distrito": "COCHABAMBA", "lat": -9.097574, "lon": -76.626391},
+  {"departamento": "HUANUCO", "provincia": "HUACAYBAMBA", "distrito": "PINRA", "lat": -8.914407, "lon": -77.000754},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "LLATA", "lat": -9.613976, "lon": -76.90327},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "ARANCAY", "lat": -9.13741, "lon": -76.733755},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "CHAVIN DE PARIARCA", "lat": -9.437212, "lon": -76.755044},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "JACAS GRANDE", "lat": -9.515196, "lon": -76.668411},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "JIRCAN", "lat": -9.216588, "lon": -76.644386},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "MIRAFLORES", "lat": -9.449631, "lon": -76.871037},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "MONZON", "lat": -9.331107, "lon": -76.387878},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "PUNCHAO", "lat": -9.441461, "lon": -76.83649},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "PUÑOS", "lat": -9.503084, "lon": -76.8969},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "SINGA", "lat": -9.362765, "lon": -76.835711},
+  {"departamento": "HUANUCO", "provincia": "HUAMALIES", "distrito": "TANTAMAYO", "lat": -9.375573, "lon": -76.670022},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "RUPA-RUPA", "lat": -9.190382, "lon": -76.104273},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "DANIEL ALOMIA ROBLES", "lat": -9.396702, "lon": -75.765899},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "HERMILIO VALDIZAN", "lat": -9.197496, "lon": -75.836015},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "JOSE CRESPO Y CASTILLO", "lat": -8.932448, "lon": -76.177838},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "LUYANDO", "lat": -9.240656, "lon": -75.953225},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "MARIANO DAMASO BERAUN", "lat": -9.3944, "lon": -76.031036},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "PUCAYACU", "lat": -8.56476, "lon": -76.064764},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "CASTILLO GRANDE", "lat": -9.20772, "lon": -76.038495},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "PUEBLO NUEVO", "lat": -9.082254, "lon": -76.001443},
+  {"departamento": "HUANUCO", "provincia": "LEONCIO PRADO", "distrito": "SANTO DOMINGO DE ANDA", "lat": -8.984897, "lon": -75.982969},
+  {"departamento": "HUANUCO", "provincia": "MARAÑON", "distrito": "HUACRACHUCO", "lat": -8.604818, "lon": -77.173056},
+  {"departamento": "HUANUCO", "provincia": "MARAÑON", "distrito": "CHOLON", "lat": -8.658134, "lon": -76.741048},
+  {"departamento": "HUANUCO", "provincia": "MARAÑON", "distrito": "SAN BUENAVENTURA", "lat": -8.768786, "lon": -77.148033},
+  {"departamento": "HUANUCO", "provincia": "MARAÑON", "distrito": "LA MORADA", "lat": -8.88044, "lon": -76.363445},
+  {"departamento": "HUANUCO", "provincia": "MARAÑON", "distrito": "SANTA ROSA DE ALTO YANAJANCA", "lat": -8.789677, "lon": -76.508579},
+  {"departamento": "HUANUCO", "provincia": "PACHITEA", "distrito": "PANAO", "lat": -10.148361, "lon": -75.896738},
+  {"departamento": "HUANUCO", "provincia": "PACHITEA", "distrito": "CHAGLLA", "lat": -9.73716, "lon": -75.797554},
+  {"departamento": "HUANUCO", "provincia": "PACHITEA", "distrito": "MOLINO", "lat": -9.996391, "lon": -76.058077},
+  {"departamento": "HUANUCO", "provincia": "PACHITEA", "distrito": "UMARI", "lat": -9.868127, "lon": -76.0279},
+  {"departamento": "HUANUCO", "provincia": "PUERTO INCA", "distrito": "PUERTO INCA", "lat": -9.288933, "lon": -74.966841},
+  {"departamento": "HUANUCO", "provincia": "PUERTO INCA", "distrito": "CODO DEL POZUZO", "lat": -9.634364, "lon": -75.466539},
+  {"departamento": "HUANUCO", "provincia": "PUERTO INCA", "distrito": "HONORIA", "lat": -8.713865, "lon": -74.696841},
+  {"departamento": "HUANUCO", "provincia": "PUERTO INCA", "distrito": "TOURNAVISTA", "lat": -9.001298, "lon": -74.86639},
+  {"departamento": "HUANUCO", "provincia": "PUERTO INCA", "distrito": "YUYAPICHIS", "lat": -9.647379, "lon": -74.998486},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "JESUS", "lat": -10.218532, "lon": -76.755579},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "BAÑOS", "lat": -10.10737, "lon": -76.783863},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "JIVIA", "lat": -10.035474, "lon": -76.656321},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "QUEROPALCA", "lat": -10.187514, "lon": -76.865859},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "RONDOS", "lat": -9.968492, "lon": -76.720446},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "SAN FRANCISCO DE ASIS", "lat": -9.978371, "lon": -76.627512},
+  {"departamento": "HUANUCO", "provincia": "LAURICOCHA", "distrito": "SAN MIGUEL DE CAURI", "lat": -10.298932, "lon": -76.637589},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "CHAVINILLO", "lat": -9.80807, "lon": -76.551288},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "CAHUAC", "lat": -9.864632, "lon": -76.649322},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "CHACABAMBA", "lat": -9.900567, "lon": -76.632138},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "APARICIO POMARES", "lat": -9.716243, "lon": -76.57687},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "JACAS CHICO", "lat": -9.875169, "lon": -76.509084},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "OBAS", "lat": -9.826929, "lon": -76.68132},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "PAMPAMARCA", "lat": -9.765886, "lon": -76.707754},
+  {"departamento": "HUANUCO", "provincia": "YAROWILCA", "distrito": "CHORAS", "lat": -9.911817, "lon": -76.571825},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "ICA", "lat": -14.213856, "lon": -75.906656},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "LA TINGUIÑA", "lat": -14.01078, "lon": -75.673342},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "LOS AQUIJES", "lat": -14.074032, "lon": -75.640612},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "OCUCAJE", "lat": -14.484107, "lon": -75.780752},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "PACHACUTEC", "lat": -14.160411, "lon": -75.651662},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "PARCONA", "lat": -14.056866, "lon": -75.700447},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "PUEBLO NUEVO", "lat": -14.124514, "lon": -75.675809},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "SALAS", "lat": -13.92176, "lon": -75.875777},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "SAN JOSE DE LOS MOLINOS", "lat": -13.882063, "lon": -75.612413},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "SAN JUAN BAUTISTA", "lat": -13.973546, "lon": -75.733136},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "SANTIAGO", "lat": -14.510748, "lon": -75.515273},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "SUBTANJALLA", "lat": -14.048157, "lon": -75.893239},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "TATE", "lat": -14.151554, "lon": -75.703258},
+  {"departamento": "ICA", "provincia": "ICA", "distrito": "YAUCA DEL ROSARIO", "lat": -14.100682, "lon": -75.434152},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "CHINCHA ALTA", "lat": -13.324534, "lon": -76.034554},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "ALTO LARAN", "lat": -13.382195, "lon": -75.939004},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "CHAVIN", "lat": -13.120263, "lon": -75.942667},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "CHINCHA BAJA", "lat": -13.496743, "lon": -76.150811},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "EL CARMEN", "lat": -13.512198, "lon": -75.915383},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "GROCIO PRADO", "lat": -13.311587, "lon": -76.167433},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "PUEBLO NUEVO", "lat": -13.258455, "lon": -76.088885},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "SAN JUAN DE YANAC", "lat": -13.224714, "lon": -75.814321},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "SAN PEDRO DE HUACARPANA", "lat": -13.078444, "lon": -75.727183},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "SUNAMPE", "lat": -13.42689, "lon": -76.162843},
+  {"departamento": "ICA", "provincia": "CHINCHA", "distrito": "TAMBO DE MORA", "lat": -13.46032, "lon": -76.183281},
+  {"departamento": "ICA", "provincia": "NASCA", "distrito": "NASCA", "lat": -14.857035, "lon": -75.036886},
+  {"departamento": "ICA", "provincia": "NASCA", "distrito": "CHANGUILLO", "lat": -14.801671, "lon": -75.334396},
+  {"departamento": "ICA", "provincia": "NASCA", "distrito": "EL INGENIO", "lat": -14.677746, "lon": -75.007106},
+  {"departamento": "ICA", "provincia": "NASCA", "distrito": "MARCONA", "lat": -15.142424, "lon": -75.069349},
+  {"departamento": "ICA", "provincia": "NASCA", "distrito": "VISTA ALEGRE", "lat": -14.928466, "lon": -74.828006},
+  {"departamento": "ICA", "provincia": "PALPA", "distrito": "PALPA", "lat": -14.489735, "lon": -75.131576},
+  {"departamento": "ICA", "provincia": "PALPA", "distrito": "LLIPATA", "lat": -14.594661, "lon": -75.158728},
+  {"departamento": "ICA", "provincia": "PALPA", "distrito": "RIO GRANDE", "lat": -14.345704, "lon": -75.147571},
+  {"departamento": "ICA", "provincia": "PALPA", "distrito": "SANTA CRUZ", "lat": -14.471196, "lon": -75.257699},
+  {"departamento": "ICA", "provincia": "PALPA", "distrito": "TIBILLO", "lat": -14.150392, "lon": -75.160936},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "PISCO", "lat": -13.70181, "lon": -76.191779},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "HUANCANO", "lat": -13.555191, "lon": -75.615911},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "HUMAY", "lat": -13.744084, "lon": -75.817985},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "INDEPENDENCIA", "lat": -13.64686, "lon": -76.012997},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "PARACAS", "lat": -14.04707, "lon": -76.15775},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "SAN ANDRES", "lat": -13.804326, "lon": -76.106764},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "SAN CLEMENTE", "lat": -13.642116, "lon": -76.143987},
+  {"departamento": "ICA", "provincia": "PISCO", "distrito": "TUPAC AMARU INCA", "lat": -13.726172, "lon": -76.110335},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUANCAYO", "lat": -11.993323, "lon": -75.07128},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CARHUACALLANGA", "lat": -12.35543, "lon": -75.202581},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CHACAPAMPA", "lat": -12.41042, "lon": -75.257133},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CHICCHE", "lat": -12.290753, "lon": -75.29338},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CHILCA", "lat": -12.079051, "lon": -75.183155},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CHONGOS ALTO", "lat": -12.485658, "lon": -75.437252},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CHUPURO", "lat": -12.209829, "lon": -75.241132},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "COLCA", "lat": -12.314231, "lon": -75.191234},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "CULLHUAS", "lat": -12.251793, "lon": -75.154703},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "EL TAMBO", "lat": -11.971955, "lon": -75.161088},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUACRAPUQUIO", "lat": -12.1867, "lon": -75.209351},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUALHUAS", "lat": -11.967976, "lon": -75.24412},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUANCAN", "lat": -12.110517, "lon": -75.204098},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUASICANCHA", "lat": -12.371224, "lon": -75.286089},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "HUAYUCACHI", "lat": -12.13441, "lon": -75.222067},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "INGENIO", "lat": -11.853736, "lon": -75.222956},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "PARIAHUANCA", "lat": -11.95218, "lon": -74.876978},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "PILCOMAYO", "lat": -12.047475, "lon": -75.254269},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "PUCARA", "lat": -12.1802, "lon": -75.100515},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "QUICHUAY", "lat": -11.845604, "lon": -75.248668},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "QUILCAS", "lat": -11.882245, "lon": -75.166157},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SAN AGUSTIN", "lat": -11.989012, "lon": -75.234478},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SAN JERONIMO DE TUNAN", "lat": -11.93741, "lon": -75.286374},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SAÑO", "lat": -11.950618, "lon": -75.246884},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SAPALLANGA", "lat": -12.113859, "lon": -75.139743},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SICAYA", "lat": -12.019058, "lon": -75.287509},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "SANTO DOMINGO DE ACOBAMBA", "lat": -11.85477, "lon": -74.693613},
+  {"departamento": "JUNIN", "provincia": "HUANCAYO", "distrito": "VIQUES", "lat": -12.160532, "lon": -75.227676},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "CONCEPCION", "lat": -11.912462, "lon": -75.313515},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "ACO", "lat": -11.955337, "lon": -75.39708},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "ANDAMARCA", "lat": -11.696353, "lon": -74.857187},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "CHAMBARA", "lat": -12.005608, "lon": -75.43648},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "COCHAS", "lat": -11.620067, "lon": -75.141362},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "COMAS", "lat": -11.665499, "lon": -75.048986},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "HEROINAS TOLEDO", "lat": -11.83874, "lon": -75.281778},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "MANZANARES", "lat": -12.001882, "lon": -75.364486},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "MARISCAL CASTILLA", "lat": -11.589055, "lon": -75.10534},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "MATAHUASI", "lat": -11.881846, "lon": -75.357434},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "MITO", "lat": -11.928801, "lon": -75.35175},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "NUEVE DE JULIO", "lat": -11.889899, "lon": -75.314627},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "ORCOTUNA", "lat": -11.975331, "lon": -75.328226},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "SAN JOSE DE QUERO", "lat": -12.076253, "lon": -75.572681},
+  {"departamento": "JUNIN", "provincia": "CONCEPCION", "distrito": "SANTA ROSA DE OCOPA", "lat": -11.869931, "lon": -75.306845},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "CHANCHAMAYO", "lat": -11.032777, "lon": -75.356445},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "PERENE", "lat": -10.940282, "lon": -75.075959},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "PICHANAQUI", "lat": -11.02503, "lon": -74.868765},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "SAN LUIS DE SHUARO", "lat": -10.84328, "lon": -75.272767},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "SAN RAMON", "lat": -11.156801, "lon": -75.405089},
+  {"departamento": "JUNIN", "provincia": "CHANCHAMAYO", "distrito": "VITOC", "lat": -11.265018, "lon": -75.236603},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "JAUJA", "lat": -11.774085, "lon": -75.491138},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "ACOLLA", "lat": -11.662663, "lon": -75.567565},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "APATA", "lat": -11.680674, "lon": -75.272521},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "ATAURA", "lat": -11.795464, "lon": -75.447094},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "CANCHAYLLO", "lat": -11.914967, "lon": -75.800006},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "CURICACA", "lat": -11.768441, "lon": -75.66916},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "EL MANTARO", "lat": -11.817832, "lon": -75.391571},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "HUAMALI", "lat": -11.789629, "lon": -75.404091},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "HUARIPAMPA", "lat": -11.821278, "lon": -75.480602},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "HUERTAS", "lat": -11.764384, "lon": -75.46674},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "JANJAILLO", "lat": -11.765631, "lon": -75.618719},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "JULCAN", "lat": -11.754255, "lon": -75.428886},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "LEONOR ORDOÑEZ", "lat": -11.869144, "lon": -75.431381},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "LLOCLLAPAMPA", "lat": -11.834841, "lon": -75.625049},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MARCO", "lat": -11.76045, "lon": -75.567747},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MASMA", "lat": -11.780825, "lon": -75.422019},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MASMA CHICCHE", "lat": -11.774964, "lon": -75.364662},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MOLINOS", "lat": -11.594217, "lon": -75.339273},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MONOBAMBA", "lat": -11.408569, "lon": -75.23107},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MUQUI", "lat": -11.838418, "lon": -75.437655},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "MUQUIYAUYO", "lat": -11.835045, "lon": -75.459364},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "PACA", "lat": -11.68317, "lon": -75.528451},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "PACCHA", "lat": -11.880049, "lon": -75.533425},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "PANCAN", "lat": -11.747512, "lon": -75.499028},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "PARCO", "lat": -11.820616, "lon": -75.540602},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "POMACANCHA", "lat": -11.632891, "lon": -75.689176},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "RICRAN", "lat": -11.560032, "lon": -75.457521},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "SAN LORENZO", "lat": -11.838667, "lon": -75.378526},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "SAN PEDRO DE CHUNAN", "lat": -11.718923, "lon": -75.489306},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "SAUSA", "lat": -11.792653, "lon": -75.483291},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "SINCOS", "lat": -11.942068, "lon": -75.513117},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "TUNAN MARCA", "lat": -11.706821, "lon": -75.594737},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "YAULI", "lat": -11.678848, "lon": -75.471347},
+  {"departamento": "JUNIN", "provincia": "JAUJA", "distrito": "YAUYOS", "lat": -11.795839, "lon": -75.514276},
+  {"departamento": "JUNIN", "provincia": "JUNIN", "distrito": "JUNIN", "lat": -11.188813, "lon": -76.011924},
+  {"departamento": "JUNIN", "provincia": "JUNIN", "distrito": "CARHUAMAYO", "lat": -10.913934, "lon": -76.020988},
+  {"departamento": "JUNIN", "provincia": "JUNIN", "distrito": "ONDORES", "lat": -11.091417, "lon": -76.181995},
+  {"departamento": "JUNIN", "provincia": "JUNIN", "distrito": "ULCUMAYO", "lat": -10.904467, "lon": -75.683964},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "SATIPO", "lat": -11.1796, "lon": -74.611853},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "COVIRIALI", "lat": -11.317466, "lon": -74.651474},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "LLAYLLA", "lat": -11.462947, "lon": -74.648992},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "MAZAMARI", "lat": -11.364872, "lon": -74.309648},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "PAMPA HERMOSA", "lat": -11.413762, "lon": -74.84186},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "PANGOA", "lat": -11.769357, "lon": -74.322247},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "RIO NEGRO", "lat": -11.103172, "lon": -74.690968},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "RIO TAMBO", "lat": -11.530968, "lon": -73.814445},
+  {"departamento": "JUNIN", "provincia": "SATIPO", "distrito": "VIZCATÁN DEL ENE", "lat": -12.20234, "lon": -74.186568},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "TARMA", "lat": -11.455553, "lon": -75.758777},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "ACOBAMBA", "lat": -11.349135, "lon": -75.656831},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "HUARICOLCA", "lat": -11.525649, "lon": -75.616973},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "HUASAHUASI", "lat": -11.127623, "lon": -75.625731},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "LA UNION", "lat": -11.360989, "lon": -75.822632},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "PALCA", "lat": -11.31714, "lon": -75.505163},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "PALCAMAYO", "lat": -11.270192, "lon": -75.777826},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "SAN PEDRO DE CAJAS", "lat": -11.123417, "lon": -75.785782},
+  {"departamento": "JUNIN", "provincia": "TARMA", "distrito": "TAPO", "lat": -11.429563, "lon": -75.528417},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "LA OROYA", "lat": -11.60527, "lon": -75.856687},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "CHACAPALPA", "lat": -11.724623, "lon": -75.821241},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "HUAY-HUAY", "lat": -11.717137, "lon": -75.965332},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "MARCAPOMACOCHA", "lat": -11.404887, "lon": -76.2577},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "MOROCOCHA", "lat": -11.544541, "lon": -76.123324},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "PACCHA", "lat": -11.44012, "lon": -75.992273},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "SANTA BARBARA DE CARHUACAYAN", "lat": -11.198049, "lon": -76.364851},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "SANTA ROSA DE SACCO", "lat": -11.557604, "lon": -75.986454},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "SUITUCANCHA", "lat": -11.833317, "lon": -75.978183},
+  {"departamento": "JUNIN", "provincia": "YAULI", "distrito": "YAULI", "lat": -11.709622, "lon": -76.098139},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "CHUPACA", "lat": -12.070924, "lon": -75.286068},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "AHUAC", "lat": -12.081999, "lon": -75.351555},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "CHONGOS BAJO", "lat": -12.194835, "lon": -75.284433},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "HUACHAC", "lat": -12.035589, "lon": -75.342653},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "HUAMANCACA CHICO", "lat": -12.079626, "lon": -75.248767},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "SAN JUAN DE ISCOS", "lat": -12.119347, "lon": -75.301596},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "SAN JUAN DE JARPA", "lat": -12.123493, "lon": -75.451017},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "TRES DE DICIEMBRE", "lat": -12.114016, "lon": -75.245853},
+  {"departamento": "JUNIN", "provincia": "CHUPACA", "distrito": "YANACANCHA", "lat": -12.253689, "lon": -75.473805},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "TRUJILLO", "lat": -8.112488, "lon": -79.023792},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "EL PORVENIR", "lat": -8.052688, "lon": -78.985273},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "FLORENCIA DE MORA", "lat": -8.0796, "lon": -79.023126},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "HUANCHACO", "lat": -8.000943, "lon": -79.058537},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "LA ESPERANZA", "lat": -8.063403, "lon": -79.05544},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "LAREDO", "lat": -8.105203, "lon": -78.855381},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "MOCHE", "lat": -8.159176, "lon": -79.000111},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "POROTO", "lat": -8.035272, "lon": -78.75401},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "SALAVERRY", "lat": -8.253593, "lon": -78.899404},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "SIMBAL", "lat": -7.91837, "lon": -78.827085},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "VICTOR LARCO HERRERA", "lat": -8.13935, "lon": -79.045823},
+  {"departamento": "LA LIBERTAD", "provincia": "TRUJILLO", "distrito": "ALTO TRUJILLO", "lat": -8.047639, "lon": -79.005613},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "ASCOPE", "lat": -7.660899, "lon": -79.082068},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "CHICAMA", "lat": -7.804977, "lon": -79.008224},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "CHOCOPE", "lat": -7.790501, "lon": -79.226547},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "MAGDALENA DE CAO", "lat": -7.855206, "lon": -79.299916},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "PAIJAN", "lat": -7.728737, "lon": -79.302166},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "RAZURI", "lat": -7.686843, "lon": -79.371553},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "SANTIAGO DE CAO", "lat": -7.924753, "lon": -79.21774},
+  {"departamento": "LA LIBERTAD", "provincia": "ASCOPE", "distrito": "CASA GRANDE", "lat": -7.576685, "lon": -79.194942},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "BOLIVAR", "lat": -7.264636, "lon": -77.733911},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "BAMBAMARCA", "lat": -7.464636, "lon": -77.68834},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "CONDORMARCA", "lat": -7.561563, "lon": -77.597552},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "LONGOTEA", "lat": -7.056491, "lon": -77.910119},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "UCHUMARCA", "lat": -7.026101, "lon": -77.805886},
+  {"departamento": "LA LIBERTAD", "provincia": "BOLIVAR", "distrito": "UCUNCHA", "lat": -7.153234, "lon": -77.850597},
+  {"departamento": "LA LIBERTAD", "provincia": "CHEPEN", "distrito": "CHEPEN", "lat": -7.228527, "lon": -79.353843},
+  {"departamento": "LA LIBERTAD", "provincia": "CHEPEN", "distrito": "PACANGA", "lat": -7.079655, "lon": -79.44763},
+  {"departamento": "LA LIBERTAD", "provincia": "CHEPEN", "distrito": "PUEBLO NUEVO", "lat": -7.192247, "lon": -79.58629},
+  {"departamento": "LA LIBERTAD", "provincia": "JULCAN", "distrito": "JULCAN", "lat": -8.074768, "lon": -78.461962},
+  {"departamento": "LA LIBERTAD", "provincia": "JULCAN", "distrito": "CALAMARCA", "lat": -8.120342, "lon": -78.38078},
+  {"departamento": "LA LIBERTAD", "provincia": "JULCAN", "distrito": "CARABAMBA", "lat": -8.146577, "lon": -78.582015},
+  {"departamento": "LA LIBERTAD", "provincia": "JULCAN", "distrito": "HUASO", "lat": -8.26159, "lon": -78.44053},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "OTUZCO", "lat": -7.848728, "lon": -78.58211},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "AGALLPAMPA", "lat": -7.94555, "lon": -78.464005},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "CHARAT", "lat": -7.80866, "lon": -78.473825},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "HUARANCHAL", "lat": -7.690455, "lon": -78.451738},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "LA CUESTA", "lat": -7.908474, "lon": -78.684984},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "MACHE", "lat": -8.034219, "lon": -78.533805},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "PARANDAY", "lat": -7.888411, "lon": -78.698909},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "SALPO", "lat": -8.032896, "lon": -78.636275},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "SINSICAP", "lat": -7.754492, "lon": -78.779192},
+  {"departamento": "LA LIBERTAD", "provincia": "OTUZCO", "distrito": "USQUIL", "lat": -7.800635, "lon": -78.361646},
+  {"departamento": "LA LIBERTAD", "provincia": "PACASMAYO", "distrito": "SAN PEDRO DE LLOC", "lat": -7.483566, "lon": -79.404973},
+  {"departamento": "LA LIBERTAD", "provincia": "PACASMAYO", "distrito": "GUADALUPE", "lat": -7.288137, "lon": -79.487884},
+  {"departamento": "LA LIBERTAD", "provincia": "PACASMAYO", "distrito": "JEQUETEPEQUE", "lat": -7.350197, "lon": -79.547091},
+  {"departamento": "LA LIBERTAD", "provincia": "PACASMAYO", "distrito": "PACASMAYO", "lat": -7.399864, "lon": -79.547857},
+  {"departamento": "LA LIBERTAD", "provincia": "PACASMAYO", "distrito": "SAN JOSE", "lat": -7.369811, "lon": -79.385671},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "TAYABAMBA", "lat": -8.314248, "lon": -77.256353},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "BULDIBUYO", "lat": -8.124407, "lon": -77.382756},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "CHILLIA", "lat": -8.160833, "lon": -77.520897},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "HUANCASPATA", "lat": -8.443209, "lon": -77.261944},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "HUAYLILLAS", "lat": -8.190405, "lon": -77.293707},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "HUAYO", "lat": -8.034944, "lon": -77.592242},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "ONGON", "lat": -8.205807, "lon": -77.092464},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "PARCOY", "lat": -7.99324, "lon": -77.509847},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "PATAZ", "lat": -7.732453, "lon": -77.589545},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "PIAS", "lat": -7.893678, "lon": -77.48745},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "SANTIAGO DE CHALLAS", "lat": -8.427066, "lon": -77.371474},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "TAURIJA", "lat": -8.279441, "lon": -77.433161},
+  {"departamento": "LA LIBERTAD", "provincia": "PATAZ", "distrito": "URPAY", "lat": -8.335363, "lon": -77.373042},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "HUAMACHUCO", "lat": -7.826733, "lon": -78.046079},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "CHUGAY", "lat": -7.822334, "lon": -77.798091},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "COCHORCO", "lat": -7.821589, "lon": -77.696083},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "CURGOS", "lat": -7.847741, "lon": -77.953496},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "MARCABAL", "lat": -7.684914, "lon": -77.941684},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "SANAGORAN", "lat": -7.792647, "lon": -78.175639},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "SARIN", "lat": -7.939828, "lon": -77.880092},
+  {"departamento": "LA LIBERTAD", "provincia": "SANCHEZ CARRION", "distrito": "SARTIMBAMBA", "lat": -7.612697, "lon": -77.766151},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "SANTIAGO DE CHUCO", "lat": -8.34914, "lon": -78.244612},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "ANGASMARCA", "lat": -8.145696, "lon": -78.032657},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "CACHICADAN", "lat": -8.017282, "lon": -78.064356},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "MOLLEBAMBA", "lat": -8.127966, "lon": -77.980811},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "MOLLEPATA", "lat": -8.142628, "lon": -77.942048},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "QUIRUVILCA", "lat": -8.014739, "lon": -78.251113},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "SANTA CRUZ DE CHUCA", "lat": -8.1883, "lon": -78.095674},
+  {"departamento": "LA LIBERTAD", "provincia": "SANTIAGO DE CHUCO", "distrito": "SITABAMBA", "lat": -8.026282, "lon": -77.80046},
+  {"departamento": "LA LIBERTAD", "provincia": "GRAN CHIMU", "distrito": "CASCAS", "lat": -7.501508, "lon": -78.763961},
+  {"departamento": "LA LIBERTAD", "provincia": "GRAN CHIMU", "distrito": "LUCMA", "lat": -7.629981, "lon": -78.576582},
+  {"departamento": "LA LIBERTAD", "provincia": "GRAN CHIMU", "distrito": "MARMOT", "lat": -7.66253, "lon": -78.701506},
+  {"departamento": "LA LIBERTAD", "provincia": "GRAN CHIMU", "distrito": "SAYAPULLO", "lat": -7.5679, "lon": -78.431725},
+  {"departamento": "LA LIBERTAD", "provincia": "VIRU", "distrito": "VIRU", "lat": -8.353304, "lon": -78.735255},
+  {"departamento": "LA LIBERTAD", "provincia": "VIRU", "distrito": "CHAO", "lat": -8.559894, "lon": -78.506414},
+  {"departamento": "LA LIBERTAD", "provincia": "VIRU", "distrito": "GUADALUPITO", "lat": -8.801724, "lon": -78.649747},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "CHICLAYO", "lat": -6.782837, "lon": -79.825826},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "CHONGOYAPE", "lat": -6.626862, "lon": -79.464563},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "ETEN", "lat": -6.930467, "lon": -79.815884},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "ETEN PUERTO", "lat": -6.950196, "lon": -79.847184},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "JOSE LEONARDO ORTIZ", "lat": -6.73983, "lon": -79.842587},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "LA VICTORIA", "lat": -6.823756, "lon": -79.861147},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "LAGUNAS", "lat": -7.014469, "lon": -79.671405},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "MONSEFU", "lat": -6.86573, "lon": -79.857485},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "NUEVA ARICA", "lat": -6.931294, "lon": -79.370809},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "OYOTUN", "lat": -6.779638, "lon": -79.276849},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "PICSI", "lat": -6.716392, "lon": -79.772578},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "PIMENTEL", "lat": -6.799433, "lon": -79.903538},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "REQUE", "lat": -6.863482, "lon": -79.794193},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "SANTA ROSA", "lat": -6.881463, "lon": -79.903881},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "SAÑA", "lat": -6.887142, "lon": -79.637997},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "CAYALTI", "lat": -6.888701, "lon": -79.506682},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "PATAPO", "lat": -6.708931, "lon": -79.585754},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "POMALCA", "lat": -6.781754, "lon": -79.759038},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "PUCALA", "lat": -6.794629, "lon": -79.513726},
+  {"departamento": "LAMBAYEQUE", "provincia": "CHICLAYO", "distrito": "TUMAN", "lat": -6.773732, "lon": -79.694451},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "FERREÑAFE", "lat": -6.620502, "lon": -79.791163},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "CAÑARIS", "lat": -6.060242, "lon": -79.304724},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "INCAHUASI", "lat": -6.231205, "lon": -79.387126},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "MANUEL ANTONIO MESONES MURO", "lat": -6.635333, "lon": -79.68283},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "PITIPO", "lat": -6.486228, "lon": -79.63476},
+  {"departamento": "LAMBAYEQUE", "provincia": "FERREÑAFE", "distrito": "PUEBLO NUEVO", "lat": -6.629898, "lon": -79.824431},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "LAMBAYEQUE", "lat": -6.673958, "lon": -79.932898},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "CHOCHOPE", "lat": -6.155232, "lon": -79.61359},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "ILLIMO", "lat": -6.469594, "lon": -79.853367},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "JAYANCA", "lat": -6.334182, "lon": -79.808283},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "MOCHUMI", "lat": -6.562819, "lon": -79.887515},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "MORROPE", "lat": -6.50615, "lon": -80.179},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "MOTUPE", "lat": -6.169047, "lon": -79.707876},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "OLMOS", "lat": -6.045622, "lon": -80.080658},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "PACORA", "lat": -6.434084, "lon": -79.879923},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "SALAS", "lat": -6.13676, "lon": -79.531378},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "SAN JOSE", "lat": -6.76606, "lon": -79.936915},
+  {"departamento": "LAMBAYEQUE", "provincia": "LAMBAYEQUE", "distrito": "TUCUME", "lat": -6.503309, "lon": -79.876275},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LIMA", "lat": -12.051055, "lon": -77.049038},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "ANCON", "lat": -11.702568, "lon": -77.09589},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "ATE", "lat": -12.032663, "lon": -76.877326},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "BARRANCO", "lat": -12.144073, "lon": -77.020879},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "BREÑA", "lat": -12.059144, "lon": -77.050637},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "CARABAYLLO", "lat": -11.807384, "lon": -76.972927},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "CHACLACAYO", "lat": -11.99164, "lon": -76.76697},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "CHORRILLOS", "lat": -12.192646, "lon": -77.005986},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "CIENEGUILLA", "lat": -12.076546, "lon": -76.77746},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "COMAS", "lat": -11.929076, "lon": -77.03892},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "EL AGUSTINO", "lat": -12.040125, "lon": -76.987542},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "INDEPENDENCIA", "lat": -11.987477, "lon": -77.046008},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "JESUS MARIA", "lat": -12.078089, "lon": -77.048242},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LA MOLINA", "lat": -12.087999, "lon": -76.925898},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LA VICTORIA", "lat": -12.072318, "lon": -77.017371},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LINCE", "lat": -12.08577, "lon": -77.035691},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LOS OLIVOS", "lat": -11.972519, "lon": -77.074378},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LURIGANCHO", "lat": -11.958596, "lon": -76.801556},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "LURIN", "lat": -12.234348, "lon": -76.801557},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "MAGDALENA DEL MAR", "lat": -12.094578, "lon": -77.067015},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PUEBLO LIBRE", "lat": -12.07508, "lon": -77.065789},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "MIRAFLORES", "lat": -12.120793, "lon": -77.029088},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PACHACAMAC", "lat": -12.160001, "lon": -76.809871},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PUCUSANA", "lat": -12.466236, "lon": -76.775988},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PUENTE PIEDRA", "lat": -11.872136, "lon": -77.086662},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PUNTA HERMOSA", "lat": -12.269245, "lon": -76.743745},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "PUNTA NEGRA", "lat": -12.303624, "lon": -76.709431},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "RIMAC", "lat": -12.023597, "lon": -77.032588},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN BARTOLO", "lat": -12.369382, "lon": -76.724144},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN BORJA", "lat": -12.097536, "lon": -76.995263},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN ISIDRO", "lat": -12.099001, "lon": -77.036772},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN JUAN DE LURIGANCHO", "lat": -11.945947, "lon": -76.971464},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN JUAN DE MIRAFLORES", "lat": -12.15782, "lon": -76.966524},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN LUIS", "lat": -12.074105, "lon": -76.997298},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN MARTIN DE PORRES", "lat": -11.992766, "lon": -77.088504},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SAN MIGUEL", "lat": -12.076599, "lon": -77.09009},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SANTA ANITA", "lat": -12.043236, "lon": -76.963253},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SANTA MARIA DEL MAR", "lat": -12.408712, "lon": -76.767309},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SANTA ROSA", "lat": -11.804887, "lon": -77.163322},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SANTIAGO DE SURCO", "lat": -12.127226, "lon": -76.984519},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "SURQUILLO", "lat": -12.113401, "lon": -77.01299},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "VILLA EL SALVADOR", "lat": -12.219175, "lon": -76.945441},
+  {"departamento": "LIMA", "provincia": "LIMA", "distrito": "VILLA MARIA DEL TRIUNFO", "lat": -12.170304, "lon": -76.918997},
+  {"departamento": "LIMA", "provincia": "BARRANCA", "distrito": "BARRANCA", "lat": -10.714926, "lon": -77.682692},
+  {"departamento": "LIMA", "provincia": "BARRANCA", "distrito": "PARAMONGA", "lat": -10.48645, "lon": -77.742166},
+  {"departamento": "LIMA", "provincia": "BARRANCA", "distrito": "PATIVILCA", "lat": -10.62336, "lon": -77.685958},
+  {"departamento": "LIMA", "provincia": "BARRANCA", "distrito": "SUPE", "lat": -10.809612, "lon": -77.562306},
+  {"departamento": "LIMA", "provincia": "BARRANCA", "distrito": "SUPE PUERTO", "lat": -10.785247, "lon": -77.72568},
+  {"departamento": "LIMA", "provincia": "CAJATAMBO", "distrito": "CAJATAMBO", "lat": -10.45514, "lon": -76.94384},
+  {"departamento": "LIMA", "provincia": "CAJATAMBO", "distrito": "COPA", "lat": -10.36448, "lon": -77.023379},
+  {"departamento": "LIMA", "provincia": "CAJATAMBO", "distrito": "GORGOR", "lat": -10.621641, "lon": -76.991911},
+  {"departamento": "LIMA", "provincia": "CAJATAMBO", "distrito": "HUANCAPON", "lat": -10.521692, "lon": -77.108933},
+  {"departamento": "LIMA", "provincia": "CAJATAMBO", "distrito": "MANAS", "lat": -10.612368, "lon": -77.220809},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "CANTA", "lat": -11.475307, "lon": -76.582297},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "ARAHUAY", "lat": -11.640712, "lon": -76.675105},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "HUAMANTANGA", "lat": -11.550347, "lon": -76.843818},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "HUAROS", "lat": -11.401313, "lon": -76.502399},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "LACHAQUI", "lat": -11.555635, "lon": -76.611596},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "SAN BUENAVENTURA", "lat": -11.440503, "lon": -76.662939},
+  {"departamento": "LIMA", "provincia": "CANTA", "distrito": "SANTA ROSA DE QUIVES", "lat": -11.671038, "lon": -76.843148},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "SAN VICENTE DE CAÑETE", "lat": -13.171936, "lon": -76.25757},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "ASIA", "lat": -12.796703, "lon": -76.51119},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "CALANGO", "lat": -12.487066, "lon": -76.454617},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "CERRO AZUL", "lat": -12.966135, "lon": -76.464891},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "CHILCA", "lat": -12.429817, "lon": -76.629943},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "COAYLLO", "lat": -12.658718, "lon": -76.406723},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "IMPERIAL", "lat": -13.033092, "lon": -76.36962},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "LUNAHUANA", "lat": -13.019333, "lon": -76.117382},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "MALA", "lat": -12.653492, "lon": -76.601676},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "NUEVO IMPERIAL", "lat": -12.960496, "lon": -76.258576},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "PACARAN", "lat": -12.897902, "lon": -76.070429},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "QUILMANA", "lat": -12.869569, "lon": -76.345277},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "SAN ANTONIO", "lat": -12.613166, "lon": -76.674182},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "SAN LUIS", "lat": -13.052001, "lon": -76.423721},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "SANTA CRUZ DE FLORES", "lat": -12.549891, "lon": -76.646201},
+  {"departamento": "LIMA", "provincia": "CAÑETE", "distrito": "ZUÑIGA", "lat": -12.829867, "lon": -76.014063},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "HUARAL", "lat": -11.387083, "lon": -77.171105},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "ATAVILLOS ALTO", "lat": -11.277497, "lon": -76.595171},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "ATAVILLOS BAJO", "lat": -11.346454, "lon": -76.761054},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "AUCALLAMA", "lat": -11.517745, "lon": -77.04995},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "CHANCAY", "lat": -11.501131, "lon": -77.291833},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "IHUARI", "lat": -11.187283, "lon": -76.960877},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "LAMPIAN", "lat": -11.247332, "lon": -76.863832},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "PACARAOS", "lat": -11.127142, "lon": -76.664844},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "SAN MIGUEL DE ACOS", "lat": -11.29297, "lon": -76.767503},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "SANTA CRUZ DE ANDAMARCA", "lat": -11.147019, "lon": -76.565522},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "SUMBILCA", "lat": -11.394398, "lon": -76.855425},
+  {"departamento": "LIMA", "provincia": "HUARAL", "distrito": "VEINTISIETE DE NOVIEMBRE", "lat": -11.148856, "lon": -76.772817},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "MATUCANA", "lat": -11.816148, "lon": -76.379431},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "ANTIOQUIA", "lat": -12.061557, "lon": -76.589122},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "CALLAHUANCA", "lat": -11.813706, "lon": -76.575304},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "CARAMPOMA", "lat": -11.639702, "lon": -76.383042},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "CHICLA", "lat": -11.664499, "lon": -76.243798},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "CUENCA", "lat": -12.156529, "lon": -76.456919},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "HUACHUPAMPA", "lat": -11.696855, "lon": -76.595798},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "HUANZA", "lat": -11.561143, "lon": -76.443652},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "HUAROCHIRI", "lat": -12.069458, "lon": -76.272574},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "LAHUAYTAMBO", "lat": -12.093283, "lon": -76.39188},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "LANGA", "lat": -12.15928, "lon": -76.37568},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN PEDRO DE LARAOS", "lat": -11.585183, "lon": -76.531704},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "MARIATANA", "lat": -12.261637, "lon": -76.36532},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "RICARDO PALMA", "lat": -11.937819, "lon": -76.622915},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN ANDRES DE TUPICOCHA", "lat": -11.988061, "lon": -76.458039},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN ANTONIO", "lat": -11.816649, "lon": -76.77356},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN BARTOLOME", "lat": -11.914081, "lon": -76.50141},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN DAMIAN", "lat": -11.964471, "lon": -76.33299},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN JUAN DE IRIS", "lat": -11.718969, "lon": -76.469091},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN JUAN DE TANTARANCHE", "lat": -11.992925, "lon": -76.15699},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN LORENZO DE QUINTI", "lat": -12.108945, "lon": -76.118855},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN MATEO", "lat": -11.819785, "lon": -76.218983},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN MATEO DE OTAO", "lat": -11.840594, "lon": -76.530432},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN PEDRO DE CASTA", "lat": -11.765041, "lon": -76.555123},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SAN PEDRO DE HUANCAYRE", "lat": -12.086709, "lon": -76.196638},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANGALLAYA", "lat": -12.219148, "lon": -76.262707},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANTA CRUZ DE COCACHACRA", "lat": -11.92597, "lon": -76.56077},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANTA EULALIA", "lat": -11.85835, "lon": -76.648991},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANTIAGO DE ANCHUCAYA", "lat": -12.031918, "lon": -76.199605},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANTIAGO DE TUNA", "lat": -11.978062, "lon": -76.52846},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SANTO DOMINGO DE LOS OLLEROS", "lat": -12.26132, "lon": -76.536205},
+  {"departamento": "LIMA", "provincia": "HUAROCHIRI", "distrito": "SURCO", "lat": -11.877112, "lon": -76.445358},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "HUACHO", "lat": -11.271661, "lon": -77.492768},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "AMBAR", "lat": -10.782311, "lon": -77.267758},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "CALETA DE CARQUIN", "lat": -11.087981, "lon": -77.620023},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "CHECRAS", "lat": -10.921698, "lon": -76.85548},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "HUALMAY", "lat": -11.092778, "lon": -77.606952},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "HUAURA", "lat": -11.00359, "lon": -77.445224},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "LEONCIO PRADO", "lat": -11.050809, "lon": -76.91854},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "PACCHO", "lat": -10.965866, "lon": -76.971838},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "SANTA LEONOR", "lat": -10.962755, "lon": -76.671222},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "SANTA MARIA", "lat": -11.116135, "lon": -77.473273},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "SAYAN", "lat": -11.145864, "lon": -77.233804},
+  {"departamento": "LIMA", "provincia": "HUAURA", "distrito": "VEGUETA", "lat": -10.950192, "lon": -77.604116},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "OYON", "lat": -10.669399, "lon": -76.757722},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "ANDAJES", "lat": -10.777603, "lon": -76.92715},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "CAUJUL", "lat": -10.756401, "lon": -76.986687},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "COCHAMARCA", "lat": -10.883556, "lon": -77.12792},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "NAVAN", "lat": -10.857167, "lon": -77.046644},
+  {"departamento": "LIMA", "provincia": "OYON", "distrito": "PACHANGARA", "lat": -10.837864, "lon": -76.797554},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "YAUYOS", "lat": -12.472573, "lon": -75.955107},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "ALIS", "lat": -12.288783, "lon": -75.703964},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "ALLAUCA", "lat": -12.640071, "lon": -76.038358},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "AYAVIRI", "lat": -12.36546, "lon": -76.042295},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "AZANGARO", "lat": -13.00908, "lon": -75.825563},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "CACRA", "lat": -12.766226, "lon": -75.747968},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "CARANIA", "lat": -12.355866, "lon": -75.88164},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "CATAHUASI", "lat": -12.742784, "lon": -75.882003},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "CHOCOS", "lat": -12.922386, "lon": -75.924058},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "COCHAS", "lat": -12.285837, "lon": -76.195699},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "COLONIA", "lat": -12.58427, "lon": -75.845981},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HONGOS", "lat": -12.766494, "lon": -75.672838},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HUAMPARA", "lat": -12.354295, "lon": -76.190599},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HUANCAYA", "lat": -12.090365, "lon": -75.8348},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HUANGASCAR", "lat": -12.941558, "lon": -75.82185},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HUANTAN", "lat": -12.513068, "lon": -75.704078},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "HUAÑEC", "lat": -12.274803, "lon": -76.079498},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "LARAOS", "lat": -12.38449, "lon": -75.676191},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "LINCHA", "lat": -12.810944, "lon": -75.630692},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "MADEAN", "lat": -12.96114, "lon": -75.698335},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "MIRAFLORES", "lat": -12.234642, "lon": -75.889215},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "OMAS", "lat": -12.476303, "lon": -76.250797},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "PUTINZA", "lat": -12.666512, "lon": -75.922762},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "QUINCHES", "lat": -12.311547, "lon": -76.09174},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "QUINOCAY", "lat": -12.350638, "lon": -76.284317},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "SAN JOAQUIN", "lat": -12.245829, "lon": -76.105525},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "SAN PEDRO DE PILAS", "lat": -12.492983, "lon": -76.186093},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "TANTA", "lat": -12.13204, "lon": -75.99133},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "TAURIPAMPA", "lat": -12.683175, "lon": -76.181444},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "TOMAS", "lat": -12.163928, "lon": -75.706829},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "TUPE", "lat": -12.690291, "lon": -75.736098},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "VIÑAC", "lat": -12.887559, "lon": -75.770427},
+  {"departamento": "LIMA", "provincia": "YAUYOS", "distrito": "VITIS", "lat": -12.169539, "lon": -75.857421},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "IQUITOS", "lat": -3.782273, "lon": -73.432631},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "ALTO NANAY", "lat": -3.361639, "lon": -74.285521},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "FERNANDO LORES", "lat": -4.279125, "lon": -73.114815},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "INDIANA", "lat": -3.829159, "lon": -72.856333},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "LAS AMAZONAS", "lat": -3.568367, "lon": -72.528922},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "MAZAN", "lat": -2.993719, "lon": -73.752153},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "NAPO", "lat": -2.09912, "lon": -74.407135},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "PUNCHANA", "lat": -3.538675, "lon": -73.454445},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "TORRES CAUSANA", "lat": -1.38888, "lon": -74.892895},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "BELEN", "lat": -3.811598, "lon": -73.211978},
+  {"departamento": "LORETO", "provincia": "MAYNAS", "distrito": "SAN JUAN BAUTISTA", "lat": -4.149065, "lon": -73.665899},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "YURIMAGUAS", "lat": -5.84588, "lon": -76.161582},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "BALSAPUERTO", "lat": -5.737627, "lon": -76.586618},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "JEBEROS", "lat": -5.29686, "lon": -76.20498},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "LAGUNAS", "lat": -4.628336, "lon": -75.976056},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "SANTA CRUZ", "lat": -5.658277, "lon": -75.749005},
+  {"departamento": "LORETO", "provincia": "ALTO AMAZONAS", "distrito": "TENIENTE CESAR LOPEZ ROJAS", "lat": -5.987712, "lon": -75.822045},
+  {"departamento": "LORETO", "provincia": "LORETO", "distrito": "NAUTA", "lat": -4.442718, "lon": -74.114204},
+  {"departamento": "LORETO", "provincia": "LORETO", "distrito": "PARINARI", "lat": -5.038946, "lon": -74.863563},
+  {"departamento": "LORETO", "provincia": "LORETO", "distrito": "TIGRE", "lat": -2.943731, "lon": -75.264852},
+  {"departamento": "LORETO", "provincia": "LORETO", "distrito": "TROMPETEROS", "lat": -3.196324, "lon": -75.836878},
+  {"departamento": "LORETO", "provincia": "LORETO", "distrito": "URARINAS", "lat": -4.274922, "lon": -75.484666},
+  {"departamento": "LORETO", "provincia": "MARISCAL RAMON CASTILLA", "distrito": "RAMON CASTILLA", "lat": -3.677497, "lon": -70.836135},
+  {"departamento": "LORETO", "provincia": "MARISCAL RAMON CASTILLA", "distrito": "PEBAS", "lat": -3.432712, "lon": -71.964675},
+  {"departamento": "LORETO", "provincia": "MARISCAL RAMON CASTILLA", "distrito": "YAVARI", "lat": -4.477463, "lon": -72.033114},
+  {"departamento": "LORETO", "provincia": "MARISCAL RAMON CASTILLA", "distrito": "SAN PABLO", "lat": -3.866758, "lon": -71.338967},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "REQUENA", "lat": -5.328241, "lon": -73.882344},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "ALTO TAPICHE", "lat": -6.818339, "lon": -74.189436},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "CAPELO", "lat": -5.366373, "lon": -74.12692},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "EMILIO SAN MARTIN", "lat": -6.201375, "lon": -74.454046},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "MAQUIA", "lat": -6.385333, "lon": -74.729511},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "PUINAHUA", "lat": -5.644731, "lon": -74.886371},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "SAQUENA", "lat": -4.797939, "lon": -73.405101},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "SOPLIN", "lat": -6.327026, "lon": -73.75071},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "TAPICHE", "lat": -5.992031, "lon": -73.993542},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "JENARO HERRERA", "lat": -4.996171, "lon": -73.698348},
+  {"departamento": "LORETO", "provincia": "REQUENA", "distrito": "YAQUERANA", "lat": -5.751713, "lon": -73.344436},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "CONTAMANA", "lat": -7.781159, "lon": -75.349403},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "INAHUAYA", "lat": -7.04089, "lon": -75.299831},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "PADRE MARQUEZ", "lat": -7.879403, "lon": -74.914317},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "PAMPA HERMOSA", "lat": -7.302602, "lon": -75.76971},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "SARAYACU", "lat": -6.390598, "lon": -75.185908},
+  {"departamento": "LORETO", "provincia": "UCAYALI", "distrito": "VARGAS GUERRA", "lat": -6.93193, "lon": -75.094313},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "BARRANCA", "lat": -5.021116, "lon": -77.110814},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "CAHUAPANAS", "lat": -5.240098, "lon": -76.855728},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "MANSERICHE", "lat": -4.727596, "lon": -77.518512},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "MORONA", "lat": -3.679122, "lon": -77.373469},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "PASTAZA", "lat": -4.276608, "lon": -76.637739},
+  {"departamento": "LORETO", "provincia": "DATEM DEL MARAÑON", "distrito": "ANDOAS", "lat": -3.274405, "lon": -76.672414},
+  {"departamento": "LORETO", "provincia": "PUTUMAYO", "distrito": "PUTUMAYO", "lat": -2.468829, "lon": -72.78391},
+  {"departamento": "LORETO", "provincia": "PUTUMAYO", "distrito": "ROSA PANDURO", "lat": -1.558131, "lon": -73.865997},
+  {"departamento": "LORETO", "provincia": "PUTUMAYO", "distrito": "TENIENTE MANUEL CLAVERO", "lat": -0.655315, "lon": -74.731615},
+  {"departamento": "LORETO", "provincia": "PUTUMAYO", "distrito": "YAGUAS", "lat": -2.804332, "lon": -71.013209},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAMBOPATA", "distrito": "TAMBOPATA", "lat": -12.04858, "lon": -70.284592},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAMBOPATA", "distrito": "INAMBARI", "lat": -12.976744, "lon": -69.938845},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAMBOPATA", "distrito": "LAS PIEDRAS", "lat": -12.00369, "lon": -69.539309},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAMBOPATA", "distrito": "LABERINTO", "lat": -12.513322, "lon": -69.923349},
+  {"departamento": "MADRE DE DIOS", "provincia": "MANU", "distrito": "MANU", "lat": -12.362003, "lon": -71.518367},
+  {"departamento": "MADRE DE DIOS", "provincia": "MANU", "distrito": "FITZCARRALD", "lat": -11.850404, "lon": -71.634663},
+  {"departamento": "MADRE DE DIOS", "provincia": "MANU", "distrito": "MADRE DE DIOS", "lat": -12.629542, "lon": -70.675352},
+  {"departamento": "MADRE DE DIOS", "provincia": "MANU", "distrito": "HUEPETUHE", "lat": -13.003146, "lon": -70.652078},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAHUAMANU", "distrito": "IÑAPARI", "lat": -10.965199, "lon": -70.649913},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAHUAMANU", "distrito": "IBERIA", "lat": -11.435094, "lon": -69.679273},
+  {"departamento": "MADRE DE DIOS", "provincia": "TAHUAMANU", "distrito": "TAHUAMANU", "lat": -11.679631, "lon": -69.531994},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "MOQUEGUA", "lat": -17.217708, "lon": -71.064748},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "CARUMAS", "lat": -16.728431, "lon": -70.371416},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "CUCHUMBAYA", "lat": -16.768654, "lon": -70.667629},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "SAMEGUA", "lat": -17.156678, "lon": -70.8526},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "SAN CRISTOBAL", "lat": -16.663397, "lon": -70.644653},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "TORATA", "lat": -16.998119, "lon": -70.738321},
+  {"departamento": "MOQUEGUA", "provincia": "MARISCAL NIETO", "distrito": "SAN ANTONIO", "lat": -17.316346, "lon": -71.034667},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "OMATE", "lat": -16.646647, "lon": -70.962995},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "CHOJATA", "lat": -16.45702, "lon": -70.571252},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "COALAQUE", "lat": -16.575806, "lon": -71.046089},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "ICHUÑA", "lat": -16.188231, "lon": -70.494718},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "LA CAPILLA", "lat": -16.825985, "lon": -71.293871},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "LLOQUE", "lat": -16.303577, "lon": -70.627248},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "MATALAQUE", "lat": -16.528676, "lon": -70.836556},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "PUQUINA", "lat": -16.628295, "lon": -71.157268},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "QUINISTAQUILLAS", "lat": -16.704205, "lon": -70.879824},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "UBINAS", "lat": -16.217461, "lon": -70.805157},
+  {"departamento": "MOQUEGUA", "provincia": "GENERAL SANCHEZ CERRO", "distrito": "YUNGA", "lat": -16.227609, "lon": -70.660016},
+  {"departamento": "MOQUEGUA", "provincia": "ILO", "distrito": "ILO", "lat": -17.716994, "lon": -71.213538},
+  {"departamento": "MOQUEGUA", "provincia": "ILO", "distrito": "EL ALGARROBAL", "lat": -17.584261, "lon": -71.144149},
+  {"departamento": "MOQUEGUA", "provincia": "ILO", "distrito": "PACOCHA", "lat": -17.439451, "lon": -71.359436},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "CHAUPIMARCA", "lat": -10.701169, "lon": -76.246589},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "HUACHON", "lat": -10.574252, "lon": -75.785488},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "HUARIACA", "lat": -10.451772, "lon": -76.154112},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "HUAYLLAY", "lat": -10.951975, "lon": -76.425446},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "NINACACA", "lat": -10.792036, "lon": -76.060196},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "PALLANCHACRA", "lat": -10.422157, "lon": -76.251461},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "PAUCARTAMBO", "lat": -10.758893, "lon": -75.773427},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "SAN FRANCISCO DE ASIS DE YARUSYACAN", "lat": -10.552712, "lon": -76.228315},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "SIMON BOLIVAR", "lat": -10.726523, "lon": -76.416799},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "TICLACAYAN", "lat": -10.55371, "lon": -76.033835},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "TINYAHUARCO", "lat": -10.760547, "lon": -76.248391},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "VICCO", "lat": -10.863968, "lon": -76.233233},
+  {"departamento": "PASCO", "provincia": "PASCO", "distrito": "YANACANCHA", "lat": -10.643432, "lon": -76.194278},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "YANAHUANCA", "lat": -10.562905, "lon": -76.572447},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "CHACAYAN", "lat": -10.479574, "lon": -76.392546},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "GOYLLARISQUIZGA", "lat": -10.486747, "lon": -76.403962},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "PAUCAR", "lat": -10.340871, "lon": -76.41728},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "SAN PEDRO DE PILLAO", "lat": -10.416198, "lon": -76.535921},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "SANTA ANA DE TUSI", "lat": -10.478831, "lon": -76.323255},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "TAPUC", "lat": -10.41896, "lon": -76.468246},
+  {"departamento": "PASCO", "provincia": "DANIEL ALCIDES CARRION", "distrito": "VILCABAMBA", "lat": -10.535775, "lon": -76.447992},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "OXAPAMPA", "lat": -10.650422, "lon": -75.370821},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "CHONTABAMBA", "lat": -10.623313, "lon": -75.506339},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "HUANCABAMBA", "lat": -10.390493, "lon": -75.638667},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "PALCAZU", "lat": -10.234359, "lon": -75.276141},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "POZUZO", "lat": -10.132719, "lon": -75.586272},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "PUERTO BERMUDEZ", "lat": -10.414028, "lon": -74.636733},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "VILLA RICA", "lat": -10.634198, "lon": -75.175914},
+  {"departamento": "PASCO", "provincia": "OXAPAMPA", "distrito": "CONSTITUCION", "lat": -9.825838, "lon": -74.784626},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "PIURA", "lat": -5.081991, "lon": -80.658527},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "CASTILLA", "lat": -5.130952, "lon": -80.515182},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "CATACAOS", "lat": -5.470512, "lon": -80.365141},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "CURA MORI", "lat": -5.35759, "lon": -80.58605},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "EL TALLAN", "lat": -5.441294, "lon": -80.61137},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "LA ARENA", "lat": -5.308991, "lon": -80.762571},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "LA UNION", "lat": -5.332873, "lon": -80.867998},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "LAS LOMAS", "lat": -4.692129, "lon": -80.227838},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "TAMBO GRANDE", "lat": -4.919453, "lon": -80.330952},
+  {"departamento": "PIURA", "provincia": "PIURA", "distrito": "VEINTISEIS DE OCTUBRE", "lat": -5.161385, "lon": -80.696542},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "AYABACA", "lat": -4.686626, "lon": -79.60648},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "FRIAS", "lat": -4.927299, "lon": -79.971017},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "JILILI", "lat": -4.53182, "lon": -79.831695},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "LAGUNAS", "lat": -4.78074, "lon": -79.85387},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "MONTERO", "lat": -4.638349, "lon": -79.84667},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "PACAIPAMPA", "lat": -4.946453, "lon": -79.650283},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "PAIMAS", "lat": -4.636962, "lon": -80.005323},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "SAPILLICA", "lat": -4.783617, "lon": -79.989295},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "SICCHEZ", "lat": -4.573017, "lon": -79.777503},
+  {"departamento": "PIURA", "provincia": "AYABACA", "distrito": "SUYO", "lat": -4.461367, "lon": -80.062725},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "HUANCABAMBA", "lat": -5.196886, "lon": -79.497331},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "CANCHAQUE", "lat": -5.312068, "lon": -79.625833},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "EL CARMEN DE LA FRONTERA", "lat": -5.024078, "lon": -79.365718},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "HUARMACA", "lat": -5.68992, "lon": -79.567475},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "LALAQUIZ", "lat": -5.172023, "lon": -79.664883},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "SAN MIGUEL DE EL FAIQUE", "lat": -5.424632, "lon": -79.60508},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "SONDOR", "lat": -5.403522, "lon": -79.362411},
+  {"departamento": "PIURA", "provincia": "HUANCABAMBA", "distrito": "SONDORILLO", "lat": -5.397915, "lon": -79.460234},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "CHULUCANAS", "lat": -5.121696, "lon": -80.194409},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "BUENOS AIRES", "lat": -5.264485, "lon": -79.925047},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "CHALACO", "lat": -5.066346, "lon": -79.79281},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "LA MATANZA", "lat": -5.357722, "lon": -80.087502},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "MORROPON", "lat": -5.152721, "lon": -79.998392},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "SALITRAL", "lat": -5.437055, "lon": -79.827705},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "SAN JUAN DE BIGOTE", "lat": -5.295892, "lon": -79.741243},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "SANTA CATALINA DE MOSSA", "lat": -5.125784, "lon": -79.875618},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "SANTO DOMINGO", "lat": -5.053148, "lon": -79.910681},
+  {"departamento": "PIURA", "provincia": "MORROPON", "distrito": "YAMANGO", "lat": -5.156513, "lon": -79.769535},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "PAITA", "lat": -5.1672, "lon": -81.055421},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "AMOTAPE", "lat": -4.835535, "lon": -81.006765},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "ARENAL", "lat": -4.899573, "lon": -81.030037},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "COLAN", "lat": -4.930722, "lon": -81.070915},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "LA HUACA", "lat": -5.065463, "lon": -80.91316},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "TAMARINDO", "lat": -4.837485, "lon": -80.962627},
+  {"departamento": "PIURA", "provincia": "PAITA", "distrito": "VICHAYAL", "lat": -4.838434, "lon": -81.1073},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "SULLANA", "lat": -4.835379, "lon": -80.551964},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "BELLAVISTA", "lat": -4.889719, "lon": -80.674278},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "IGNACIO ESCUDERO", "lat": -4.826734, "lon": -80.885646},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "LANCONES", "lat": -4.427471, "lon": -80.502576},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "MARCAVELICA", "lat": -4.537051, "lon": -80.784933},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "MIGUEL CHECA", "lat": -5.048535, "lon": -80.788424},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "QUERECOTILLO", "lat": -4.732328, "lon": -80.610618},
+  {"departamento": "PIURA", "provincia": "SULLANA", "distrito": "SALITRAL", "lat": -4.8383, "lon": -80.683253},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "PARIÑAS", "lat": -4.498849, "lon": -81.04353},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "EL ALTO", "lat": -4.291461, "lon": -81.080296},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "LA BREA", "lat": -4.703845, "lon": -81.10822},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "LOBITOS", "lat": -4.403033, "lon": -81.202651},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "LOS ORGANOS", "lat": -4.194784, "lon": -81.064836},
+  {"departamento": "PIURA", "provincia": "TALARA", "distrito": "MANCORA", "lat": -4.147816, "lon": -81.00896},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "SECHURA", "lat": -5.916004, "lon": -80.664227},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "BELLAVISTA DE LA UNION", "lat": -5.426517, "lon": -80.742899},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "BERNAL", "lat": -5.457751, "lon": -80.702003},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "CRISTO NOS VALGA", "lat": -5.535191, "lon": -80.641028},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "VICE", "lat": -5.438623, "lon": -80.874544},
+  {"departamento": "PIURA", "provincia": "SECHURA", "distrito": "RINCONADA LLICUAR", "lat": -5.48208, "lon": -80.774355},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "PUNO", "lat": -15.905003, "lon": -70.063677},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "ACORA", "lat": -16.287325, "lon": -69.908452},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "AMANTANI", "lat": -15.704758, "lon": -69.700433},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "ATUNCOLLA", "lat": -15.678457, "lon": -70.157053},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "CAPACHICA", "lat": -15.640426, "lon": -69.824474},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "CHUCUITO", "lat": -15.890925, "lon": -69.878582},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "COATA", "lat": -15.561547, "lon": -69.923755},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "HUATA", "lat": -15.621618, "lon": -69.997799},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "MAÑAZO", "lat": -15.880795, "lon": -70.408617},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "PAUCARCOLLA", "lat": -15.726288, "lon": -70.067146},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "PICHACANI", "lat": -16.239896, "lon": -70.158459},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "PLATERIA", "lat": -15.980969, "lon": -69.860264},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "SAN ANTONIO", "lat": -16.080276, "lon": -70.30236},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "TIQUILLACA", "lat": -15.923681, "lon": -70.271432},
+  {"departamento": "PUNO", "provincia": "PUNO", "distrito": "VILQUE", "lat": -15.780217, "lon": -70.263156},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "AZANGARO", "lat": -14.880957, "lon": -70.149222},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "ACHAYA", "lat": -15.240697, "lon": -70.1777},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "ARAPA", "lat": -15.090044, "lon": -70.08461},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "ASILLO", "lat": -14.740806, "lon": -70.353822},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "CAMINACA", "lat": -15.302825, "lon": -70.094328},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "CHUPA", "lat": -15.106278, "lon": -69.951968},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "JOSE DOMINGO CHOQUEHUANCA", "lat": -15.029995, "lon": -70.322729},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "MUÑANI", "lat": -14.685766, "lon": -69.98027},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "POTONI", "lat": -14.416436, "lon": -70.092189},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "SAMAN", "lat": -15.269848, "lon": -70.016851},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "SAN ANTON", "lat": -14.522621, "lon": -70.256697},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "SAN JOSE", "lat": -14.691155, "lon": -70.178662},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "SAN JUAN DE SALINAS", "lat": -15.000797, "lon": -70.126189},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "SANTIAGO DE PUPUJA", "lat": -15.083405, "lon": -70.250352},
+  {"departamento": "PUNO", "provincia": "AZANGARO", "distrito": "TIRAPATA", "lat": -14.922374, "lon": -70.38378},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "MACUSANI", "lat": -14.056177, "lon": -70.470153},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "AJOYANI", "lat": -14.174036, "lon": -70.226892},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "AYAPATA", "lat": -13.501084, "lon": -70.243538},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "COASA", "lat": -13.643368, "lon": -69.897482},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "CORANI", "lat": -13.923634, "lon": -70.705154},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "CRUCERO", "lat": -14.336383, "lon": -69.928914},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "ITUATA", "lat": -13.829642, "lon": -70.116094},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "OLLACHEA", "lat": -13.741614, "lon": -70.541262},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "SAN GABAN", "lat": -13.524052, "lon": -70.394871},
+  {"departamento": "PUNO", "provincia": "CARABAYA", "distrito": "USICAYOS", "lat": -14.140775, "lon": -69.938308},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "JULI", "lat": -16.328718, "lon": -69.502926},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "DESAGUADERO", "lat": -16.620152, "lon": -69.08028},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "HUACULLANI", "lat": -16.604151, "lon": -69.398876},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "KELLUYO", "lat": -16.721602, "lon": -69.248015},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "PISACOMA", "lat": -16.931261, "lon": -69.447695},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "POMATA", "lat": -16.35666, "lon": -69.288222},
+  {"departamento": "PUNO", "provincia": "CHUCUITO", "distrito": "ZEPITA", "lat": -16.494598, "lon": -69.177947},
+  {"departamento": "PUNO", "provincia": "EL COLLAO", "distrito": "ILAVE", "lat": -16.240208, "lon": -69.678086},
+  {"departamento": "PUNO", "provincia": "EL COLLAO", "distrito": "CAPAZO", "lat": -17.109849, "lon": -69.702017},
+  {"departamento": "PUNO", "provincia": "EL COLLAO", "distrito": "PILCUYO", "lat": -16.095829, "lon": -69.508623},
+  {"departamento": "PUNO", "provincia": "EL COLLAO", "distrito": "SANTA ROSA", "lat": -16.835792, "lon": -69.855197},
+  {"departamento": "PUNO", "provincia": "EL COLLAO", "distrito": "CONDURIRI", "lat": -16.552654, "lon": -69.633471},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "HUANCANE", "lat": -15.183208, "lon": -69.809021},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "COJATA", "lat": -15.008176, "lon": -69.393177},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "HUATASANI", "lat": -15.01893, "lon": -69.799616},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "INCHUPALLA", "lat": -15.000861, "lon": -69.644609},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "PUSI", "lat": -15.440919, "lon": -69.989666},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "ROSASPATA", "lat": -15.209511, "lon": -69.487429},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "TARACO", "lat": -15.308096, "lon": -69.927535},
+  {"departamento": "PUNO", "provincia": "HUANCANE", "distrito": "VILQUE CHICO", "lat": -15.138006, "lon": -69.609503},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "LAMPA", "lat": -15.35598, "lon": -70.410903},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "CABANILLA", "lat": -15.569376, "lon": -70.39009},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "CALAPUJA", "lat": -15.311058, "lon": -70.23647},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "NICASIO", "lat": -15.218356, "lon": -70.291218},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "OCUVIRI", "lat": -15.182918, "lon": -70.850105},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "PALCA", "lat": -15.299321, "lon": -70.609387},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "PARATIA", "lat": -15.467547, "lon": -70.704756},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "PUCARA", "lat": -15.079468, "lon": -70.450528},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "SANTA LUCIA", "lat": -15.601459, "lon": -70.784554},
+  {"departamento": "PUNO", "provincia": "LAMPA", "distrito": "VILAVILA", "lat": -15.17496, "lon": -70.650348},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "AYAVIRI", "lat": -14.931555, "lon": -70.605758},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "ANTAUTA", "lat": -14.354646, "lon": -70.384141},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "CUPI", "lat": -14.890096, "lon": -70.894259},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "LLALLI", "lat": -14.987466, "lon": -70.927081},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "MACARI", "lat": -14.711421, "lon": -70.932181},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "NUÑOA", "lat": -14.356797, "lon": -70.670587},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "ORURILLO", "lat": -14.686278, "lon": -70.487637},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "SANTA ROSA", "lat": -14.57434, "lon": -70.812019},
+  {"departamento": "PUNO", "provincia": "MELGAR", "distrito": "UMACHIRI", "lat": -14.878577, "lon": -70.748985},
+  {"departamento": "PUNO", "provincia": "MOHO", "distrito": "MOHO", "lat": -15.350802, "lon": -69.447608},
+  {"departamento": "PUNO", "provincia": "MOHO", "distrito": "CONIMA", "lat": -15.453846, "lon": -69.41589},
+  {"departamento": "PUNO", "provincia": "MOHO", "distrito": "HUAYRAPATA", "lat": -15.276092, "lon": -69.295635},
+  {"departamento": "PUNO", "provincia": "MOHO", "distrito": "TILALI", "lat": -15.491678, "lon": -69.342078},
+  {"departamento": "PUNO", "provincia": "SAN ANTONIO DE PUTINA", "distrito": "PUTINA", "lat": -14.709169, "lon": -69.834487},
+  {"departamento": "PUNO", "provincia": "SAN ANTONIO DE PUTINA", "distrito": "ANANEA", "lat": -14.692486, "lon": -69.504987},
+  {"departamento": "PUNO", "provincia": "SAN ANTONIO DE PUTINA", "distrito": "PEDRO VILCA APAZA", "lat": -15.018387, "lon": -69.914255},
+  {"departamento": "PUNO", "provincia": "SAN ANTONIO DE PUTINA", "distrito": "QUILCAPUNCU", "lat": -14.846968, "lon": -69.639311},
+  {"departamento": "PUNO", "provincia": "SAN ANTONIO DE PUTINA", "distrito": "SINA", "lat": -14.511449, "lon": -69.24003},
+  {"departamento": "PUNO", "provincia": "SAN ROMAN", "distrito": "JULIACA", "lat": -15.4599, "lon": -70.21545},
+  {"departamento": "PUNO", "provincia": "SAN ROMAN", "distrito": "CABANA", "lat": -15.642881, "lon": -70.279829},
+  {"departamento": "PUNO", "provincia": "SAN ROMAN", "distrito": "CABANILLAS", "lat": -15.853369, "lon": -70.622457},
+  {"departamento": "PUNO", "provincia": "SAN ROMAN", "distrito": "CARACOTO", "lat": -15.557466, "lon": -70.087901},
+  {"departamento": "PUNO", "provincia": "SAN ROMAN", "distrito": "SAN MIGUEL", "lat": -15.406229, "lon": -70.126419},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "SANDIA", "lat": -14.291931, "lon": -69.43696},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "CUYOCUYO", "lat": -14.523814, "lon": -69.557668},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "LIMBANI", "lat": -13.778429, "lon": -69.607433},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "PATAMBUCO", "lat": -14.310107, "lon": -69.631235},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "PHARA", "lat": -14.067873, "lon": -69.585046},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "QUIACA", "lat": -14.467273, "lon": -69.35619},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "SAN JUAN DEL ORO", "lat": -14.193965, "lon": -69.100455},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "YANAHUAYA", "lat": -14.331142, "lon": -69.127055},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "ALTO INAMBARI", "lat": -14.03198, "lon": -69.334419},
+  {"departamento": "PUNO", "provincia": "SANDIA", "distrito": "SAN PEDRO DE PUTINA PUNCO", "lat": -13.548634, "lon": -69.14799},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "YUNGUYO", "lat": -16.282806, "lon": -69.090193},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "ANAPIA", "lat": -16.325384, "lon": -68.878827},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "COPANI", "lat": -16.371333, "lon": -69.073061},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "CUTURAPI", "lat": -16.293086, "lon": -69.180568},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "OLLARAYA", "lat": -16.235927, "lon": -68.996956},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "TINICACHI", "lat": -16.197969, "lon": -68.971515},
+  {"departamento": "PUNO", "provincia": "YUNGUYO", "distrito": "UNICACHI", "lat": -16.224615, "lon": -68.965427},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "MOYOBAMBA", "lat": -5.768325, "lon": -77.169905},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "CALZADA", "lat": -6.014539, "lon": -77.095755},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "HABANA", "lat": -6.088902, "lon": -77.100094},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "JEPELACIO", "lat": -6.173537, "lon": -76.921802},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "SORITOR", "lat": -6.272743, "lon": -77.054142},
+  {"departamento": "SAN MARTIN", "provincia": "MOYOBAMBA", "distrito": "YANTALO", "lat": -5.963782, "lon": -77.066374},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "BELLAVISTA", "lat": -6.991024, "lon": -76.600608},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "ALTO BIAVO", "lat": -7.822111, "lon": -76.274123},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "BAJO BIAVO", "lat": -7.184168, "lon": -76.341378},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "HUALLAGA", "lat": -7.294329, "lon": -76.568672},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "SAN PABLO", "lat": -6.83887, "lon": -76.586525},
+  {"departamento": "SAN MARTIN", "provincia": "BELLAVISTA", "distrito": "SAN RAFAEL", "lat": -7.026494, "lon": -76.495669},
+  {"departamento": "SAN MARTIN", "provincia": "EL DORADO", "distrito": "SAN JOSE DE SISA", "lat": -6.611651, "lon": -76.720235},
+  {"departamento": "SAN MARTIN", "provincia": "EL DORADO", "distrito": "AGUA BLANCA", "lat": -6.724174, "lon": -76.705669},
+  {"departamento": "SAN MARTIN", "provincia": "EL DORADO", "distrito": "SAN MARTIN", "lat": -6.423286, "lon": -76.837341},
+  {"departamento": "SAN MARTIN", "provincia": "EL DORADO", "distrito": "SANTA ROSA", "lat": -6.705346, "lon": -76.599219},
+  {"departamento": "SAN MARTIN", "provincia": "EL DORADO", "distrito": "SHATOJA", "lat": -6.523846, "lon": -76.699062},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "SAPOSOA", "lat": -6.888839, "lon": -76.873754},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "ALTO SAPOSOA", "lat": -6.601862, "lon": -76.963115},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "EL ESLABON", "lat": -6.991555, "lon": -76.705814},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "PISCOYACU", "lat": -7.014138, "lon": -76.83417},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "SACANCHE", "lat": -7.089547, "lon": -76.762809},
+  {"departamento": "SAN MARTIN", "provincia": "HUALLAGA", "distrito": "TINGO DE SAPOSOA", "lat": -7.064447, "lon": -76.656508},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "LAMAS", "lat": -6.39906, "lon": -76.526042},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "ALONSO DE ALVARADO", "lat": -6.311314, "lon": -76.772948},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "BARRANQUITA", "lat": -6.306275, "lon": -76.048709},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "CAYNARACHI", "lat": -6.195327, "lon": -76.334237},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "CUÑUMBUQUI", "lat": -6.615654, "lon": -76.468366},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "PINTO RECODO", "lat": -6.157751, "lon": -76.712942},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "RUMISAPA", "lat": -6.443756, "lon": -76.472572},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "SAN ROQUE DE CUMBAZA", "lat": -6.203746, "lon": -76.538562},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "SHANAO", "lat": -6.408133, "lon": -76.577851},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "TABALOSOS", "lat": -6.38865, "lon": -76.655238},
+  {"departamento": "SAN MARTIN", "provincia": "LAMAS", "distrito": "ZAPATERO", "lat": -6.550121, "lon": -76.530683},
+  {"departamento": "SAN MARTIN", "provincia": "MARISCAL CACERES", "distrito": "JUANJUI", "lat": -7.244817, "lon": -76.768004},
+  {"departamento": "SAN MARTIN", "provincia": "MARISCAL CACERES", "distrito": "CAMPANILLA", "lat": -7.652071, "lon": -76.809139},
+  {"departamento": "SAN MARTIN", "provincia": "MARISCAL CACERES", "distrito": "HUICUNGO", "lat": -7.259282, "lon": -77.321575},
+  {"departamento": "SAN MARTIN", "provincia": "MARISCAL CACERES", "distrito": "PACHIZA", "lat": -6.969303, "lon": -77.043295},
+  {"departamento": "SAN MARTIN", "provincia": "MARISCAL CACERES", "distrito": "PAJARILLO", "lat": -7.315172, "lon": -76.635471},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "PICOTA", "lat": -6.964502, "lon": -76.331575},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "BUENOS AIRES", "lat": -6.739715, "lon": -76.39703},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "CASPISAPA", "lat": -6.920506, "lon": -76.422012},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "PILLUANA", "lat": -6.783423, "lon": -76.26897},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "PUCACACA", "lat": -6.840233, "lon": -76.363046},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "SAN CRISTOBAL", "lat": -6.978509, "lon": -76.428852},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "SAN HILARION", "lat": -6.939492, "lon": -76.486845},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "SHAMBOYACU", "lat": -7.051769, "lon": -76.094559},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "TINGO DE PONASA", "lat": -6.970344, "lon": -76.212115},
+  {"departamento": "SAN MARTIN", "provincia": "PICOTA", "distrito": "TRES UNIDOS", "lat": -6.817433, "lon": -76.128618},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "RIOJA", "lat": -6.078688, "lon": -77.209895},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "AWAJUN", "lat": -5.859188, "lon": -77.436507},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "ELIAS SOPLIN VARGAS", "lat": -6.046389, "lon": -77.297296},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "NUEVA CAJAMARCA", "lat": -5.944357, "lon": -77.372245},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "PARDO MIGUEL", "lat": -5.748707, "lon": -77.634147},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "POSIC", "lat": -5.98282, "lon": -77.172168},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "SAN FERNANDO", "lat": -5.858968, "lon": -77.274892},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "YORONGOS", "lat": -6.175299, "lon": -77.161719},
+  {"departamento": "SAN MARTIN", "provincia": "RIOJA", "distrito": "YURACYACU", "lat": -5.935387, "lon": -77.232767},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "TARAPOTO", "lat": -6.494208, "lon": -76.369644},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "ALBERTO LEVEAU", "lat": -6.683667, "lon": -76.260121},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "CACATACHI", "lat": -6.467812, "lon": -76.438411},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "CHAZUTA", "lat": -6.617967, "lon": -75.989491},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "CHIPURANA", "lat": -6.434032, "lon": -75.666836},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "EL PORVENIR", "lat": -6.244998, "lon": -75.864766},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "HUIMBAYOC", "lat": -6.638633, "lon": -75.713626},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "JUAN GUERRA", "lat": -6.621258, "lon": -76.350679},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "LA BANDA DE SHILCAYO", "lat": -6.477259, "lon": -76.272268},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "MORALES", "lat": -6.508048, "lon": -76.416996},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "PAPAPLAYA", "lat": -6.242805, "lon": -75.638211},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "SAN ANTONIO", "lat": -6.399339, "lon": -76.38209},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "SAUCE", "lat": -6.70276, "lon": -76.204619},
+  {"departamento": "SAN MARTIN", "provincia": "SAN MARTIN", "distrito": "SHAPAJA", "lat": -6.588296, "lon": -76.213267},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "TOCACHE", "lat": -8.273444, "lon": -76.55232},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "NUEVO PROGRESO", "lat": -8.525643, "lon": -76.212536},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "POLVORA", "lat": -8.015654, "lon": -76.79898},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "SHUNTE", "lat": -8.423262, "lon": -76.876703},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "UCHIZA", "lat": -8.377394, "lon": -76.397863},
+  {"departamento": "SAN MARTIN", "provincia": "TOCACHE", "distrito": "SANTA LUCIA", "lat": -8.299115, "lon": -76.432187},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "TACNA", "lat": -18.112971, "lon": -70.16862},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "ALTO DE LA ALIANZA", "lat": -17.833356, "lon": -70.278896},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "CALANA", "lat": -17.954217, "lon": -70.146223},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "CIUDAD NUEVA", "lat": -17.857837, "lon": -70.190338},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "INCLAN", "lat": -17.681165, "lon": -70.423565},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "PACHIA", "lat": -17.784803, "lon": -70.023594},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "PALCA", "lat": -17.656937, "lon": -69.764031},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "POCOLLAY", "lat": -18.007724, "lon": -70.074139},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "SAMA", "lat": -17.957017, "lon": -70.667708},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "CORONEL GREGORIO ALBARRACIN LANCHIPA", "lat": -18.107669, "lon": -70.240945},
+  {"departamento": "TACNA", "provincia": "TACNA", "distrito": "LA YARADA LOS PALOS", "lat": -18.200281, "lon": -70.439057},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "CANDARAVE", "lat": -17.041932, "lon": -70.247857},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "CAIRANI", "lat": -17.187829, "lon": -70.340823},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "CAMILACA", "lat": -17.165069, "lon": -70.432744},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "CURIBAYA", "lat": -17.394132, "lon": -70.333878},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "HUANUARA", "lat": -17.308536, "lon": -70.330464},
+  {"departamento": "TACNA", "provincia": "CANDARAVE", "distrito": "QUILAHUANI", "lat": -17.332876, "lon": -70.25682},
+  {"departamento": "TACNA", "provincia": "JORGE BASADRE", "distrito": "LOCUMBA", "lat": -17.60423, "lon": -70.733056},
+  {"departamento": "TACNA", "provincia": "JORGE BASADRE", "distrito": "ILABAYA", "lat": -17.38376, "lon": -70.57098},
+  {"departamento": "TACNA", "provincia": "JORGE BASADRE", "distrito": "ITE", "lat": -17.805177, "lon": -70.933692},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "TARATA", "lat": -17.377032, "lon": -69.751356},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "HEROES ALBARRACIN", "lat": -17.499409, "lon": -70.214538},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "ESTIQUE", "lat": -17.623701, "lon": -70.025112},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "ESTIQUE-PAMPA", "lat": -17.612521, "lon": -70.113848},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "SITAJARA", "lat": -17.394569, "lon": -70.153389},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "SUSAPAYA", "lat": -17.224566, "lon": -70.046677},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "TARUCACHI", "lat": -17.501882, "lon": -69.958048},
+  {"departamento": "TACNA", "provincia": "TARATA", "distrito": "TICACO", "lat": -17.334753, "lon": -69.9636},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "TUMBES", "lat": -3.549716, "lon": -80.417975},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "CORRALES", "lat": -3.598765, "lon": -80.503479},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "LA CRUZ", "lat": -3.671152, "lon": -80.56648},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "PAMPAS DE HOSPITAL", "lat": -3.851749, "lon": -80.356358},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "SAN JACINTO", "lat": -3.905938, "lon": -80.510913},
+  {"departamento": "TUMBES", "provincia": "TUMBES", "distrito": "SAN JUAN DE LA VIRGEN", "lat": -3.658591, "lon": -80.362919},
+  {"departamento": "TUMBES", "provincia": "CONTRALMIRANTE VILLAR", "distrito": "ZORRITOS", "lat": -3.816116, "lon": -80.704257},
+  {"departamento": "TUMBES", "provincia": "CONTRALMIRANTE VILLAR", "distrito": "CASITAS", "lat": -4.033835, "lon": -80.659275},
+  {"departamento": "TUMBES", "provincia": "CONTRALMIRANTE VILLAR", "distrito": "CANOAS DE PUNTA SAL", "lat": -4.040948, "lon": -80.890724},
+  {"departamento": "TUMBES", "provincia": "ZARUMILLA", "distrito": "ZARUMILLA", "lat": -3.464645, "lon": -80.30215},
+  {"departamento": "TUMBES", "provincia": "ZARUMILLA", "distrito": "AGUAS VERDES", "lat": -3.491516, "lon": -80.242445},
+  {"departamento": "TUMBES", "provincia": "ZARUMILLA", "distrito": "MATAPALO", "lat": -3.767627, "lon": -80.22854},
+  {"departamento": "TUMBES", "provincia": "ZARUMILLA", "distrito": "PAPAYAL", "lat": -3.572065, "lon": -80.288758},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "CALLERIA", "lat": -7.965052, "lon": -74.160191},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "CAMPOVERDE", "lat": -8.520567, "lon": -74.845507},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "IPARIA", "lat": -9.442988, "lon": -74.137224},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "MASISEA", "lat": -8.955912, "lon": -73.686543},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "YARINACOCHA", "lat": -8.248481, "lon": -74.65669},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "NUEVA REQUENA", "lat": -8.163133, "lon": -75.014767},
+  {"departamento": "UCAYALI", "provincia": "CORONEL PORTILLO", "distrito": "MANANTAY", "lat": -8.538431, "lon": -74.509164},
+  {"departamento": "UCAYALI", "provincia": "ATALAYA", "distrito": "RAIMONDI", "lat": -10.586174, "lon": -73.436595},
+  {"departamento": "UCAYALI", "provincia": "ATALAYA", "distrito": "SEPAHUA", "lat": -11.083704000000001, "lon": -72.81384},
+  {"departamento": "UCAYALI", "provincia": "ATALAYA", "distrito": "TAHUANIA", "lat": -9.971437, "lon": -73.82694},
+  {"departamento": "UCAYALI", "provincia": "ATALAYA", "distrito": "YURUA", "lat": -9.829759, "lon": -72.698575},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "PADRE ABAD", "lat": -8.894395, "lon": -75.64159},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "IRAZOLA", "lat": -8.950027, "lon": -75.279783},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "CURIMANA", "lat": -8.41738, "lon": -75.297113},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "NESHUYA", "lat": -8.641301, "lon": -75.049032},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "ALEXANDER VON HUMBOLDT", "lat": -8.824934, "lon": -75.047983},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "HUIPOCA", "lat": -8.797873, "lon": -75.414415},
+  {"departamento": "UCAYALI", "provincia": "PADRE ABAD", "distrito": "BOQUERON", "lat": -9.035813, "lon": -75.752348},
+  {"departamento": "UCAYALI", "provincia": "PURUS", "distrito": "PURUS", "lat": -10.373495, "lon": -71.582316},
 ];
-
-// Compatibilidad con app_79.6.js: expone el arreglo como propiedad global.
-if (typeof window !== 'undefined') {
-  window.ubigeoData = ubigeoData;
-}
+window.ubigeoData = ubigeoData;
