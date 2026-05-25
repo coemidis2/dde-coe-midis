@@ -1,4 +1,4 @@
-// ================= VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
+﻿// ================= VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
 // Main structure:
 // 1. Core state and constants
 // 2. Helpers
@@ -6,7 +6,7 @@
 // 4. API and auth flow
 // 5. Feature modules appended below by historical versions
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.10-fix-seleccion-registro-grupal-programas-20260522';
+const APP_BUILD_VERSION = '79.10-d1-login-syntax-fix-20260525';
 
 // ================= CORE STATE =================
 let state = {
@@ -27,49 +27,6 @@ const MINISTERIOS_FIRMANTES = ['MINAM','MIDAGRI','MINCETUR','MINCUL','MINDEF','M
 const PROGRAMAS_RDS = ['CUNA MÃS','PAE','JUNTOS','CONTIGO','PENSIÃ“N 65','FONCODES','PAIS'];
 
 // ================= HELPERS =================
-// Fallback quirúrgico: evita que el login se rompa si app.shared.js no cargó por caché o despliegue incompleto.
-if (!window.DEE_SHARED) {
-  window.DEE_SHARED = {
-    $: (id) => document.getElementById(id),
-    hoy: () => new Date().toISOString().split('T')[0],
-    normalizarEmail: (email) => String(email || '').trim().toLowerCase(),
-    normalizarRol: (valor) => {
-      const rol = String(valor || '').trim();
-      return rol.includes('|') ? rol.split('|')[0].trim() : rol;
-    },
-    normalizarPrograma: (valor) => {
-      const rol = String(valor || '').trim();
-      return rol.includes('|') ? rol.split('|').slice(1).join('|').trim() : '';
-    },
-    createApi: (apiBase, getState) => async function api(path, method = 'GET', body = null) {
-      try {
-        const stateLocal = typeof getState === 'function' ? (getState() || {}) : {};
-        const session = stateLocal.session || {};
-        const headers = { 'Content-Type': 'application/json' };
-        const csrf = document.cookie.split('; ').find(x => x.startsWith('dee_csrf='));
-        if (csrf) headers['x-csrf-token'] = decodeURIComponent(csrf.split('=')[1] || '');
-        if (session.email && (session.role || session.rol)) {
-          headers['x-dee-local-session'] = '1';
-          headers['x-dee-user-email'] = String(session.email || '').trim().toLowerCase();
-          headers['x-dee-user-role'] = String(session.role || session.rol || '').trim();
-          headers['x-dee-user-programa'] = String(session.programa || '').trim();
-        }
-        const res = await fetch(apiBase + path, {
-          method,
-          headers,
-          credentials: 'include',
-          body: body ? JSON.stringify(body) : null
-        });
-        let data = null;
-        try { data = await res.json(); } catch {}
-        return { ok: res.ok, data };
-      } catch (e) {
-        console.error('API ERROR:', e);
-        return { ok: false, data: null };
-      }
-    }
-  };
-}
 const { $, hoy, normalizarEmail, normalizarRol, normalizarPrograma, createApi } = window.DEE_SHARED;
 
 function esAdministrador() {
@@ -1109,7 +1066,7 @@ function extraerListaDecretos(data) {
 function normalizarDecreto(raw) {
   if (!raw) return null;
   const numero = String(raw.numero || raw.ds || raw.decreto || raw.decreto_supremo || '').trim();
-  const anio = String(raw.anio || raw["año"] || '').trim();
+  const anio = String(raw.anio || raw['año'] || '').trim();
   const idBase = raw.id || raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio) || crypto.randomUUID();
   return {
     ...raw,
@@ -5967,7 +5924,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const raw = d?.numero || d?.ds || d?.decreto || d?.decreto_supremo || '';
     let limpio = limpiarNumeroDS(raw);
     if (/^\d{3}$/.test(limpio)) {
-      const anio = String(d?.anio || d?.["año"] || new Date().getFullYear()).match(/20\d{2}/)?.[0] || String(new Date().getFullYear());
+      const anio = String(d?.anio || d?.['año'] || new Date().getFullYear()).match(/20\d{2}/)?.[0] || String(new Date().getFullYear());
       limpio = `${limpio}-${anio}-PCM`;
     }
     return limpio;
@@ -6411,7 +6368,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     n = n.replace(/^-+/, '').trim();
     const m = n.match(/(\d{1,4})\s*-\s*(\d{4})\s*-\s*PCM/i);
     if (m) return `${m[1].padStart(3,'0')}-${m[2]}-PCM`;
-    const anio = txt(d?.anio || d?.["año"] || '').trim();
+    const anio = txt(d?.anio || d?.['año'] || '').trim();
     n = n.replace(/-?\d{4}-PCM$/i, '').replace(/-?PCM$/i, '').trim();
     n = n.padStart(3,'0');
     return anio ? `${n}-${anio}-PCM` : n;
@@ -7746,7 +7703,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     try { if (typeof formatearNumeroDS === 'function') return formatearNumeroDS(d); } catch {}
     const n = txt(d?.numero || d?.ds || d?.decreto).replace(/^0+/, '') || txt(d?.numero || d?.ds || d?.decreto);
     const npad = txt(d?.numero || d?.ds || d?.decreto).padStart(3,'0');
-    const anio = txt(d?.anio || d?.["año"] || '');
+    const anio = txt(d?.anio || d?.['año'] || '');
     return `DS N.Â° ${npad || n}${anio ? '-' + anio : ''}-PCM`;
   }
   function vigenciaActualV551(d){
@@ -8955,7 +8912,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function numeroDSCanonico(d){
-    const anio = txt(d?.anio || d?.["año"] || '');
+    const anio = txt(d?.anio || d?.['año'] || '');
     const candidatos = [d?.numero, d?.ds, d?.numeroDS, d?.decreto_supremo, d?.codigo_registro, d?.codigoRegistro, d?.id];
     for (const c of candidatos) {
       const limpio = limpiarNumeroDSRaw(c, anio);

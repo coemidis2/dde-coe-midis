@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="build-version" content="79.10-fix-seleccion-registro-grupal-programas-20260522" />
-  <!-- BUILD: VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 -->
+  <meta name="build-version" content="79.10-d1-login-syntax-fix-20260525" />
+  <!-- BUILD: VERSION 79.10 - FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS - 2026-05-22 -->
   <title>DEE MIDIS â€” Declaratorias de Estado de Emergencia</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="app.css?v=79.10-fix-seleccion-registro-grupal-programas-20260522" />
+  <link rel="stylesheet" href="app.css?v=79.10-d1-login-syntax-fix-20260525" />
   <style>
     /* Styles migrated to app.css. */
   </style>
@@ -18,8 +18,8 @@
 
   <!-- LOGIN -->
   <div id="loginView" class="login-wrap">
-    <div class="login-shell" role="main" aria-label="Inicio de sesiÃ³n DEE MIDIS">
-      <section class="login-hero-panel" aria-label="InformaciÃ³n institucional">
+    <div class="login-shell" role="main" aria-label="Inicio de sesión DEE MIDIS">
+      <section class="login-hero-panel" aria-label="Información institucional">
         <div class="login-hero-content">
           <div class="login-brand-mark">
             <span>ðŸ›¡ï¸</span>
@@ -28,16 +28,16 @@
           <h1 class="login-hero-title">Bienvenido</h1>
           <div class="login-hero-subtitle">Registro de DEE - COE MIDIS</div>
           <p class="login-hero-text">
-            Gestione, registre las acciones de intervenciÃ³n del sector de manera ordenada y oportuna.
+            Gestione, registre las acciones de intervención del sector de manera ordenada y oportuna.
           </p>
           <div class="login-hero-badges">
-            <span>GestiÃ³n de informaciÃ³n</span>
+            <span>Gestión de información</span>
             <span>Seguridad institucional</span>
-            <span>Acciones de intervenciÃ³n</span>
+            <span>Acciones de intervención</span>
           </div>
         </div>
         <div class="login-hero-footer">
-          Centro de Operaciones de Emergencia Sectorial Â· Ministerio de Desarrollo e InclusiÃ³n Social
+          Centro de Operaciones de Emergencia Sectorial - Ministerio de Desarrollo e Inclusión Social
         </div>
       </section>
 
@@ -51,21 +51,21 @@
             </div>
           </div>
 
-          <div class="login-title">Iniciar sesiÃ³n</div>
+          <div class="login-title">Iniciar sesión</div>
           <div class="login-subtitle">
             Acceso seguro para usuarios autorizados del sistema DEE MIDIS.
           </div>
 
           <div class="mb-3">
-            <label class="form-label-custom" for="loginUser">Correo electrÃ³nico</label>
+            <label class="form-label-custom" for="loginUser">Correo electrónico</label>
             <input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe" autocomplete="username">
           </div>
 
           <div class="mb-2">
-            <label class="form-label-custom" for="loginPass">ContraseÃ±a</label>
+            <label class="form-label-custom" for="loginPass">Contraseña</label>
             <div class="login-input-wrap">
               <input id="loginPass" type="password" class="input-custom input-password-with-toggle" autocomplete="current-password">
-              <button id="btnToggleLoginPassword" class="btn-toggle-password" type="button" aria-label="Mostrar u ocultar contraseÃ±a">Mostrar</button>
+              <button id="btnToggleLoginPassword" class="btn-toggle-password" type="button" aria-label="Mostrar u ocultar contraseña">Mostrar</button>
             </div>
           </div>
 
@@ -74,7 +74,7 @@
               <input id="loginRemember" type="checkbox">
               Recordarme
             </label>
-            <a href="#" onclick="alert('Solicite el restablecimiento de contraseÃ±a al Administrador del sistema.'); return false;">Â¿OlvidÃ³ su contraseÃ±a?</a>
+            <a href="#" onclick="alert('Solicite el restablecimiento de contraseña al Administrador del sistema.'); return false;">Olvidó su contraseña</a>
           </div>
 
           <button id="btnLogin" class="btn-login">Ingresar</button>
@@ -85,7 +85,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 79.10 Â· FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS Â· 22/05/2026 Â· MIDIS Â© 2026
+            VERSION 79.10 Â· FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS Â· 22/05/2026 Â· MIDIS Â© 2026
           </div>
         </div>
       </section>
@@ -200,7 +200,7 @@
 
               <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="paginacionListadoDS" style="display:none!important">
                 <button id="btnDsPaginaAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
-                <span id="dsPaginaInfo" class="small text-muted">PÃ¡gina 1 de 1</span>
+                <span id="dsPaginaInfo" class="small text-muted">Página 1 de 1</span>
                 <button id="btnDsPaginaSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
               </div>
 
@@ -209,19 +209,19 @@
                   <thead class="table-primary">
                     <tr>
                       <th>DS</th>
-                      <th>AÃ±o</th>
+                      <th>Año</th>
                       <th>Peligro</th>
                       <th>Tipo</th>
                       <th>Inicio</th>
                       <th>Final</th>
                       <th>Vigencia</th>
-                      <th>SemÃ¡foro</th>
+                      <th>Semáforo</th>
                       <th>Departamentos</th>
                       <th>Provincias</th>
                       <th>Distritos</th>
-                      <th>RelaciÃ³n</th>
+                      <th>Relación</th>
                       <th>Cadena</th>
-                      <th>PrÃ³rrogas</th>
+                      <th>Prórrogas</th>
                       <th>RDS</th>
                       <th>PreAprobar</th>
                       <th>Ver</th>
@@ -243,22 +243,22 @@
 
               <div class="row g-3">
                 <div class="col-md-4">
-                  <label class="form-label">NÃºmero DS</label>
-                  <input id="dsNumero" class="form-control" placeholder="NÃºmero DS">
+                  <label class="form-label">Número DS</label>
+                  <input id="dsNumero" class="form-control" placeholder="Número DS">
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label">AÃ±o</label>
+                  <label class="form-label">Año</label>
                   <input id="dsAnio" class="form-control" value="2026">
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">CÃ³digo de registro</label>
+                  <label class="form-label">Código de registro</label>
                   <input id="dsCodigoRegistro" class="form-control" readonly>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label">Peligro</label>
                   <select id="dsPeligro" class="form-select">
                     <option value="">Seleccione...</option>
-                    <option>Por impacto de daÃ±os</option>
+                    <option>Por impacto de daños</option>
                     <option>Por peligro inminente</option>
                   </select>
                 </div>
@@ -268,18 +268,18 @@
                   <select id="dsTipoPeligro" class="form-select">
                     <option value="">Seleccione...</option>
                     <option>Lluvias intensas</option>
-                    <option>InundaciÃ³n</option>
+                    <option>Inundación</option>
                     <option>Deslizamiento</option>
                     <option>Friaje</option>
                     <option>Heladas</option>
                     <option>Incendio forestal</option>
-                    <option>ContaminaciÃ³n hÃ­drica</option>
+                    <option>Contaminación hídrica</option>
                     <option>Sismo</option>
                   </select>
                 </div>
 
                 <div class="col-md-2">
-                  <label class="form-label">Plazo (DÃ­as)</label>
+                  <label class="form-label">Plazo (Dí­as)</label>
                   <input id="dsPlazoDias" type="number" class="form-control" min="1">
                 </div>
 
@@ -299,25 +299,25 @@
                 </div>
 
                 <div class="col-md-2">
-                  <label class="form-label">SemÃ¡foro</label>
+                  <label class="form-label">Semáforo</label>
                   <input id="dsSemaforo" class="form-control" readonly>
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label">ExposiciÃ³n de Motivos</label>
+                  <label class="form-label">Exposición de Motivos</label>
                   <textarea id="dsMotivos" class="form-control" rows="3"></textarea>
                 </div>
               </div>
 
               <hr class="my-4">
 
-              <h5 class="text-primary">RelaciÃ³n de prÃ³rrogas</h5>
+              <h5 class="text-primary">Relación de prórrogas</h5>
               <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                   <div class="form-check mt-4">
                     <input id="dsEsProrroga" class="form-check-input" type="checkbox">
                     <label class="form-check-label" for="dsEsProrroga">
-                      Este Decreto Supremo es prÃ³rroga
+                      Este Decreto Supremo es prórroga
                     </label>
                   </div>
                 </div>
@@ -326,7 +326,7 @@
                   <select id="dsOrigen" class="form-select" disabled></select>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label">Nivel prÃ³rroga</label>
+                  <label class="form-label">Nivel prórroga</label>
                   <input id="dsNivelProrroga" class="form-control" value="0" readonly>
                 </div>
                 <div class="col-md-4">
@@ -396,23 +396,23 @@
                     <select id="accionDs" class="form-select"></select>
                   </div>
                   <div class="col-md-2">
-                    <label class="form-label">NÃºmero de reuniÃ³n</label>
+                    <label class="form-label">Número de reunión</label>
                     <select id="rdsNumeroReunion" class="form-select">
                       <option value="">Seleccione...</option>
-                      <option>Primera reuniÃ³n</option>
-                      <option>Segunda reuniÃ³n</option>
-                      <option>Tercera reuniÃ³n</option>
-                      <option>Cuarta reuniÃ³n</option>
-                      <option>Quinta reuniÃ³n</option>
-                      <option>Sexta reuniÃ³n</option>
-                      <option>SÃ©ptima reuniÃ³n</option>
-                      <option>Octava reuniÃ³n</option>
-                      <option>Novena reuniÃ³n</option>
-                      <option>DÃ©cima reuniÃ³n</option>
+                      <option>Primera reunión</option>
+                      <option>Segunda reunión</option>
+                      <option>Tercera reunión</option>
+                      <option>Cuarta reunión</option>
+                      <option>Quinta reunión</option>
+                      <option>Sexta reunión</option>
+                      <option>Séptima reunión</option>
+                      <option>Octava reunión</option>
+                      <option>Novena reunión</option>
+                      <option>Décima reunión</option>
                     </select>
                   </div>
                   <div class="col-md-2">
-                    <label class="form-label">Fecha de reuniÃ³n</label>
+                    <label class="form-label">Fecha de reunión</label>
                     <input id="rdsFechaReunion" type="date" class="form-control">
                   </div>
                   <div class="col-md-2">
@@ -438,39 +438,39 @@
                     <label class="form-label">Programa Nacional</label>
                     <select id="accionPrograma" class="form-select"></select>
                   </div>
-                  <div class="col-md-3"><label class="form-label">Tipo de AcciÃ³n</label><select id="accionTipo" class="form-select"></select></div>
+                  <div class="col-md-3"><label class="form-label">Tipo de Acción</label><select id="accionTipo" class="form-select"></select></div>
                   <div class="col-md-4" id="accionSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="accionSubtipoRehabilitacion" class="form-select"></select></div>
-                  <div class="col-md-3"><label class="form-label">CÃ³digo de AcciÃ³n</label><input id="accionCodigo" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Código de Acción</label><input id="accionCodigo" class="form-control"></div>
                   <div class="col-md-2"><label class="form-label">Unidad de Medida</label><select id="accionUnidad" class="form-select"></select></div>
                   <div class="col-md-3"><label class="form-label">Meta Programada</label><input id="accionMetaProgramada" type="number" min="0" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Plazo (DÃ­as)</label><input id="accionPlazo" type="number" min="0" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Plazo (Dí­as)</label><input id="accionPlazo" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Fecha Inicio de AcciÃ³n</label><input id="accionFechaInicio" type="date" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Fecha Final de AcciÃ³n</label><input id="accionFechaFinal" type="date" class="form-control" readonly></div>
+                  <div class="col-md-3"><label class="form-label">Fecha Final de Acción</label><input id="accionFechaFinal" type="date" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Meta Ejecutada</label><input id="accionMetaEjecutada" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Avance</label><input id="accionAvance" class="form-control" readonly></div>
-                  <div class="col-12"><label class="form-label">AcciÃ³n especÃ­fica programada</label><textarea id="accionDetalle" class="form-control" rows="2"></textarea></div>
-                  <div class="col-12"><label class="form-label">DescripciÃ³n</label><textarea id="accionDescripcion" class="form-control" rows="2"></textarea></div>
+                  <div class="col-12"><label class="form-label">Acción especí­fica programada</label><textarea id="accionDetalle" class="form-control" rows="2"></textarea></div>
+                  <div class="col-12"><label class="form-label">Descripción</label><textarea id="accionDescripcion" class="form-control" rows="2"></textarea></div>
                 </div>
-                <button id="btnGuardarAccion" type="button" class="btn btn-primary mt-3">Guardar acciÃ³n</button>
+                <button id="btnGuardarAccion" type="button" class="btn btn-primary mt-3">Guardar acción</button>
               </div>
 
               <hr>
-              <h5 class="text-primary">Acciones registradas / PreaprobaciÃ³n / AprobaciÃ³n</h5>
+              <h5 class="text-primary">Acciones registradas / PreaprobaciÃ³n / Aprobación</h5>
               <div class="table-responsive">
                 <table class="table table-sm table-striped" id="tablaAcciones">
                   <thead class="table-light">
                     <tr>
                       <th>Programa Nacional</th>
-                      <th>Tipo de acciÃ³n</th>
-                      <th>CÃ³digo de acciÃ³n</th>
-                      <th>AcciÃ³n especÃ­fica programada</th>
+                      <th>Tipo de acción</th>
+                      <th>Código de acción</th>
+                      <th>Acción específica programada</th>
                       <th>Unidad de medida</th>
                       <th>Meta programada</th>
                       <th>Fecha inicio</th>
                       <th>Fecha final</th>
                       <th>Meta ejecutada</th>
                       <th>Avance</th>
-                      <th>DescripciÃ³n</th>
+                      <th>Descripción</th>
                       <th>Estado</th>
                       <th>Usuario registro</th>
                       <th>Fecha registro</th>
@@ -498,8 +498,8 @@
               <div class="border rounded bg-light p-3 mb-3">
                 <div class="row g-3">
                   <div class="col-md-3"><label class="form-label">DS</label><input id="progDs" class="form-control" readonly></div>
-                  <div class="col-md-2"><label class="form-label">NÃºmero de reuniÃ³n</label><input id="progNumeroReunion" class="form-control" readonly></div>
-                  <div class="col-md-2"><label class="form-label">Fecha de reuniÃ³n</label><input id="progFechaReunion" class="form-control" readonly></div>
+                  <div class="col-md-2"><label class="form-label">Número de reunión</label><input id="progNumeroReunion" class="form-control" readonly></div>
+                  <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="progFechaReunion" class="form-control" readonly></div>
                   <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="progEstadoRDS" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Fecha de Registro RDS</label><input id="progFechaRegistroRDS" class="form-control" readonly></div>
                   <div class="col-md-4"><label class="form-label">Programa Nacional</label><input id="progProgramaNacional" class="form-control" readonly></div>
@@ -507,12 +507,12 @@
               </div>
               <div id="progFormularioBox">
                 <div class="row g-3">
-                  <div class="col-md-3"><label class="form-label">Tipo de acciÃ³n</label><select id="progTipoAccion" class="form-select"></select></div>
+                  <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="progTipoAccion" class="form-select"></select></div>
                   <div class="col-md-4" id="progSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="progSubtipoRehabilitacion" class="form-select"></select></div>
-                  <div class="col-md-3"><label class="form-label">CÃ³digo de acciÃ³n</label><input id="progCodigoAccion" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Código de acciÃ³n</label><input id="progCodigoAccion" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="progUnidadMedida" class="form-select"></select></div>
                   <div class="col-md-3"><label class="form-label">Meta programada</label><input id="progMetaProgramada" type="number" min="0" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Plazo (dÃ­as)</label><input id="progPlazoDias" type="number" min="0" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Plazo (días)</label><input id="progPlazoDias" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">F. inicio</label><input id="progFechaInicio" type="date" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">F. final</label><input id="progFechaFinal" type="date" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Meta ejecutada</label><input id="progMetaEjecutada" type="number" min="0" class="form-control"></div>
@@ -544,7 +544,7 @@
                         <span id="progDistritosContador" class="text-muted small">Mostrando 0 de 0 registros</span>
                         <div class="d-flex align-items-center gap-2">
                           <button id="btnProgDistritosAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
-                          <span id="progDistritosPaginaInfo" class="text-muted small">PÃ¡gina 1 de 1</span>
+                          <span id="progDistritosPaginaInfo" class="text-muted small">Página 1 de 1</span>
                           <button id="btnProgDistritosSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
                         </div>
                       </div>
@@ -556,8 +556,8 @@
                               <th>Departamento</th>
                               <th>Provincia</th>
                               <th>Distrito</th>
-                              <th>Acciones especÃ­ficas programadas y ejecutadas</th>
-                              <th>DescripciÃ³n de actividades</th>
+                              <th>Acciones especí­ficas programadas y ejecutadas</th>
+                              <th>Descripción de actividades</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -570,7 +570,7 @@
                   <textarea id="progDetalle" class="d-none" rows="1" aria-hidden="true"></textarea>
                   <textarea id="progDescripcionActividades" class="d-none" rows="1" aria-hidden="true"></textarea>
                 </div>
-                <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar AcciÃ³n</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
+                <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar Acción</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
               </div>
               <hr><h5 class="text-primary">Acciones registradas</h5>
               <div class="table-responsive"><table class="table table-sm table-striped" id="tablaAccionesProgramas">
@@ -584,8 +584,8 @@
             <h4 class="text-primary mb-3">PreAprobar Acciones</h4>
             <div class="border rounded bg-light p-3 mb-3"><div class="row g-3 align-items-end">
               <div class="col-md-3"><label class="form-label">Seleccione DS</label><input id="preDs" class="form-control" readonly></div>
-              <div class="col-md-2"><label class="form-label">NÃºmero de reuniÃ³n</label><input id="preNumeroReunion" class="form-control" readonly></div>
-              <div class="col-md-2"><label class="form-label">Fecha de reuniÃ³n</label><input id="preFechaReunion" type="date" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Número de reunión</label><input id="preNumeroReunion" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="preFechaReunion" type="date" class="form-control" readonly></div>
               <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="preEstadoRDS" class="form-control" readonly></div>
               <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="preFechaRegistroRDS" class="form-control" readonly></div>
             </div></div>
@@ -596,11 +596,11 @@
                   <label class="form-label">Programa</label>
                   <select id="filtroPrePrograma" class="form-select form-select-sm">
                     <option value="">Todos</option>
-                    <option>CUNA MÃS</option>
+                    <option>CUNA MÁS</option>
                     <option>PAE</option>
                     <option>JUNTOS</option>
                     <option>CONTIGO</option>
-                    <option>PENSIÃ“N 65</option>
+                    <option>PENSIÓN 65</option>
                     <option>FONCODES</option>
                     <option>PAIS</option>
                   </select>
@@ -615,7 +615,7 @@
               </div>
               <div id="contadorPreAprobarAcciones" class="text-muted small mt-2">Mostrando 0 registro(s)</div>
             </div>
-            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acciÃ³n</th><th>CÃ³digo</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>GestiÃ³n</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
             <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnSalirPreAprobar" type="button" class="btn btn-outline-secondary">Salir</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
           </div></div>
         </div>
@@ -636,7 +636,7 @@
                 <div class="col-lg-7">
                   <div class="border rounded bg-light p-2 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h5 class="text-primary mb-0">Mapa del PerÃº</h5>
+                      <h5 class="text-primary mb-0">Mapa del Perú</h5>
                       <span class="text-muted small">Puntos georreferenciados por distrito</span>
                     </div>
                     <div id="mapaDS" class="border rounded bg-white" style="height:520px; min-height:520px;"></div>
@@ -660,12 +660,12 @@
                       <th data-dash-tipo-col>Tipo</th>
                       <th>Fecha inicio</th>
                       <th>Fecha fin</th>
-                      <th>DÃ­as restantes</th>
+                      <th>Daños restantes</th>
                       <th>Avance %</th>
-                      <th>SemÃ¡foro</th>
-                      <th>N.Â° departamentos</th>
-                      <th>N.Â° provincias</th>
-                      <th>N.Â° distritos</th>
+                      <th>Semáforo</th>
+                      <th>N° departamentos</th>
+                      <th>N° provincias</th>
+                      <th>N° distritos</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -694,9 +694,9 @@
                       <th>Departamento</th>
                       <th>Provincia</th>
                       <th>Distrito</th>
-                      <th>NÃºmero de veces</th>
-                      <th>Fecha inicio mÃ¡s antigua</th>
-                      <th>Fecha final mÃ¡s lejana</th>
+                      <th>Número de veces</th>
+                      <th>Fecha inicio más antigua</th>
+                      <th>Fecha final más lejana</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -711,18 +711,18 @@
           <div class="card shadow-sm">
             <div class="card-body">
               <h4 class="text-primary mb-3">Seguimiento Productividad</h4>
-              <div id="segNoAdmin" class="alert alert-warning">MÃ³dulo disponible solo para Administrador.</div>
+              <div id="segNoAdmin" class="alert alert-warning">Módulo disponible solo para Administrador.</div>
               <div id="segContenido">
                 <div class="row g-3 mb-3" id="segMetricas"></div>
                 <div class="row g-3">
-                  <div class="col-lg-6"><h5 class="text-primary">Indicadores: quienes no registran en fecha de reuniÃ³n</h5><div id="segNoRegistran"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Indicadores: quienes no registran en fecha de reunión</h5><div id="segNoRegistran"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">SLA por etapas</h5><div id="segSla"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Alertas de inactividad</h5><div id="segAlertas"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Carga de trabajo (Backlog) por Registrador</h5><div id="segBacklog"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Productividad con calidad / Tiempos de respuesta</h5><div id="segProductividad"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">Checklist de completitud (Top 10 mÃ¡s incompletos)</h5><div id="segChecklist"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">Motivos de observaciÃ³n (Top)</h5><div id="segObservaciones"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">PriorizaciÃ³n por severidad / Casos en riesgo</h5><div id="segRiesgo"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Checklist de completitud (Top 10 más incompletos)</h5><div id="segChecklist"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Motivos de observación (Top)</h5><div id="segObservaciones"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Priorización por severidad / Casos en riesgo</h5><div id="segRiesgo"></div></div>
                 </div>
               </div>
             </div>
@@ -738,7 +738,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">AdministraciÃ³n de usuarios</h5>
+          <h5 class="modal-title">Administración de usuarios</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
@@ -749,7 +749,7 @@
               <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button>
             </li>
             <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">BitÃ¡cora / AuditorÃ­a</button>
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Bitácora / Auditorí­a</button>
             </li>
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos Sync</button>
@@ -763,7 +763,7 @@
               <div class="row g-2 mb-2">
                 <div class="col-md-5">
                   <label class="form-label">Nombre y apellidos</label>
-                  <input id="adminUserName" class="form-control" placeholder="Ej.: Juan PÃ©rez GÃ³mez">
+                  <input id="adminUserName" class="form-control" placeholder="Ej.: Juan Pérez Gómez">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Correo (usuario)</label>
@@ -775,8 +775,8 @@
                     <option value="Consulta">Consulta</option>
                     <option value="Administrador">Administrador</option>
                     <option value="Registrador">Registrador</option>
-                    <option value="Registrador|CUNA MÃS">Registrador - Cuna MÃ¡s</option>
-                    <option value="Registrador|PENSIÃ“N 65">Registrador - PensiÃ³n 65</option>
+                    <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
+                    <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
                     <option value="Registrador|JUNTOS">Registrador - Juntos</option>
                     <option value="Registrador|PAE">Registrador - PAE</option>
                     <option value="Registrador|FONCODES">Registrador - Foncodes</option>
@@ -853,7 +853,7 @@
 
               <div class="d-flex justify-content-between mb-2">
                 <div id="auditServerStatus" class="text-muted small">Servidor: conectado, usando respaldo local (not_found)</div>
-                <div class="text-muted small">MÃ¡x. 1000 registros</div>
+                <div class="text-muted small">Máx. 1000 registros</div>
               </div>
 
               <div class="table-responsive">
@@ -863,11 +863,11 @@
                       <th>Fecha/Hora</th>
                       <th>Actor</th>
                       <th>Rol</th>
-                      <th>AcciÃ³n</th>
+                      <th>Acción</th>
                       <th>Entidad</th>
                       <th>ID</th>
                       <th>Detalle</th>
-                      <th>AcciÃ³n</th>
+                      <th>Acción</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -875,14 +875,14 @@
               </div>
 
               <div class="alert alert-info small mt-3 mb-0">
-                <strong>Tip:</strong> Usa â€œDesde/Hastaâ€ para acotar. El detalle se puede copiar en JSON.
+                <strong>Tip:</strong> Usa Desde/Hasta para acotar. El detalle se puede copiar en JSON.
               </div>
             </div>
 
             <!-- Conflictos Sync -->
             <div class="tab-pane fade" id="adminConflictos">
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <div id="conflictosEmptyMsg" class="text-muted small">No hay conflictos de sincronizaciÃ³n registrados en este navegador.</div>
+                <div id="conflictosEmptyMsg" class="text-muted small">No hay conflictos de sincronización registrados en este navegador.</div>
                 <div class="d-flex gap-2">
                   <button id="btnActualizarConflictos" type="button" class="btn btn-outline-primary">Actualizar</button>
                   <button id="btnLimpiarHistorialConflictos" type="button" class="btn btn-outline-danger">Limpiar historial</button>
@@ -890,7 +890,7 @@
               </div>
 
               <div class="alert alert-warning small">
-                <strong>Importante:</strong> â€œServidorâ€ reemplaza tu copia local por la versiÃ³n vigente del servidor. â€œLocalâ€ conserva tu ediciÃ³n local e intenta volver a subirla usando la Ãºltima base del servidor. No fusiona textos automÃ¡ticamente; resuelve el conflicto eligiendo cuÃ¡l versiÃ³n prevalece.
+                <strong>Importante:</strong> â€œServidorâ€ reemplaza tu copia local por la versión vigente del servidor. â€œLocalâ€ conserva tu edición local e intenta volver a subirla usando la Ãºltima base del servidor. No fusiona textos automÃ¡ticamente; resuelve el conflicto eligiendo cual versión prevalece.
               </div>
 
               <div class="table-responsive">
@@ -902,7 +902,7 @@
                       <th>Motivo</th>
                       <th>Fecha del servidor</th>
                       <th>Estado local / servidor</th>
-                      <th>ResoluciÃ³n aplicada</th>
+                      <th>Resolución aplicada</th>
                       <th>AcciÃ³n</th>
                     </tr>
                   </thead>
@@ -937,11 +937,11 @@
 
   <!-- MODAL VER / EDITAR ACCION -->
   <div class="modal fade" id="modalEditarAccion" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title">Ver / Editar AcciÃ³n Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-header"><h5 class="modal-title">Ver / Editar Acción Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body"><input id="editAccionId" type="hidden"><div class="row g-3">
-      <div class="col-md-3"><label class="form-label">Tipo de acciÃ³n</label><select id="editTipoAccion" class="form-select"></select></div>
+      <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="editTipoAccion" class="form-select"></select></div>
       <div class="col-md-5" id="editSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="editSubtipoRehabilitacion" class="form-select"></select></div>
-      <div class="col-md-3"><label class="form-label">CÃ³digo de acciÃ³n</label><input id="editCodigoAccion" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Código de acción</label><input id="editCodigoAccion" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="editUnidadMedida" class="form-select"></select></div>
       <div class="col-md-3"><label class="form-label">Meta programada</label><input id="editMetaProgramada" type="number" min="0" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Plazo</label><input id="editPlazoDias" type="number" min="0" class="form-control"></div>
@@ -951,8 +951,8 @@
       <div class="col-md-3"><label class="form-label">% Avance</label><input id="editAvance" class="form-control" readonly></div>
       <div class="col-md-3"><label class="form-label">Fecha registro</label><input id="editFechaRegistro" class="form-control" readonly></div>
       <div class="col-md-6"><label class="form-label">Usuario</label><input id="editUsuario" class="form-control" readonly></div>
-      <div class="col-12"><label class="form-label">Acciones especÃ­ficas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
-      <div class="col-12"><label class="form-label">DescripciÃ³n</label><textarea id="editDescripcion" class="form-control" rows="2"></textarea></div>
+      <div class="col-12"><label class="form-label">Acciones especí­ficas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
+      <div class="col-12"><label class="form-label">Descripción</label><textarea id="editDescripcion" class="form-control" rows="2"></textarea></div>
     </div></div>
     <div class="modal-footer"><button id="btnGrabarModalAccion" type="button" class="btn btn-primary">Grabar</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Salir</button></div>
   </div></div></div>
@@ -969,14 +969,14 @@
         </div>
         <div class="modal-body">
           <div class="alert alert-info small mb-3">
-            Las acciones registradas se aplicarÃ¡n a todos los distritos seleccionados.
+            Las acciones registradas se aplicarán a todos los distritos seleccionados.
           </div>
           <div class="mb-3">
-            <label class="form-label">Acciones especÃ­ficas programadas y ejecutadas</label>
+            <label class="form-label">Acciones especí­ficas programadas y ejecutadas</label>
             <textarea id="grupoDetallePrograma" class="form-control" rows="3"></textarea>
           </div>
           <div class="mb-2">
-            <label class="form-label">DescripciÃ³n de actividades</label>
+            <label class="form-label">Descripción de actividades</label>
             <textarea id="grupoDescripcionPrograma" class="form-control" rows="3"></textarea>
           </div>
         </div>
@@ -995,8 +995,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <script src="ubigeoData.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
-  <script src="app.shared.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
-  <script src="app.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
+  <script src="ubigeoData.js?v=79.10-d1-login-syntax-fix-20260525"></script>
+  <script src="app.shared.js?v=79.10-d1-login-syntax-fix-20260525"></script>
+  <script src="app.js?v=79.10-d1-login-syntax-fix-20260525"></script>
 </body>
 </html>
