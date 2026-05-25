@@ -1,1466 +1,71 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="build-version" content="79.10-fix-seleccion-registro-grupal-programas-20260522" />
-  <!-- BUILD: VERSION 79.10 - FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS - 2026-05-22 -->
-  <title>DEE MIDIS — Declaratorias de Estado de Emergencia</title>
+  <!-- BUILD: VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 -->
+  <title>DEE MIDIS â€” Declaratorias de Estado de Emergencia</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="app.css?v=79.10-fix-seleccion-registro-grupal-programas-20260522" />
-
   <style>
-    :root {
-      --dee-azul: #0d6efd;
-      --dee-azul-oscuro: #0b3f8a;
-      --dee-azul-profundo: #062b60;
-      --dee-gris-fondo: #f3f6fb;
-      --dee-texto: #24364b;
-      --dee-borde: #d9e2ef;
-    }
-
-    .login-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-      background:
-        radial-gradient(circle at 8% 10%, rgba(13, 110, 253, .13), transparent 26%),
-        radial-gradient(circle at 90% 85%, rgba(11, 94, 215, .10), transparent 30%),
-        linear-gradient(135deg, #eef3f9 0%, #f8fafc 100%);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      color: var(--dee-texto);
-    }
-
-    .login-shell {
-      width: min(1080px, 100%);
-      min-height: 640px;
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      border-radius: 28px;
-      overflow: hidden;
-      background: #fff;
-      box-shadow: 0 24px 70px rgba(6, 43, 96, .16);
-      border: 1px solid rgba(217, 226, 239, .85);
-    }
-
-    .login-hero-panel {
-      position: relative;
-      padding: 56px 52px;
-      color: #fff;
-      background:
-        linear-gradient(145deg, rgba(6, 43, 96, .96), rgba(11, 94, 215, .92)),
-        linear-gradient(135deg, #0b3f8a, #0d6efd);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-    }
-
-    .login-hero-panel::before,
-    .login-hero-panel::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .10);
-      pointer-events: none;
-    }
-
-    .login-hero-panel::before {
-      width: 320px;
-      height: 320px;
-      right: -120px;
-      top: -90px;
-    }
-
-    .login-hero-panel::after {
-      width: 240px;
-      height: 240px;
-      left: -90px;
-      bottom: -80px;
-    }
-
-    .login-hero-content,
-    .login-hero-footer {
-      position: relative;
-      z-index: 1;
-    }
-
-    .login-brand-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, .12);
-      border: 1px solid rgba(255, 255, 255, .18);
-      backdrop-filter: blur(8px);
-      font-weight: 700;
-      letter-spacing: .02em;
-      margin-bottom: 58px;
-    }
-
-    .login-brand-mark span:first-child {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, .18);
-      font-size: 21px;
-    }
-
-    .login-hero-title {
-      font-size: clamp(2.25rem, 4vw, 4rem);
-      font-weight: 800;
-      line-height: 1;
-      margin: 0 0 18px;
-      letter-spacing: -.04em;
-    }
-
-    .login-hero-subtitle {
-      font-size: 1.35rem;
-      font-weight: 700;
-      margin-bottom: 18px;
-    }
-
-    .login-hero-text {
-      max-width: 470px;
-      color: rgba(255, 255, 255, .86);
-      font-size: 1rem;
-      line-height: 1.7;
-      margin: 0;
-    }
-
-    .login-hero-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 30px;
-    }
-
-    .login-hero-badges span {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .13);
-      border: 1px solid rgba(255, 255, 255, .18);
-      font-size: .84rem;
-      color: rgba(255, 255, 255, .92);
-    }
-
-    .login-hero-footer {
-      color: rgba(255, 255, 255, .72);
-      font-size: .82rem;
-      line-height: 1.5;
-    }
-
-    .login-form-panel {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 52px 46px;
-      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 430px;
-      background: rgba(255, 255, 255, .98);
-      border: 1px solid var(--dee-borde);
-      border-radius: 24px;
-      padding: 34px;
-      box-shadow: 0 16px 40px rgba(13, 64, 138, .10);
-    }
-
-    .login-logo-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .login-shield {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: #eef5ff;
-      color: var(--dee-azul);
-      font-size: 23px;
-      border: 1px solid #d7e7ff;
-    }
-
-    .login-brand-text {
-      color: var(--dee-azul-profundo);
-      font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: .01em;
-    }
-
-    .login-brand-text small {
-      display: block;
-      color: #64748b;
-      font-size: .74rem;
-      font-weight: 600;
-      margin-top: 4px;
-      letter-spacing: 0;
-    }
-
-    .login-title {
-      color: var(--dee-azul-profundo);
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -.02em;
-      margin-bottom: 6px;
-    }
-
-    .login-subtitle {
-      color: #667085;
-      font-size: .94rem;
-      margin-bottom: 26px;
-      line-height: 1.55;
-    }
-
-    .form-label-custom {
-      display: block;
-      color: #344054;
-      font-size: .88rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .login-input-wrap {
-      position: relative;
-    }
-
-    .input-custom {
-      width: 100%;
-      height: 46px;
-      border-radius: 12px;
-      border: 1px solid #d0d7e2;
-      background: #fff;
-      color: #1f2937;
-      padding: 10px 13px;
-      outline: none;
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-      font-size: .96rem;
-    }
-
-    .input-custom:focus {
-      border-color: rgba(13, 110, 253, .72);
-      box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
-      background: #fff;
-    }
-
-    .input-password-with-toggle {
-      padding-right: 86px;
-    }
-
-    .btn-toggle-password {
-      position: absolute;
-      top: 50%;
-      right: 8px;
-      transform: translateY(-50%);
-      border: 0;
-      background: #eef5ff;
-      color: var(--dee-azul-oscuro);
-      font-weight: 700;
-      border-radius: 10px;
-      padding: 7px 10px;
-      font-size: .78rem;
-      line-height: 1;
-    }
-
-    .btn-toggle-password:hover {
-      background: #dbeafe;
-    }
-
-    .login-options-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin: 4px 0 20px;
-      font-size: .86rem;
-    }
-
-    .login-options-row label {
-      color: #475569;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      user-select: none;
-    }
-
-    .login-options-row a {
-      color: var(--dee-azul-oscuro);
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .login-options-row a:hover {
-      text-decoration: underline;
-    }
-
-    .btn-login {
-      width: 100%;
-      height: 48px;
-      border: 0;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--dee-azul), #0b5ed7);
-      color: #fff;
-      font-weight: 800;
-      letter-spacing: .01em;
-      box-shadow: 0 12px 24px rgba(13, 110, 253, .24);
-      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
-    }
-
-    .btn-login:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 30px rgba(13, 110, 253, .28);
-      filter: brightness(.98);
-    }
-
-    .loginMsg, #loginMsg {
-      min-height: 18px;
-    }
-
-    .login-demo-creds {
-      margin-top: 18px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #f1f5f9;
-      color: #64748b;
-      font-size: .78rem;
-      border: 1px dashed #cbd5e1;
-    }
-
-    .login-security-note {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid #eef2f7;
-      color: #64748b;
-      font-size: .78rem;
-      line-height: 1.45;
-    }
-
-    .login-version {
-      margin-top: 14px;
-      color: #94a3b8;
-      font-size: .75rem;
-      text-align: center;
-    }
-
-    @media (max-width: 900px) {
-      .login-wrap {
-        padding: 18px;
-      }
-      .login-shell {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-      .login-hero-panel {
-        min-height: 260px;
-        padding: 34px 30px;
-      }
-      .login-brand-mark {
-        margin-bottom: 28px;
-      }
-      .login-hero-title {
-        font-size: 2.4rem;
-      }
-      .login-form-panel {
-        padding: 28px 22px 32px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .login-wrap {
-        padding: 0;
-        align-items: stretch;
-      }
-      .login-shell {
-        border-radius: 0;
-        border: 0;
-        min-height: 100vh;
-      }
-      .login-hero-panel {
-        display: none;
-      }
-      .login-form-panel {
-        padding: 22px 16px;
-        align-items: center;
-      }
-      .login-card {
-        padding: 24px 20px;
-        border-radius: 20px;
-      }
-      .login-title {
-        font-size: 1.55rem;
-      }
-      .login-options-row {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
-      }
-    }
-
-
-    /* ================= AJUSTE LOGIN v79.7: reducción visual 30% =================
-       Solo afecta la pantalla de inicio de sesión. No modifica lógica ni IDs. */
-    .login-wrap {
-      padding: 20px;
-    }
-
-    .login-shell {
-      width: min(756px, 100%);
-      min-height: 448px;
-      grid-template-columns: 1.02fr .98fr;
-      border-radius: 20px;
-      box-shadow: 0 17px 49px rgba(6, 43, 96, .15);
-    }
-
-    .login-hero-panel {
-      padding: 39px 36px;
-    }
-
-    .login-hero-panel::before {
-      width: 224px;
-      height: 224px;
-      right: -84px;
-      top: -63px;
-    }
-
-    .login-hero-panel::after {
-      width: 168px;
-      height: 168px;
-      left: -63px;
-      bottom: -56px;
-    }
-
-    .login-brand-mark {
-      gap: 8px;
-      padding: 7px 10px;
-      border-radius: 12px;
-      margin-bottom: 36px;
-      font-size: .82rem;
-    }
-
-    .login-brand-mark span:first-child {
-      width: 27px;
-      height: 27px;
-      border-radius: 9px;
-      font-size: 15px;
-    }
-
-    .login-hero-title {
-      font-size: clamp(1.58rem, 2.8vw, 2.8rem);
-      margin-bottom: 12px;
-    }
-
-    .login-hero-subtitle {
-      font-size: .98rem;
-      margin-bottom: 12px;
-    }
-
-    .login-hero-text {
-      max-width: 330px;
-      font-size: .78rem;
-      line-height: 1.55;
-    }
-
-    .login-hero-badges {
-      gap: 7px;
-      margin-top: 20px;
-    }
-
-    .login-hero-badges span {
-      padding: 6px 9px;
-      font-size: .66rem;
-    }
-
-    .login-hero-footer {
-      font-size: .64rem;
-    }
-
-    .login-form-panel {
-      padding: 34px 30px;
-    }
-
-    .login-card {
-      max-width: 305px;
-      border-radius: 17px;
-      padding: 24px;
-      box-shadow: 0 11px 28px rgba(13, 64, 138, .10);
-    }
-
-    .login-logo-row {
-      gap: 9px;
-      margin-bottom: 16px;
-    }
-
-    .login-shield {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    .login-brand-text {
-      font-size: .86rem;
-    }
-
-    .login-brand-text small {
-      font-size: .58rem;
-      margin-top: 3px;
-    }
-
-    .login-title {
-      font-size: 1.26rem;
-      margin-bottom: 4px;
-    }
-
-    .login-subtitle {
-      font-size: .72rem;
-      margin-bottom: 17px;
-      line-height: 1.4;
-    }
-
-    .form-label-custom {
-      font-size: .70rem;
-      margin-bottom: 6px;
-    }
-
-    .input-custom {
-      height: 34px;
-      border-radius: 9px;
-      padding: 7px 10px;
-      font-size: .76rem;
-    }
-
-    .input-custom:focus {
-      box-shadow: 0 0 0 3px rgba(13, 110, 253, .11);
-    }
-
-    .input-password-with-toggle {
-      padding-right: 70px;
-    }
-
-    .btn-toggle-password {
-      right: 6px;
-      border-radius: 8px;
-      padding: 5px 7px;
-      font-size: .62rem;
-    }
-
-    .login-options-row {
-      gap: 8px;
-      margin: 2px 0 14px;
-      font-size: .66rem;
-    }
-
-    .login-options-row label {
-      gap: 6px;
-    }
-
-    .btn-login {
-      height: 35px;
-      border-radius: 9px;
-      font-size: .78rem;
-      box-shadow: 0 8px 17px rgba(13, 110, 253, .22);
-    }
-
-    .btn-login:hover {
-      box-shadow: 0 11px 21px rgba(13, 110, 253, .24);
-    }
-
-    .loginMsg, #loginMsg {
-      min-height: 13px;
-      font-size: .68rem;
-    }
-
-    .login-security-note {
-      margin-top: 11px;
-      padding-top: 10px;
-      font-size: .61rem;
-      line-height: 1.35;
-    }
-
-    .login-version {
-      margin-top: 10px;
-      font-size: .58rem;
-    }
-
-    @media (max-width: 900px) {
-      .login-shell {
-        width: min(620px, 100%);
-      }
-      .login-hero-panel {
-        min-height: 185px;
-        padding: 24px 22px;
-      }
-      .login-brand-mark {
-        margin-bottom: 18px;
-      }
-      .login-hero-title {
-        font-size: 1.7rem;
-      }
-      .login-form-panel {
-        padding: 24px 18px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .login-wrap {
-        padding: 0;
-      }
-      .login-shell {
-        width: 100%;
-      }
-      .login-card {
-        max-width: 330px;
-        padding: 22px 18px;
-        border-radius: 18px;
-      }
-      .login-title {
-        font-size: 1.22rem;
-      }
-      .input-custom {
-        height: 38px;
-        font-size: .82rem;
-      }
-      .btn-login {
-        height: 38px;
-      }
-    }
-
-
-    /* ================= AJUSTE LOGIN v79: reducción visual 50% =================
-       Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs ni autenticación. */
-    .login-wrap {
-      padding: 14px;
-    }
-
-    .login-shell {
-      width: min(540px, 100%);
-      min-height: 320px;
-      grid-template-columns: 1.02fr .98fr;
-      border-radius: 14px;
-      box-shadow: 0 12px 35px rgba(6, 43, 96, .14);
-    }
-
-    .login-hero-panel {
-      padding: 28px 26px;
-    }
-
-    .login-hero-panel::before {
-      width: 160px;
-      height: 160px;
-      right: -60px;
-      top: -45px;
-    }
-
-    .login-hero-panel::after {
-      width: 120px;
-      height: 120px;
-      left: -45px;
-      bottom: -40px;
-    }
-
-    .login-brand-mark {
-      gap: 6px;
-      padding: 5px 7px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      font-size: .66rem;
-    }
-
-    .login-brand-mark span:first-child {
-      width: 19px;
-      height: 19px;
-      border-radius: 6px;
-      font-size: 11px;
-    }
-
-    .login-hero-title {
-      font-size: clamp(1.13rem, 2vw, 2rem);
-      margin-bottom: 9px;
-      letter-spacing: -.03em;
-    }
-
-    .login-hero-subtitle {
-      font-size: .68rem;
-      margin-bottom: 9px;
-    }
-
-    .login-hero-text {
-      max-width: 235px;
-      font-size: .58rem;
-      line-height: 1.45;
-    }
-
-    .login-hero-badges {
-      gap: 5px;
-      margin-top: 14px;
-    }
-
-    .login-hero-badges span {
-      padding: 4px 6px;
-      font-size: .50rem;
-      border-radius: 999px;
-    }
-
-    .login-hero-footer {
-      font-size: .52rem;
-      line-height: 1.35;
-    }
-
-    .login-form-panel {
-      padding: 24px 22px;
-    }
-
-    .login-card {
-      max-width: 215px;
-      border-radius: 12px;
-      padding: 17px;
-      box-shadow: 0 8px 20px rgba(13, 64, 138, .10);
-    }
-
-    .login-logo-row {
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .login-shield {
-      width: 23px;
-      height: 23px;
-      border-radius: 7px;
-      font-size: 12px;
-    }
-
-    .login-brand-text {
-      font-size: .62rem;
-    }
-
-    .login-brand-text small {
-      font-size: .45rem;
-      margin-top: 2px;
-    }
-
-    .login-title {
-      font-size: .90rem;
-      margin-bottom: 3px;
-    }
-
-    .login-subtitle {
-      font-size: .54rem;
-      margin-bottom: 12px;
-      line-height: 1.35;
-    }
-
-    .form-label-custom {
-      font-size: .55rem;
-      margin-bottom: 4px;
-    }
-
-    .login-card .mb-3 {
-      margin-bottom: .55rem !important;
-    }
-
-    .login-card .mb-2 {
-      margin-bottom: .45rem !important;
-    }
-
-    .input-custom {
-      height: 25px;
-      border-radius: 7px;
-      padding: 5px 7px;
-      font-size: .58rem;
-    }
-
-    .input-custom:focus {
-      box-shadow: 0 0 0 2px rgba(13, 110, 253, .10);
-    }
-
-    .input-password-with-toggle {
-      padding-right: 54px;
-    }
-
-    .btn-toggle-password {
-      right: 4px;
-      border-radius: 6px;
-      padding: 4px 5px;
-      font-size: .48rem;
-    }
-
-    .login-options-row {
-      gap: 6px;
-      margin: 1px 0 10px;
-      font-size: .50rem;
-    }
-
-    .login-options-row label {
-      gap: 4px;
-    }
-
-    .login-options-row input[type="checkbox"] {
-      width: 11px;
-      height: 11px;
-    }
-
-    .btn-login {
-      height: 26px;
-      border-radius: 7px;
-      font-size: .58rem;
-      box-shadow: 0 6px 12px rgba(13, 110, 253, .21);
-    }
-
-    .btn-login:hover {
-      box-shadow: 0 8px 15px rgba(13, 110, 253, .23);
-    }
-
-    .loginMsg, #loginMsg {
-      min-height: 10px;
-      font-size: .52rem;
-      margin-top: .45rem !important;
-    }
-
-    .login-security-note {
-      margin-top: 8px;
-      padding-top: 7px;
-      font-size: .48rem;
-      line-height: 1.3;
-    }
-
-    .login-version {
-      margin-top: 7px;
-      font-size: .45rem;
-    }
-
-    @media (max-width: 900px) {
-      .login-shell {
-        width: min(540px, 100%);
-      }
-      .login-hero-panel {
-        min-height: 130px;
-        padding: 18px 16px;
-      }
-      .login-brand-mark {
-        margin-bottom: 12px;
-      }
-      .login-hero-title {
-        font-size: 1.25rem;
-      }
-      .login-form-panel {
-        padding: 18px 14px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .login-wrap {
-        padding: 0;
-      }
-      .login-shell {
-        width: 100%;
-        min-height: 100vh;
-      }
-      .login-card {
-        max-width: 280px;
-        padding: 18px 16px;
-        border-radius: 16px;
-      }
-      .login-title {
-        font-size: 1.08rem;
-      }
-      .login-subtitle,
-      .form-label-custom,
-      .login-options-row,
-      .login-security-note,
-      .login-version {
-        font-size: .72rem;
-      }
-      .input-custom {
-        height: 36px;
-        font-size: .82rem;
-      }
-      .btn-login {
-        height: 36px;
-        font-size: .82rem;
-      }
-      .btn-toggle-password {
-        font-size: .62rem;
-        padding: 5px 7px;
-      }
-    }
-
-
-    /* ================= AJUSTE TIPOGRÁFICO INSTITUCIONAL v79 =================
-       Solo mejora visual: tipografía, legibilidad y presentación en todas las pestañas.
-       No modifica lógica, IDs, roles, autenticación ni flujos existentes. */
-    :root {
-      --dee-font-ui: "Segoe UI", Arial, Helvetica, sans-serif;
-      --dee-font-size-base: 12px;
-      --dee-font-size-small: 11px;
-      --dee-font-size-title: 17px;
-      --dee-font-size-subtitle: 14px;
-      --dee-line-height: 1.45;
-      --dee-table-header: #1f2937;
-      --dee-table-text: #2f3a4a;
-      --dee-muted-text: #64748b;
-    }
-
-    html,
-    body {
-      font-family: var(--dee-font-ui) !important;
-      font-size: var(--dee-font-size-base);
-      color: var(--dee-texto);
-      letter-spacing: 0;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background: var(--dee-gris-fondo);
-    }
-
-    #appView,
-    #appView .container-fluid,
-    #appView .card,
-    #appView .modal-content,
-    #appView .tab-content,
-    #appView .table,
-    #appView input,
-    #appView select,
-    #appView textarea,
-    #appView button,
-    #appView .form-control,
-    #appView .form-select,
-    #appView .dropdown-menu,
-    #appView .alert,
-    #appView .badge {
-      font-family: var(--dee-font-ui) !important;
-    }
-
-    .navbar-brand {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--dee-azul-profundo) !important;
-      letter-spacing: .01em;
-    }
-
-    .session-pill,
-    #sessionName,
-    #sessionRole {
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .nav-tabs .nav-link {
-      font-size: 12px;
-      font-weight: 600;
-      color: #405167;
-      letter-spacing: .01em;
-      padding: .48rem .78rem;
-    }
-
-    .nav-tabs .nav-link.active {
-      color: var(--dee-azul-profundo);
-      font-weight: 700;
-      border-top: 3px solid var(--dee-azul);
-      background: #ffffff;
-    }
-
-    .card {
-      border-color: #e3eaf4;
-      border-radius: 10px;
-    }
-
-    .card-body {
-      font-size: 12px;
-      line-height: var(--dee-line-height);
-    }
-
-    h4.text-primary,
-    h5.text-primary,
-    .modal-title {
-      font-family: var(--dee-font-ui) !important;
-      color: var(--dee-azul-profundo) !important;
-      letter-spacing: -.01em;
-    }
-
-    h4.text-primary {
-      font-size: var(--dee-font-size-title);
-      font-weight: 700;
-      margin-bottom: .9rem !important;
-    }
-
-    h5.text-primary {
-      font-size: var(--dee-font-size-subtitle);
-      font-weight: 700;
-      margin-bottom: .65rem;
-    }
-
-    .text-muted,
-    .small {
-      color: var(--dee-muted-text) !important;
-      font-size: var(--dee-font-size-small) !important;
-    }
-
-    label,
-    .form-label,
-    .form-check-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #344054;
-      margin-bottom: .28rem;
-    }
-
-    .form-control,
-    .form-select,
-    textarea.form-control {
-      font-size: 12px;
-      color: #24364b;
-      border-color: #d6deeb;
-      border-radius: 6px;
-      min-height: 32px;
-      box-shadow: none;
-    }
-
-    .form-control:focus,
-    .form-select:focus,
-    textarea.form-control:focus {
-      border-color: rgba(13, 110, 253, .55);
-      box-shadow: 0 0 0 .16rem rgba(13, 110, 253, .10);
-    }
-
-    .btn,
-    .btn-sm {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0;
-      border-radius: 5px;
-    }
-
-    .btn-sm {
-      padding: .22rem .48rem;
-    }
-
-    .table {
-      font-size: 12px;
-      color: var(--dee-table-text);
-      line-height: 1.45;
-      vertical-align: middle;
-      margin-bottom: 0;
-    }
-
-    .table thead th,
-    .table-primary th,
-    .table-light th {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--dee-table-header);
-      white-space: nowrap;
-      vertical-align: middle;
-      letter-spacing: -.01em;
-      border-bottom: 1px solid #cfd9e6;
-    }
-
-    .table tbody td {
-      font-size: 12px;
-      vertical-align: middle;
-      color: var(--dee-table-text);
-      border-color: #e5eaf2;
-    }
-
-    .table-striped > tbody > tr:nth-of-type(odd) > * {
-      --bs-table-bg-type: #f7f9fc;
-    }
-
-    .table-responsive {
-      border-radius: 6px;
-    }
-
-    .badge {
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: .35em .55em;
-      border-radius: 4px;
-    }
-
-    .modal-title {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .modal-body,
-    .modal-footer,
-    .modal-header {
-      font-size: 12px;
-    }
-
-    .alert {
-      font-size: 12px;
-      border-radius: 7px;
-      line-height: 1.45;
-    }
-
-    #loginView,
-    #loginView * {
-      font-family: var(--dee-font-ui) !important;
-    }
-
-    .login-title,
-    .login-hero-title,
-    .login-brand-text,
-    .login-brand-mark {
-      letter-spacing: -.01em;
-    }
-
-    .login-subtitle,
-    .login-hero-text,
-    .login-security-note,
-    .login-version {
-      line-height: 1.45;
-    }
-
-    @media (max-width: 768px) {
-      html,
-      body,
-      .table,
-      .table tbody td,
-      .table thead th,
-      .form-control,
-      .form-select,
-      .btn {
-        font-size: 11px;
-      }
-
-      h4.text-primary {
-        font-size: 15px;
-      }
-
-      h5.text-primary {
-        font-size: 13px;
-      }
-    }
-
-
-    /* ================= AJUSTE LOGIN v79: aumento visual 10% =================
-       Solo afecta la pantalla de inicio de sesión. No modifica lógica, IDs,
-       autenticación, usuarios, roles ni navegación posterior al login. */
-    #loginView.login-wrap {
-      padding: 15px;
-    }
-
-    #loginView .login-shell {
-      width: min(594px, 100%);
-      min-height: 352px;
-      grid-template-columns: 1.02fr .98fr;
-      border-radius: 15px;
-      box-shadow: 0 13px 39px rgba(6, 43, 96, .15);
-    }
-
-    #loginView .login-hero-panel {
-      padding: 31px 29px;
-    }
-
-    #loginView .login-hero-panel::before {
-      width: 176px;
-      height: 176px;
-      right: -66px;
-      top: -50px;
-    }
-
-    #loginView .login-hero-panel::after {
-      width: 132px;
-      height: 132px;
-      left: -50px;
-      bottom: -44px;
-    }
-
-    #loginView .login-brand-mark {
-      gap: 7px;
-      padding: 6px 8px;
-      border-radius: 9px;
-      margin-bottom: 26px;
-      font-size: .73rem;
-    }
-
-    #loginView .login-brand-mark span:first-child {
-      width: 21px;
-      height: 21px;
-      border-radius: 7px;
-      font-size: 12px;
-    }
-
-    #loginView .login-hero-title {
-      font-size: clamp(1.24rem, 2.2vw, 2.2rem);
-      margin-bottom: 10px;
-      letter-spacing: -.03em;
-    }
-
-    #loginView .login-hero-subtitle {
-      font-size: .75rem;
-      margin-bottom: 10px;
-    }
-
-    #loginView .login-hero-text {
-      max-width: 259px;
-      font-size: .64rem;
-      line-height: 1.48;
-    }
-
-    #loginView .login-hero-badges {
-      gap: 6px;
-      margin-top: 15px;
-    }
-
-    #loginView .login-hero-badges span {
-      padding: 5px 7px;
-      font-size: .55rem;
-      border-radius: 999px;
-    }
-
-    #loginView .login-hero-footer {
-      font-size: .57rem;
-      line-height: 1.38;
-    }
-
-    #loginView .login-form-panel {
-      padding: 26px 24px;
-    }
-
-    #loginView .login-card {
-      max-width: 237px;
-      border-radius: 13px;
-      padding: 19px;
-      box-shadow: 0 9px 22px rgba(13, 64, 138, .10);
-    }
-
-    #loginView .login-logo-row {
-      gap: 7px;
-      margin-bottom: 13px;
-    }
-
-    #loginView .login-shield {
-      width: 25px;
-      height: 25px;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    #loginView .login-brand-text {
-      font-size: .68rem;
-    }
-
-    #loginView .login-brand-text small {
-      font-size: .50rem;
-      margin-top: 2px;
-    }
-
-    #loginView .login-title {
-      font-size: .99rem;
-      margin-bottom: 4px;
-    }
-
-    #loginView .login-subtitle {
-      font-size: .59rem;
-      margin-bottom: 13px;
-      line-height: 1.38;
-    }
-
-    #loginView .form-label-custom {
-      font-size: .61rem;
-      margin-bottom: 5px;
-    }
-
-    #loginView .login-card .mb-3 {
-      margin-bottom: .61rem !important;
-    }
-
-    #loginView .login-card .mb-2 {
-      margin-bottom: .50rem !important;
-    }
-
-    #loginView .input-custom {
-      height: 28px;
-      border-radius: 8px;
-      padding: 6px 8px;
-      font-size: .64rem;
-    }
-
-    #loginView .input-custom:focus {
-      box-shadow: 0 0 0 2px rgba(13, 110, 253, .11);
-    }
-
-    #loginView .input-password-with-toggle {
-      padding-right: 59px;
-    }
-
-    #loginView .btn-toggle-password {
-      right: 5px;
-      border-radius: 7px;
-      padding: 4px 6px;
-      font-size: .53rem;
-    }
-
-    #loginView .login-options-row {
-      gap: 7px;
-      margin: 2px 0 11px;
-      font-size: .55rem;
-    }
-
-    #loginView .login-options-row label {
-      gap: 5px;
-    }
-
-    #loginView .login-options-row input[type="checkbox"] {
-      width: 12px;
-      height: 12px;
-    }
-
-    #loginView .btn-login {
-      height: 29px;
-      border-radius: 8px;
-      font-size: .64rem;
-      box-shadow: 0 7px 13px rgba(13, 110, 253, .22);
-    }
-
-    #loginView .btn-login:hover {
-      box-shadow: 0 9px 17px rgba(13, 110, 253, .24);
-    }
-
-    #loginView .loginMsg,
-    #loginView #loginMsg {
-      min-height: 11px;
-      font-size: .57rem;
-      margin-top: .50rem !important;
-    }
-
-    #loginView .login-security-note {
-      margin-top: 9px;
-      padding-top: 8px;
-      font-size: .53rem;
-      line-height: 1.33;
-    }
-
-    #loginView .login-version {
-      margin-top: 8px;
-      font-size: .50rem;
-    }
-
-    @media (max-width: 900px) {
-      #loginView .login-shell {
-        width: min(594px, 100%);
-      }
-      #loginView .login-hero-panel {
-        min-height: 143px;
-        padding: 20px 18px;
-      }
-      #loginView .login-brand-mark {
-        margin-bottom: 13px;
-      }
-      #loginView .login-hero-title {
-        font-size: 1.38rem;
-      }
-      #loginView .login-form-panel {
-        padding: 20px 15px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      #loginView.login-wrap {
-        padding: 0;
-      }
-      #loginView .login-shell {
-        width: 100%;
-        min-height: 100vh;
-      }
-      #loginView .login-card {
-        max-width: 308px;
-        padding: 20px 18px;
-        border-radius: 18px;
-      }
-      #loginView .login-title {
-        font-size: 1.19rem;
-      }
-      #loginView .login-subtitle,
-      #loginView .form-label-custom,
-      #loginView .login-options-row,
-      #loginView .login-security-note,
-      #loginView .login-version {
-        font-size: .79rem;
-      }
-      #loginView .input-custom {
-        height: 40px;
-        font-size: .90rem;
-      }
-      #loginView .btn-login {
-        height: 40px;
-        font-size: .90rem;
-      }
-      #loginView .btn-toggle-password {
-        font-size: .68rem;
-        padding: 6px 8px;
-      }
-    }
-
+    /* Styles migrated to app.css. */
   </style>
 </head>
 <body>
 
   <!-- LOGIN -->
   <div id="loginView" class="login-wrap">
-    <div class="login-shell" role="main" aria-label="Inicio de sesión DEE MIDIS">
-      <section class="login-hero-panel" aria-label="Información institucional">
+    <div class="login-shell" role="main" aria-label="Inicio de sesiÃ³n DEE MIDIS">
+      <section class="login-hero-panel" aria-label="InformaciÃ³n institucional">
         <div class="login-hero-content">
           <div class="login-brand-mark">
-            <span>🛡️</span>
+            <span>ðŸ›¡ï¸</span>
             <strong>DEE MIDIS</strong>
           </div>
           <h1 class="login-hero-title">Bienvenido</h1>
           <div class="login-hero-subtitle">Registro de DEE - COE MIDIS</div>
           <p class="login-hero-text">
-            Gestione, registre las acciones de intervención del sector de manera ordenada y oportuna.
+            Gestione, registre las acciones de intervenciÃ³n del sector de manera ordenada y oportuna.
           </p>
           <div class="login-hero-badges">
-            <span>Gestión de información</span>
+            <span>GestiÃ³n de informaciÃ³n</span>
             <span>Seguridad institucional</span>
-            <span>Acciones de intervención</span>
+            <span>Acciones de intervenciÃ³n</span>
           </div>
         </div>
         <div class="login-hero-footer">
-          Centro de Operaciones de Emergencia Sectorial · Ministerio de Desarrollo e Inclusión Social
+          Centro de Operaciones de Emergencia Sectorial Â· Ministerio de Desarrollo e InclusiÃ³n Social
         </div>
       </section>
 
       <section class="login-form-panel" aria-label="Formulario de acceso">
         <div class="login-card">
           <div class="login-logo-row">
-            <div class="login-shield">🛡️</div>
+            <div class="login-shield">ðŸ›¡ï¸</div>
             <div class="login-brand-text">
               COE MIDIS
               <small>Sistema de Declaratorias de Estado de Emergencia</small>
             </div>
           </div>
 
-          <div class="login-title">Iniciar sesión</div>
+          <div class="login-title">Iniciar sesiÃ³n</div>
           <div class="login-subtitle">
             Acceso seguro para usuarios autorizados del sistema DEE MIDIS.
           </div>
 
           <div class="mb-3">
-            <label class="form-label-custom" for="loginUser">Correo electrónico</label>
+            <label class="form-label-custom" for="loginUser">Correo electrÃ³nico</label>
             <input id="loginUser" class="input-custom" placeholder="usuario@midis.gob.pe" autocomplete="username">
           </div>
 
           <div class="mb-2">
-            <label class="form-label-custom" for="loginPass">Contraseña</label>
+            <label class="form-label-custom" for="loginPass">ContraseÃ±a</label>
             <div class="login-input-wrap">
               <input id="loginPass" type="password" class="input-custom input-password-with-toggle" autocomplete="current-password">
-              <button id="btnToggleLoginPassword" class="btn-toggle-password" type="button" aria-label="Mostrar u ocultar contraseña">Mostrar</button>
+              <button id="btnToggleLoginPassword" class="btn-toggle-password" type="button" aria-label="Mostrar u ocultar contraseÃ±a">Mostrar</button>
             </div>
           </div>
 
@@ -1469,7 +74,7 @@
               <input id="loginRemember" type="checkbox">
               Recordarme
             </label>
-            <a href="#" onclick="alert('Solicite el restablecimiento de contraseña al Administrador del sistema.'); return false;">¿Olvidó su contraseña?</a>
+            <a href="#" onclick="alert('Solicite el restablecimiento de contraseÃ±a al Administrador del sistema.'); return false;">Â¿OlvidÃ³ su contraseÃ±a?</a>
           </div>
 
           <button id="btnLogin" class="btn-login">Ingresar</button>
@@ -1480,7 +85,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 79.10 · FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS · 22/05/2026 · MIDIS © 2026
+            VERSION 79.10 Â· FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS Â· 22/05/2026 Â· MIDIS Â© 2026
           </div>
         </div>
       </section>
@@ -1493,7 +98,7 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg sticky-top bg-white border-bottom">
       <div class="container-fluid px-3">
-        <span class="navbar-brand">🛡️ DEE MIDIS</span>
+        <span class="navbar-brand">ðŸ›¡ï¸ DEE MIDIS</span>
 
         <div class="d-flex align-items-center gap-2 ms-auto">
           <div class="session-pill d-none d-sm-flex align-items-center gap-2">
@@ -1505,7 +110,7 @@
                   class="btn btn-sm btn-primary"
                   type="button"
                   onclick="openAdminPanel()">
-            ⚙ Administrador
+            âš™ Administrador
           </button>
 
           <button id="btnLogout" class="btn btn-sm btn-outline-secondary">
@@ -1595,7 +200,7 @@
 
               <div class="d-flex justify-content-end align-items-center gap-2 mb-2" id="paginacionListadoDS" style="display:none!important">
                 <button id="btnDsPaginaAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
-                <span id="dsPaginaInfo" class="small text-muted">Página 1 de 1</span>
+                <span id="dsPaginaInfo" class="small text-muted">PÃ¡gina 1 de 1</span>
                 <button id="btnDsPaginaSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
               </div>
 
@@ -1604,19 +209,19 @@
                   <thead class="table-primary">
                     <tr>
                       <th>DS</th>
-                      <th>Año</th>
+                      <th>AÃ±o</th>
                       <th>Peligro</th>
                       <th>Tipo</th>
                       <th>Inicio</th>
                       <th>Final</th>
                       <th>Vigencia</th>
-                      <th>Semáforo</th>
+                      <th>SemÃ¡foro</th>
                       <th>Departamentos</th>
                       <th>Provincias</th>
                       <th>Distritos</th>
-                      <th>Relación</th>
+                      <th>RelaciÃ³n</th>
                       <th>Cadena</th>
-                      <th>Prórrogas</th>
+                      <th>PrÃ³rrogas</th>
                       <th>RDS</th>
                       <th>PreAprobar</th>
                       <th>Ver</th>
@@ -1638,22 +243,22 @@
 
               <div class="row g-3">
                 <div class="col-md-4">
-                  <label class="form-label">Número DS</label>
-                  <input id="dsNumero" class="form-control" placeholder="Número DS">
+                  <label class="form-label">NÃºmero DS</label>
+                  <input id="dsNumero" class="form-control" placeholder="NÃºmero DS">
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label">Año</label>
+                  <label class="form-label">AÃ±o</label>
                   <input id="dsAnio" class="form-control" value="2026">
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">Código de registro</label>
+                  <label class="form-label">CÃ³digo de registro</label>
                   <input id="dsCodigoRegistro" class="form-control" readonly>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label">Peligro</label>
                   <select id="dsPeligro" class="form-select">
                     <option value="">Seleccione...</option>
-                    <option>Por impacto de daños</option>
+                    <option>Por impacto de daÃ±os</option>
                     <option>Por peligro inminente</option>
                   </select>
                 </div>
@@ -1663,18 +268,18 @@
                   <select id="dsTipoPeligro" class="form-select">
                     <option value="">Seleccione...</option>
                     <option>Lluvias intensas</option>
-                    <option>Inundación</option>
+                    <option>InundaciÃ³n</option>
                     <option>Deslizamiento</option>
                     <option>Friaje</option>
                     <option>Heladas</option>
                     <option>Incendio forestal</option>
-                    <option>Contaminación hídrica</option>
+                    <option>ContaminaciÃ³n hÃ­drica</option>
                     <option>Sismo</option>
                   </select>
                 </div>
 
                 <div class="col-md-2">
-                  <label class="form-label">Plazo (Días)</label>
+                  <label class="form-label">Plazo (DÃ­as)</label>
                   <input id="dsPlazoDias" type="number" class="form-control" min="1">
                 </div>
 
@@ -1694,25 +299,25 @@
                 </div>
 
                 <div class="col-md-2">
-                  <label class="form-label">Semáforo</label>
+                  <label class="form-label">SemÃ¡foro</label>
                   <input id="dsSemaforo" class="form-control" readonly>
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label">Exposición de Motivos</label>
+                  <label class="form-label">ExposiciÃ³n de Motivos</label>
                   <textarea id="dsMotivos" class="form-control" rows="3"></textarea>
                 </div>
               </div>
 
               <hr class="my-4">
 
-              <h5 class="text-primary">Relación de prórrogas</h5>
+              <h5 class="text-primary">RelaciÃ³n de prÃ³rrogas</h5>
               <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                   <div class="form-check mt-4">
                     <input id="dsEsProrroga" class="form-check-input" type="checkbox">
                     <label class="form-check-label" for="dsEsProrroga">
-                      Este Decreto Supremo es prórroga
+                      Este Decreto Supremo es prÃ³rroga
                     </label>
                   </div>
                 </div>
@@ -1721,7 +326,7 @@
                   <select id="dsOrigen" class="form-select" disabled></select>
                 </div>
                 <div class="col-md-2">
-                  <label class="form-label">Nivel prórroga</label>
+                  <label class="form-label">Nivel prÃ³rroga</label>
                   <input id="dsNivelProrroga" class="form-control" value="0" readonly>
                 </div>
                 <div class="col-md-4">
@@ -1791,23 +396,23 @@
                     <select id="accionDs" class="form-select"></select>
                   </div>
                   <div class="col-md-2">
-                    <label class="form-label">Número de reunión</label>
+                    <label class="form-label">NÃºmero de reuniÃ³n</label>
                     <select id="rdsNumeroReunion" class="form-select">
                       <option value="">Seleccione...</option>
-                      <option>Primera reunión</option>
-                      <option>Segunda reunión</option>
-                      <option>Tercera reunión</option>
-                      <option>Cuarta reunión</option>
-                      <option>Quinta reunión</option>
-                      <option>Sexta reunión</option>
-                      <option>Séptima reunión</option>
-                      <option>Octava reunión</option>
-                      <option>Novena reunión</option>
-                      <option>Décima reunión</option>
+                      <option>Primera reuniÃ³n</option>
+                      <option>Segunda reuniÃ³n</option>
+                      <option>Tercera reuniÃ³n</option>
+                      <option>Cuarta reuniÃ³n</option>
+                      <option>Quinta reuniÃ³n</option>
+                      <option>Sexta reuniÃ³n</option>
+                      <option>SÃ©ptima reuniÃ³n</option>
+                      <option>Octava reuniÃ³n</option>
+                      <option>Novena reuniÃ³n</option>
+                      <option>DÃ©cima reuniÃ³n</option>
                     </select>
                   </div>
                   <div class="col-md-2">
-                    <label class="form-label">Fecha de reunión</label>
+                    <label class="form-label">Fecha de reuniÃ³n</label>
                     <input id="rdsFechaReunion" type="date" class="form-control">
                   </div>
                   <div class="col-md-2">
@@ -1833,39 +438,39 @@
                     <label class="form-label">Programa Nacional</label>
                     <select id="accionPrograma" class="form-select"></select>
                   </div>
-                  <div class="col-md-3"><label class="form-label">Tipo de Acción</label><select id="accionTipo" class="form-select"></select></div>
-                  <div class="col-md-4" id="accionSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de Rehabilitación</label><select id="accionSubtipoRehabilitacion" class="form-select"></select></div>
-                  <div class="col-md-3"><label class="form-label">Código de Acción</label><input id="accionCodigo" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Tipo de AcciÃ³n</label><select id="accionTipo" class="form-select"></select></div>
+                  <div class="col-md-4" id="accionSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="accionSubtipoRehabilitacion" class="form-select"></select></div>
+                  <div class="col-md-3"><label class="form-label">CÃ³digo de AcciÃ³n</label><input id="accionCodigo" class="form-control"></div>
                   <div class="col-md-2"><label class="form-label">Unidad de Medida</label><select id="accionUnidad" class="form-select"></select></div>
                   <div class="col-md-3"><label class="form-label">Meta Programada</label><input id="accionMetaProgramada" type="number" min="0" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Plazo (Días)</label><input id="accionPlazo" type="number" min="0" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Fecha Inicio de Acción</label><input id="accionFechaInicio" type="date" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Fecha Final de Acción</label><input id="accionFechaFinal" type="date" class="form-control" readonly></div>
+                  <div class="col-md-3"><label class="form-label">Plazo (DÃ­as)</label><input id="accionPlazo" type="number" min="0" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Fecha Inicio de AcciÃ³n</label><input id="accionFechaInicio" type="date" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Fecha Final de AcciÃ³n</label><input id="accionFechaFinal" type="date" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Meta Ejecutada</label><input id="accionMetaEjecutada" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Avance</label><input id="accionAvance" class="form-control" readonly></div>
-                  <div class="col-12"><label class="form-label">Acción específica programada</label><textarea id="accionDetalle" class="form-control" rows="2"></textarea></div>
-                  <div class="col-12"><label class="form-label">Descripción</label><textarea id="accionDescripcion" class="form-control" rows="2"></textarea></div>
+                  <div class="col-12"><label class="form-label">AcciÃ³n especÃ­fica programada</label><textarea id="accionDetalle" class="form-control" rows="2"></textarea></div>
+                  <div class="col-12"><label class="form-label">DescripciÃ³n</label><textarea id="accionDescripcion" class="form-control" rows="2"></textarea></div>
                 </div>
-                <button id="btnGuardarAccion" type="button" class="btn btn-primary mt-3">Guardar acción</button>
+                <button id="btnGuardarAccion" type="button" class="btn btn-primary mt-3">Guardar acciÃ³n</button>
               </div>
 
               <hr>
-              <h5 class="text-primary">Acciones registradas / Preaprobación / Aprobación</h5>
+              <h5 class="text-primary">Acciones registradas / PreaprobaciÃ³n / AprobaciÃ³n</h5>
               <div class="table-responsive">
                 <table class="table table-sm table-striped" id="tablaAcciones">
                   <thead class="table-light">
                     <tr>
                       <th>Programa Nacional</th>
-                      <th>Tipo de acción</th>
-                      <th>Código de acción</th>
-                      <th>Acción específica programada</th>
+                      <th>Tipo de acciÃ³n</th>
+                      <th>CÃ³digo de acciÃ³n</th>
+                      <th>AcciÃ³n especÃ­fica programada</th>
                       <th>Unidad de medida</th>
                       <th>Meta programada</th>
                       <th>Fecha inicio</th>
                       <th>Fecha final</th>
                       <th>Meta ejecutada</th>
                       <th>Avance</th>
-                      <th>Descripción</th>
+                      <th>DescripciÃ³n</th>
                       <th>Estado</th>
                       <th>Usuario registro</th>
                       <th>Fecha registro</th>
@@ -1893,8 +498,8 @@
               <div class="border rounded bg-light p-3 mb-3">
                 <div class="row g-3">
                   <div class="col-md-3"><label class="form-label">DS</label><input id="progDs" class="form-control" readonly></div>
-                  <div class="col-md-2"><label class="form-label">Número de reunión</label><input id="progNumeroReunion" class="form-control" readonly></div>
-                  <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="progFechaReunion" class="form-control" readonly></div>
+                  <div class="col-md-2"><label class="form-label">NÃºmero de reuniÃ³n</label><input id="progNumeroReunion" class="form-control" readonly></div>
+                  <div class="col-md-2"><label class="form-label">Fecha de reuniÃ³n</label><input id="progFechaReunion" class="form-control" readonly></div>
                   <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="progEstadoRDS" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Fecha de Registro RDS</label><input id="progFechaRegistroRDS" class="form-control" readonly></div>
                   <div class="col-md-4"><label class="form-label">Programa Nacional</label><input id="progProgramaNacional" class="form-control" readonly></div>
@@ -1902,12 +507,12 @@
               </div>
               <div id="progFormularioBox">
                 <div class="row g-3">
-                  <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="progTipoAccion" class="form-select"></select></div>
-                  <div class="col-md-4" id="progSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de Rehabilitación</label><select id="progSubtipoRehabilitacion" class="form-select"></select></div>
-                  <div class="col-md-3"><label class="form-label">Código de acción</label><input id="progCodigoAccion" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Tipo de acciÃ³n</label><select id="progTipoAccion" class="form-select"></select></div>
+                  <div class="col-md-4" id="progSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="progSubtipoRehabilitacion" class="form-select"></select></div>
+                  <div class="col-md-3"><label class="form-label">CÃ³digo de acciÃ³n</label><input id="progCodigoAccion" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="progUnidadMedida" class="form-select"></select></div>
                   <div class="col-md-3"><label class="form-label">Meta programada</label><input id="progMetaProgramada" type="number" min="0" class="form-control"></div>
-                  <div class="col-md-3"><label class="form-label">Plazo (días)</label><input id="progPlazoDias" type="number" min="0" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Plazo (dÃ­as)</label><input id="progPlazoDias" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">F. inicio</label><input id="progFechaInicio" type="date" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">F. final</label><input id="progFechaFinal" type="date" class="form-control" readonly></div>
                   <div class="col-md-3"><label class="form-label">Meta ejecutada</label><input id="progMetaEjecutada" type="number" min="0" class="form-control"></div>
@@ -1931,15 +536,15 @@
                             </select>
                           </div>
                           <button id="btnSeleccionarTodosDistritosPrograma" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
-                          <button id="btnLimpiarSeleccionDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
-                          <button id="btnRegistrarAccionGrupalPrograma" type="button" class="btn btn-sm btn-primary">Registrar acción grupal</button>
+                          <button id="btnLimpiarSeleccionDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Quitar selecciÃ³n</button>
+                          <button id="btnRegistrarAccionGrupalPrograma" type="button" class="btn btn-sm btn-primary">Registrar acciÃ³n grupal</button>
                         </div>
                       </div>
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <span id="progDistritosContador" class="text-muted small">Mostrando 0 de 0 registros</span>
                         <div class="d-flex align-items-center gap-2">
                           <button id="btnProgDistritosAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
-                          <span id="progDistritosPaginaInfo" class="text-muted small">Página 1 de 1</span>
+                          <span id="progDistritosPaginaInfo" class="text-muted small">PÃ¡gina 1 de 1</span>
                           <button id="btnProgDistritosSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
                         </div>
                       </div>
@@ -1951,8 +556,8 @@
                               <th>Departamento</th>
                               <th>Provincia</th>
                               <th>Distrito</th>
-                              <th>Acciones específicas programadas y ejecutadas</th>
-                              <th>Descripción de actividades</th>
+                              <th>Acciones especÃ­ficas programadas y ejecutadas</th>
+                              <th>DescripciÃ³n de actividades</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1965,11 +570,11 @@
                   <textarea id="progDetalle" class="d-none" rows="1" aria-hidden="true"></textarea>
                   <textarea id="progDescripcionActividades" class="d-none" rows="1" aria-hidden="true"></textarea>
                 </div>
-                <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar Acción</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
+                <div class="d-flex gap-2 mt-3"><button id="btnGuardarAccionPrograma" type="button" class="btn btn-primary">Guardar AcciÃ³n</button><button id="btnSalirAccionPrograma" type="button" class="btn btn-outline-secondary">Salir</button></div>
               </div>
               <hr><h5 class="text-primary">Acciones registradas</h5>
               <div class="table-responsive"><table class="table table-sm table-striped" id="tablaAccionesProgramas">
-                <thead class="table-light"><tr><th>DS</th><th>Programa</th><th>Tipo</th><th>Código</th><th>Detalle</th><th>Estado</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
+                <thead class="table-light"><tr><th>DS</th><th>Programa</th><th>Tipo</th><th>CÃ³digo</th><th>Detalle</th><th>Estado</th><th>Usuario</th><th>Fecha registro</th><th>GestiÃ³n</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
         </div>
@@ -1979,8 +584,8 @@
             <h4 class="text-primary mb-3">PreAprobar Acciones</h4>
             <div class="border rounded bg-light p-3 mb-3"><div class="row g-3 align-items-end">
               <div class="col-md-3"><label class="form-label">Seleccione DS</label><input id="preDs" class="form-control" readonly></div>
-              <div class="col-md-2"><label class="form-label">Número de reunión</label><input id="preNumeroReunion" class="form-control" readonly></div>
-              <div class="col-md-2"><label class="form-label">Fecha de reunión</label><input id="preFechaReunion" type="date" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">NÃºmero de reuniÃ³n</label><input id="preNumeroReunion" class="form-control" readonly></div>
+              <div class="col-md-2"><label class="form-label">Fecha de reuniÃ³n</label><input id="preFechaReunion" type="date" class="form-control" readonly></div>
               <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="preEstadoRDS" class="form-control" readonly></div>
               <div class="col-md-3"><label class="form-label">Fecha de Registro</label><input id="preFechaRegistroRDS" class="form-control" readonly></div>
             </div></div>
@@ -1991,11 +596,11 @@
                   <label class="form-label">Programa</label>
                   <select id="filtroPrePrograma" class="form-select form-select-sm">
                     <option value="">Todos</option>
-                    <option>CUNA MÁS</option>
+                    <option>CUNA MÃS</option>
                     <option>PAE</option>
                     <option>JUNTOS</option>
                     <option>CONTIGO</option>
-                    <option>PENSIÓN 65</option>
+                    <option>PENSIÃ“N 65</option>
                     <option>FONCODES</option>
                     <option>PAIS</option>
                   </select>
@@ -2010,7 +615,7 @@
               </div>
               <div id="contadorPreAprobarAcciones" class="text-muted small mt-2">Mostrando 0 registro(s)</div>
             </div>
-            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acción</th><th>Código</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>Gestión</th></tr></thead><tbody></tbody></table></div>
+            <div class="table-responsive"><table class="table table-sm table-striped" id="tablaPreAprobarAcciones"><thead class="table-light"><tr><th>Programa</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acciÃ³n</th><th>CÃ³digo</th><th>Detalle</th><th>Meta programada</th><th>Meta ejecutada</th><th>Avance</th><th>Usuario</th><th>Fecha registro</th><th>GestiÃ³n</th></tr></thead><tbody></tbody></table></div>
             <div class="d-flex justify-content-end gap-2 mt-3"><button id="btnPreAprobarFinal" type="button" class="btn btn-warning">PreAprobar</button><button id="btnSalirPreAprobar" type="button" class="btn btn-outline-secondary">Salir</button><button id="btnAprobarFinal" type="button" class="btn btn-success">Aprobar</button></div>
           </div></div>
         </div>
@@ -2022,7 +627,7 @@
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <h4 class="text-primary mb-1">Dashboard Ejecutivo</h4>
-                  <div class="text-muted small">Declaratorias de Estado de Emergencia vigentes · Control territorial sin duplicidades</div>
+                  <div class="text-muted small">Declaratorias de Estado de Emergencia vigentes Â· Control territorial sin duplicidades</div>
                 </div>
                 <button id="btnActualizarDashboard" type="button" class="btn btn-sm btn-outline-primary">Actualizar</button>
               </div>
@@ -2031,7 +636,7 @@
                 <div class="col-lg-7">
                   <div class="border rounded bg-light p-2 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                      <h5 class="text-primary mb-0">Mapa del Perú</h5>
+                      <h5 class="text-primary mb-0">Mapa del PerÃº</h5>
                       <span class="text-muted small">Puntos georreferenciados por distrito</span>
                     </div>
                     <div id="mapaDS" class="border rounded bg-white" style="height:520px; min-height:520px;"></div>
@@ -2055,12 +660,12 @@
                       <th data-dash-tipo-col>Tipo</th>
                       <th>Fecha inicio</th>
                       <th>Fecha fin</th>
-                      <th>Días restantes</th>
+                      <th>DÃ­as restantes</th>
                       <th>Avance %</th>
-                      <th>Semáforo</th>
-                      <th>N.° departamentos</th>
-                      <th>N.° provincias</th>
-                      <th>N.° distritos</th>
+                      <th>SemÃ¡foro</th>
+                      <th>N.Â° departamentos</th>
+                      <th>N.Â° provincias</th>
+                      <th>N.Â° distritos</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -2073,7 +678,7 @@
                   <thead class="table-primary">
                     <tr>
                       <th>Departamento</th>
-                      <th>Número de distritos</th>
+                      <th>NÃºmero de distritos</th>
                       <th>Estado</th>
                     </tr>
                   </thead>
@@ -2089,9 +694,9 @@
                       <th>Departamento</th>
                       <th>Provincia</th>
                       <th>Distrito</th>
-                      <th>Número de veces</th>
-                      <th>Fecha inicio más antigua</th>
-                      <th>Fecha final más lejana</th>
+                      <th>NÃºmero de veces</th>
+                      <th>Fecha inicio mÃ¡s antigua</th>
+                      <th>Fecha final mÃ¡s lejana</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -2106,18 +711,18 @@
           <div class="card shadow-sm">
             <div class="card-body">
               <h4 class="text-primary mb-3">Seguimiento Productividad</h4>
-              <div id="segNoAdmin" class="alert alert-warning">Módulo disponible solo para Administrador.</div>
+              <div id="segNoAdmin" class="alert alert-warning">MÃ³dulo disponible solo para Administrador.</div>
               <div id="segContenido">
                 <div class="row g-3 mb-3" id="segMetricas"></div>
                 <div class="row g-3">
-                  <div class="col-lg-6"><h5 class="text-primary">Indicadores: quienes no registran en fecha de reunión</h5><div id="segNoRegistran"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Indicadores: quienes no registran en fecha de reuniÃ³n</h5><div id="segNoRegistran"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">SLA por etapas</h5><div id="segSla"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Alertas de inactividad</h5><div id="segAlertas"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Carga de trabajo (Backlog) por Registrador</h5><div id="segBacklog"></div></div>
                   <div class="col-lg-6"><h5 class="text-primary">Productividad con calidad / Tiempos de respuesta</h5><div id="segProductividad"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">Checklist de completitud (Top 10 más incompletos)</h5><div id="segChecklist"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">Motivos de observación (Top)</h5><div id="segObservaciones"></div></div>
-                  <div class="col-lg-6"><h5 class="text-primary">Priorización por severidad / Casos en riesgo</h5><div id="segRiesgo"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Checklist de completitud (Top 10 mÃ¡s incompletos)</h5><div id="segChecklist"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">Motivos de observaciÃ³n (Top)</h5><div id="segObservaciones"></div></div>
+                  <div class="col-lg-6"><h5 class="text-primary">PriorizaciÃ³n por severidad / Casos en riesgo</h5><div id="segRiesgo"></div></div>
                 </div>
               </div>
             </div>
@@ -2133,7 +738,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Administración de usuarios</h5>
+          <h5 class="modal-title">AdministraciÃ³n de usuarios</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
@@ -2144,7 +749,7 @@
               <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminUsuarios">Usuarios</button>
             </li>
             <li class="nav-item">
-              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">Bitácora / Auditoría</button>
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminAuditoria">BitÃ¡cora / AuditorÃ­a</button>
             </li>
             <li class="nav-item">
               <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminConflictos">Conflictos Sync</button>
@@ -2158,7 +763,7 @@
               <div class="row g-2 mb-2">
                 <div class="col-md-5">
                   <label class="form-label">Nombre y apellidos</label>
-                  <input id="adminUserName" class="form-control" placeholder="Ej.: Juan Pérez Gómez">
+                  <input id="adminUserName" class="form-control" placeholder="Ej.: Juan PÃ©rez GÃ³mez">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label">Correo (usuario)</label>
@@ -2170,8 +775,8 @@
                     <option value="Consulta">Consulta</option>
                     <option value="Administrador">Administrador</option>
                     <option value="Registrador">Registrador</option>
-                    <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
-                    <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
+                    <option value="Registrador|CUNA MÃS">Registrador - Cuna MÃ¡s</option>
+                    <option value="Registrador|PENSIÃ“N 65">Registrador - PensiÃ³n 65</option>
                     <option value="Registrador|JUNTOS">Registrador - Juntos</option>
                     <option value="Registrador|PAE">Registrador - PAE</option>
                     <option value="Registrador|FONCODES">Registrador - Foncodes</option>
@@ -2212,7 +817,7 @@
               </div>
             </div>
 
-            <!-- Bitácora / Auditoría -->
+            <!-- BitÃ¡cora / AuditorÃ­a -->
             <div class="tab-pane fade" id="adminAuditoria">
               <div class="row g-2 mb-2 align-items-end">
                 <div class="col-md-2">
@@ -2230,7 +835,7 @@
                   </select>
                 </div>
                 <div class="col-md-3">
-                  <label class="form-label">Acción</label>
+                  <label class="form-label">AcciÃ³n</label>
                   <select id="auditAccion" class="form-select">
                     <option value="">Todas</option>
                     <option value="LOGIN">LOGIN</option>
@@ -2248,7 +853,7 @@
 
               <div class="d-flex justify-content-between mb-2">
                 <div id="auditServerStatus" class="text-muted small">Servidor: conectado, usando respaldo local (not_found)</div>
-                <div class="text-muted small">Máx. 1000 registros</div>
+                <div class="text-muted small">MÃ¡x. 1000 registros</div>
               </div>
 
               <div class="table-responsive">
@@ -2258,11 +863,11 @@
                       <th>Fecha/Hora</th>
                       <th>Actor</th>
                       <th>Rol</th>
-                      <th>Acción</th>
+                      <th>AcciÃ³n</th>
                       <th>Entidad</th>
                       <th>ID</th>
                       <th>Detalle</th>
-                      <th>Acción</th>
+                      <th>AcciÃ³n</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -2270,14 +875,14 @@
               </div>
 
               <div class="alert alert-info small mt-3 mb-0">
-                <strong>Tip:</strong> Usa “Desde/Hasta” para acotar. El detalle se puede copiar en JSON.
+                <strong>Tip:</strong> Usa â€œDesde/Hastaâ€ para acotar. El detalle se puede copiar en JSON.
               </div>
             </div>
 
             <!-- Conflictos Sync -->
             <div class="tab-pane fade" id="adminConflictos">
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <div id="conflictosEmptyMsg" class="text-muted small">No hay conflictos de sincronización registrados en este navegador.</div>
+                <div id="conflictosEmptyMsg" class="text-muted small">No hay conflictos de sincronizaciÃ³n registrados en este navegador.</div>
                 <div class="d-flex gap-2">
                   <button id="btnActualizarConflictos" type="button" class="btn btn-outline-primary">Actualizar</button>
                   <button id="btnLimpiarHistorialConflictos" type="button" class="btn btn-outline-danger">Limpiar historial</button>
@@ -2285,7 +890,7 @@
               </div>
 
               <div class="alert alert-warning small">
-                <strong>Importante:</strong> “Servidor” reemplaza tu copia local por la versión vigente del servidor. “Local” conserva tu edición local e intenta volver a subirla usando la última base del servidor. No fusiona textos automáticamente; resuelve el conflicto eligiendo cuál versión prevalece.
+                <strong>Importante:</strong> â€œServidorâ€ reemplaza tu copia local por la versiÃ³n vigente del servidor. â€œLocalâ€ conserva tu ediciÃ³n local e intenta volver a subirla usando la Ãºltima base del servidor. No fusiona textos automÃ¡ticamente; resuelve el conflicto eligiendo cuÃ¡l versiÃ³n prevalece.
               </div>
 
               <div class="table-responsive">
@@ -2293,12 +898,12 @@
                   <thead class="table-light">
                     <tr>
                       <th>Fecha/hora del conflicto</th>
-                      <th>Código</th>
+                      <th>CÃ³digo</th>
                       <th>Motivo</th>
                       <th>Fecha del servidor</th>
                       <th>Estado local / servidor</th>
-                      <th>Resolución aplicada</th>
-                      <th>Acción</th>
+                      <th>ResoluciÃ³n aplicada</th>
+                      <th>AcciÃ³n</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -2332,11 +937,11 @@
 
   <!-- MODAL VER / EDITAR ACCION -->
   <div class="modal fade" id="modalEditarAccion" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-    <div class="modal-header"><h5 class="modal-title">Ver / Editar Acción Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-header"><h5 class="modal-title">Ver / Editar AcciÃ³n Registrada</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body"><input id="editAccionId" type="hidden"><div class="row g-3">
-      <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="editTipoAccion" class="form-select"></select></div>
-      <div class="col-md-5" id="editSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de Rehabilitación</label><select id="editSubtipoRehabilitacion" class="form-select"></select></div>
-      <div class="col-md-3"><label class="form-label">Código de acción</label><input id="editCodigoAccion" class="form-control"></div>
+      <div class="col-md-3"><label class="form-label">Tipo de acciÃ³n</label><select id="editTipoAccion" class="form-select"></select></div>
+      <div class="col-md-5" id="editSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="editSubtipoRehabilitacion" class="form-select"></select></div>
+      <div class="col-md-3"><label class="form-label">CÃ³digo de acciÃ³n</label><input id="editCodigoAccion" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="editUnidadMedida" class="form-select"></select></div>
       <div class="col-md-3"><label class="form-label">Meta programada</label><input id="editMetaProgramada" type="number" min="0" class="form-control"></div>
       <div class="col-md-3"><label class="form-label">Plazo</label><input id="editPlazoDias" type="number" min="0" class="form-control"></div>
@@ -2346,8 +951,8 @@
       <div class="col-md-3"><label class="form-label">% Avance</label><input id="editAvance" class="form-control" readonly></div>
       <div class="col-md-3"><label class="form-label">Fecha registro</label><input id="editFechaRegistro" class="form-control" readonly></div>
       <div class="col-md-6"><label class="form-label">Usuario</label><input id="editUsuario" class="form-control" readonly></div>
-      <div class="col-12"><label class="form-label">Acciones específicas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
-      <div class="col-12"><label class="form-label">Descripción</label><textarea id="editDescripcion" class="form-control" rows="2"></textarea></div>
+      <div class="col-12"><label class="form-label">Acciones especÃ­ficas</label><textarea id="editDetalle" class="form-control" rows="2"></textarea></div>
+      <div class="col-12"><label class="form-label">DescripciÃ³n</label><textarea id="editDescripcion" class="form-control" rows="2"></textarea></div>
     </div></div>
     <div class="modal-footer"><button id="btnGrabarModalAccion" type="button" class="btn btn-primary">Grabar</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Salir</button></div>
   </div></div></div>
@@ -2364,19 +969,19 @@
         </div>
         <div class="modal-body">
           <div class="alert alert-info small mb-3">
-            Las acciones registradas se aplicarán a todos los distritos seleccionados.
+            Las acciones registradas se aplicarÃ¡n a todos los distritos seleccionados.
           </div>
           <div class="mb-3">
-            <label class="form-label">Acciones específicas programadas y ejecutadas</label>
+            <label class="form-label">Acciones especÃ­ficas programadas y ejecutadas</label>
             <textarea id="grupoDetallePrograma" class="form-control" rows="3"></textarea>
           </div>
           <div class="mb-2">
-            <label class="form-label">Descripción de actividades</label>
+            <label class="form-label">DescripciÃ³n de actividades</label>
             <textarea id="grupoDescripcionPrograma" class="form-control" rows="3"></textarea>
           </div>
         </div>
         <div class="modal-footer">
-          <button id="btnGuardarAccionGrupalPrograma" type="button" class="btn btn-primary">Guardar acción</button>
+          <button id="btnGuardarAccionGrupalPrograma" type="button" class="btn btn-primary">Guardar acciÃ³n</button>
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -2391,6 +996,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="ubigeoData.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
+  <script src="app.shared.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
   <script src="app.js?v=79.10-fix-seleccion-registro-grupal-programas-20260522"></script>
 </body>
 </html>

@@ -1,7 +1,14 @@
-// ================= VERSION 79.10 - FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
+﻿// ================= VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
+// Main structure:
+// 1. Core state and constants
+// 2. Helpers
+// 3. Local users and session compatibility
+// 4. API and auth flow
+// 5. Feature modules appended below by historical versions
 const API_BASE = window.location.origin + '/api';
 const APP_BUILD_VERSION = '79.10-fix-seleccion-registro-grupal-programas-20260522';
 
+// ================= CORE STATE =================
 let state = {
   session: null,
   nuevoDSTerritorios: [],
@@ -17,39 +24,10 @@ let dsEventosInicializados = false;
 const DECRETOS_STORAGE_KEY = 'decretos';
 const ACCIONES_STORAGE_KEY = 'accionesDS';
 const MINISTERIOS_FIRMANTES = ['MINAM','MIDAGRI','MINCETUR','MINCUL','MINDEF','MEF','MINEDU','MINEM','MININTER','MINJUSDH','MIMP','PRODUCE','RREE','MINSA','MTPE','MTC','MVCS','MIDIS'];
-const PROGRAMAS_RDS = ['CUNA MÁS','PAE','JUNTOS','CONTIGO','PENSIÓN 65','FONCODES','PAIS'];
+const PROGRAMAS_RDS = ['CUNA MÃS','PAE','JUNTOS','CONTIGO','PENSIÃ“N 65','FONCODES','PAIS'];
 
 // ================= HELPERS =================
-const $ = (id) => document.getElementById(id);
-
-function hoy() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function getCookie(name) {
-  const v = document.cookie.split('; ').find(x => x.startsWith(name + '='));
-  return v ? decodeURIComponent(v.split('=')[1]) : '';
-}
-
-function getHeaders() {
-  const h = { 'Content-Type': 'application/json' };
-  const csrf = getCookie('dee_csrf');
-  if (csrf) h['x-csrf-token'] = csrf;
-
-  // Compatibilidad con usuarios locales: permite que el Worker identifique la sesión
-  // cuando el login fue validado desde localStorage y no existe cookie dee_session.
-  const localEmail = state.session?.email || '';
-  const localRole = state.session?.role || state.session?.rol || '';
-  const localPrograma = state.session?.programa || '';
-  if (localEmail && localRole) {
-    h['x-dee-local-session'] = '1';
-    h['x-dee-user-email'] = String(localEmail).trim().toLowerCase();
-    h['x-dee-user-role'] = String(localRole).trim();
-    h['x-dee-user-programa'] = String(localPrograma || '').trim();
-  }
-
-  return h;
-}
+const { $, hoy, normalizarEmail, normalizarRol, normalizarPrograma, createApi } = window.DEE_SHARED;
 
 function esAdministrador() {
   return String(state.session?.role || '').trim().toLowerCase() === 'administrador';
@@ -77,22 +55,6 @@ function programaSesionNormalizado() {
 const USUARIOS_STORAGE_KEY = 'usuarios';
 const USUARIOS_ELIMINADOS_KEY = 'usuariosEliminados';
 const SESSION_STORAGE_KEY = 'sessionUser';
-
-function normalizarEmail(email) {
-  return String(email || '').trim().toLowerCase();
-}
-
-function normalizarRol(valor) {
-  const rol = String(valor || '').trim();
-  if (!rol) return '';
-  if (rol.includes('|')) return rol.split('|')[0].trim();
-  return rol;
-}
-
-function normalizarPrograma(valor) {
-  const rol = String(valor || '').trim();
-  return rol.includes('|') ? rol.split('|').slice(1).join('|').trim() : '';
-}
 
 function normalizarUsuario(raw) {
   if (!raw) return null;
@@ -228,27 +190,10 @@ function iniciarSistemaConSesion(usuario) {
 
 adminUsuariosLocales = cargarUsuariosLocales();
 
-// ================= API =================
-async function api(path, method = 'GET', body = null) {
-  try {
-    const res = await fetch(API_BASE + path, {
-      method,
-      headers: getHeaders(),
-      credentials: 'include',
-      body: body ? JSON.stringify(body) : null
-    });
+// ================= API / REQUESTS =================
+const api = createApi(API_BASE, () => state);
 
-    let data = null;
-    try { data = await res.json(); } catch {}
-
-    return { ok: res.ok, data };
-  } catch (e) {
-    console.error('API ERROR:', e);
-    return { ok: false, data: null };
-  }
-}
-
-// ================= SESSION =================
+// ================= SESSION VIEWS =================
 function showLogin() {
   $('loginView')?.classList.remove('d-none');
   $('appView')?.classList.add('d-none');
@@ -259,7 +204,7 @@ function showApp() {
   $('appView')?.classList.remove('d-none');
 }
 
-// ================= LOGIN =================
+// ================= LOGIN FLOW =================
 function normalizarSesionDesdeUsuario(userServer) {
   const user = normalizarUsuario(userServer);
   if (!user || user.estado !== 'activo') return null;
@@ -279,7 +224,7 @@ async function doLogin() {
   const password = $('loginPass')?.value || '';
 
   if (!email || !password) {
-    alert('Ingrese usuario y contraseña');
+    alert('Ingrese usuario y contraseÃ±a');
     return;
   }
 
@@ -319,13 +264,13 @@ async function doLogin() {
     return;
   }
 
-  alert('Credenciales inválidas');
+  alert('Credenciales invÃ¡lidas');
 }
 
 // ================= AUTO LOGIN =================
 async function autoLogin() {
-  // Prioridad: sesión real del backend. Evita que localStorage viejo o demo
-  // oculte datos/pestañas y deje sin cookie a las APIs D1.
+  // Prioridad: sesiÃ³n real del backend. Evita que localStorage viejo o demo
+  // oculte datos/pestaÃ±as y deje sin cookie a las APIs D1.
   const res = await api('/session');
 
   if (res.ok && res.data?.user) {
@@ -351,7 +296,7 @@ async function autoLogin() {
   showLogin();
 }
 
-// ================= UI =================
+// ================= UI SHELL =================
 function renderSession() {
   if ($('sessionName')) $('sessionName').textContent = state.session?.name || '';
   if ($('sessionRole')) $('sessionRole').textContent = state.session?.role || '';
@@ -365,7 +310,7 @@ function renderSession() {
   }
 }
 
-// ================= ADMIN =================
+// ================= ADMIN PANEL =================
 function openAdminPanel() {
   if (!esAdministrador()) {
     alert('Acceso permitido solo para Administrador.');
@@ -374,7 +319,7 @@ function openAdminPanel() {
 
   const modal = $('modalAdminPanel');
   if (!modal) {
-    alert('No existe el modal de administración.');
+    alert('No existe el modal de administraciÃ³n.');
     return;
   }
 
@@ -398,7 +343,7 @@ function construirAdminPanel() {
   if (!modal) return;
 
   const title = modal.querySelector('.modal-title');
-  if (title) title.textContent = 'Administración de usuarios';
+  if (title) title.textContent = 'AdministraciÃ³n de usuarios';
 
   const body = modal.querySelector('.modal-body');
   if (!body) return;
@@ -409,7 +354,7 @@ function construirAdminPanel() {
         <button class="nav-link active" type="button" data-admin-tab="#adminUsuarios">Usuarios</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" type="button" data-admin-tab="#adminAuditoria">Bitácora / Auditoría</button>
+        <button class="nav-link" type="button" data-admin-tab="#adminAuditoria">BitÃ¡cora / AuditorÃ­a</button>
       </li>
       <li class="nav-item">
         <button class="nav-link" type="button" data-admin-tab="#adminConflictos">Conflictos Sync</button>
@@ -422,7 +367,7 @@ function construirAdminPanel() {
         <div class="row g-2 mb-2">
           <div class="col-md-5">
             <label class="form-label">Nombre y apellidos</label>
-            <input id="adminUserName" class="form-control" placeholder="Ej.: Juan Pérez Gómez">
+            <input id="adminUserName" class="form-control" placeholder="Ej.: Juan PÃ©rez GÃ³mez">
           </div>
           <div class="col-md-4">
             <label class="form-label">Correo (usuario)</label>
@@ -434,11 +379,11 @@ function construirAdminPanel() {
               <option value="Consulta">Consulta</option>
               <option value="Administrador">Administrador</option>
               <option value="Registrador">Registrador</option>
-              <option value="Registrador|CUNA MÁS">Registrador - Cuna Más</option>
+              <option value="Registrador|CUNA MÃS">Registrador - Cuna MÃ¡s</option>
               <option value="Registrador|PAE">Registrador - PAE</option>
               <option value="Registrador|JUNTOS">Registrador - Juntos</option>
               <option value="Registrador|CONTIGO">Registrador - Contigo</option>
-              <option value="Registrador|PENSIÓN 65">Registrador - Pensión 65</option>
+              <option value="Registrador|PENSIÃ“N 65">Registrador - PensiÃ³n 65</option>
               <option value="Registrador|FONCODES">Registrador - Foncodes</option>
               <option value="Registrador|PAIS">Registrador - PAIS</option>
             </select>
@@ -491,7 +436,7 @@ function construirAdminPanel() {
             <input id="auditActor" class="form-control" placeholder="usuario@midis.gob.pe">
           </div>
           <div class="col-md-3">
-            <label class="form-label">Acción</label>
+            <label class="form-label">AcciÃ³n</label>
             <select id="auditAccion" class="form-select">
               <option value="">Todas</option>
               <option value="LOGIN">LOGIN</option>
@@ -509,7 +454,7 @@ function construirAdminPanel() {
 
         <div class="d-flex justify-content-between mb-2">
           <div id="auditEstadoServidor" class="text-muted small">Servidor: conectado, usando respaldo local (not_found)</div>
-          <div class="text-muted small">Máx. 1000 registros</div>
+          <div class="text-muted small">MÃ¡x. 1000 registros</div>
         </div>
 
         <div class="table-responsive">
@@ -519,11 +464,11 @@ function construirAdminPanel() {
                 <th>Fecha/Hora</th>
                 <th>Actor</th>
                 <th>Rol</th>
-                <th>Acción</th>
+                <th>AcciÃ³n</th>
                 <th>Entidad</th>
                 <th>ID</th>
                 <th>Detalle</th>
-                <th>Acción</th>
+                <th>AcciÃ³n</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -531,14 +476,14 @@ function construirAdminPanel() {
         </div>
 
         <div class="alert alert-info small mt-3">
-          <strong>Tip:</strong> Usa “Desde/Hasta” para acotar. El detalle se puede copiar en JSON.
+          <strong>Tip:</strong> Usa â€œDesde/Hastaâ€ para acotar. El detalle se puede copiar en JSON.
         </div>
       </div>
 
       <div class="tab-pane fade" id="adminConflictos">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div id="conflictosMensaje" class="text-muted small">
-            No hay conflictos de sincronización registrados en este navegador.
+            No hay conflictos de sincronizaciÃ³n registrados en este navegador.
           </div>
           <div class="d-flex gap-2">
             <button id="btnConflictosServidor" type="button" class="btn btn-outline-primary btn-sm">Actualizar</button>
@@ -547,9 +492,9 @@ function construirAdminPanel() {
         </div>
 
         <div class="alert alert-warning small">
-          <strong>Importante:</strong> “Servidor” reemplaza tu copia local por la versión vigente del servidor.
-          “Local” conserva tu edición local e intenta volver a subirla usando la última base del servidor.
-          No fusiona textos automáticamente; resuelve el conflicto eligiendo cuál versión prevalece.
+          <strong>Importante:</strong> â€œServidorâ€ reemplaza tu copia local por la versiÃ³n vigente del servidor.
+          â€œLocalâ€ conserva tu ediciÃ³n local e intenta volver a subirla usando la Ãºltima base del servidor.
+          No fusiona textos automÃ¡ticamente; resuelve el conflicto eligiendo cuÃ¡l versiÃ³n prevalece.
         </div>
 
         <div class="table-responsive">
@@ -557,12 +502,12 @@ function construirAdminPanel() {
             <thead class="table-light">
               <tr>
                 <th>Fecha/hora del conflicto</th>
-                <th>Código</th>
+                <th>CÃ³digo</th>
                 <th>Motivo</th>
                 <th>Fecha del servidor</th>
                 <th>Estado local / servidor</th>
-                <th>Resolución aplicada</th>
-                <th>Acción</th>
+                <th>ResoluciÃ³n aplicada</th>
+                <th>AcciÃ³n</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -756,16 +701,16 @@ async function crearUsuarioAdmin() {
     if (remoto) usuario = remoto;
     if (res.data.temporaryPassword && $('adminGeneratedPassword')) $('adminGeneratedPassword').value = res.data.temporaryPassword;
   } else if (res.data?.error || res.data?.message) {
-    console.warn('No se confirmó usuario en backend; se mantiene copia local para login:', res.data);
+    console.warn('No se confirmÃ³ usuario en backend; se mantiene copia local para login:', res.data);
   }
 
-  // Guardado local canónico. Esto evita que el usuario recién creado quede solo
+  // Guardado local canÃ³nico. Esto evita que el usuario reciÃ©n creado quede solo
   // como fila visual del panel y no pueda autenticarse en el mismo navegador.
   const lista = cargarUsuariosLocales().filter(u => u.email !== usuario.email);
   lista.push(usuario);
   guardarUsuariosLocales(lista);
 
-  // También se limpia cualquier copia antigua con diferente estructura.
+  // TambiÃ©n se limpia cualquier copia antigua con diferente estructura.
   ['users', 'userList', 'usuariosSistema'].forEach(key => {
     try {
       const arr = JSON.parse(localStorage.getItem(key) || '[]');
@@ -844,7 +789,7 @@ async function eliminarUsuarioAdmin(email) {
     alert('El usuario Administrador DEMO no se puede eliminar. Es el usuario base del sistema.');
     return;
   }
-  if (!confirm(`¿Eliminar el usuario ${limpio}? Ya no podrá iniciar sesión.`)) return;
+  if (!confirm(`Â¿Eliminar el usuario ${limpio}? Ya no podrÃ¡ iniciar sesiÃ³n.`)) return;
 
   const vista = adminUsuariosVista.find(u => normalizarEmail(u.email) === limpio) || buscarUsuarioLocalPorEmail(limpio);
 
@@ -888,7 +833,7 @@ async function cargarAuditoriaAdmin() {
   const tbody = document.querySelector('#tablaAuditoria tbody');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Cargando auditoría...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Cargando auditorÃ­a...</td></tr>';
 
   const desde = $('auditDesde')?.value || '';
   const hasta = $('auditHasta')?.value || '';
@@ -1067,7 +1012,7 @@ function calcularFechaFin() {
 }
 
 
-// ================= DECRETOS SUPREMOS / PRÓRROGAS =================
+// ================= DECRETOS SUPREMOS / PRÃ“RROGAS =================
 function cargarDecretosLocales() {
   try {
     const data = JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]');
@@ -1121,7 +1066,7 @@ function extraerListaDecretos(data) {
 function normalizarDecreto(raw) {
   if (!raw) return null;
   const numero = String(raw.numero || raw.ds || raw.decreto || raw.decreto_supremo || '').trim();
-  const anio = String(raw.anio || raw.año || '').trim();
+  const anio = String(raw.anio || raw.aÃ±o || '').trim();
   const idBase = raw.id || raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio) || crypto.randomUUID();
   return {
     ...raw,
@@ -1181,7 +1126,7 @@ function cargarDSOrigen() {
   decretos.forEach(d => {
     const opt = document.createElement('option');
     opt.value = d.id;
-    opt.textContent = `${formatearNumeroDS(d)}${d.tipo_peligro ? ' · ' + d.tipo_peligro : ''}`;
+    opt.textContent = `${formatearNumeroDS(d)}${d.tipo_peligro ? ' Â· ' + d.tipo_peligro : ''}`;
     opt.dataset.nivel = String(d.nivel_prorroga || 0);
     opt.dataset.cadena = d.cadena || formatearNumeroDS(d);
     sel.appendChild(opt);
@@ -1229,7 +1174,7 @@ function actualizarDatosProrroga() {
 
   const baseCadena = dsOrigen.cadena || formatearNumeroDS(dsOrigen);
   const actual = formatearNumeroDS({ numero: $('dsNumero')?.value, anio: $('dsAnio')?.value });
-  if ($('dsCadena')) $('dsCadena').value = actual ? `${baseCadena} → ${actual}` : baseCadena;
+  if ($('dsCadena')) $('dsCadena').value = actual ? `${baseCadena} â†’ ${actual}` : baseCadena;
 }
 
 async function guardarDecreto() {
@@ -1250,23 +1195,23 @@ async function guardarDecreto() {
     renderTablaDecretosBasica();
 
     const res = await api('/decretos', 'POST', decreto);
-    if (!res.ok) console.warn('No se confirmó guardado en API; se conservó en localStorage.', res.data);
+    if (!res.ok) console.warn('No se confirmÃ³ guardado en API; se conservÃ³ en localStorage.', res.data);
 
     alert('Decreto guardado correctamente');
     limpiarFormularioDecreto();
   } catch (e) {
     console.error('Error al guardar Decreto Supremo:', e);
-    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle técnico.');
+    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle tÃ©cnico.');
   }
 }
 
 function validarFormularioDecreto() {
   const obligatorios = [
-    ['dsNumero', 'Ingrese el Número DS.'],
-    ['dsAnio', 'Ingrese el Año.'],
+    ['dsNumero', 'Ingrese el NÃºmero DS.'],
+    ['dsAnio', 'Ingrese el AÃ±o.'],
     ['dsPeligro', 'Seleccione el Peligro.'],
     ['dsTipoPeligro', 'Seleccione el Tipo de peligro.'],
-    ['dsPlazoDias', 'Ingrese el Plazo en días.'],
+    ['dsPlazoDias', 'Ingrese el Plazo en dÃ­as.'],
     ['dsFechaInicio', 'Ingrese la Fecha inicio.'],
     ['dsFechaFin', 'Calcule o ingrese la Fecha final.']
   ];
@@ -1278,8 +1223,8 @@ function validarFormularioDecreto() {
   if (!state.nuevoDSTerritorios.length) return { ok: false, mensaje: 'Agregue al menos un distrito al territorio involucrado.' };
 
   if ($('dsEsProrroga')?.checked) {
-    if (!$('dsOrigen')?.value) return { ok: false, mensaje: 'Seleccione el DS origen de la prórroga.' };
-    if (!String($('dsNivelProrroga')?.value || '').trim()) return { ok: false, mensaje: 'Ingrese el Nivel prórroga.' };
+    if (!$('dsOrigen')?.value) return { ok: false, mensaje: 'Seleccione el DS origen de la prÃ³rroga.' };
+    if (!String($('dsNivelProrroga')?.value || '').trim()) return { ok: false, mensaje: 'Ingrese el Nivel prÃ³rroga.' };
   }
 
   return { ok: true, mensaje: '' };
@@ -1363,7 +1308,7 @@ function calcularSemaforo(fechaFin) {
   const dias = Math.ceil((fin - hoyLocal) / 86400000);
   if (dias < 0) return 'Vencido';
   if (dias <= 7) return 'Rojo';
-  if (dias <= 15) return 'Ámbar';
+  if (dias <= 15) return 'Ãmbar';
   return 'Verde';
 }
 
@@ -1371,7 +1316,7 @@ function formatearNumeroDS(d) {
   const numero = String(d?.numero || '').trim();
   const anio = String(d?.anio || '').trim();
   if (!numero && !anio) return '';
-  return `DS N.° ${numero}${anio ? '-' + anio : ''}-PCM`;
+  return `DS N.Â° ${numero}${anio ? '-' + anio : ''}-PCM`;
 }
 
 function renderTablaDecretosBasica() {
@@ -1404,12 +1349,12 @@ function renderTablaDecretosBasica() {
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${escapeHtml(d.cadena || '')}</td>
         <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
         <td><button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" ${puedeUsarRDS() ? '' : 'disabled'} onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button></td>
         <td><button type="button" class="btn btn-sm btn-outline-secondary" disabled>PreAprobar</button></td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
       </tr>
     `;
   }).join('');
@@ -1441,18 +1386,18 @@ function buscarDecretoPorId(id) {
 
 function verDetalleDS(id) {
   const d = buscarDecretoPorId(id);
-  if (!d) return alert('No se encontró el Decreto Supremo.');
+  if (!d) return alert('No se encontrÃ³ el Decreto Supremo.');
   const territorio = Array.isArray(d.territorio) ? d.territorio : [];
   const sectores = Array.isArray(d.sectores) && d.sectores.length ? d.sectores.join(', ') : 'No registrado';
   const body = $('modalDSBody');
   if (body) {
     body.innerHTML = `
       <div class="mb-2"><strong>Decreto Supremo:</strong> ${escapeHtml(formatearNumeroDS(d))}</div>
-      <div class="mb-2"><strong>Peligro:</strong> ${escapeHtml(d.peligro)} · ${escapeHtml(d.tipo_peligro)}</div>
-      <div class="mb-2"><strong>Vigencia:</strong> ${escapeHtml(d.fecha_inicio)} al ${escapeHtml(d.fecha_fin)} · ${escapeHtml(d.vigencia)}</div>
+      <div class="mb-2"><strong>Peligro:</strong> ${escapeHtml(d.peligro)} Â· ${escapeHtml(d.tipo_peligro)}</div>
+      <div class="mb-2"><strong>Vigencia:</strong> ${escapeHtml(d.fecha_inicio)} al ${escapeHtml(d.fecha_fin)} Â· ${escapeHtml(d.vigencia)}</div>
       <div class="mb-2"><strong>Sectores que firman:</strong> ${escapeHtml(sectores)}</div>
-      <div class="mb-2"><strong>Relación:</strong> ${d.es_prorroga ? 'Prórroga' : 'Original'} ${d.cadena ? '· ' + escapeHtml(d.cadena) : ''}</div>
-      <div class="mb-2"><strong>RDS:</strong> ${d.rdsActivo ? 'Registro de Acciones activado' : 'No activado'} ${d.numeroReunion ? '· ' + escapeHtml(d.numeroReunion) : ''} ${d.fechaReunion ? '· ' + escapeHtml(d.fechaReunion) : ''}</div>
+      <div class="mb-2"><strong>RelaciÃ³n:</strong> ${d.es_prorroga ? 'PrÃ³rroga' : 'Original'} ${d.cadena ? 'Â· ' + escapeHtml(d.cadena) : ''}</div>
+      <div class="mb-2"><strong>RDS:</strong> ${d.rdsActivo ? 'Registro de Acciones activado' : 'No activado'} ${d.numeroReunion ? 'Â· ' + escapeHtml(d.numeroReunion) : ''} ${d.fechaReunion ? 'Â· ' + escapeHtml(d.fechaReunion) : ''}</div>
       <hr>
       <strong>Territorio involucrado</strong>
       <div class="small mt-2">${territorio.map(t => `${escapeHtml(t.departamento)} / ${escapeHtml(t.provincia)} / ${escapeHtml(t.distrito)}`).join('<br>') || 'No registrado'}</div>
@@ -1501,7 +1446,7 @@ function getTerritorioKey(reg) {
 
 function initUbigeo() {
   if (!window.ubigeoData || !Array.isArray(window.ubigeoData)) {
-    console.error('ubigeoData no cargó o no es un arreglo');
+    console.error('ubigeoData no cargÃ³ o no es un arreglo');
     return;
   }
 
@@ -1620,7 +1565,7 @@ function cargarDistritos() {
     .sort((a, b) => String(a.distrito || '').localeCompare(String(b.distrito || ''), 'es'));
 
   if (!distritos.length) {
-    limpiarDistritosChecklist('No hay distritos para esta selección.');
+    limpiarDistritosChecklist('No hay distritos para esta selecciÃ³n.');
     actualizarBotonAgregarDistritos();
     return;
   }
@@ -1640,7 +1585,7 @@ function cargarDistritos() {
              ${yaAgregado ? 'disabled' : ''}>
       <label class="form-check-label" for="dist_${idSeguro}">
         ${escapeHtml(d.distrito || '')}
-        ${yaAgregado ? '<span class="text-success small"> — agregado</span>' : ''}
+        ${yaAgregado ? '<span class="text-success small"> â€” agregado</span>' : ''}
       </label>
     `;
 
@@ -1803,7 +1748,7 @@ function renderTerritorioSeleccionado() {
         </div>
         <div class="text-muted small">
           Ubigeo: ${escapeHtml(t.ubigeo || '-')}
-          ${t.latitud || t.longitud ? ` · Lat/Lon: ${escapeHtml(t.latitud)} / ${escapeHtml(t.longitud)}` : ''}
+          ${t.latitud || t.longitud ? ` Â· Lat/Lon: ${escapeHtml(t.latitud)} / ${escapeHtml(t.longitud)}` : ''}
         </div>
       </div>
       <button type="button"
@@ -1843,9 +1788,9 @@ function initRegistroAcciones() {
 
 function normalizarProgramaNombre(valor) {
   const t = normalizarTexto(valor);
-  if (['CUNA MAS','CUNA MÁS','CUNAMAS'].includes(t)) return 'CUNA MÁS';
-  if (['PENSION 65','PENSIÓN 65'].includes(t)) return 'PENSIÓN 65';
-  if (['PAIS','PAÍS'].includes(t)) return 'PAIS';
+  if (['CUNA MAS','CUNA MÃS','CUNAMAS'].includes(t)) return 'CUNA MÃS';
+  if (['PENSION 65','PENSIÃ“N 65'].includes(t)) return 'PENSIÃ“N 65';
+  if (['PAIS','PAÃS'].includes(t)) return 'PAIS';
   return t;
 }
 
@@ -1877,9 +1822,9 @@ function configurarProgramasAccion() {
 
 function cargarCatalogosAccion() {
   const tipo = $('accionTipo');
-  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>Intervención directa</option><option>Seguimiento</option><option>Asistencia técnica</option><option>Coordinación territorial</option><option>Entrega de bienes o servicios</option>';
+  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>IntervenciÃ³n directa</option><option>Seguimiento</option><option>Asistencia tÃ©cnica</option><option>CoordinaciÃ³n territorial</option><option>Entrega de bienes o servicios</option>';
   const unidad = $('accionUnidad');
-  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>Acción</option><option>Informe</option><option>Coordinación</option>';
+  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>AcciÃ³n</option><option>Informe</option><option>CoordinaciÃ³n</option>';
 }
 
 function actualizarFechaRegistroAccion() {
@@ -1909,24 +1854,24 @@ function cargarRDSDesdeDSSeleccionado() {
   if ($('rdsFechaReunion')) $('rdsFechaReunion').value = d?.fechaReunion || '';
   if ($('rdsEstado')) $('rdsEstado').value = d?.rdsActivo ? 'Registro de Acciones activado' : 'No activado';
   if ($('accionResumenDS')) {
-    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS activado' : 'RDS pendiente de activación'}</div>` : '';
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> Â· ${escapeHtml(d.tipo_peligro || '')} Â· ${d.rdsActivo ? 'RDS activado' : 'RDS pendiente de activaciÃ³n'}</div>` : '';
   }
 }
 
 function activarRDSSeleccionado() {
   if (!esAdministrador()) {
-    alert('La activación RDS corresponde al Administrador.');
+    alert('La activaciÃ³n RDS corresponde al Administrador.');
     return;
   }
   const id = $('accionDs')?.value || '';
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
   const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
   lista[idx] = { ...lista[idx], rdsActivo: true, numeroReunion, fechaReunion, programasHabilitados: PROGRAMAS_RDS.slice() };
   guardarDecretosLocales(lista);
   renderTablaDecretosBasica();
@@ -1952,7 +1897,7 @@ function aplicarRestriccionesAccion() {
     $('rdsMensajeRol').textContent = esAdministrador()
       ? 'Administrador: puede activar RDS y administrar todos los programas.'
       : esRegistrador()
-        ? (puedeRegistrar ? `Registrador habilitado para ${programaUsuario}.` : `Registrador ${programaUsuario || ''}: espere activación RDS del Administrador.`)
+        ? (puedeRegistrar ? `Registrador habilitado para ${programaUsuario}.` : `Registrador ${programaUsuario || ''}: espere activaciÃ³n RDS del Administrador.`)
         : 'Consulta: no puede registrar acciones.';
   }
   configurarProgramasAccion();
@@ -1990,7 +1935,7 @@ function guardarAccionDS() {
   const programa = normalizarProgramaNombre($('accionPrograma')?.value || '');
   if (!programa) return alert('Seleccione el Programa Nacional.');
   if (esRegistrador() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
-  if (!$('accionTipo')?.value || !$('accionDetalle')?.value.trim()) return alert('Complete tipo de acción y acción específica.');
+  if (!$('accionTipo')?.value || !$('accionDetalle')?.value.trim()) return alert('Complete tipo de acciÃ³n y acciÃ³n especÃ­fica.');
   calcularFechaFinalAccion();
   calcularAvanceAccion();
   const accion = {
@@ -2019,7 +1964,7 @@ function guardarAccionDS() {
   api('/acciones', 'POST', accion);
   renderTablaAcciones();
   limpiarFormularioAccion();
-  alert('Acción registrada correctamente.');
+  alert('AcciÃ³n registrada correctamente.');
 }
 
 function limpiarFormularioAccion() {
@@ -2048,7 +1993,7 @@ window.abrirRDS = abrirRDS;
 
 
 
-// ================= AJUSTE FLUJO RDS / PREAPROBACIÓN / APROBACIÓN =================
+// ================= AJUSTE FLUJO RDS / PREAPROBACIÃ“N / APROBACIÃ“N =================
 let modoRegistroAcciones = 'registro'; // rds | revision | registro
 let accionEditandoId = null;
 
@@ -2156,7 +2101,7 @@ function cargarRDSDesdeDSSeleccionado() {
   if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
   if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
   if ($('accionResumenDS')) {
-    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}</div>` : '';
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> Â· ${escapeHtml(d.tipo_peligro || '')} Â· ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activaciÃ³n'}</div>` : '';
   }
 }
 
@@ -2169,12 +2114,12 @@ function activarRDSSeleccionado() {
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
 
   lista[idx] = {
     ...lista[idx],
@@ -2213,7 +2158,7 @@ function aplicarRestriccionesAccion() {
     $('rdsMensajeRol').textContent = esAdministrador()
       ? 'Administrador: puede activar RDS, revisar todos los programas y aprobar.'
       : esRegistrador()
-        ? (d?.rdsActivo ? `Registrador habilitado para ${programaUsuario}.` : `Registrador ${programaUsuario || ''}: el RDS aún no está activo.`)
+        ? (d?.rdsActivo ? `Registrador habilitado para ${programaUsuario}.` : `Registrador ${programaUsuario || ''}: el RDS aÃºn no estÃ¡ activo.`)
         : 'Consulta: solo lectura.';
   }
   configurarProgramasAccion();
@@ -2251,12 +2196,12 @@ function renderTablaDecretosBasica() {
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${escapeHtml(d.cadena || '')}</td>
         <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
         <td><button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" ${puedeUsarRDS() ? '' : 'disabled'} onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button></td>
         <td><button type="button" class="btn btn-sm ${esAdministrador() ? 'btn-success' : 'btn-warning'}" ${puedeRevision ? '' : 'disabled'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">${textoRevision}</button></td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
       </tr>
     `;
   }).join('');
@@ -2268,7 +2213,7 @@ function guardarAccionDS() {
   const programa = normalizarProgramaNombre($('accionPrograma')?.value || '');
   if (!programa) return alert('Seleccione el Programa Nacional.');
   if (esRegistrador() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
-  if (!$('accionTipo')?.value || !$('accionDetalle')?.value.trim()) return alert('Complete tipo de acción y acción específica.');
+  if (!$('accionTipo')?.value || !$('accionDetalle')?.value.trim()) return alert('Complete tipo de acciÃ³n y acciÃ³n especÃ­fica.');
   calcularFechaFinalAccion();
   calcularAvanceAccion();
   const lista = cargarAccionesLocales();
@@ -2302,8 +2247,8 @@ function guardarAccionDS() {
   renderTablaAcciones();
   limpiarFormularioAccion();
   accionEditandoId = null;
-  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acción';
-  alert('Acción guardada correctamente.');
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acciÃ³n';
+  alert('AcciÃ³n guardada correctamente.');
 }
 
 function accionesDelDSSeleccionado() {
@@ -2349,7 +2294,7 @@ function renderTablaAcciones() {
 
 function editarAccionDS(id) {
   const a = cargarAccionesLocales().find(x => String(x.id) === String(id));
-  if (!a) return alert('No se encontró la acción.');
+  if (!a) return alert('No se encontrÃ³ la acciÃ³n.');
   if (!puedeEditarAccion(a)) return alert('No puede editar acciones de otro programa.');
   modoRegistroAcciones = 'registro';
   aplicarVistaRegistroAcciones();
@@ -2366,7 +2311,7 @@ function editarAccionDS(id) {
   if ($('accionDetalle')) $('accionDetalle').value = a.detalle || '';
   if ($('accionDescripcion')) $('accionDescripcion').value = a.descripcion || '';
   accionEditandoId = id;
-  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Actualizar acción';
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Actualizar acciÃ³n';
   aplicarRestriccionesAccion();
 }
 
@@ -2514,12 +2459,12 @@ function renderTablaDecretosBasica() {
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${escapeHtml(d.cadena || '')}</td>
         <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
         <td>${botonRDS}</td>
         <td>${botonRevision}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
       </tr>
     `;
   }).join('');
@@ -2561,7 +2506,7 @@ function abrirRDS(id) {
 
 function abrirRegistrarAcciones(id) {
   if (!esRegistradorPrograma()) {
-    alert('Esta opción corresponde a Registradores de Programas.');
+    alert('Esta opciÃ³n corresponde a Registradores de Programas.');
     return;
   }
   abrirTabRegistroAcciones(id, 'registro');
@@ -2602,7 +2547,7 @@ function cargarRDSDesdeDSSeleccionado() {
   if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
   if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
   if ($('accionResumenDS')) {
-    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}</div>` : '';
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> Â· ${escapeHtml(d.tipo_peligro || '')} Â· ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activaciÃ³n'}</div>` : '';
   }
 }
 
@@ -2615,12 +2560,12 @@ function activarRDSSeleccionado() {
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
 
   lista[idx] = {
     ...lista[idx],
@@ -2663,7 +2608,7 @@ function aplicarRestriccionesAccion() {
       : esRegistradorGeneral()
         ? 'Registrador: activa RDS, revisa acciones y preaprueba.'
         : esRegistradorPrograma()
-          ? (rdsActivo ? `Registrador de Programa habilitado para ${programaUsuario}.` : `Registrador de Programa ${programaUsuario || ''}: el DS aún no tiene RDS activo.`)
+          ? (rdsActivo ? `Registrador de Programa habilitado para ${programaUsuario}.` : `Registrador de Programa ${programaUsuario || ''}: el DS aÃºn no tiene RDS activo.`)
           : 'Consulta: solo lectura.';
   }
 }
@@ -2710,9 +2655,9 @@ function guardarAccionDS() {
 
   if (!programa) return alert('Seleccione el Programa Nacional.');
   if (esRegistradorPrograma() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
-  if (!tipo) return alert('Seleccione el Tipo de acción.');
-  if (!codigo) return alert('Ingrese el Código de acción.');
-  if (!$('accionDetalle')?.value.trim()) return alert('Ingrese la acción específica programada.');
+  if (!tipo) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigo) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!$('accionDetalle')?.value.trim()) return alert('Ingrese la acciÃ³n especÃ­fica programada.');
 
   calcularFechaFinalAccion();
   calcularAvanceAccion();
@@ -2724,7 +2669,7 @@ function guardarAccionDS() {
     normalizarProgramaNombre(a.programa) === programa &&
     normalizarTexto(a.codigo) === normalizarTexto(codigo)
   );
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const id = accionEditandoId || crypto.randomUUID();
   const existente = lista.find(a => String(a.id) === String(id));
@@ -2757,8 +2702,8 @@ function guardarAccionDS() {
   renderTablaAcciones();
   limpiarFormularioAccion();
   accionEditandoId = null;
-  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acción';
-  alert('Acción guardada correctamente.');
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acciÃ³n';
+  alert('AcciÃ³n guardada correctamente.');
 }
 
 function accionesDelDSSeleccionado() {
@@ -2969,9 +2914,9 @@ function initRegistroAccionesProgramas() {
 
 function cargarCatalogosAccionPrograma() {
   const tipo = $('progTipoAccion');
-  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>Intervención directa</option><option>Seguimiento</option><option>Asistencia técnica</option><option>Coordinación territorial</option><option>Entrega de bienes o servicios</option>';
+  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>IntervenciÃ³n directa</option><option>Seguimiento</option><option>Asistencia tÃ©cnica</option><option>CoordinaciÃ³n territorial</option><option>Entrega de bienes o servicios</option>';
   const unidad = $('progUnidadMedida');
-  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>Acción</option><option>Informe</option><option>Coordinación</option>';
+  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>AcciÃ³n</option><option>Informe</option><option>CoordinaciÃ³n</option>';
 }
 
 function actualizarFechaRegistroPrograma() {
@@ -3002,7 +2947,7 @@ function abrirRegistrarAcciones(id) {
   }
   const d = buscarDecretoPorId(id);
   if (!d?.rdsActivo) {
-    alert('El Decreto Supremo aún no tiene RDS activo.');
+    alert('El Decreto Supremo aÃºn no tiene RDS activo.');
     return;
   }
   dsProgramaSeleccionadoId = id;
@@ -3091,7 +3036,7 @@ function renderTablaDecretosBasica() {
       botonRDS = `<button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button>`;
       if (puedePreaprobar()) {
         const listo = dsTieneAccionesDeTodosLosProgramas(d.id);
-        botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${listo ? '' : 'disabled title="Pendiente: faltan acciones de uno o más programas"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
+        botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${listo ? '' : 'disabled title="Pendiente: faltan acciones de uno o mÃ¡s programas"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
       } else if (puedeAprobar()) {
         botonRevision = `<button type="button" class="btn btn-sm btn-success" onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
       }
@@ -3118,12 +3063,12 @@ function renderTablaDecretosBasica() {
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${escapeHtml(d.cadena || '')}</td>
         <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
         <td>${botonRDS}</td>
         <td>${botonRevision}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
       </tr>`;
   }).join('');
 }
@@ -3144,7 +3089,7 @@ function cargarRDSDesdeDSSeleccionado() {
   if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
   if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
   if ($('accionResumenDS')) {
-    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}</div>` : '';
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> Â· ${escapeHtml(d.tipo_peligro || '')} Â· ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activaciÃ³n'}</div>` : '';
   }
 }
 
@@ -3188,12 +3133,12 @@ function activarRDSSeleccionado() {
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
 
   lista[idx] = {
     ...lista[idx],
@@ -3256,9 +3201,9 @@ function guardarAccionPrograma() {
   const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
   const detalle = String($('progDetalle')?.value || '').trim();
 
-  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
-  if (!codigoAccion) return alert('Ingrese el Código de acción.');
-  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!tipoAccion) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigoAccion) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!detalle) return alert('Ingrese las acciones especÃ­ficas programadas y ejecutadas.');
   if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
   if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
 
@@ -3271,7 +3216,7 @@ function guardarAccionPrograma() {
     normalizarProgramaNombre(a.programaNacional || a.programa) === programa &&
     normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion)
   );
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const fechaRegistro = fechaHoraLocalISO();
   const accion = {
@@ -3318,7 +3263,7 @@ function guardarAccionPrograma() {
   limpiarFormularioAccionPrograma(true);
   renderTablaAccionesProgramas();
   renderTablaDecretosBasica();
-  alert('Acción registrada correctamente.');
+  alert('AcciÃ³n registrada correctamente.');
 }
 
 function limpiarFormularioAccionPrograma(actualizarFecha = true) {
@@ -3396,7 +3341,7 @@ function cambiarEstadoFlujoRDS(nuevoEstado) {
   if (!dsId) return alert('Seleccione un Decreto Supremo.');
   if (nuevoEstado === 'Preaprobado' && !puedePreaprobar()) return alert('Solo el Registrador puede PreAprobar.');
   if (nuevoEstado === 'Aprobado' && !puedeAprobar()) return alert('Solo el Administrador puede Aprobar.');
-  if (nuevoEstado === 'Preaprobado' && !dsTieneAccionesDeTodosLosProgramas(dsId)) return alert('Aún faltan acciones de uno o más Programas Nacionales.');
+  if (nuevoEstado === 'Preaprobado' && !dsTieneAccionesDeTodosLosProgramas(dsId)) return alert('AÃºn faltan acciones de uno o mÃ¡s Programas Nacionales.');
 
   const acciones = cargarAccionesLocales();
   let tocadas = 0;
@@ -3584,9 +3529,9 @@ function initPreAprobarAcciones() {
 
 function cargarCatalogosEditarAccion() {
   const tipo = $('editTipoAccion');
-  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>Intervención directa</option><option>Seguimiento</option><option>Asistencia técnica</option><option>Coordinación territorial</option><option>Entrega de bienes o servicios</option>';
+  if (tipo && !tipo.options.length) tipo.innerHTML = '<option value="">Seleccione...</option><option>IntervenciÃ³n directa</option><option>Seguimiento</option><option>Asistencia tÃ©cnica</option><option>CoordinaciÃ³n territorial</option><option>Entrega de bienes o servicios</option>';
   const unidad = $('editUnidadMedida');
-  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>Acción</option><option>Informe</option><option>Coordinación</option>';
+  if (unidad && !unidad.options.length) unidad.innerHTML = '<option value="">Seleccione...</option><option>Persona</option><option>Usuario</option><option>Servicio</option><option>Distrito</option><option>AcciÃ³n</option><option>Informe</option><option>CoordinaciÃ³n</option>';
 }
 
 function renderTablaDecretosBasica() {
@@ -3615,7 +3560,7 @@ function renderTablaDecretosBasica() {
         botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
       } else if (puedeAprobar()) {
         const habilitado = estado === 'PREAPROBADO';
-        botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+        botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
       }
     } else if (esRegistradorPrograma()) {
       const programa = programaSesionNormalizado();
@@ -3644,12 +3589,12 @@ function renderTablaDecretosBasica() {
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${escapeHtml(d.cadena || '')}</td>
         <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
         <td>${botonRDS}</td>
         <td>${botonRevision}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
       </tr>`;
   }).join('');
 }
@@ -3661,7 +3606,7 @@ function abrirRegistrarAcciones(id) {
   }
   const d = buscarDecretoPorId(id);
   if (!d?.rdsActivo) {
-    alert('El Decreto Supremo aún no tiene RDS activo.');
+    alert('El Decreto Supremo aÃºn no tiene RDS activo.');
     return;
   }
   dsProgramaSeleccionadoId = id;
@@ -3679,7 +3624,7 @@ function salirRegistroAccionesPrograma() {
   }
   const programa = programaSesionNormalizado();
   if (!dsTieneAccionesDelPrograma(dsProgramaSeleccionadoId, programa)) {
-    alert('Debe registrar al menos una acción antes de salir.');
+    alert('Debe registrar al menos una acciÃ³n antes de salir.');
     return;
   }
   setDsProgramaCerrado(dsProgramaSeleccionadoId, programa);
@@ -3694,7 +3639,7 @@ function abrirPreAprobacion(id) {
     return;
   }
   const d = buscarDecretoPorId(id);
-  if (!d?.rdsActivo) return alert('El DS aún no tiene RDS activo.');
+  if (!d?.rdsActivo) return alert('El DS aÃºn no tiene RDS activo.');
   if (puedePreaprobar() && !dsTieneAccionesRegistradas(id)) return alert('No se puede PreAprobar: no existen acciones registradas.');
   if (puedeAprobar() && normalizarTexto(d.estadoRDS) !== 'PREAPROBADO') return alert('Solo puede aprobar DS en estado PreAprobado.');
 
@@ -3748,7 +3693,7 @@ function renderTablaPreAprobarAcciones() {
 
 function abrirModalEditarAccion(id) {
   const a = cargarAccionesLocales().find(x => String(x.id) === String(id));
-  if (!a) return alert('No se encontró la acción.');
+  if (!a) return alert('No se encontrÃ³ la acciÃ³n.');
   cargarCatalogosEditarAccion();
 
   if ($('editAccionId')) $('editAccionId').value = a.id;
@@ -3787,13 +3732,13 @@ function calcularAvanceModal() {
 
 function grabarModalAccion() {
   const id = $('editAccionId')?.value || '';
-  if (!id) return alert('No hay acción seleccionada.');
+  if (!id) return alert('No hay acciÃ³n seleccionada.');
   calcularFechaFinalModal();
   calcularAvanceModal();
 
   const lista = cargarAccionesLocales();
   const idx = lista.findIndex(a => String(a.id) === String(id));
-  if (idx < 0) return alert('No se encontró la acción.');
+  if (idx < 0) return alert('No se encontrÃ³ la acciÃ³n.');
 
   const original = lista[idx];
   const codigoNuevo = String($('editCodigoAccion')?.value || '').trim();
@@ -3806,7 +3751,7 @@ function grabarModalAccion() {
     normalizarProgramaNombre(a.programaNacional || a.programa) === programa &&
     normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoNuevo)
   );
-  if (duplicada) return alert('Ya existe otra acción con el mismo DS, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe otra acciÃ³n con el mismo DS, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   lista[idx] = {
     ...original,
@@ -3840,7 +3785,7 @@ function grabarModalAccion() {
   renderTablaAcciones();
   const modal = $('modalEditarAccion');
   if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
-  alert('Acción actualizada correctamente.');
+  alert('AcciÃ³n actualizada correctamente.');
 }
 
 function guardarDatosDSPreAprobar(estadoFinal) {
@@ -3874,8 +3819,8 @@ function preaprobarAccionesDS() {
   if (!puedePreaprobar()) return alert('Solo el usuario Registrador puede PreAprobar.');
   if (!dsId) return alert('Seleccione un Decreto Supremo.');
   if (!dsTieneAccionesRegistradas(dsId)) return alert('No se puede PreAprobar: no existen acciones registradas.');
-  if (!$('preNumeroReunion')?.value) return alert('Seleccione el número de reunión.');
-  if (!$('preFechaReunion')?.value) return alert('Ingrese la fecha de reunión.');
+  if (!$('preNumeroReunion')?.value) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!$('preFechaReunion')?.value) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const acciones = cargarAccionesLocales().map(a => String(a.dsId || a.ds_id) === String(dsId)
     ? { ...a, estado: 'Preaprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
@@ -3951,9 +3896,9 @@ function guardarAccionPrograma() {
   const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
   const detalle = String($('progDetalle')?.value || '').trim();
 
-  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
-  if (!codigoAccion) return alert('Ingrese el Código de acción.');
-  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!tipoAccion) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigoAccion) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!detalle) return alert('Ingrese las acciones especÃ­ficas programadas y ejecutadas.');
   if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
   if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
 
@@ -3966,7 +3911,7 @@ function guardarAccionPrograma() {
     normalizarProgramaNombre(a.programaNacional || a.programa) === programa &&
     normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion)
   );
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const fechaRegistro = fechaHoraLocalISO();
   const accion = {
@@ -4013,7 +3958,7 @@ function guardarAccionPrograma() {
   limpiarFormularioAccionPrograma(true);
   renderTablaAccionesProgramas();
   renderTablaDecretosBasica();
-  alert('Acción registrada correctamente.');
+  alert('AcciÃ³n registrada correctamente.');
 }
 
 window.abrirRDS = abrirRDS;
@@ -4021,10 +3966,10 @@ window.abrirRegistrarAcciones = abrirRegistrarAcciones;
 window.abrirPreAprobacion = abrirPreAprobacion;
 window.abrirModalEditarAccion = abrirModalEditarAccion;
 
-// ================= AJUSTE QUIRÚRGICO RDS POR REUNIÓN v38 =================
+// ================= AJUSTE QUIRÃšRGICO RDS POR REUNIÃ“N v38 =================
 const REUNIONES_RDS_V38 = [
-  'Primera reunión','Segunda reunión','Tercera reunión','Cuarta reunión','Quinta reunión',
-  'Sexta reunión','Séptima reunión','Octava reunión','Novena reunión','Décima reunión'
+  'Primera reuniÃ³n','Segunda reuniÃ³n','Tercera reuniÃ³n','Cuarta reuniÃ³n','Quinta reuniÃ³n',
+  'Sexta reuniÃ³n','SÃ©ptima reuniÃ³n','Octava reuniÃ³n','Novena reuniÃ³n','DÃ©cima reuniÃ³n'
 ];
 
 function reunionKeyV38(numeroReunion, fechaReunion) {
@@ -4124,7 +4069,7 @@ function cargarOpcionesReunionRDSV38(d, limpiar = true) {
   const usadas = new Set(obtenerReunionesDSV38(d).map(r => normalizarTexto(r.numeroReunion)));
   sel.innerHTML = '<option value="">Seleccione...</option>' + REUNIONES_RDS_V38.map(r => {
     const disabled = usadas.has(normalizarTexto(r)) ? ' disabled' : '';
-    return `<option value="${escapeHtmlAttr(r)}"${disabled}>${escapeHtml(r)}${disabled ? ' — usada' : ''}</option>`;
+    return `<option value="${escapeHtmlAttr(r)}"${disabled}>${escapeHtml(r)}${disabled ? ' â€” usada' : ''}</option>`;
   }).join('');
   if (limpiar) sel.value = '';
 }
@@ -4160,7 +4105,7 @@ function cargarRDSDesdeDSSeleccionado() {
   if ($('rdsEstado')) $('rdsEstado').value = d?.estadoRDS || (d?.rdsActivo ? 'Activo' : 'No activado');
   if ($('accionFechaRegistro')) $('accionFechaRegistro').value = d?.fechaRegistroRDS || fechaHoraLocalISO();
   if ($('accionResumenDS')) {
-    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> · ${escapeHtml(d.tipo_peligro || '')} · ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activación'}${d.numeroReunion ? ' · ' + escapeHtml(d.numeroReunion) + ' · ' + escapeHtml(d.fechaReunion || '') : ''}</div>` : '';
+    $('accionResumenDS').innerHTML = d ? `<div class="alert ${d.rdsActivo ? 'alert-success' : 'alert-warning'} py-2 mb-0"><strong>${escapeHtml(formatearNumeroDS(d))}</strong> Â· ${escapeHtml(d.tipo_peligro || '')} Â· ${d.rdsActivo ? 'RDS Activo' : 'RDS pendiente de activaciÃ³n'}${d.numeroReunion ? ' Â· ' + escapeHtml(d.numeroReunion) + ' Â· ' + escapeHtml(d.fechaReunion || '') : ''}</div>` : '';
   }
 }
 
@@ -4170,16 +4115,16 @@ function activarRDSSeleccionado() {
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
 
   const usadas = obtenerReunionesDSV38(lista[idx]);
   if (usadas.some(r => normalizarTexto(r.numeroReunion) === normalizarTexto(numeroReunion))) {
-    return alert('Ese número de reunión ya fue usado para este Decreto Supremo. Seleccione otra reunión.');
+    return alert('Ese nÃºmero de reuniÃ³n ya fue usado para este Decreto Supremo. Seleccione otra reuniÃ³n.');
   }
 
   const fechaRegistroRDS = fechaHoraLocalISO();
@@ -4204,7 +4149,7 @@ function activarRDSSeleccionado() {
   aplicarRestriccionesAccion();
   aplicarVistaRegistroAcciones();
   api('/decretos', 'POST', lista[idx]);
-  alert('RDS activado correctamente para la reunión seleccionada.');
+  alert('RDS activado correctamente para la reuniÃ³n seleccionada.');
 }
 
 function accionesDelDSSeleccionado() {
@@ -4238,16 +4183,16 @@ function guardarAccionPrograma() {
   const d = buscarDecretoPorId(dsProgramaSeleccionadoId);
   if (!esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede guardar acciones en esta vista.');
   if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
-  if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+  if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene nÃºmero y fecha de reuniÃ³n activos.');
 
   const programa = programaSesionNormalizado();
   const tipoAccion = $('progTipoAccion')?.value || '';
   const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
   const detalle = String($('progDetalle')?.value || '').trim();
 
-  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
-  if (!codigoAccion) return alert('Ingrese el Código de acción.');
-  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!tipoAccion) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigoAccion) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!detalle) return alert('Ingrese las acciones especÃ­ficas programadas y ejecutadas.');
   if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
   if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
 
@@ -4262,7 +4207,7 @@ function guardarAccionPrograma() {
     normalizarProgramaNombre(a.programaNacional || a.programa) === programa &&
     normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion)
   );
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, Número de reunión, Fecha de reunión, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, NÃºmero de reuniÃ³n, Fecha de reuniÃ³n, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const fechaRegistro = fechaHoraLocalISO();
   const accion = {
@@ -4310,7 +4255,7 @@ function guardarAccionPrograma() {
   limpiarFormularioAccionPrograma(true);
   renderTablaAccionesProgramas();
   renderTablaDecretosBasica();
-  alert('Acción registrada correctamente.');
+  alert('AcciÃ³n registrada correctamente.');
 }
 
 function renderTablaAccionesProgramas() {
@@ -4319,7 +4264,7 @@ function renderTablaAccionesProgramas() {
   const programa = programaSesionNormalizado();
   const visibles = accionesPorProgramaReunionActualV38(dsProgramaSeleccionadoId, programa);
   if (!visibles.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-muted">No hay acciones registradas para su programa en esta reunión.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-muted">No hay acciones registradas para su programa en esta reuniÃ³n.</td></tr>';
     return;
   }
   tbody.innerHTML = visibles.map(a => `
@@ -4362,7 +4307,7 @@ function renderTablaPreAprobarAcciones() {
   if (!tbody) return;
   const acciones = accionesPorDSReunionActualV38(dsPreAprobarSeleccionadoId);
   if (!acciones.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="text-muted">No hay acciones registradas para este Decreto Supremo, número de reunión y fecha de reunión.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="text-muted">No hay acciones registradas para este Decreto Supremo, nÃºmero de reuniÃ³n y fecha de reuniÃ³n.</td></tr>';
     return;
   }
   tbody.innerHTML = acciones.map(a => `
@@ -4402,7 +4347,7 @@ function preaprobarAccionesDS() {
   const dsId = dsPreAprobarSeleccionadoId;
   if (!puedePreaprobar()) return alert('Solo el usuario Registrador puede PreAprobar.');
   if (!dsId) return alert('Seleccione un Decreto Supremo.');
-  if (!dsTieneAccionesRegistradas(dsId)) return alert('No se puede PreAprobar: no existen acciones registradas para esta reunión.');
+  if (!dsTieneAccionesRegistradas(dsId)) return alert('No se puede PreAprobar: no existen acciones registradas para esta reuniÃ³n.');
   const acciones = cargarAccionesLocales().map(a => accionCoincideReunionV38(a, buscarDecretoPorId(dsId))
     ? { ...a, estado: 'Preaprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
     : a
@@ -4412,7 +4357,7 @@ function preaprobarAccionesDS() {
   renderTablaPreAprobarAcciones();
   renderTablaDecretosBasica();
   cargarVistaPreAprobar(dsId);
-  alert('DS PreAprobado correctamente para la reunión seleccionada.');
+  alert('DS PreAprobado correctamente para la reuniÃ³n seleccionada.');
 }
 
 function aprobarAccionesDS() {
@@ -4430,7 +4375,7 @@ function aprobarAccionesDS() {
   renderTablaPreAprobarAcciones();
   renderTablaDecretosBasica();
   cargarVistaPreAprobar(dsId);
-  alert('DS Aprobado correctamente para la reunión seleccionada.');
+  alert('DS Aprobado correctamente para la reuniÃ³n seleccionada.');
 }
 
 function salirPreAprobarAcciones() {
@@ -4478,10 +4423,10 @@ function renderTablaDecretosBasica() {
       botonRDS = `<button type="button" class="btn btn-sm ${d.rdsActivo ? 'btn-success' : 'btn-outline-primary'}" onclick="abrirRDS('${escapeHtmlAttr(d.id)}')">RDS</button>`;
       if (puedePreaprobar()) {
         const habilitado = d.rdsActivo && dsTieneAccionesRegistradas(d.id) && estado !== 'PREAPROBADO' && estado !== 'APROBADO';
-        botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas para la reunión activa o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
+        botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas para la reuniÃ³n activa o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
       } else if (puedeAprobar()) {
         const habilitado = estado === 'PREAPROBADO';
-        botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+        botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
       }
     } else if (esRegistradorPrograma()) {
       const programa = programaSesionNormalizado();
@@ -4495,7 +4440,7 @@ function renderTablaDecretosBasica() {
       botonRevision = '';
     }
     return `<tr>
-      <td>${escapeHtml(formatearNumeroDS(d))}</td><td>${escapeHtml(d.anio)}</td><td>${escapeHtml(d.peligro)}</td><td>${escapeHtml(d.tipo_peligro)}</td><td>${escapeHtml(d.fecha_inicio)}</td><td>${escapeHtml(d.fecha_fin)}</td><td>${escapeHtml(d.vigencia)}</td><td>${escapeHtml(d.semaforo)}</td><td>${deps.size}</td><td>${provs.size}</td><td>${dists.size}</td><td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td><td>${escapeHtml(d.cadena || '')}</td><td>${escapeHtml(d.nivel_prorroga || 0)}</td><td>${botonRDS}</td><td>${botonRevision}</td><td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+      <td>${escapeHtml(formatearNumeroDS(d))}</td><td>${escapeHtml(d.anio)}</td><td>${escapeHtml(d.peligro)}</td><td>${escapeHtml(d.tipo_peligro)}</td><td>${escapeHtml(d.fecha_inicio)}</td><td>${escapeHtml(d.fecha_fin)}</td><td>${escapeHtml(d.vigencia)}</td><td>${escapeHtml(d.semaforo)}</td><td>${deps.size}</td><td>${provs.size}</td><td>${dists.size}</td><td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td><td>${escapeHtml(d.cadena || '')}</td><td>${escapeHtml(d.nivel_prorroga || 0)}</td><td>${botonRDS}</td><td>${botonRevision}</td><td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
     </tr>`;
   }).join('');
 }
@@ -4575,7 +4520,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const total = fin - inicio;
     const pctRestante = (restante / total) * 100;
     if (pctRestante < 20) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
-    if (pctRestante <= 50) return { texto: 'Ámbar', clase: 'dee-badge-ambar', orden: 2 };
+    if (pctRestante <= 50) return { texto: 'Ãmbar', clase: 'dee-badge-ambar', orden: 2 };
     return { texto: 'Verde', clase: 'dee-badge-verde', orden: 3 };
   }
 
@@ -4654,7 +4599,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
-      ['Distritos en más de una declaratoria', repetidos, 'Duplicidad entre DS vigentes']
+      ['Distritos en mÃ¡s de una declaratoria', repetidos, 'Duplicidad entre DS vigentes']
     ];
     cont.innerHTML = cards.map(([label, value, note]) => `
       <div class="col-12 col-md-6">
@@ -4808,7 +4753,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     window.__estadoControlPreV39 = true;
     window.cambiarEstadoFlujoRDS = function(nuevoEstado) {
       if (normalizarTexto(nuevoEstado) === 'PREAPROBADO') {
-        return alert('La acción PreAprobar no se ejecuta desde la pestaña Registro de Acciones. Use la pestaña PreAprobar Acciones cuando corresponda.');
+        return alert('La acciÃ³n PreAprobar no se ejecuta desde la pestaÃ±a Registro de Acciones. Use la pestaÃ±a PreAprobar Acciones cuando corresponda.');
       }
       return cambiarEstadoOriginalDEE.apply(this, arguments);
     };
@@ -4836,15 +4781,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   window.renderDashboardEjecutivoDEE = renderDashboardEjecutivoDEE;
 })();
 
-// ================= CIERRE FINAL TIPO DE ACCIÓN v40 - 05/05/2026 =================
+// ================= CIERRE FINAL TIPO DE ACCIÃ“N v40 - 05/05/2026 =================
 (function(){
-  const TIPO_PREPARACION = 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+  const TIPO_PREPARACION = 'Acciones de PreparaciÃ³n (Solo DEE por Peligro Inminente)';
   const TIPO_RESPUESTA = 'Acciones de Respuesta';
-  const TIPO_REHABILITACION = 'Acciones de Rehabilitación';
+  const TIPO_REHABILITACION = 'Acciones de RehabilitaciÃ³n';
   const TIPOS_ACCION_OFICIALES = [TIPO_PREPARACION, TIPO_RESPUESTA, TIPO_REHABILITACION];
   const SUBTIPOS_REHABILITACION_OFICIALES = [
-    'RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA',
-    'NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA'
+    'RESTABLECIMIENTO DE SERVICIOS PÃšBLICOS BÃSICOS E INFRAESTRUCTURA',
+    'NORMALIZACIÃ“N PROGRESIVA DE LOS MEDIOS DE VIDA'
   ];
 
   function setSelectOptionsDEE(sel, opciones, placeholder = 'Seleccione...') {
@@ -4864,7 +4809,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     div.className = claseCol;
     div.id = boxId;
     div.style.display = 'none';
-    div.innerHTML = `<label class="form-label">Subtipo de Rehabilitación</label><select id="${selectId}" class="form-select"></select>`;
+    div.innerHTML = `<label class="form-label">Subtipo de RehabilitaciÃ³n</label><select id="${selectId}" class="form-select"></select>`;
     tipoBox.insertAdjacentElement('afterend', div);
   }
 
@@ -4923,19 +4868,19 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     tipo = normalTipoDEE(tipo);
     subtipo = String(subtipo || '').trim();
     if (!TIPOS_ACCION_OFICIALES.includes(tipo)) {
-      return { ok:false, msg:'Seleccione un Tipo de Acción válido del catálogo oficial.' };
+      return { ok:false, msg:'Seleccione un Tipo de AcciÃ³n vÃ¡lido del catÃ¡logo oficial.' };
     }
     if (esTipoPreparacionDEE(tipo) && !dsEsPeligroInminenteDEE(decreto)) {
-      return { ok:false, msg:'Las Acciones de Preparación solo pueden registrarse para DEE por Peligro Inminente.' };
+      return { ok:false, msg:'Las Acciones de PreparaciÃ³n solo pueden registrarse para DEE por Peligro Inminente.' };
     }
     if (esTipoRehabilitacionDEE(tipo)) {
-      if (!subtipo) return { ok:false, msg:'Seleccione el Subtipo de Rehabilitación.' };
+      if (!subtipo) return { ok:false, msg:'Seleccione el Subtipo de RehabilitaciÃ³n.' };
       if (!SUBTIPOS_REHABILITACION_OFICIALES.includes(subtipo)) {
-        return { ok:false, msg:'Seleccione un Subtipo de Rehabilitación válido del catálogo oficial.' };
+        return { ok:false, msg:'Seleccione un Subtipo de RehabilitaciÃ³n vÃ¡lido del catÃ¡logo oficial.' };
       }
     }
     if (!esTipoRehabilitacionDEE(tipo) && subtipo) {
-      return { ok:false, msg:'El Subtipo de Rehabilitación solo corresponde a Acciones de Rehabilitación.' };
+      return { ok:false, msg:'El Subtipo de RehabilitaciÃ³n solo corresponde a Acciones de RehabilitaciÃ³n.' };
     }
     return { ok:true };
   }
@@ -4955,7 +4900,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (opt) opt.disabled = !!ds && !dsEsPeligroInminenteDEE(ds);
     if (sel.value === TIPO_PREPARACION && opt?.disabled) {
       sel.value = '';
-      alert('Este DS no corresponde a Peligro Inminente. No se puede seleccionar Acciones de Preparación.');
+      alert('Este DS no corresponde a Peligro Inminente. No se puede seleccionar Acciones de PreparaciÃ³n.');
     }
   }
 
@@ -5141,7 +5086,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function nombreArchivoDS(d, ext) {
-    return `DS_NRO_${numeroDSLimpio(d).replace(/[^0-9A-Za-zÁÉÍÓÚÑáéíóúñ-]/g, '_')}.${ext}`;
+    return `DS_NRO_${numeroDSLimpio(d).replace(/[^0-9A-Za-zÃÃ‰ÃÃ“ÃšÃ‘Ã¡Ã©Ã­Ã³ÃºÃ±-]/g, '_')}.${ext}`;
   }
 
   function territoriosDecreto(d) {
@@ -5226,7 +5171,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       filas.push({
         organo: 'MIDIS',
         codigo: `T-${String(i + 1).padStart(3, '0')}`,
-        detalle: `${d.tipo_peligro || d.peligro || ''} · ${t.departamento || ''} / ${t.provincia || ''} / ${t.distrito || ''}`,
+        detalle: `${d.tipo_peligro || d.peligro || ''} Â· ${t.departamento || ''} / ${t.provincia || ''} / ${t.distrito || ''}`,
         unidad: 'DISTRITO',
         meta: 1,
         plazo: d.plazo_dias || '',
@@ -5234,14 +5179,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         fin: d.fecha_fin || '',
         ejecutada: '',
         avance: '',
-        comentario: `Vigencia: ${d.vigencia || ''}${t.ubigeo ? ' · Ubigeo: ' + t.ubigeo : ''}`
+        comentario: `Vigencia: ${d.vigencia || ''}${t.ubigeo ? ' Â· Ubigeo: ' + t.ubigeo : ''}`
       });
     });
     return filas;
   }
 
   async function cargarWorkbookDesdePlantilla() {
-    if (!window.ExcelJS) throw new Error('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    if (!window.ExcelJS) throw new Error('No se cargÃ³ ExcelJS. Revise conexiÃ³n a internet o CDN.');
     const wb = new ExcelJS.Workbook();
     try {
       const res = await fetch(TEMPLATE_EXCEL_DS, { cache: 'no-store' });
@@ -5255,8 +5200,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ];
       ws.mergeCells('A3:K3'); ws.mergeCells('A4:K4'); ws.mergeCells('A5:K5'); ws.mergeCells('A6:K6'); ws.mergeCells('A7:K7'); ws.mergeCells('A9:K9');
       ws.getCell('A3').value = 'MATRIZ EJECUTIVA DE SEGUIMIENTO DE LAS ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA';
-      ws.getCell('A5').value = 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL';
-      ws.getRow(11).values = ['ORGANO ADSCRITO O UNIDAD DEL SECTOR QUE EJECUTA LA ACCIÓN','CÓDIGO DE LA ACCION','ACCIONES ESPECÍFICAS PROGRAMADAS Y EJECUTADAS POR EL SECTOR RELACIONADAS CON LA EXPOSICIÓN DE MOTIVOS','UNIDAD DE MEDIDA','META PROGRAMADA','PLAZO (dias)','F. INICIO DE LA ACCION','F. FIN DE LA ACCION','META EJECUTADA','% AVANCE','COMENTARIOS Y/O DESCRIPCIÓN'];
+      ws.getCell('A5').value = 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL';
+      ws.getRow(11).values = ['ORGANO ADSCRITO O UNIDAD DEL SECTOR QUE EJECUTA LA ACCIÃ“N','CÃ“DIGO DE LA ACCION','ACCIONES ESPECÃFICAS PROGRAMADAS Y EJECUTADAS POR EL SECTOR RELACIONADAS CON LA EXPOSICIÃ“N DE MOTIVOS','UNIDAD DE MEDIDA','META PROGRAMADA','PLAZO (dias)','F. INICIO DE LA ACCION','F. FIN DE LA ACCION','META EJECUTADA','% AVANCE','COMENTARIOS Y/O DESCRIPCIÃ“N'];
       ws.getRow(11).font = { bold:true, color:{argb:'FFFFFFFF'} };
       ws.getRow(11).fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF1F4E79'} };
     }
@@ -5265,7 +5210,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function exportarDSExcel(id) {
     const d = buscarDecretoPorId(id);
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
     try {
       const wb = await cargarWorkbookDesdePlantilla();
       const ws = wb.getWorksheet(MODELO_HOJA_DS) || wb.worksheets[0];
@@ -5274,11 +5219,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ws.pageMargins = { left: 0.25, right: 0.25, top: 0.35, bottom: 0.35, header: 0.15, footer: 0.15 };
 
       const res = resumenTerritorialDS(d);
-      setValorSeguro(ws, 'A4', `D.S. N°${numeroDSLimpio(d)}:`);
-      setValorSeguro(ws, 'A5', 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL');
+      setValorSeguro(ws, 'A4', `D.S. NÂ°${numeroDSLimpio(d)}:`);
+      setValorSeguro(ws, 'A5', 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL');
       setValorSeguro(ws, 'A6', `FECHA DE REPORTE: ${fechaReporteCorta()}`);
       setValorSeguro(ws, 'A7', `VIGENCIA DE LA DEE: ${textoFechaPeru(d.fecha_inicio)} AL ${textoFechaPeru(d.fecha_fin)}`);
-      setValorSeguro(ws, 'A9', `ACCIONES A REALIZAR POR EL SECTOR//GORE SEGÚN LA EXPOSICIÓN DE MOTIVOS:\n${d.motivos || ''}\n\nPeligro/evento: ${d.tipo_peligro || d.peligro || ''}\nDepartamentos: ${res.departamentos.join(', ')}\nProvincias: ${res.provincias.join(', ')}\nDistritos: ${res.distritos.join(', ')}\nEstado de vigencia: ${d.vigencia || ''}`);
+      setValorSeguro(ws, 'A9', `ACCIONES A REALIZAR POR EL SECTOR//GORE SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS:\n${d.motivos || ''}\n\nPeligro/evento: ${d.tipo_peligro || d.peligro || ''}\nDepartamentos: ${res.departamentos.join(', ')}\nProvincias: ${res.provincias.join(', ')}\nDistritos: ${res.distritos.join(', ')}\nEstado de vigencia: ${d.vigencia || ''}`);
       ws.getCell('A9').alignment = { ...(ws.getCell('A9').alignment || {}), wrapText: true, vertical: 'top' };
 
       const filas = construirFilasMatrizDS(d);
@@ -5308,22 +5253,22 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       descargarBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivoDS(d, 'xlsx'));
     } catch (err) {
       console.error('Error exportando Excel DS:', err);
-      alert('No se pudo exportar el Excel. Verifique que Libro1.xlsx esté en la misma carpeta que index.html.');
+      alert('No se pudo exportar el Excel. Verifique que Libro1.xlsx estÃ© en la misma carpeta que index.html.');
     }
   }
 
   function colorSemaforoPDF(semaforo) {
     const s = normalizarTexto(semaforo);
     if (s.includes('ROJO')) return [192, 0, 0];
-    if (s.includes('AMBAR') || s.includes('ÁMBAR')) return [191, 143, 0];
+    if (s.includes('AMBAR') || s.includes('ÃMBAR')) return [191, 143, 0];
     if (s.includes('VERDE')) return [0, 128, 0];
     return [80, 80, 80];
   }
 
   function exportarDSPDF(id) {
     const d = buscarDecretoPorId(id);
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
-    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargÃ³ jsPDF. Revise conexiÃ³n a internet o CDN.');
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -5336,10 +5281,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       doc.setTextColor(...azul);
       doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE LAS ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 14, { align: 'center' });
       doc.setFontSize(11);
-      doc.text(`D.S. N°${numeroDSLimpio(d)}:`, 148.5, 22, { align: 'center' });
+      doc.text(`D.S. NÂ°${numeroDSLimpio(d)}:`, 148.5, 22, { align: 'center' });
       doc.setFontSize(9);
       doc.setTextColor(0,0,0);
-      doc.text('SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 29, { align: 'center' });
+      doc.text('SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL', 148.5, 29, { align: 'center' });
       doc.text(`FECHA DE REPORTE: ${fechaReporteCorta()}`, 148.5, 35, { align: 'center' });
       doc.text(`VIGENCIA DE LA DEE: ${textoFechaPeru(d.fecha_inicio)} AL ${textoFechaPeru(d.fecha_fin)}`, 148.5, 41, { align: 'center' });
 
@@ -5353,7 +5298,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         ['Departamentos', res.departamentos.join(', ')],
         ['Provincias', res.provincias.join(', ')],
         ['Distritos', res.distritos.join(', ')],
-        ['Exposición de motivos', d.motivos || '']
+        ['ExposiciÃ³n de motivos', d.motivos || '']
       ];
       doc.autoTable({
         startY: 54,
@@ -5368,7 +5313,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       doc.autoTable({
         startY: y,
         head: [[
-          'Órgano / unidad', 'Código', 'Acciones específicas / información territorial', 'Unidad', 'Meta prog.', 'Plazo', 'F. inicio', 'F. fin', 'Meta ejec.', '% avance', 'Comentarios'
+          'Ã“rgano / unidad', 'CÃ³digo', 'Acciones especÃ­ficas / informaciÃ³n territorial', 'Unidad', 'Meta prog.', 'Plazo', 'F. inicio', 'F. fin', 'Meta ejec.', '% avance', 'Comentarios'
         ]],
         body: filas.map(f => [f.organo, f.codigo, f.detalle, f.unidad, f.meta, f.plazo, textoFechaPeru(f.inicio), textoFechaPeru(f.fin), f.ejecutada, f.avance, f.comentario]),
         theme: 'grid',
@@ -5379,7 +5324,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         didDrawPage: () => {
           doc.setFontSize(7);
           doc.setTextColor(100);
-          doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocalISO()}`, 8, 204);
+          doc.text(`Exportado desde DEE MIDIS Â· ${fechaHoraLocalISO()}`, 8, 204);
         }
       });
       doc.save(nombreArchivoDS(d, 'pdf'));
@@ -5416,7 +5361,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
         } else if (puedeAprobar()) {
           const habilitado = estado === 'PREAPROBADO';
-          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
         }
       } else if (esRegistradorPrograma()) {
         const programa = programaSesionNormalizado();
@@ -5447,12 +5392,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           <td>${deps.size}</td>
           <td>${provs.size}</td>
           <td>${dists.size}</td>
-          <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+          <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
           <td>${escapeHtml(d.cadena || '')}</td>
           <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
           <td>${botonRDS}</td>
           <td>${botonRevision}</td>
-          <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+          <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
           <td>${exportar}</td>
         </tr>`;
     }).join('');
@@ -5477,11 +5422,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 (function(){
   const TEMPLATE_EXCEL_DS_V42 = 'DS.xlsx';
   const MODELO_HOJA_DS_V42 = 'D.S. NRO';
-  const TIPO_PREPARACION_V42 = 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+  const TIPO_PREPARACION_V42 = 'Acciones de PreparaciÃ³n (Solo DEE por Peligro Inminente)';
   const TIPO_RESPUESTA_V42 = 'Acciones de Respuesta';
-  const TIPO_REHABILITACION_V42 = 'Acciones de Rehabilitación';
-  const SUBTIPO_RESTABLECIMIENTO_V42 = 'RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA';
-  const SUBTIPO_MEDIOS_V42 = 'NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA';
+  const TIPO_REHABILITACION_V42 = 'Acciones de RehabilitaciÃ³n';
+  const SUBTIPO_RESTABLECIMIENTO_V42 = 'RESTABLECIMIENTO DE SERVICIOS PÃšBLICOS BÃSICOS E INFRAESTRUCTURA';
+  const SUBTIPO_MEDIOS_V42 = 'NORMALIZACIÃ“N PROGRESIVA DE LOS MEDIOS DE VIDA';
 
   function ntextoV42(v){
     return typeof normalizarTexto === 'function'
@@ -5703,7 +5648,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   async function cargarWorkbookDesdePlantillaV42() {
-    if (!window.ExcelJS) throw new Error('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    if (!window.ExcelJS) throw new Error('No se cargÃ³ ExcelJS. Revise conexiÃ³n a internet o CDN.');
     const wb = new ExcelJS.Workbook();
     const res = await fetch(TEMPLATE_EXCEL_DS_V42, { cache: 'no-store' });
     if (!res.ok) throw new Error('Plantilla DS.xlsx no disponible');
@@ -5722,11 +5667,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function llenarCabeceraV42(ws, d) {
     const res = resumenTerritorialDSV42(d);
-    setValorSeguroV42(ws, 'A4', `D.S. N°${numeroDSLimpioV42(d)}:`);
-    setValorSeguroV42(ws, 'A5', 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL');
+    setValorSeguroV42(ws, 'A4', `D.S. NÂ°${numeroDSLimpioV42(d)}:`);
+    setValorSeguroV42(ws, 'A5', 'SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL');
     setValorSeguroV42(ws, 'A6', `FECHA DE REPORTE: ${fechaReporteCortaV42()}`);
     setValorSeguroV42(ws, 'A7', `VIGENCIA DE LA DEE: ${textoFechaPeruV42(d.fecha_inicio)} AL ${textoFechaPeruV42(d.fecha_fin)}`);
-    setValorSeguroV42(ws, 'A9', `ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS\n${d.motivos || d.exposicion_motivos || ''}\n\nPeligro/evento: ${d.tipo_peligro || d.peligro || ''}\nDepartamentos: ${res.departamentos.join(', ')}\nProvincias: ${res.provincias.join(', ')}\nDistritos: ${res.distritos.join(', ')}\nEstado de vigencia: ${d.vigencia || ''}`);
+    setValorSeguroV42(ws, 'A9', `ACCIONES A REALIZAR POR EL SECTOR SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS\n${d.motivos || d.exposicion_motivos || ''}\n\nPeligro/evento: ${d.tipo_peligro || d.peligro || ''}\nDepartamentos: ${res.departamentos.join(', ')}\nProvincias: ${res.provincias.join(', ')}\nDistritos: ${res.distritos.join(', ')}\nEstado de vigencia: ${d.vigencia || ''}`);
     ws.getCell('A9').alignment = { ...(ws.getCell('A9').alignment || {}), wrapText: true, vertical: 'top' };
   }
 
@@ -5737,18 +5682,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       const grupo = clasificarAccionV42(a);
       if (!grupo) return;
       const fila = filaDesdeAccionV42(a, d);
-      if (!validarFilaFechasV42(fila)) advertencias.push(`La acción ${fila.codigo || ''} tiene F. inicio mayor que F. final.`);
+      if (!validarFilaFechasV42(fila)) advertencias.push(`La acciÃ³n ${fila.codigo || ''} tiene F. inicio mayor que F. final.`);
       grupos[grupo].push(fila);
     });
     return { grupos, advertencias };
   }
 
   function escribirAccionesPorTipoV42(ws, d) {
-    const prepHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE PREPARACIÓN') || 13;
+    const prepHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE PREPARACIÃ“N') || 13;
     const respHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE RESPUESTA') || 20;
-    const rehabHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÓN') || 23;
+    const rehabHeader = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÃ“N') || 23;
     const restHeader = buscarFilaPorTextoV42(ws, 'RESTABLECIMIENTO DE SERVICIOS') || 24;
-    const mediosHeader = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || 26;
+    const mediosHeader = buscarFilaPorTextoV42(ws, 'NORMALIZACIÃ“N PROGRESIVA') || 26;
 
     const { grupos, advertencias } = agruparFilasAccionesV42(d);
     const prepStart = prepHeader + 1;
@@ -5756,28 +5701,28 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     escribirSeccionV42(ws, prepStart, prepCapacity, grupos.preparacion, prepStart);
 
     const respHeader2 = buscarFilaPorTextoV42(ws, 'ACCIONES DE RESPUESTA') || respHeader;
-    const rehabHeader2 = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÓN') || rehabHeader;
+    const rehabHeader2 = buscarFilaPorTextoV42(ws, 'ACCIONES DE REHABILITACIÃ“N') || rehabHeader;
     const respStart = respHeader2 + 1;
     const respCapacity = Math.max(1, rehabHeader2 - respStart);
     escribirSeccionV42(ws, respStart, respCapacity, grupos.respuesta, respStart);
 
     const restHeader2 = buscarFilaPorTextoV42(ws, 'RESTABLECIMIENTO DE SERVICIOS') || restHeader;
-    const mediosHeader2 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || mediosHeader;
+    const mediosHeader2 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÃ“N PROGRESIVA') || mediosHeader;
     const restStart = restHeader2 + 1;
     const restCapacity = Math.max(1, mediosHeader2 - restStart);
     escribirSeccionV42(ws, restStart, restCapacity, grupos.rehabRestablecimiento, restStart);
 
-    const mediosHeader3 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÓN PROGRESIVA') || mediosHeader2;
+    const mediosHeader3 = buscarFilaPorTextoV42(ws, 'NORMALIZACIÃ“N PROGRESIVA') || mediosHeader2;
     const mediosStart = mediosHeader3 + 1;
     const mediosCapacity = Math.max(1, (ws.rowCount || mediosStart) - mediosStart + 1);
     escribirSeccionV42(ws, mediosStart, mediosCapacity, grupos.rehabMedios, mediosStart);
 
-    if (advertencias.length) console.warn('Advertencias de exportación DS:', advertencias);
+    if (advertencias.length) console.warn('Advertencias de exportaciÃ³n DS:', advertencias);
   }
 
   async function exportarDSExcel(id) {
     const d = buscarDecretoPorId(id);
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
     try {
       const wb = await cargarWorkbookDesdePlantillaV42();
       const ws = prepararHojaV42(wb, d);
@@ -5788,14 +5733,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       descargarBlobV42(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivoDSV42(d, 'xlsx'));
     } catch (err) {
       console.error('Error exportando Excel DS v42:', err);
-      alert('No se pudo exportar el Excel. Verifique que DS.xlsx esté en la misma carpeta que index.html.');
+      alert('No se pudo exportar el Excel. Verifique que DS.xlsx estÃ© en la misma carpeta que index.html.');
     }
   }
 
   function exportarDSPDF(id) {
     const d = buscarDecretoPorId(id);
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
-    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargÃ³ jsPDF. Revise conexiÃ³n a internet o CDN.');
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -5809,17 +5754,17 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       doc.setTextColor(...azul);
       doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE LAS ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 14, { align: 'center' });
       doc.setFontSize(11);
-      doc.text(`D.S. N°${numeroDSLimpioV42(d)}:`, 148.5, 22, { align: 'center' });
+      doc.text(`D.S. NÂ°${numeroDSLimpioV42(d)}:`, 148.5, 22, { align: 'center' });
       doc.setFontSize(9);
       doc.setTextColor(0,0,0);
-      doc.text('SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 29, { align: 'center' });
+      doc.text('SECTOR/: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL', 148.5, 29, { align: 'center' });
       doc.text(`FECHA DE REPORTE: ${fechaReporteCortaV42()}`, 148.5, 35, { align: 'center' });
       doc.text(`VIGENCIA DE LA DEE: ${textoFechaPeruV42(d.fecha_inicio)} AL ${textoFechaPeruV42(d.fecha_fin)}`, 148.5, 41, { align: 'center' });
 
       doc.autoTable({
         startY: 48,
         body: [
-          ['ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS', d.motivos || ''],
+          ['ACCIONES A REALIZAR POR EL SECTOR SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS', d.motivos || ''],
           ['Peligro / evento', d.tipo_peligro || d.peligro || ''],
           ['Departamentos', res.departamentos.join(', ')],
           ['Provincias', res.provincias.join(', ')],
@@ -5833,12 +5778,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
       let y = doc.lastAutoTable.finalY + 4;
       const secciones = [
-        ['ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', grupos.preparacion],
+        ['ACCIONES DE PREPARACIÃ“N (para el caso de DEE por Peligro Inminente)', grupos.preparacion],
         ['ACCIONES DE RESPUESTA', grupos.respuesta],
-        ['ACCIONES DE REHABILITACIÓN - I). RESTABLECIMIENTO DE SERVICIOS PÚBLICOS BÁSICOS E INFRAESTRUCTURA', grupos.rehabRestablecimiento],
-        ['ACCIONES DE REHABILITACIÓN - II). NORMALIZACIÓN PROGRESIVA DE LOS MEDIOS DE VIDA', grupos.rehabMedios]
+        ['ACCIONES DE REHABILITACIÃ“N - I). RESTABLECIMIENTO DE SERVICIOS PÃšBLICOS BÃSICOS E INFRAESTRUCTURA', grupos.rehabRestablecimiento],
+        ['ACCIONES DE REHABILITACIÃ“N - II). NORMALIZACIÃ“N PROGRESIVA DE LOS MEDIOS DE VIDA', grupos.rehabMedios]
       ];
-      const head = [['Órgano / unidad', 'Código', 'Acciones específicas', 'Unidad', 'Meta prog.', 'Plazo', 'F. inicio', 'F. fin', 'Meta ejec.', '% avance', 'Comentarios']];
+      const head = [['Ã“rgano / unidad', 'CÃ³digo', 'Acciones especÃ­ficas', 'Unidad', 'Meta prog.', 'Plazo', 'F. inicio', 'F. fin', 'Meta ejec.', '% avance', 'Comentarios']];
       secciones.forEach(([titulo, filas]) => {
         if (y > 178) { doc.addPage(); y = 12; }
         doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(titulo, 11, y); y += 2;
@@ -5853,7 +5798,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           margin: { left: 8, right: 8 },
           didDrawPage: () => {
             doc.setFontSize(7); doc.setTextColor(100);
-            doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocalISO()}`, 8, 204);
+            doc.text(`Exportado desde DEE MIDIS Â· ${fechaHoraLocalISO()}`, 8, 204);
           }
         });
         y = doc.lastAutoTable.finalY + 5;
@@ -5893,7 +5838,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
         } else if (puedeAprobar()) {
           const habilitado = estado === 'PREAPROBADO';
-          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
         }
       } else if (esRegistradorPrograma()) {
         const programa = programaSesionNormalizado();
@@ -5919,12 +5864,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           <td>${deps.size}</td>
           <td>${provs.size}</td>
           <td>${dists.size}</td>
-          <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+          <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
           <td>${escapeHtml(d.cadena || '')}</td>
           <td>${escapeHtml(d.nivel_prorroga || 0)}</td>
           <td>${botonRDS}</td>
           <td>${botonRevision}</td>
-          <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td>
+          <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td>
           <td>${botonesExportarV42(d)}</td>
         </tr>`;
     }).join('');
@@ -5944,14 +5889,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   window.exportarDSPDF = exportarDSPDF;
 })();
 
-// ================= CIERRE FINAL v43 - EXPORTACIÓN Y OJITO SIN BLOQUE FIJO =================
+// ================= CIERRE FINAL v43 - EXPORTACIÃ“N Y OJITO SIN BLOQUE FIJO =================
 (function(){
   const VERSION_CIERRE = 'v43-export-ojito-fix';
   const AZUL = '1F4E79';
   const TIPOS = {
-    PREPARACION: 'Acciones de Preparación (Solo DEE por Peligro Inminente)',
+    PREPARACION: 'Acciones de PreparaciÃ³n (Solo DEE por Peligro Inminente)',
     RESPUESTA: 'Acciones de Respuesta',
-    REHABILITACION: 'Acciones de Rehabilitación'
+    REHABILITACION: 'Acciones de RehabilitaciÃ³n'
   };
 
   function ntext(v){
@@ -5961,9 +5906,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function limpiarNumeroDS(valor){
     let s = String(valor || '').trim();
     if (!s) return '';
-    s = s.replace(/^D\.?\s*S\.?\s*N?[°º.]?\s*/i, '');
-    s = s.replace(/^DS\s*N?[°º.]?\s*/i, '');
-    s = s.replace(/^N?[°º.]?\s*/i, '');
+    s = s.replace(/^D\.?\s*S\.?\s*N?[Â°Âº.]?\s*/i, '');
+    s = s.replace(/^DS\s*N?[Â°Âº.]?\s*/i, '');
+    s = s.replace(/^N?[Â°Âº.]?\s*/i, '');
     s = s.replace(/\s+/g, '');
     s = s.replace(/^-+|-+$/g, '');
     // Corrige casos como 024-2026-PCM-2026-PCM o 024-2026-PCM-PCM.
@@ -5979,7 +5924,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const raw = d?.numero || d?.ds || d?.decreto || d?.decreto_supremo || '';
     let limpio = limpiarNumeroDS(raw);
     if (/^\d{3}$/.test(limpio)) {
-      const anio = String(d?.anio || d?.año || new Date().getFullYear()).match(/20\d{2}/)?.[0] || String(new Date().getFullYear());
+      const anio = String(d?.anio || d?.aÃ±o || new Date().getFullYear()).match(/20\d{2}/)?.[0] || String(new Date().getFullYear());
       limpio = `${limpio}-${anio}-PCM`;
     }
     return limpio;
@@ -5987,15 +5932,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function formatearNumeroDSFinal(d){
     const limpio = numeroDSLimpioFinal(d);
-    return limpio ? `D.S. N°${limpio}` : '';
+    return limpio ? `D.S. NÂ°${limpio}` : '';
   }
 
-  // Reemplazo global quirúrgico: evita repetir 2026-PCM en todo el sistema.
+  // Reemplazo global quirÃºrgico: evita repetir 2026-PCM en todo el sistema.
   window.formatearNumeroDS = formatearNumeroDSFinal;
   try { formatearNumeroDS = formatearNumeroDSFinal; } catch(e) {}
 
   function nombreArchivoFinal(d, ext){
-    return `DS_${numeroDSLimpioFinal(d).replace(/[^0-9A-Za-zÁÉÍÓÚÑáéíóúñ-]/g,'_')}.${ext}`;
+    return `DS_${numeroDSLimpioFinal(d).replace(/[^0-9A-Za-zÃÃ‰ÃÃ“ÃšÃ‘Ã¡Ã©Ã­Ã³ÃºÃ±-]/g,'_')}.${ext}`;
   }
 
   function formatoFecha(v){
@@ -6088,10 +6033,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const res = resumenTerritorio(d);
     const acciones = accionesDSFinal(d).map(a => filaAccionFinal(a, d));
     const secciones = [
-      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', filas:[] },
+      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÃ“N (para el caso de DEE por Peligro Inminente)', filas:[] },
       { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
-      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] },
-      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÓN', filas:[] }
+      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÃ“N', filas:[] },
+      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÃ“N', filas:[] }
     ];
     acciones.forEach(f => {
       const sec = secciones.find(s => s.key === clasificarTipo(f.tipo)) || secciones[3];
@@ -6111,7 +6056,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       distritos: res.distritos.join(', '),
       motivos: d.motivos || '',
       sectores: Array.isArray(d.sectores) ? d.sectores.join(', ') : '',
-      relacion: d.es_prorroga ? 'Prórroga' : 'Original',
+      relacion: d.es_prorroga ? 'PrÃ³rroga' : 'Original',
       cadena: d.cadena || '',
       nivelProrroga: d.nivel_prorroga || 0,
       rds: d.rdsActivo ? 'Activo' : 'No activado',
@@ -6142,8 +6087,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function exportarDSExcelFinal(id){
     const d = typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : null;
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
-    if (!window.ExcelJS) return alert('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
+    if (!window.ExcelJS) return alert('No se cargÃ³ ExcelJS. Revise conexiÃ³n a internet o CDN.');
     const info = datosReporteFinal(d);
     const wb = new ExcelJS.Workbook();
     wb.creator = 'DEE MIDIS';
@@ -6157,27 +6102,27 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     let r = 1;
     ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA'; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r++;
     ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = info.titulo; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r++;
-    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL'; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r++;
+    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL'; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r++;
     ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = `FECHA DE REPORTE: ${info.fechaReporte}`; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r++;
     ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = `VIGENCIA DE LA DEE: ${info.vigencia}`; aplicarEstiloTituloExcel(ws.getCell(`A${r}`)); r += 2;
 
     const generales = [
-      ['Número de Decreto Supremo', info.titulo],
+      ['NÃºmero de Decreto Supremo', info.titulo],
       ['Tipo', info.tipo],
       ['Peligro o evento', info.peligroEvento],
       ['Fecha inicio', formatoFecha(d.fecha_inicio)],
       ['Fecha final', formatoFecha(d.fecha_fin)],
       ['Estado de vigencia', info.estadoVigencia],
-      ['Semáforo', info.semaforo],
+      ['SemÃ¡foro', info.semaforo],
       ['Departamentos', info.departamentos],
       ['Provincias', info.provincias],
       ['Distritos', info.distritos],
-      ['Relación', info.relacion],
+      ['RelaciÃ³n', info.relacion],
       ['Cadena', info.cadena],
-      ['Prórrogas', info.nivelProrroga],
-      ['RDS', `${info.rds}${info.numeroReunion ? ' · ' + info.numeroReunion : ''}${info.fechaReunion ? ' · ' + formatoFecha(info.fechaReunion) : ''}`]
+      ['PrÃ³rrogas', info.nivelProrroga],
+      ['RDS', `${info.rds}${info.numeroReunion ? ' Â· ' + info.numeroReunion : ''}${info.fechaReunion ? ' Â· ' + formatoFecha(info.fechaReunion) : ''}`]
     ];
-    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; aplicarHeaderExcel(ws.getRow(r)); r++;
+    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÃ“N GENERAL DEL DECRETO SUPREMO'; aplicarHeaderExcel(ws.getRow(r)); r++;
     generales.forEach(([k,v]) => {
       ws.mergeCells(`B${r}:N${r}`);
       ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v || '';
@@ -6185,9 +6130,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ws.getCell(`A${r}`).font = { bold:true };
       r++;
     });
-    ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos || ''; aplicarCeldaExcel(ws.getCell(`A${r}`)); aplicarCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
+    ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos || ''; aplicarCeldaExcel(ws.getCell(`A${r}`)); aplicarCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
 
-    const headers = ['Número de reunión','Fecha reunión','Programa Nacional','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
+    const headers = ['NÃºmero de reuniÃ³n','Fecha reuniÃ³n','Programa Nacional','Tipo de acciÃ³n','CÃ³digo de acciÃ³n','Acciones especÃ­ficas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (dÃ­as)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripciÃ³n'];
     info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
       ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = sec.titulo; aplicarHeaderExcel(ws.getRow(r)); r++;
       ws.getRow(r).values = headers; aplicarHeaderExcel(ws.getRow(r)); r++;
@@ -6207,8 +6152,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function exportarDSPDFFinal(id){
     const d = typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : null;
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
-    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargÃ³ jsPDF. Revise conexiÃ³n a internet o CDN.');
     const info = datosReporteFinal(d);
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
@@ -6217,16 +6162,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
     doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
     doc.setFontSize(9); doc.setTextColor(0,0,0);
-    doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 25, { align:'center' });
+    doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL', 148.5, 25, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 31, { align:'center' });
     doc.text(`VIGENCIA DE LA DEE: ${info.vigencia}`, 148.5, 37, { align:'center' });
 
     const generales = [
-      ['Número de Decreto Supremo', info.titulo], ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento],
+      ['NÃºmero de Decreto Supremo', info.titulo], ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento],
       ['Fecha inicio', formatoFecha(d.fecha_inicio)], ['Fecha final', formatoFecha(d.fecha_fin)], ['Estado de vigencia', info.estadoVigencia],
-      ['Semáforo', info.semaforo], ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos],
-      ['Relación', info.relacion], ['Cadena', info.cadena], ['Prórrogas', String(info.nivelProrroga || '')], ['RDS', `${info.rds}${info.numeroReunion ? ' · ' + info.numeroReunion : ''}${info.fechaReunion ? ' · ' + formatoFecha(info.fechaReunion) : ''}`],
-      ['Acciones a realizar según exposición de motivos', info.motivos || '']
+      ['SemÃ¡foro', info.semaforo], ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos],
+      ['RelaciÃ³n', info.relacion], ['Cadena', info.cadena], ['PrÃ³rrogas', String(info.nivelProrroga || '')], ['RDS', `${info.rds}${info.numeroReunion ? ' Â· ' + info.numeroReunion : ''}${info.fechaReunion ? ' Â· ' + formatoFecha(info.fechaReunion) : ''}`],
+      ['Acciones a realizar segÃºn exposiciÃ³n de motivos', info.motivos || '']
     ];
     doc.autoTable({
       startY: 43,
@@ -6237,7 +6182,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       margin:{ left:11, right:11 }
     });
     let y = doc.lastAutoTable.finalY + 4;
-    const head = [['N° reunión','Fecha reunión','Programa','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
+    const head = [['NÂ° reuniÃ³n','Fecha reuniÃ³n','Programa','Tipo','CÃ³digo','Acciones especÃ­ficas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
     info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
       if (y > 175) { doc.addPage(); y = 12; }
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(sec.titulo, 8, y); y += 2;
@@ -6251,7 +6196,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         styles:{ fontSize:5.1, cellPadding:0.55, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 },
         columnStyles:{ 0:{cellWidth:17},1:{cellWidth:16},2:{cellWidth:21},3:{cellWidth:24},4:{cellWidth:16},5:{cellWidth:50},6:{cellWidth:14},7:{cellWidth:12},8:{cellWidth:10},9:{cellWidth:14},10:{cellWidth:14},11:{cellWidth:12},12:{cellWidth:10},13:{cellWidth:38} },
         margin:{ left:6, right:6 },
-        didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHora()}`, 8, 204); }
+        didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS Â· ${fechaHora()}`, 8, 204); }
       });
       y = doc.lastAutoTable.finalY + 5;
     });
@@ -6263,15 +6208,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!acciones.length) return '<div class="alert alert-secondary py-2 mb-0">No hay acciones registradas por Programas Nacionales para este Decreto Supremo.</div>';
     const grupos = new Map();
     acciones.forEach(a => {
-      const key = `${a.reunion || 'Sin reunión'}|${a.fechaReunion || ''}`;
+      const key = `${a.reunion || 'Sin reuniÃ³n'}|${a.fechaReunion || ''}`;
       if (!grupos.has(key)) grupos.set(key, []);
       grupos.get(key).push(a);
     });
     let html = '';
     grupos.forEach((items, key) => {
       const [reunion, fecha] = key.split('|');
-      html += `<div class="border rounded p-2 mb-2 bg-light"><strong>${escapeHtml(reunion)}</strong>${fecha ? ' · ' + escapeHtml(formatoFecha(fecha)) : ''}</div>`;
-      html += `<div class="table-responsive mb-3"><table class="table table-sm table-striped"><thead class="table-light"><tr><th>Programa Nacional</th><th>Tipo de acción</th><th>Código</th><th>Acción registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
+      html += `<div class="border rounded p-2 mb-2 bg-light"><strong>${escapeHtml(reunion)}</strong>${fecha ? ' Â· ' + escapeHtml(formatoFecha(fecha)) : ''}</div>`;
+      html += `<div class="table-responsive mb-3"><table class="table table-sm table-striped"><thead class="table-light"><tr><th>Programa Nacional</th><th>Tipo de acciÃ³n</th><th>CÃ³digo</th><th>AcciÃ³n registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
       html += items.map(a => `<tr><td>${escapeHtml(a.programa)}</td><td>${escapeHtml(a.tipo)}</td><td>${escapeHtml(a.codigo)}</td><td>${escapeHtml(a.detalle)}</td><td>${escapeHtml(a.metaProgramada)}</td><td>${escapeHtml(a.metaEjecutada)}</td><td>${escapeHtml(a.avance)}</td><td>${escapeHtml(a.descripcion)}</td><td>${escapeHtml(a.usuario)}</td><td>${escapeHtml(a.fechaRegistro)}</td></tr>`).join('');
       html += '</tbody></table></div>';
     });
@@ -6280,24 +6225,24 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function verDetalleDSFinal(id){
     const d = typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : null;
-    if (!d) return alert('No se encontró el Decreto Supremo.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo.');
     const info = datosReporteFinal(d);
     const territorio = territorios(d);
     const body = $('modalDSBody');
     if (body) {
       body.innerHTML = `
-        <div class="mb-2"><strong>Número de Decreto Supremo:</strong> ${escapeHtml(info.titulo)}</div>
+        <div class="mb-2"><strong>NÃºmero de Decreto Supremo:</strong> ${escapeHtml(info.titulo)}</div>
         <div class="mb-2"><strong>Fecha:</strong> ${escapeHtml(formatoFecha(d.fecha_registro || d.created_at || d.fecha_inicio || ''))}</div>
         <div class="mb-2"><strong>Tipo:</strong> ${escapeHtml(info.tipo || '-')}</div>
         <div class="mb-2"><strong>Peligro o evento:</strong> ${escapeHtml(info.peligroEvento || '-')}</div>
-        <div class="mb-2"><strong>Vigencia:</strong> ${escapeHtml(info.vigencia)} · ${escapeHtml(info.estadoVigencia || '')} · ${escapeHtml(info.semaforo || '')}</div>
+        <div class="mb-2"><strong>Vigencia:</strong> ${escapeHtml(info.vigencia)} Â· ${escapeHtml(info.estadoVigencia || '')} Â· ${escapeHtml(info.semaforo || '')}</div>
         <div class="mb-2"><strong>Sectores que firman:</strong> ${escapeHtml(info.sectores || 'No registrado')}</div>
-        <div class="mb-2"><strong>Relación:</strong> ${escapeHtml(info.relacion)}${info.cadena ? ' · ' + escapeHtml(info.cadena) : ''}</div>
-        <div class="mb-2"><strong>RDS:</strong> ${escapeHtml(info.rds)}${info.numeroReunion ? ' · ' + escapeHtml(info.numeroReunion) : ''}${info.fechaReunion ? ' · ' + escapeHtml(formatoFecha(info.fechaReunion)) : ''}</div>
-        <div class="mb-2"><strong>Exposición de motivos:</strong><br><div class="border rounded p-2 bg-light small">${escapeHtml(info.motivos || 'No registrado')}</div></div>
+        <div class="mb-2"><strong>RelaciÃ³n:</strong> ${escapeHtml(info.relacion)}${info.cadena ? ' Â· ' + escapeHtml(info.cadena) : ''}</div>
+        <div class="mb-2"><strong>RDS:</strong> ${escapeHtml(info.rds)}${info.numeroReunion ? ' Â· ' + escapeHtml(info.numeroReunion) : ''}${info.fechaReunion ? ' Â· ' + escapeHtml(formatoFecha(info.fechaReunion)) : ''}</div>
+        <div class="mb-2"><strong>ExposiciÃ³n de motivos:</strong><br><div class="border rounded p-2 bg-light small">${escapeHtml(info.motivos || 'No registrado')}</div></div>
         <hr>
         <strong>Territorio involucrado</strong>
-        <div class="small mt-2 mb-3">${territorio.length ? territorio.map(t => `${escapeHtml(t.departamento)} / ${escapeHtml(t.provincia)} / ${escapeHtml(t.distrito)}${t.ubigeo ? ' · Ubigeo: ' + escapeHtml(t.ubigeo) : ''}`).join('<br>') : 'No registrado'}</div>
+        <div class="small mt-2 mb-3">${territorio.length ? territorio.map(t => `${escapeHtml(t.departamento)} / ${escapeHtml(t.provincia)} / ${escapeHtml(t.distrito)}${t.ubigeo ? ' Â· Ubigeo: ' + escapeHtml(t.ubigeo) : ''}`).join('<br>') : 'No registrado'}</div>
         <hr>
         <h6 class="text-primary">Acciones registradas por Programas Nacionales</h6>
         ${accionesAgrupadasPorReunionHTML(d)}
@@ -6331,7 +6276,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">PreAprobar</button>`;
         } else if (puedeAprobar()) {
           const habilitado = estado === 'PREAPROBADO';
-          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escapeHtmlAttr(d.id)}')">Aprobar</button>`;
         }
       } else if (esRegistradorPrograma()) {
         const programa = programaSesionNormalizado();
@@ -6339,7 +6284,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         botonRDS = d.rdsActivo ? (cerrado ? `<button type="button" class="btn btn-sm btn-secondary" disabled>Acciones Registradas</button>` : `<button type="button" class="btn btn-sm btn-primary" onclick="abrirRegistrarAcciones('${escapeHtmlAttr(d.id)}')">Registrar Acciones</button>`) : `<span class="badge text-bg-secondary">No activado</span>`;
       } else botonRDS = '<span class="text-muted small">Solo lectura</span>';
       return `<tr>
-        <td>${escapeHtml(formatearNumeroDSFinal(d))}</td><td>${escapeHtml(d.anio)}</td><td>${escapeHtml(d.peligro)}</td><td>${escapeHtml(d.tipo_peligro)}</td><td>${escapeHtml(d.fecha_inicio)}</td><td>${escapeHtml(d.fecha_fin)}</td><td>${escapeHtml(d.vigencia)}</td><td>${escapeHtml(d.semaforo)}</td><td>${deps.size}</td><td>${provs.size}</td><td>${dists.size}</td><td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td><td>${escapeHtml(d.cadena || '')}</td><td>${escapeHtml(d.nivel_prorroga || 0)}</td><td>${botonRDS}</td><td>${botonRevision}</td><td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">👁</button></td><td>${botonesExportarFinal(d)}</td>
+        <td>${escapeHtml(formatearNumeroDSFinal(d))}</td><td>${escapeHtml(d.anio)}</td><td>${escapeHtml(d.peligro)}</td><td>${escapeHtml(d.tipo_peligro)}</td><td>${escapeHtml(d.fecha_inicio)}</td><td>${escapeHtml(d.fecha_fin)}</td><td>${escapeHtml(d.vigencia)}</td><td>${escapeHtml(d.semaforo)}</td><td>${deps.size}</td><td>${provs.size}</td><td>${dists.size}</td><td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td><td>${escapeHtml(d.cadena || '')}</td><td>${escapeHtml(d.nivel_prorroga || 0)}</td><td>${botonRDS}</td><td>${botonRevision}</td><td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escapeHtmlAttr(d.id)}')">ðŸ‘</button></td><td>${botonesExportarFinal(d)}</td>
       </tr>`;
     }).join('');
   }
@@ -6361,7 +6306,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   });
 })();
 
-// ================= CIERRE FINAL v44 - EXPORTACIÓN POR REUNIÓN =================
+// ================= CIERRE FINAL v44 - EXPORTACIÃ“N POR REUNIÃ“N =================
 (function(){
   const VERSION_CIERRE = 'v44-exportacion-previa-por-reunion';
   let exportacionPendienteV44 = { dsId: '', tipo: '' };
@@ -6418,17 +6363,17 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function numeroDSLimpio(d){
     let n = txt(d?.numero || d?.ds || d?.decreto || d?.decreto_supremo || '').trim();
-    n = n.replace(/^D\.?\s*S\.?\s*N[°.º]?\s*/i, '').trim();
-    n = n.replace(/^DS\s*N[°.º]?\s*/i, '').trim();
+    n = n.replace(/^D\.?\s*S\.?\s*N[Â°.Âº]?\s*/i, '').trim();
+    n = n.replace(/^DS\s*N[Â°.Âº]?\s*/i, '').trim();
     n = n.replace(/^-+/, '').trim();
     const m = n.match(/(\d{1,4})\s*-\s*(\d{4})\s*-\s*PCM/i);
     if (m) return `${m[1].padStart(3,'0')}-${m[2]}-PCM`;
-    const anio = txt(d?.anio || d?.año || '').trim();
+    const anio = txt(d?.anio || d?.aÃ±o || '').trim();
     n = n.replace(/-?\d{4}-PCM$/i, '').replace(/-?PCM$/i, '').trim();
     n = n.padStart(3,'0');
     return anio ? `${n}-${anio}-PCM` : n;
   }
-  function tituloDS(d){ return `D.S. N°${numeroDSLimpio(d)}`; }
+  function tituloDS(d){ return `D.S. NÂ°${numeroDSLimpio(d)}`; }
   function nombreArchivo(d, ext, reunion){
     const base = `DS_${numeroDSLimpio(d)}`.replace(/[^a-zA-Z0-9._-]/g,'_');
     const reu = norm(reunion?.numeroReunion || '').replace(/\s+/g,'_').replace(/[^A-Z0-9_]/g,'');
@@ -6471,7 +6416,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     };
     if (Array.isArray(d?.rdsReuniones)) d.rdsReuniones.forEach(r => agregar(r.numeroReunion || r.numero_reunion, r.fechaReunion || r.fecha_reunion, 'RDS'));
     agregar(d?.numeroReunion || d?.numero_reunion, d?.fechaReunion || d?.fecha_reunion, 'RDS');
-    accionesDelDS(d).forEach(a => agregar(valor(a,'numeroReunion','numero_reunion'), valor(a,'fechaReunion','fecha_reunion'), 'Acción'));
+    accionesDelDS(d).forEach(a => agregar(valor(a,'numeroReunion','numero_reunion'), valor(a,'fechaReunion','fecha_reunion'), 'AcciÃ³n'));
     return [...mapa.values()].sort((a,b) => {
       const ia = (window.REUNIONES_RDS_V38 || []).indexOf(a.numeroReunion);
       const ib = (window.REUNIONES_RDS_V38 || []).indexOf(b.numeroReunion);
@@ -6519,10 +6464,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const res = resumenTerritorio(d);
     const acciones = accionesDeReunion(d, reunion).map(filaAccion);
     const secciones = [
-      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (para el caso de DEE por Peligro Inminente)', filas:[] },
+      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÃ“N (para el caso de DEE por Peligro Inminente)', filas:[] },
       { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
-      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] },
-      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÓN', filas:[] }
+      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÃ“N', filas:[] },
+      { key:'otros', titulo:'ACCIONES SIN CLASIFICACIÃ“N', filas:[] }
     ];
     acciones.forEach(f => (secciones.find(s => s.key === clasificarTipo(f.tipo)) || secciones[3]).filas.push(f));
     const numeroReunionTitulo = txt(reunion?.numeroReunion || '');
@@ -6542,7 +6487,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       provincias: res.provincias.join(', '),
       distritos: res.distritos.join(', '),
       motivos: d?.motivos || d?.exposicion_motivos || '',
-      relacion: d?.es_prorroga ? 'Prórroga' : 'Original',
+      relacion: d?.es_prorroga ? 'PrÃ³rroga' : 'Original',
       cadena: d?.cadena || '',
       nivelProrroga: d?.nivel_prorroga || 0,
       rds: d?.rdsActivo ? 'Activo' : 'No activado',
@@ -6562,12 +6507,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Seleccionar reunión para exportar</h5>
+            <h5 class="modal-title">Seleccionar reuniÃ³n para exportar</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
             <div id="exportReunionInfo" class="alert alert-info py-2 small mb-3"></div>
-            <label class="form-label">Número de reunión</label>
+            <label class="form-label">NÃºmero de reuniÃ³n</label>
             <select id="exportReunionSelect" class="form-select"></select>
             <div class="form-text">Solo se muestran reuniones registradas para el Decreto Supremo seleccionado.</div>
           </div>
@@ -6582,16 +6527,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function abrirModalExportacion(id, tipo){
     const d = getDecreto(id);
-    if (!d) return alert('Seleccione un Decreto Supremo válido para exportar.');
+    if (!d) return alert('Seleccione un Decreto Supremo vÃ¡lido para exportar.');
     const reuniones = reunionesDelDS(d);
     if (!reuniones.length) return alert('El Decreto Supremo seleccionado no tiene reuniones registradas para exportar.');
     crearModal();
     exportacionPendienteV44 = { dsId: String(id), tipo };
     const sel = q('exportReunionSelect');
     const info = q('exportReunionInfo');
-    if (info) info.innerHTML = `<strong>${esc(tituloDS(d))}</strong><br>Tiene ${reuniones.length} reunión${reuniones.length === 1 ? '' : 'es'} registrada${reuniones.length === 1 ? '' : 's'}. Seleccione la reunión que desea visualizar/exportar.`;
+    if (info) info.innerHTML = `<strong>${esc(tituloDS(d))}</strong><br>Tiene ${reuniones.length} reuniÃ³n${reuniones.length === 1 ? '' : 'es'} registrada${reuniones.length === 1 ? '' : 's'}. Seleccione la reuniÃ³n que desea visualizar/exportar.`;
     if (sel) {
-      sel.innerHTML = reuniones.map(r => `<option value="${escAttr(r.key)}">${esc(r.numeroReunion)} · ${esc(fechaMostrar(r.fechaReunion))}</option>`).join('');
+      sel.innerHTML = reuniones.map(r => `<option value="${escAttr(r.key)}">${esc(r.numeroReunion)} Â· ${esc(fechaMostrar(r.fechaReunion))}</option>`).join('');
       sel.dataset.reuniones = JSON.stringify(reuniones);
     }
     const btn = q('btnGenerarExportReunion');
@@ -6606,9 +6551,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     let reuniones = [];
     try { reuniones = JSON.parse(sel.dataset.reuniones || '[]'); } catch {}
     const reunion = reuniones.find(r => r.key === sel.value);
-    if (!reunion) return alert('Seleccione una reunión registrada válida.');
+    if (!reunion) return alert('Seleccione una reuniÃ³n registrada vÃ¡lida.');
     const acciones = accionesDeReunion(d, reunion);
-    if (!acciones.length) return alert('La reunión seleccionada no tiene acciones registradas para exportar.');
+    if (!acciones.length) return alert('La reuniÃ³n seleccionada no tiene acciones registradas para exportar.');
     const modal = q('modalExportarReunionDS');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
     if (exportacionPendienteV44.tipo === 'excel') await generarExcelReunion(d, reunion);
@@ -6637,7 +6582,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
   }
   async function generarExcelReunion(d, reunion){
-    if (!window.ExcelJS) return alert('No se cargó ExcelJS. Revise conexión a internet o CDN.');
+    if (!window.ExcelJS) return alert('No se cargÃ³ ExcelJS. Revise conexiÃ³n a internet o CDN.');
     const info = datosReporte(d, reunion);
     const wb = new ExcelJS.Workbook();
     wb.creator = 'DEE MIDIS'; wb.created = new Date();
@@ -6646,22 +6591,22 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     ws.pageMargins = { left:0.25, right:0.25, top:0.35, bottom:0.35, header:0.15, footer:0.15 };
     ws.columns = [{width:22},{width:18},{width:24},{width:18},{width:18},{width:58},{width:16},{width:14},{width:12},{width:16},{width:16},{width:14},{width:12},{width:42}];
     let r = 1;
-    [['MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA'],[info.titulo],[`REUNIÓN: ${reunion.numeroReunion} · ${fechaMostrar(reunion.fechaReunion)}`],['SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL'],[`FECHA DE REPORTE: ${info.fechaReporte}`],[`VIGENCIA DE LA DEE: ${info.vigencia}`]].forEach(v => { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = v[0]; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
+    [['MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA'],[info.titulo],[`REUNIÃ“N: ${reunion.numeroReunion} Â· ${fechaMostrar(reunion.fechaReunion)}`],['SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL'],[`FECHA DE REPORTE: ${info.fechaReporte}`],[`VIGENCIA DE LA DEE: ${info.vigencia}`]].forEach(v => { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = v[0]; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
     r++;
     const generales = [
-      ['Número de Decreto Supremo', info.titulo], ['Número de reunión', reunion.numeroReunion], ['Fecha de reunión', fechaMostrar(reunion.fechaReunion)],
+      ['NÃºmero de Decreto Supremo', info.titulo], ['NÃºmero de reuniÃ³n', reunion.numeroReunion], ['Fecha de reuniÃ³n', fechaMostrar(reunion.fechaReunion)],
       ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento], ['Fecha inicio', fechaMostrar(d.fecha_inicio)], ['Fecha final', fechaMostrar(d.fecha_fin)],
-      ['Estado de vigencia', info.estadoVigencia], ['Semáforo', info.semaforo], ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos],
-      ['Relación', info.relacion], ['Cadena', info.cadena], ['Prórrogas', info.nivelProrroga], ['RDS', info.rds]
+      ['Estado de vigencia', info.estadoVigencia], ['SemÃ¡foro', info.semaforo], ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos],
+      ['RelaciÃ³n', info.relacion], ['Cadena', info.cadena], ['PrÃ³rrogas', info.nivelProrroga], ['RDS', info.rds]
     ];
-    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
+    ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÃ“N GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
     generales.forEach(([k,v]) => { ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v || ''; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; r++; });
-    ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos || ''; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
-    const headers = ['Número de reunión','Fecha reunión','Programa Nacional','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
+    ws.mergeCells(`B${r}:N${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos || ''; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
+    const headers = ['NÃºmero de reuniÃ³n','Fecha reuniÃ³n','Programa Nacional','Tipo de acciÃ³n','CÃ³digo de acciÃ³n','Acciones especÃ­ficas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (dÃ­as)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripciÃ³n'];
     info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
       ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = sec.titulo; estiloHeaderExcel(ws.getRow(r)); r++;
       ws.getRow(r).values = headers; estiloHeaderExcel(ws.getRow(r)); r++;
-      if (!sec.filas.length) { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'Sin acciones registradas para esta sección.'; estiloCeldaExcel(ws.getCell(`A${r}`)); r++; }
+      if (!sec.filas.length) { ws.mergeCells(`A${r}:N${r}`); ws.getCell(`A${r}`).value = 'Sin acciones registradas para esta secciÃ³n.'; estiloCeldaExcel(ws.getCell(`A${r}`)); r++; }
       else sec.filas.forEach(f => { ws.getRow(r).values = [reunion.numeroReunion, fechaMostrar(reunion.fechaReunion), f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]; ws.getRow(r).eachCell(estiloCeldaExcel); r++; });
       r++;
     });
@@ -6669,7 +6614,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     descargarBlob(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivo(d,'xlsx',reunion));
   }
   function generarPDFReunion(d, reunion){
-    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF. Revise conexión a internet o CDN.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargÃ³ jsPDF. Revise conexiÃ³n a internet o CDN.');
     const info = datosReporte(d, reunion);
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
@@ -6677,24 +6622,24 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     doc.setFont('helvetica','bold'); doc.setTextColor(...azul); doc.setFontSize(12);
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
     doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
-    doc.setFontSize(9); doc.text(`REUNIÓN: ${reunion.numeroReunion} · ${fechaMostrar(reunion.fechaReunion)}`, 148.5, 25, { align:'center' });
-    doc.setTextColor(0,0,0); doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 31, { align:'center' });
+    doc.setFontSize(9); doc.text(`REUNIÃ“N: ${reunion.numeroReunion} Â· ${fechaMostrar(reunion.fechaReunion)}`, 148.5, 25, { align:'center' });
+    doc.setTextColor(0,0,0); doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL', 148.5, 31, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 37, { align:'center' });
     doc.text(`VIGENCIA DE LA DEE: ${info.vigencia}`, 148.5, 43, { align:'center' });
     const generales = [
-      ['Número de Decreto Supremo', info.titulo], ['Número de reunión', reunion.numeroReunion], ['Fecha de reunión', fechaMostrar(reunion.fechaReunion)], ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento],
-      ['Fecha inicio', fechaMostrar(d.fecha_inicio)], ['Fecha final', fechaMostrar(d.fecha_fin)], ['Estado de vigencia', info.estadoVigencia], ['Semáforo', info.semaforo],
-      ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos], ['Relación', info.relacion], ['Cadena', info.cadena], ['Prórrogas', txt(info.nivelProrroga || '')], ['RDS', info.rds],
-      ['Acciones a realizar según exposición de motivos', info.motivos || '']
+      ['NÃºmero de Decreto Supremo', info.titulo], ['NÃºmero de reuniÃ³n', reunion.numeroReunion], ['Fecha de reuniÃ³n', fechaMostrar(reunion.fechaReunion)], ['Tipo', info.tipo], ['Peligro o evento', info.peligroEvento],
+      ['Fecha inicio', fechaMostrar(d.fecha_inicio)], ['Fecha final', fechaMostrar(d.fecha_fin)], ['Estado de vigencia', info.estadoVigencia], ['SemÃ¡foro', info.semaforo],
+      ['Departamentos', info.departamentos], ['Provincias', info.provincias], ['Distritos', info.distritos], ['RelaciÃ³n', info.relacion], ['Cadena', info.cadena], ['PrÃ³rrogas', txt(info.nivelProrroga || '')], ['RDS', info.rds],
+      ['Acciones a realizar segÃºn exposiciÃ³n de motivos', info.motivos || '']
     ];
     doc.autoTable({ startY:49, body:generales, theme:'grid', styles:{ fontSize:6.5, cellPadding:1, overflow:'linebreak', valign:'top' }, columnStyles:{ 0:{ fontStyle:'bold', fillColor:[221,235,247], cellWidth:58 }, 1:{ cellWidth:214 } }, margin:{ left:11, right:11 } });
     let y = doc.lastAutoTable.finalY + 4;
-    const head = [['N° reunión','Fecha reunión','Programa','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
+    const head = [['NÂ° reuniÃ³n','Fecha reuniÃ³n','Programa','Tipo','CÃ³digo','Acciones especÃ­ficas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
     info.secciones.filter(s => s.key !== 'otros' || s.filas.length).forEach(sec => {
       if (y > 175) { doc.addPage(); y = 12; }
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(sec.titulo, 8, y); y += 2;
-      const body = sec.filas.length ? sec.filas.map(f => [reunion.numeroReunion, fechaMostrar(reunion.fechaReunion), f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]) : [['Sin acciones registradas para esta sección.','','','','','','','','','','','','','']];
-      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.3 }, styles:{ fontSize:5.1, cellPadding:0.55, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:17},1:{cellWidth:16},2:{cellWidth:21},3:{cellWidth:24},4:{cellWidth:16},5:{cellWidth:50},6:{cellWidth:14},7:{cellWidth:12},8:{cellWidth:10},9:{cellWidth:14},10:{cellWidth:14},11:{cellWidth:12},12:{cellWidth:10},13:{cellWidth:38} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHora()}`, 8, 204); } });
+      const body = sec.filas.length ? sec.filas.map(f => [reunion.numeroReunion, fechaMostrar(reunion.fechaReunion), f.programa, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]) : [['Sin acciones registradas para esta secciÃ³n.','','','','','','','','','','','','','']];
+      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.3 }, styles:{ fontSize:5.1, cellPadding:0.55, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:17},1:{cellWidth:16},2:{cellWidth:21},3:{cellWidth:24},4:{cellWidth:16},5:{cellWidth:50},6:{cellWidth:14},7:{cellWidth:12},8:{cellWidth:10},9:{cellWidth:14},10:{cellWidth:14},11:{cellWidth:12},12:{cellWidth:10},13:{cellWidth:38} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS Â· ${fechaHora()}`, 8, 204); } });
       y = doc.lastAutoTable.finalY + 5;
     });
     doc.save(nombreArchivo(d,'pdf',reunion));
@@ -6726,7 +6671,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   });
 })();
 
-// ================= CIERRE FINAL v45.1 - EXPORTACIÓN SIN CAMPOS INTERNOS =================
+// ================= CIERRE FINAL v45.1 - EXPORTACIÃ“N SIN CAMPOS INTERNOS =================
 (function(){
   const VERSION_CIERRE = 'v46-exportacion-tipo-accion-clasificada';
   const $id = (id) => document.getElementById(id);
@@ -6771,13 +6716,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     catch { return []; }
   }
   function tituloDS(d){
-    let s = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `DS N.° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    let s = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `DS N.Â° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
     s = s.replace(/-PCM-\d{4}-PCM\b/gi, '-PCM');
     s = s.replace(/-(\d{4})-PCM-\1-PCM\b/gi, '-$1-PCM');
-    return s.replace(/^DS\s*N\.°/i, 'D.S. N°').trim();
+    return s.replace(/^DS\s*N\.Â°/i, 'D.S. NÂ°').trim();
   }
   function numeroDSLimpio(d){
-    return tituloDS(d).replace(/^D\.S\.\s*N°\s*/i,'').replace(/[^0-9A-Za-zÁÉÍÓÚÜÑáéíóúüñ-]+/g,'_');
+    return tituloDS(d).replace(/^D\.S\.\s*NÂ°\s*/i,'').replace(/[^0-9A-Za-zÃÃ‰ÃÃ“ÃšÃœÃ‘Ã¡Ã©Ã­Ã³ÃºÃ¼Ã±-]+/g,'_');
   }
   function nombreArchivo(d, ext){
     return `DS_${numeroDSLimpio(d)}.${ext}`;
@@ -6863,9 +6808,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function datosReporteLimpio(d, reunion){
     const acciones = accionesDeReunion(d, reunion).map(filaAccion);
     const secciones = [
-      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÓN (Solo DEE por peligro inminente)', filas:[] },
+      { key:'preparacion', titulo:'ACCIONES DE PREPARACIÃ“N (Solo DEE por peligro inminente)', filas:[] },
       { key:'respuesta', titulo:'ACCIONES DE RESPUESTA', filas:[] },
-      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÓN', filas:[] }
+      { key:'rehabilitacion', titulo:'ACCIONES DE REHABILITACIÃ“N', filas:[] }
     ];
     acciones.forEach(f => {
       const key = clasificarTipo(f.tipo);
@@ -6897,12 +6842,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Seleccionar reunión para exportar</h5>
+            <h5 class="modal-title">Seleccionar reuniÃ³n para exportar</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
             <div id="exportReunionInfoLimpio" class="alert alert-info py-2 small mb-3"></div>
-            <label class="form-label">Número de reunión</label>
+            <label class="form-label">NÃºmero de reuniÃ³n</label>
             <select id="exportReunionSelectLimpio" class="form-select"></select>
           </div>
           <div class="modal-footer">
@@ -6916,16 +6861,16 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function abrirModalExportacionLimpia(id, tipo){
     const d = getDecreto(id);
-    if (!d) return alert('Seleccione un Decreto Supremo válido para exportar.');
+    if (!d) return alert('Seleccione un Decreto Supremo vÃ¡lido para exportar.');
     const reuniones = reunionesDelDS(d);
     if (!reuniones.length) return alert('El Decreto Supremo seleccionado no tiene reuniones registradas para exportar.');
     crearModalExportacionLimpia();
     exportacionLimpiaPendiente = { dsId:String(id), tipo };
     const info = $id('exportReunionInfoLimpio');
     const sel = $id('exportReunionSelectLimpio');
-    if (info) info.innerHTML = `<strong>${esc(tituloDS(d))}</strong><br>Tiene ${reuniones.length} reunión${reuniones.length === 1 ? '' : 'es'} registrada${reuniones.length === 1 ? '' : 's'}. Seleccione la reunión que desea visualizar/exportar.`;
+    if (info) info.innerHTML = `<strong>${esc(tituloDS(d))}</strong><br>Tiene ${reuniones.length} reuniÃ³n${reuniones.length === 1 ? '' : 'es'} registrada${reuniones.length === 1 ? '' : 's'}. Seleccione la reuniÃ³n que desea visualizar/exportar.`;
     if (sel) {
-      sel.innerHTML = reuniones.map(r => `<option value="${escAttr(r.key)}">${esc(r.numeroReunion)} · ${esc(fechaMostrar(r.fechaReunion))}</option>`).join('');
+      sel.innerHTML = reuniones.map(r => `<option value="${escAttr(r.key)}">${esc(r.numeroReunion)} Â· ${esc(fechaMostrar(r.fechaReunion))}</option>`).join('');
       sel.dataset.reuniones = JSON.stringify(reuniones);
     }
     const btn = $id('btnGenerarExportReunionLimpio');
@@ -6940,9 +6885,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     let reuniones = [];
     try { reuniones = JSON.parse(sel.dataset.reuniones || '[]'); } catch {}
     const reunion = reuniones.find(r => r.key === sel.value);
-    if (!reunion) return alert('Seleccione una reunión registrada válida.');
+    if (!reunion) return alert('Seleccione una reuniÃ³n registrada vÃ¡lida.');
     const acciones = accionesDeReunion(d, reunion);
-    if (!acciones.length) return alert('La reunión seleccionada no tiene acciones registradas para exportar.');
+    if (!acciones.length) return alert('La reuniÃ³n seleccionada no tiene acciones registradas para exportar.');
     const modal = $id('modalExportarReunionDSLimpio');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
     if (exportacionLimpiaPendiente.tipo === 'excel') await generarExcelLimpio(d, reunion);
@@ -6971,7 +6916,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
   }
   async function generarExcelLimpio(d, reunion){
-    if (!window.ExcelJS) return alert('No se cargó ExcelJS.');
+    if (!window.ExcelJS) return alert('No se cargÃ³ ExcelJS.');
     const info = datosReporteLimpio(d, reunion);
     if (!info.totalAcciones) return alert('No hay acciones registradas para exportar.');
     const wb = new ExcelJS.Workbook();
@@ -6984,24 +6929,24 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     [
       'MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA',
       info.tituloConReunion || info.titulo,
-      'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL',
+      'SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL',
       `FECHA DE REPORTE: ${info.fechaReporte}`
     ].forEach(v => { ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = v; estiloTituloExcel(ws.getCell(`A${r}`)); r++; });
     r++;
     const generales = [
-      ['Número de Decreto Supremo', info.titulo],
+      ['NÃºmero de Decreto Supremo', info.titulo],
       ['Tipo', info.tipo],
       ['Peligro o evento', info.peligroEvento]
     ].filter(row => txt(row[1]));
     if (generales.length) {
-      ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÓN GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
+      ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = 'INFORMACIÃ“N GENERAL DEL DECRETO SUPREMO'; estiloHeaderExcel(ws.getRow(r)); r++;
       generales.forEach(([k,v]) => { ws.mergeCells(`B${r}:O${r}`); ws.getCell(`A${r}`).value = k; ws.getCell(`B${r}`).value = v; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; r++; });
       r++;
     }
     if (txt(info.motivos)) {
-      ws.mergeCells(`B${r}:O${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÚN LA EXPOSICIÓN DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
+      ws.mergeCells(`B${r}:O${r}`); ws.getCell(`A${r}`).value = 'ACCIONES A REALIZAR POR EL SECTOR SEGÃšN LA EXPOSICIÃ“N DE MOTIVOS'; ws.getCell(`B${r}`).value = info.motivos; estiloCeldaExcel(ws.getCell(`A${r}`)); estiloCeldaExcel(ws.getCell(`B${r}`)); ws.getCell(`A${r}`).font = { bold:true }; ws.getRow(r).height = 42; r += 2;
     }
-    const headers = ['Programa Nacional','Departamento','Provincia','Distrito','Tipo de acción','Código de acción','Acciones específicas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (días)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripción'];
+    const headers = ['Programa Nacional','Departamento','Provincia','Distrito','Tipo de acciÃ³n','CÃ³digo de acciÃ³n','Acciones especÃ­ficas programadas y ejecutadas','Unidad de medida','Meta programada','Plazo (dÃ­as)','F. inicio','F. final','Meta ejecutada','% Avance','Comentarios / descripciÃ³n'];
     info.secciones.forEach(sec => {
       ws.mergeCells(`A${r}:O${r}`); ws.getCell(`A${r}`).value = sec.titulo; estiloHeaderExcel(ws.getRow(r)); r++;
       ws.getRow(r).values = headers; estiloHeaderExcel(ws.getRow(r)); r++;
@@ -7012,7 +6957,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     descargarBlob(new Blob([buf], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombreArchivo(d,'xlsx'));
   }
   function generarPDFLimpio(d, reunion){
-    if (!window.jspdf?.jsPDF) return alert('No se cargó jsPDF.');
+    if (!window.jspdf?.jsPDF) return alert('No se cargÃ³ jsPDF.');
     const info = datosReporteLimpio(d, reunion);
     if (!info.totalAcciones) return alert('No hay acciones registradas para exportar.');
     const { jsPDF } = window.jspdf;
@@ -7022,10 +6967,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     doc.text('MATRIZ EJECUTIVA DE SEGUIMIENTO DE ACCIONES EN LA DECLARATORIA DE ESTADO DE EMERGENCIA', 148.5, 12, { align:'center' });
     doc.setFontSize(11); doc.text(info.tituloConReunion || info.titulo, 148.5, 19, { align:'center' });
     doc.setTextColor(0,0,0); doc.setFontSize(9);
-    doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÓN SOCIAL', 148.5, 26, { align:'center' });
+    doc.text('SECTOR: MINISTERIO DE DESARROLLO E INCLUSIÃ“N SOCIAL', 148.5, 26, { align:'center' });
     doc.text(`FECHA DE REPORTE: ${info.fechaReporte}`, 148.5, 32, { align:'center' });
     const generales = [
-      ['Número de Decreto Supremo', info.titulo],
+      ['NÃºmero de Decreto Supremo', info.titulo],
       ['Tipo', info.tipo],
       ['Peligro o evento', info.peligroEvento]
     ].filter(row => txt(row[1]));
@@ -7035,15 +6980,15 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       y = doc.lastAutoTable.finalY + 4;
     }
     if (txt(info.motivos)) {
-      doc.autoTable({ startY:y, body:[['Acciones a realizar según exposición de motivos', info.motivos]], theme:'grid', styles:{ fontSize:6.5, cellPadding:1, overflow:'linebreak', valign:'top' }, columnStyles:{ 0:{ fontStyle:'bold', fillColor:[221,235,247], cellWidth:58 }, 1:{ cellWidth:214 } }, margin:{ left:11, right:11 } });
+      doc.autoTable({ startY:y, body:[['Acciones a realizar segÃºn exposiciÃ³n de motivos', info.motivos]], theme:'grid', styles:{ fontSize:6.5, cellPadding:1, overflow:'linebreak', valign:'top' }, columnStyles:{ 0:{ fontStyle:'bold', fillColor:[221,235,247], cellWidth:58 }, 1:{ cellWidth:214 } }, margin:{ left:11, right:11 } });
       y = doc.lastAutoTable.finalY + 4;
     }
-    const head = [['Programa','Departamento','Provincia','Distrito','Tipo','Código','Acciones específicas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
+    const head = [['Programa','Departamento','Provincia','Distrito','Tipo','CÃ³digo','Acciones especÃ­ficas','Unidad','Meta prog.','Plazo','F. inicio','F. fin','Meta ejec.','% avance','Comentarios']];
     info.secciones.forEach(sec => {
       if (y > 175) { doc.addPage(); y = 12; }
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...azul); doc.text(sec.titulo, 8, y); y += 2;
       const body = sec.filas.map(f => [f.programa, f.departamento, f.provincia, f.distrito, f.tipo, f.codigo, f.detalle, f.unidad, f.metaProgramada, f.plazo, fechaMostrar(f.inicio), fechaMostrar(f.fin), f.metaEjecutada, f.avance, f.descripcion]);
-      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.0 }, styles:{ fontSize:4.8, cellPadding:0.6, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:18},1:{cellWidth:16},2:{cellWidth:16},3:{cellWidth:16},4:{cellWidth:17},5:{cellWidth:14},6:{cellWidth:42},7:{cellWidth:12},8:{cellWidth:11},9:{cellWidth:9},10:{cellWidth:12},11:{cellWidth:12},12:{cellWidth:11},13:{cellWidth:9},14:{cellWidth:31} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS · ${fechaHoraLocal()}`, 8, 204); } });
+      doc.autoTable({ startY:y, head, body, theme:'grid', headStyles:{ fillColor:azul, textColor:[255,255,255], halign:'center', valign:'middle', fontSize:5.0 }, styles:{ fontSize:4.8, cellPadding:0.6, overflow:'linebreak', valign:'top', lineColor:[90,90,90], lineWidth:0.1 }, columnStyles:{ 0:{cellWidth:18},1:{cellWidth:16},2:{cellWidth:16},3:{cellWidth:16},4:{cellWidth:17},5:{cellWidth:14},6:{cellWidth:42},7:{cellWidth:12},8:{cellWidth:11},9:{cellWidth:9},10:{cellWidth:12},11:{cellWidth:12},12:{cellWidth:11},13:{cellWidth:9},14:{cellWidth:31} }, margin:{ left:6, right:6 }, didDrawPage: () => { doc.setFontSize(6); doc.setTextColor(100); doc.text(`Exportado desde DEE MIDIS Â· ${fechaHoraLocal()}`, 8, 204); } });
       y = doc.lastAutoTable.finalY + 5;
     });
     doc.save(nombreArchivo(d,'pdf'));
@@ -7084,7 +7029,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       const mostrar = pass.type === 'password';
       pass.type = mostrar ? 'text' : 'password';
       toggle.textContent = mostrar ? 'Ocultar' : 'Mostrar';
-      toggle.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      toggle.setAttribute('aria-label', mostrar ? 'Ocultar contraseÃ±a' : 'Mostrar contraseÃ±a');
       pass.focus();
     });
   }
@@ -7176,7 +7121,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const total = fin - inicio;
     const pctRestante = (restante / total) * 100;
     if (pctRestante < 20) return { texto: 'Rojo', clase: 'dee-badge-rojo', orden: 1 };
-    if (pctRestante <= 50) return { texto: 'Ámbar', clase: 'dee-badge-ambar', orden: 2 };
+    if (pctRestante <= 50) return { texto: 'Ãmbar', clase: 'dee-badge-ambar', orden: 2 };
     return { texto: 'Verde', clase: 'dee-badge-verde', orden: 3 };
   }
 
@@ -7262,7 +7207,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
-      ['Distritos en más de una declaratoria', repetidos, 'Duplicidad entre DS filtrados']
+      ['Distritos en mÃ¡s de una declaratoria', repetidos, 'Duplicidad entre DS filtrados']
     ];
     cont.innerHTML = cards.map(([label, value, note]) => `
       <div class="col-12 col-md-6">
@@ -7392,7 +7337,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 })();
 
 // ================= AJUSTE FINAL v54.1 - OJITO LISTADO DS EN HOJAS + PDF HORIZONTAL =================
-// Alcance: solo detalle visual del Decreto Supremo desde Listado DS y exportación PDF del detalle.
+// Alcance: solo detalle visual del Decreto Supremo desde Listado DS y exportaciÃ³n PDF del detalle.
 (function(){
   'use strict';
 
@@ -7429,10 +7374,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function numeroDSLimpioV541(d){
     let n = txt(valor(d, ['numero','ds','decreto','decreto_supremo']));
-    const anio = txt(valor(d, ['anio','año']));
-    n = n.replace(/^D\.?\s*S\.?\s*N[°.º]?\s*/i,'')
-         .replace(/^DS\s*N[°.º]?\s*/i,'')
-         .replace(/^N[°.º]?\s*/i,'')
+    const anio = txt(valor(d, ['anio','aÃ±o']));
+    n = n.replace(/^D\.?\s*S\.?\s*N[Â°.Âº]?\s*/i,'')
+         .replace(/^DS\s*N[Â°.Âº]?\s*/i,'')
+         .replace(/^N[Â°.Âº]?\s*/i,'')
          .trim();
     const m = n.match(/(\d{1,4})\s*-\s*(\d{4})\s*-\s*PCM/i);
     if(m) return `${m[1].padStart(3,'0')}-${m[2]}-PCM`;
@@ -7440,7 +7385,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if(n) n = n.padStart(3,'0');
     return anio && n ? `${n}-${anio}-PCM` : (n || anio || 'DS');
   }
-  function tituloDSV541(d){ return `D.S. N°${numeroDSLimpioV541(d)}`; }
+  function tituloDSV541(d){ return `D.S. NÂ°${numeroDSLimpioV541(d)}`; }
   function getDecretoV541(id){
     try {
       if(typeof buscarDecretoPorId === 'function') {
@@ -7514,7 +7459,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function gruposAccionesV541(d){
     const mapa = new Map();
     accionesDSV541(d).map(a => filaAccionV541(a,d)).forEach(f => {
-      const key = `${f.reunion || 'Sin reunión registrada'}|${f.fechaReunion || ''}`;
+      const key = `${f.reunion || 'Sin reuniÃ³n registrada'}|${f.fechaReunion || ''}`;
       if(!mapa.has(key)) mapa.set(key, []);
       mapa.get(key).push(f);
     });
@@ -7523,12 +7468,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function resumenGeneralV541(d){
     const sectores = Array.isArray(d?.sectores) ? d.sectores.join(', ') : txt(d?.sectores || '');
     return [
-      ['Número de Decreto Supremo', tituloDSV541(d)],
+      ['NÃºmero de Decreto Supremo', tituloDSV541(d)],
       ['Fecha', fecha(valor(d,['fecha_registro','created_at','fecha_inicio']))],
       ['Tipo', valor(d,['peligro']) || '-'],
       ['Peligro o evento', valor(d,['tipo_peligro','tipoPeligro']) || '-'],
       ['Sectores que firman', sectores || 'No registrado'],
-      ['Exposición de motivos', valor(d,['motivos','exposicion_motivos']) || 'No registrado']
+      ['ExposiciÃ³n de motivos', valor(d,['motivos','exposicion_motivos']) || 'No registrado']
     ];
   }
 
@@ -7570,8 +7515,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     let html = '';
     grupos.forEach((items, key) => {
       const [reunion, freunion] = key.split('|');
-      html += `<div class="dee-ds-action-title">${esc(reunion)}${freunion ? ' · ' + esc(fecha(freunion)) : ''}</div>`;
-      html += `<div class="table-responsive"><table class="dee-ds-action-table"><thead><tr><th>Programa Nacional</th><th>Tipo de acción</th><th>Código</th><th>Acción registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
+      html += `<div class="dee-ds-action-title">${esc(reunion)}${freunion ? ' Â· ' + esc(fecha(freunion)) : ''}</div>`;
+      html += `<div class="table-responsive"><table class="dee-ds-action-table"><thead><tr><th>Programa Nacional</th><th>Tipo de acciÃ³n</th><th>CÃ³digo</th><th>AcciÃ³n registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
       html += items.map(a => `<tr><td>${esc(a.programa)}</td><td>${esc(a.tipo)}</td><td>${esc(a.codigo)}</td><td>${esc(a.detalle)}</td><td>${esc(a.metaProgramada)}</td><td>${esc(a.metaEjecutada)}</td><td>${esc(a.avance)}</td><td>${esc(a.descripcion)}</td><td>${esc(a.usuario)}</td><td>${esc(fecha(a.fechaRegistro) || a.fechaRegistro)}</td></tr>`).join('');
       html += '</tbody></table></div>';
     });
@@ -7580,7 +7525,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function htmlTerritorioV541(d){
     const t = territorioV541(d);
     if(!t.length) return '<div class="alert alert-secondary py-2">No hay territorio registrado.</div>';
-    return `<table class="dee-anexo-table"><thead><tr><th>N°</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Ubigeo</th><th>Latitud</th><th>Longitud</th></tr></thead><tbody>${t.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.departamento)}</td><td>${esc(x.provincia)}</td><td>${esc(x.distrito)}</td><td>${esc(x.ubigeo)}</td><td>${esc(x.latitud)}</td><td>${esc(x.longitud)}</td></tr>`).join('')}</tbody></table>`;
+    return `<table class="dee-anexo-table"><thead><tr><th>NÂ°</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Ubigeo</th><th>Latitud</th><th>Longitud</th></tr></thead><tbody>${t.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.departamento)}</td><td>${esc(x.provincia)}</td><td>${esc(x.distrito)}</td><td>${esc(x.ubigeo)}</td><td>${esc(x.latitud)}</td><td>${esc(x.longitud)}</td></tr>`).join('')}</tbody></table>`;
   }
 
   function asegurarFooterModalV541(id){
@@ -7601,7 +7546,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function verDetalleDSV541(id){
     const d = getDecretoV541(id);
-    if(!d) return alert('No se encontró el Decreto Supremo.');
+    if(!d) return alert('No se encontrÃ³ el Decreto Supremo.');
     inyectarEstilosV541();
     const body = q('modalDSBody');
     if(body){
@@ -7612,9 +7557,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           <button type="button" class="btn btn-sm btn-outline-danger" onclick="exportarDetalleDSPDFV541('${esc(id)}')">Exportar PDF</button>
         </div>
         <div class="dee-ds-page-tabs" role="tablist">
-          <button type="button" class="active" data-hoja="1" onclick="activarHojaDetalleV541(1)">Hoja 1 · Datos generales</button>
-          <button type="button" data-hoja="2" onclick="activarHojaDetalleV541(2)">Hoja 2 · Acciones registradas</button>
-          <button type="button" data-hoja="3" onclick="activarHojaDetalleV541(3)">Anexo · Territorio involucrado</button>
+          <button type="button" class="active" data-hoja="1" onclick="activarHojaDetalleV541(1)">Hoja 1 Â· Datos generales</button>
+          <button type="button" data-hoja="2" onclick="activarHojaDetalleV541(2)">Hoja 2 Â· Acciones registradas</button>
+          <button type="button" data-hoja="3" onclick="activarHojaDetalleV541(3)">Anexo Â· Territorio involucrado</button>
         </div>
         <section class="dee-detalle-hoja active" data-hoja="1">
           <div class="dee-hoja-title">Hoja 1: Datos generales del Decreto Supremo</div>
@@ -7641,8 +7586,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function exportarDetalleDSPDFV541(id){
     const d = getDecretoV541(id);
-    if(!d) return alert('No se encontró el Decreto Supremo.');
-    if(!window.jspdf?.jsPDF) return alert('No se encontró la librería jsPDF para generar el PDF.');
+    if(!d) return alert('No se encontrÃ³ el Decreto Supremo.');
+    if(!window.jspdf?.jsPDF) return alert('No se encontrÃ³ la librerÃ­a jsPDF para generar el PDF.');
     const doc = new window.jspdf.jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
     const azul = [6,43,96];
     const celeste = [221,235,247];
@@ -7669,7 +7614,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     function pie(){
       const p = doc.internal.getNumberOfPages();
       doc.setFontSize(7); doc.setTextColor(120);
-      doc.text(`DEE MIDIS · Página ${p}`, 289, 204, { align:'right' });
+      doc.text(`DEE MIDIS Â· PÃ¡gina ${p}`, 289, 204, { align:'right' });
     }
 
     encabezado('Hoja 1: Datos generales');
@@ -7689,7 +7634,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if(acciones.length){
       doc.autoTable({
         startY: 27,
-        head: [['N°','Reunión','Fecha reunión','Programa','Tipo de acción','Código','Acción registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
+        head: [['NÂ°','ReuniÃ³n','Fecha reuniÃ³n','Programa','Tipo de acciÃ³n','CÃ³digo','AcciÃ³n registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
         body: acciones.map((a,i) => [i+1, a.reunion, fecha(a.fechaReunion), a.programa, a.tipo, a.codigo, a.detalle, a.unidad, a.metaProgramada, a.metaEjecutada, a.avance, a.descripcion, a.usuario, fecha(a.fechaRegistro) || a.fechaRegistro]),
         theme:'grid',
         headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:6.2, halign:'center', valign:'middle' },
@@ -7708,7 +7653,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if(terr.length){
       doc.autoTable({
         startY: 27,
-        head: [['N°','Departamento','Provincia','Distrito','Ubigeo','Latitud','Longitud']],
+        head: [['NÂ°','Departamento','Provincia','Distrito','Ubigeo','Latitud','Longitud']],
         body: terr.map((t,i)=>[i+1,t.departamento,t.provincia,t.distrito,t.ubigeo,t.latitud,t.longitud]),
         theme:'grid',
         headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:7.5, halign:'center' },
@@ -7728,7 +7673,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   window.exportarDetalleDSPDFV541 = exportarDetalleDSPDFV541;
 })();
 
-// ================= CIERRE FINAL v55.1 - FILTROS LISTADO DS Y PAGINACIÓN =================
+// ================= CIERRE FINAL v55.1 - FILTROS LISTADO DS Y PAGINACIÃ“N =================
 (function(){
   const VERSION_CIERRE = 'v55.1-filtros-listado-ds';
   let paginaDS = 1;
@@ -7758,8 +7703,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     try { if (typeof formatearNumeroDS === 'function') return formatearNumeroDS(d); } catch {}
     const n = txt(d?.numero || d?.ds || d?.decreto).replace(/^0+/, '') || txt(d?.numero || d?.ds || d?.decreto);
     const npad = txt(d?.numero || d?.ds || d?.decreto).padStart(3,'0');
-    const anio = txt(d?.anio || d?.año || '');
-    return `DS N.° ${npad || n}${anio ? '-' + anio : ''}-PCM`;
+    const anio = txt(d?.anio || d?.aÃ±o || '');
+    return `DS N.Â° ${npad || n}${anio ? '-' + anio : ''}-PCM`;
   }
   function vigenciaActualV551(d){
     try { if (typeof calcularVigencia === 'function') return calcularVigencia(d?.fecha_fin || d?.fechaFin || ''); } catch {}
@@ -7824,7 +7769,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           botonRevision = `<button type="button" class="btn btn-sm btn-warning" ${habilitado ? '' : 'disabled title="Pendiente: no existen acciones registradas o ya fue preaprobado/aprobado"'} onclick="abrirPreAprobacion('${escAttr(d.id)}')">PreAprobar</button>`;
         } else if (typeof puedeAprobar === 'function' && puedeAprobar()) {
           const habilitado = norm(d.estadoRDS || '') === 'PREAPROBADO';
-          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS esté PreAprobado"'} onclick="abrirPreAprobacion('${escAttr(d.id)}')">Aprobar</button>`;
+          botonRevision = `<button type="button" class="btn btn-sm btn-success" ${habilitado ? '' : 'disabled title="Disponible cuando el DS estÃ© PreAprobado"'} onclick="abrirPreAprobacion('${escAttr(d.id)}')">Aprobar</button>`;
         }
       } else if (typeof esRegistradorPrograma === 'function' && esRegistradorPrograma()) {
         const programa = typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : '';
@@ -7892,11 +7837,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const visibles = filtrados.slice(desde, desde + pageSize);
 
     const contador = q('contadorListadoDS');
-    if (contador) contador.textContent = `Mostrando ${visibles.length ? desde + 1 : 0}-${desde + visibles.length} de ${filtrados.length} registro(s) filtrados · Total: ${todos.length}`;
+    if (contador) contador.textContent = `Mostrando ${visibles.length ? desde + 1 : 0}-${desde + visibles.length} de ${filtrados.length} registro(s) filtrados Â· Total: ${todos.length}`;
     const pag = q('paginacionListadoDS');
     if (pag) pag.style.setProperty('display', filtrados.length > pageSize ? 'flex' : 'none', 'important');
     const info = q('dsPaginaInfo');
-    if (info) info.textContent = `Página ${paginaDS} de ${totalPaginas}`;
+    if (info) info.textContent = `PÃ¡gina ${paginaDS} de ${totalPaginas}`;
     if (q('btnDsPaginaAnterior')) q('btnDsPaginaAnterior').disabled = paginaDS <= 1;
     if (q('btnDsPaginaSiguiente')) q('btnDsPaginaSiguiente').disabled = paginaDS >= totalPaginas;
 
@@ -7927,12 +7872,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <td>${deps.size}</td>
         <td>${provs.size}</td>
         <td>${dists.size}</td>
-        <td>${d.es_prorroga ? 'Prórroga' : 'Original'}</td>
+        <td>${d.es_prorroga ? 'PrÃ³rroga' : 'Original'}</td>
         <td>${esc(d.cadena || '')}</td>
         <td>${esc(d.nivel_prorroga || 0)}</td>
         <td>${botonRDS}</td>
         <td>${botonRevision}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escAttr(d.id)}')">👁</button></td>
+        <td><button type="button" class="btn btn-sm btn-outline-dark" onclick="verDetalleDS('${escAttr(d.id)}')">ðŸ‘</button></td>
         <td>${botonesExportarV551(d)}</td>
       </tr>`;
     }).join('');
@@ -8098,7 +8043,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function abrirModalAccionGrupalPrograma() {
     if (!esRegistradorPrograma || !esRegistradorPrograma()) {
-      alert('Esta opción corresponde a Registradores de Programas Nacionales.');
+      alert('Esta opciÃ³n corresponde a Registradores de Programas Nacionales.');
       return;
     }
     if (!dsProgramaSeleccionadoId) {
@@ -8106,27 +8051,27 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       return;
     }
     if (!seleccionDistritosPrograma.size) {
-      alert('Debe seleccionar al menos un distrito para registrar la acción.');
+      alert('Debe seleccionar al menos un distrito para registrar la acciÃ³n.');
       return;
     }
     if (qg('grupoDetallePrograma')) qg('grupoDetallePrograma').value = '';
     if (qg('grupoDescripcionPrograma')) qg('grupoDescripcionPrograma').value = '';
     const modal = qg('modalAccionGrupalPrograma');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
-    else alert('No se encontró el modal de registro grupal.');
+    else alert('No se encontrÃ³ el modal de registro grupal.');
   }
 
   function guardarAccionGrupalPrograma() {
     const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
     if (!esRegistradorPrograma || !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.');
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
-    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
-    if (!seleccionDistritosPrograma.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene nÃºmero y fecha de reuniÃ³n activos.');
+    if (!seleccionDistritosPrograma.size) return alert('Debe seleccionar al menos un distrito para registrar la acciÃ³n.');
 
     const detalle = String(qg('grupoDetallePrograma')?.value || '').trim();
     const descripcion = String(qg('grupoDescripcionPrograma')?.value || '').trim();
     if (!detalle || !descripcion) {
-      alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+      alert('Debe completar las acciones especÃ­ficas programadas y ejecutadas y la descripciÃ³n de actividades.');
       return;
     }
 
@@ -8134,7 +8079,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const keyR = rdsKeyPrograma(d);
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
     const territorios = territorioDecretoSeleccionadoPrograma().filter(t => seleccionDistritosPrograma.has(t.key));
-    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+    if (!territorios.length) return alert('No se encontraron distritos vÃ¡lidos seleccionados.');
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     let actualizados = 0;
@@ -8162,8 +8107,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         estadoRDS: d.estadoRDS || 'Activo',
         programaNacional: programa,
         programa,
-        tipoAccion: base.tipoAccion || base.tipo || 'Acción grupal territorial',
-        tipo: base.tipo || base.tipoAccion || 'Acción grupal territorial',
+        tipoAccion: base.tipoAccion || base.tipo || 'AcciÃ³n grupal territorial',
+        tipo: base.tipo || base.tipoAccion || 'AcciÃ³n grupal territorial',
         codigoAccion: base.codigoAccion || base.codigo || `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`,
         codigo: base.codigo || base.codigoAccion || `GRUPAL-${String(t.ubigeo || t.distrito || 'DIST').replace(/\s+/g, '-').toUpperCase()}`,
         detalle,
@@ -8213,7 +8158,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     renderDistritosAccionesPrograma();
     if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas();
     if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
-    alert('Acción registrada correctamente en los distritos seleccionados.');
+    alert('AcciÃ³n registrada correctamente en los distritos seleccionados.');
   }
 
   const initOriginal = window.initRegistroAccionesProgramas || (typeof initRegistroAccionesProgramas === 'function' ? initRegistroAccionesProgramas : null);
@@ -8223,7 +8168,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function initRegistroAccionesProgramasV561() {
     if (initOriginal) {
-      try { initOriginal(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completó:', e); }
+      try { initOriginal(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completÃ³:', e); }
     }
     renderDistritosAccionesPrograma();
 
@@ -8273,11 +8218,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   });
 })();
 
-// ================= AJUSTE FINAL v57.1 - DISTRITOS POR PÁGINA Y LIMPIEZA CAMPOS =================
+// ================= AJUSTE FINAL v57.1 - DISTRITOS POR PÃGINA Y LIMPIEZA CAMPOS =================
 (function () {
   'use strict';
 
-  const VERSION_V571 = 'v57.1 Distritos por página sin campos redundantes';
+  const VERSION_V571 = 'v57.1 Distritos por pÃ¡gina sin campos redundantes';
   const seleccionV571 = new Set();
   let paginaV571 = 1;
   let eventosV571 = false;
@@ -8377,7 +8322,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const desde = total ? ((paginaV571 - 1) * pageSizeV571()) + 1 : 0;
     const hasta = Math.min(total, paginaV571 * pageSizeV571());
     if (q('progDistritosContador')) q('progDistritosContador').textContent = `Mostrando ${desde}-${hasta} de ${total} registros`;
-    if (q('progDistritosPaginaInfo')) q('progDistritosPaginaInfo').textContent = `Página ${paginaV571} de ${totalPaginas}`;
+    if (q('progDistritosPaginaInfo')) q('progDistritosPaginaInfo').textContent = `PÃ¡gina ${paginaV571} de ${totalPaginas}`;
     if (q('btnProgDistritosAnterior')) q('btnProgDistritosAnterior').disabled = paginaV571 <= 1;
     if (q('btnProgDistritosSiguiente')) q('btnProgDistritosSiguiente').disabled = paginaV571 >= totalPaginas;
   }
@@ -8439,13 +8384,13 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function seleccionarTodosVisiblesV571() {
-    // v79.10: el botón "Seleccionar todos" debe trabajar en bloque con TODO el territorio
-    // del DS, no solo con la página visible de 10/25/50/100 registros.
+    // v79.10: el botÃ³n "Seleccionar todos" debe trabajar en bloque con TODO el territorio
+    // del DS, no solo con la pÃ¡gina visible de 10/25/50/100 registros.
     territorioDSProgramaV571().forEach(t => {
       if (t && t.key) seleccionV571.add(String(t.key));
     });
 
-    // También captura cualquier checkbox ya marcado en la tabla vigente, aunque haya sido
+    // TambiÃ©n captura cualquier checkbox ya marcado en la tabla vigente, aunque haya sido
     // renderizada por el bloque posterior V792.
     document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
       if (chk?.value) seleccionV571.add(String(chk.value));
@@ -8463,36 +8408,36 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const raw = String(valor || '').trim();
     const n = normV571(raw);
     if (!n) return '';
-    if (n.includes('PREPARACION')) return 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+    if (n.includes('PREPARACION')) return 'Acciones de PreparaciÃ³n (Solo DEE por Peligro Inminente)';
     if (n.includes('RESPUESTA')) return 'Acciones de Respuesta';
-    if (n.includes('REHABILITACION')) return 'Acciones de Rehabilitación';
+    if (n.includes('REHABILITACION')) return 'Acciones de RehabilitaciÃ³n';
     return '';
   }
 
   function abrirModalGrupalV571() {
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) {
-      alert('Esta opción corresponde a Registradores de Programas Nacionales.');
+      alert('Esta opciÃ³n corresponde a Registradores de Programas Nacionales.');
       return;
     }
     if (!dsProgramaSeleccionadoId) return alert('Seleccione un Decreto Supremo activado.');
 
-    // v79.10: resincroniza la selección real antes de validar. Corrige el caso en que
-    // el usuario marca manualmente o usa paginación y el Set interno queda vacío.
+    // v79.10: resincroniza la selecciÃ³n real antes de validar. Corrige el caso en que
+    // el usuario marca manualmente o usa paginaciÃ³n y el Set interno queda vacÃ­o.
     document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
       if (chk?.value) seleccionV571.add(String(chk.value));
     });
 
-    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acciÃ³n.');
     if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
     if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
     const modal = q('modalAccionGrupalPrograma');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
-    else alert('No se encontró el modal de registro grupal.');
+    else alert('No se encontrÃ³ el modal de registro grupal.');
   }
 
   function guardarGrupalV571() {
     // v79.10: sincroniza checkboxes visibles antes de guardar, evitando que un registro
-    // marcado manualmente no sea reconocido por la validación.
+    // marcado manualmente no sea reconocido por la validaciÃ³n.
     document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
       if (chk?.value) seleccionV571.add(String(chk.value));
     });
@@ -8500,23 +8445,23 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const d = (typeof buscarDecretoPorId === 'function') ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null;
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.');
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
-    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
-    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (!d.numeroReunion || !d.fechaReunion) return alert('El RDS no tiene nÃºmero y fecha de reuniÃ³n activos.');
+    if (!seleccionV571.size) return alert('Debe seleccionar al menos un distrito para registrar la acciÃ³n.');
 
     const detalle = String(q('grupoDetallePrograma')?.value || '').trim();
     const descripcion = String(q('grupoDescripcionPrograma')?.value || '').trim();
-    if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+    if (!detalle || !descripcion) return alert('Debe completar las acciones especÃ­ficas programadas y ejecutadas y la descripciÃ³n de actividades.');
 
     const tipoFormulario = normalizarTipoAccionGrupalV58(q('progTipoAccion')?.value || '');
     const subtipoFormulario = String(q('progSubtipoRehabilitacion')?.value || '').trim();
-    if (!tipoFormulario) return alert('Seleccione un Tipo de Acción válido del catálogo oficial.');
-    if (normalizarTexto(tipoFormulario).includes('REHABILITACION') && !subtipoFormulario) return alert('Seleccione el Subtipo de Rehabilitación.');
+    if (!tipoFormulario) return alert('Seleccione un Tipo de AcciÃ³n vÃ¡lido del catÃ¡logo oficial.');
+    if (normalizarTexto(tipoFormulario).includes('REHABILITACION') && !subtipoFormulario) return alert('Seleccione el Subtipo de RehabilitaciÃ³n.');
 
     const programa = progV571();
     const keyR = rdsKeyV571(d);
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
     const territorios = territorioDSProgramaV571().filter(t => seleccionV571.has(t.key));
-    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+    if (!territorios.length) return alert('No se encontraron distritos vÃ¡lidos seleccionados.');
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     territorios.forEach(t => {
@@ -8591,7 +8536,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     renderDistritosAccionesProgramaV571();
     if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas();
     if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
-    alert('Acción registrada correctamente en los distritos seleccionados.');
+    alert('AcciÃ³n registrada correctamente en los distritos seleccionados.');
   }
 
   const cargarVistaOriginalV571 = window.cargarVistaAccionesPrograma || (typeof cargarVistaAccionesPrograma === 'function' ? cargarVistaAccionesPrograma : null);
@@ -8600,7 +8545,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   function initRegistroAccionesProgramasV571() {
     if (initOriginalV571) {
-      try { initOriginalV571(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completó:', e); }
+      try { initOriginalV571(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completÃ³:', e); }
     }
     ocultarCamposRedundantesV571();
     renderDistritosAccionesProgramaV571();
@@ -8656,8 +8601,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   });
 })();
 
-// ================= CORRECCIÓN v59.1 - CAMPOS COMPLETOS EN ACCIÓN GRUPAL TERRITORIAL =================
-// Alcance: Registro Acciones Programas. No modifica login, roles ni otros módulos.
+// ================= CORRECCIÃ“N v59.1 - CAMPOS COMPLETOS EN ACCIÃ“N GRUPAL TERRITORIAL =================
+// Alcance: Registro Acciones Programas. No modifica login, roles ni otros mÃ³dulos.
 (function(){
   const VERSION = 'v59.1-campos-completos-accion-grupal';
   const $v = (id) => document.getElementById(id);
@@ -8667,9 +8612,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function normalizarTipo(valor){
     const n = norm(valor);
     if (!n) return '';
-    if (n.includes('PREPARACION')) return 'Acciones de Preparación (Solo DEE por Peligro Inminente)';
+    if (n.includes('PREPARACION')) return 'Acciones de PreparaciÃ³n (Solo DEE por Peligro Inminente)';
     if (n.includes('RESPUESTA')) return 'Acciones de Respuesta';
-    if (n.includes('REHABILITACION')) return 'Acciones de Rehabilitación';
+    if (n.includes('REHABILITACION')) return 'Acciones de RehabilitaciÃ³n';
     return '';
   }
 
@@ -8776,12 +8721,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function validarPrincipal(v){
-    if (!v.tipoAccion) return 'Seleccione un Tipo de Acción válido del catálogo oficial.';
-    if (norm(v.tipoAccion).includes('REHABILITACION') && !v.subtipoRehabilitacion) return 'Seleccione el Subtipo de Rehabilitación.';
-    if (!v.codigoAccion) return 'Ingrese el Código de acción.';
+    if (!v.tipoAccion) return 'Seleccione un Tipo de AcciÃ³n vÃ¡lido del catÃ¡logo oficial.';
+    if (norm(v.tipoAccion).includes('REHABILITACION') && !v.subtipoRehabilitacion) return 'Seleccione el Subtipo de RehabilitaciÃ³n.';
+    if (!v.codigoAccion) return 'Ingrese el CÃ³digo de acciÃ³n.';
     if (!v.unidadMedida) return 'Seleccione la Unidad de medida.';
     if (v.metaProgramada === '') return 'Ingrese la Meta programada.';
-    if (v.plazoDias === '') return 'Ingrese el Plazo (días).';
+    if (v.plazoDias === '') return 'Ingrese el Plazo (dÃ­as).';
     if (!v.fechaInicio) return 'Ingrese la F. inicio.';
     if (!v.fechaFinal) return 'Ingrese la F. final.';
     if (v.metaEjecutada === '') return 'Ingrese la Meta ejecutada.';
@@ -8810,14 +8755,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const d = getDecretoActual();
     try { if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede registrar acciones grupales.'); } catch {}
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
-    if (!txt(d.numeroReunion || $v('progNumeroReunion')?.value) || !txt(d.fechaReunion || $v('progFechaReunion')?.value)) return alert('El RDS no tiene número y fecha de reunión activos.');
+    if (!txt(d.numeroReunion || $v('progNumeroReunion')?.value) || !txt(d.fechaReunion || $v('progFechaReunion')?.value)) return alert('El RDS no tiene nÃºmero y fecha de reuniÃ³n activos.');
 
     const territorios = seleccionadosActuales(d);
     if (!territorios.length) return alert('Debe seleccionar al menos un distrito.');
 
     const detalle = txt($v('grupoDetallePrograma')?.value);
     const descripcion = txt($v('grupoDescripcionPrograma')?.value);
-    if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+    if (!detalle || !descripcion) return alert('Debe completar las acciones especÃ­ficas programadas y ejecutadas y la descripciÃ³n de actividades.');
 
     const v = valoresFormularioPrincipal();
     const error = validarPrincipal(v);
@@ -8896,7 +8841,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       try { if (typeof api === 'function') api('/acciones', 'POST', accion); } catch {}
     });
 
-    if (!guardados) return alert('No se pudo guardar la acción grupal en los distritos seleccionados.');
+    if (!guardados) return alert('No se pudo guardar la acciÃ³n grupal en los distritos seleccionados.');
     if (typeof guardarAccionesLocales === 'function') guardarAccionesLocales(lista);
 
     const modal = $v('modalAccionGrupalPrograma');
@@ -8905,7 +8850,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch {}
     try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
     try { if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica(); } catch {}
-    alert('Acción registrada correctamente en los distritos seleccionados.');
+    alert('AcciÃ³n registrada correctamente en los distritos seleccionados.');
   }
 
   function reemplazarBotonGuardarGrupal(){
@@ -8932,7 +8877,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 })();
 
 // ================= CIERRE FINAL v61.1 - D1 + DUPLICADOS + DS LIMPIO =================
-// Alcance: corrige DS repetido, lectura desde D1, UPDATE/INSERT lógico, control territorial y exportación sin romper módulos previos.
+// Alcance: corrige DS repetido, lectura desde D1, UPDATE/INSERT lÃ³gico, control territorial y exportaciÃ³n sin romper mÃ³dulos previos.
 (function(){
   'use strict';
   const VERSION = 'v61.1 D1 duplicados exportacion territorio';
@@ -8953,7 +8898,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function limpiarNumeroDSRaw(raw, anio){
     let s = txt(raw);
     if (!s && anio) return '';
-    s = s.replace(/^D\.?\s*S\.?\s*N?[°.º]?\s*/i, '');
+    s = s.replace(/^D\.?\s*S\.?\s*N?[Â°.Âº]?\s*/i, '');
     s = s.replace(/^DS[-\s]*/i, '');
     s = s.replace(/\s+/g, '');
     s = s.replace(/-PCM-(\d{4})-PCM$/i, '-PCM');
@@ -8967,7 +8912,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function numeroDSCanonico(d){
-    const anio = txt(d?.anio || d?.año || '');
+    const anio = txt(d?.anio || d?.aÃ±o || '');
     const candidatos = [d?.numero, d?.ds, d?.numeroDS, d?.decreto_supremo, d?.codigo_registro, d?.codigoRegistro, d?.id];
     for (const c of candidatos) {
       const limpio = limpiarNumeroDSRaw(c, anio);
@@ -8980,9 +8925,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   const formatearNumeroDSPrevV611 = window.formatearNumeroDS || (typeof formatearNumeroDS === 'function' ? formatearNumeroDS : null);
   function formatearNumeroDSV611(d){
     const n = numeroDSCanonico(d || {});
-    if (n) return `D.S. N°${n}`;
+    if (n) return `D.S. NÂ°${n}`;
     if (formatearNumeroDSPrevV611) return String(formatearNumeroDSPrevV611(d)).replace(/-PCM-\d{4}(?:-PCM)?$/i,'-PCM');
-    return 'D.S. N°';
+    return 'D.S. NÂ°';
   }
   window.formatearNumeroDS = formatearNumeroDSV611;
   try { formatearNumeroDS = formatearNumeroDSV611; } catch {}
@@ -8990,8 +8935,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function programaNorm(v){
     try { if (typeof normalizarProgramaNombre === 'function') return normalizarProgramaNombre(v); } catch {}
     const n = norm(v);
-    if (n === 'CUNA MAS' || n === 'CUNAMAS') return 'CUNA MÁS';
-    if (n === 'PENSION 65') return 'PENSIÓN 65';
+    if (n === 'CUNA MAS' || n === 'CUNAMAS') return 'CUNA MÃS';
+    if (n === 'PENSION 65') return 'PENSIÃ“N 65';
     return n;
   }
 
@@ -9195,9 +9140,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function validarValoresPrograma(v){
-    if (!v.tipo) return 'Seleccione un Tipo de Acción válido del catálogo oficial.';
-    if (norm(v.tipo).includes('REHABILITACION') && !v.subtipo) return 'Seleccione el Subtipo de Rehabilitación.';
-    if (!v.codigo) return 'Ingrese el Código de acción.';
+    if (!v.tipo) return 'Seleccione un Tipo de AcciÃ³n vÃ¡lido del catÃ¡logo oficial.';
+    if (norm(v.tipo).includes('REHABILITACION') && !v.subtipo) return 'Seleccione el Subtipo de RehabilitaciÃ³n.';
+    if (!v.codigo) return 'Ingrese el CÃ³digo de acciÃ³n.';
     if (!v.unidad) return 'Seleccione la Unidad de medida.';
     if (!v.fechaInicio) return 'Ingrese la F. inicio.';
     if (!v.fechaFinal) return 'Ingrese la F. final.';
@@ -9216,17 +9161,17 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
     const numeroReunion = txt(d.numeroReunion || d.numero_reunion || $x('progNumeroReunion')?.value);
     const fechaReunion = txt(d.fechaReunion || d.fecha_reunion || $x('progFechaReunion')?.value);
-    if (!numeroReunion || !fechaReunion) return alert('El RDS no tiene número y fecha de reunión activos.');
+    if (!numeroReunion || !fechaReunion) return alert('El RDS no tiene nÃºmero y fecha de reuniÃ³n activos.');
 
     const checks = Array.from(document.querySelectorAll('.chk-distrito-programa-v571:checked, .chk-distrito-programa:checked'));
     const keys = new Set(checks.map(x => x.value));
     if (!keys.size) return alert('Debe seleccionar al menos un distrito.');
     const territorios = territoriosActuales(d).filter(t => keys.has(t.key));
-    if (!territorios.length) return alert('No se encontraron distritos válidos seleccionados.');
+    if (!territorios.length) return alert('No se encontraron distritos vÃ¡lidos seleccionados.');
 
     const detalle = txt($x('grupoDetallePrograma')?.value);
     const descripcion = txt($x('grupoDescripcionPrograma')?.value);
-    if (!detalle || !descripcion) return alert('Debe completar las acciones específicas programadas y ejecutadas y la descripción de actividades.');
+    if (!detalle || !descripcion) return alert('Debe completar las acciones especÃ­ficas programadas y ejecutadas y la descripciÃ³n de actividades.');
 
     const v = valoresProgramaPrincipal();
     const error = validarValoresPrograma(v);
@@ -9306,7 +9251,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch {}
     try { if (typeof renderTablaAccionesProgramas === 'function') renderTablaAccionesProgramas(); } catch {}
     try { if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica(); } catch {}
-    if (guardados) alert('Acción registrada correctamente en los distritos seleccionados.');
+    if (guardados) alert('AcciÃ³n registrada correctamente en los distritos seleccionados.');
   }
 
   function reemplazarBotonGrupalV611(){
@@ -9357,7 +9302,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 })();
 
 // ================= AJUSTE v62.1 - PREAPROBAR: FILTROS Y TERRITORIO =================
-// Alcance quirúrgico: solo pestaña "PreAprobar Acciones" / tabla "Acciones registradas por Programas Nacionales".
+// Alcance quirÃºrgico: solo pestaÃ±a "PreAprobar Acciones" / tabla "Acciones registradas por Programas Nacionales".
 (function cierrePreAprobarTerritorioV621(){
   const VERSION = 'v62.1-preaprobar-filtros-territorio';
 
@@ -9432,7 +9377,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   function actualizarEncabezadoTabla(){
     const head = document.querySelector('#tablaPreAprobarAcciones thead tr');
     if (!head) return;
-    const requerido = ['Programa','Departamento','Provincia','Distrito','Tipo de acción','Código','Detalle','Meta programada','Meta ejecutada','Avance','Usuario','Fecha registro','Gestión'];
+    const requerido = ['Programa','Departamento','Provincia','Distrito','Tipo de acciÃ³n','CÃ³digo','Detalle','Meta programada','Meta ejecutada','Avance','Usuario','Fecha registro','GestiÃ³n'];
     const actual = Array.from(head.children).map(th => norm(th.textContent));
     if (actual.includes('DEPARTAMENTO') && actual.includes('PROVINCIA') && actual.includes('DISTRITO')) return;
     head.innerHTML = requerido.map(h => `<th>${esc(h)}</th>`).join('');
@@ -9444,7 +9389,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const actual = sel.value;
     const programas = [...new Set(accionesPreAprobarBase().map(a => txt(valor(a,'programaNacional','programa')).trim()).filter(Boolean))]
       .sort((a,b)=>a.localeCompare(b,'es'));
-    const base = ['','CUNA MÁS','PAE','JUNTOS','CONTIGO','PENSIÓN 65','FONCODES','PAIS'];
+    const base = ['','CUNA MÃS','PAE','JUNTOS','CONTIGO','PENSIÃ“N 65','FONCODES','PAIS'];
     const todos = [...new Set(base.concat(programas))];
     sel.innerHTML = todos.map(p => p ? `<option>${esc(p)}</option>` : '<option value="">Todos</option>').join('');
     if (actual && Array.from(sel.options).some(o => programaNormal(o.value) === programaNormal(actual))) sel.value = actual;
@@ -9581,7 +9526,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     try { if (typeof formatearNumeroDS === 'function') return formatearNumeroDS(d); } catch {}
     const numero = String(d?.numero || '').trim();
     const anio = String(d?.anio || '').trim();
-    return `DS N.° ${numero}${anio ? '-' + anio : ''}-PCM`;
+    return `DS N.Â° ${numero}${anio ? '-' + anio : ''}-PCM`;
   }
 
   function extraerIdDSDesdeFila(row) {
@@ -9602,7 +9547,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!head.querySelector('[data-admin-ds-col="1"]')) {
       const th = document.createElement('th');
       th.dataset.adminDsCol = '1';
-      th.textContent = 'Gestión DS';
+      th.textContent = 'GestiÃ³n DS';
       head.appendChild(th);
     }
   }
@@ -9658,26 +9603,26 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
           </div>
           <div class="modal-body">
             <input id="editDsIdAdmin" type="hidden">
-            <div class="alert alert-info small py-2 mb-3">Edición habilitada solo para Administrador. No modifica login, roles ni flujos RDS.</div>
+            <div class="alert alert-info small py-2 mb-3">EdiciÃ³n habilitada solo para Administrador. No modifica login, roles ni flujos RDS.</div>
             <div class="row g-3">
-              <div class="col-md-3"><label class="form-label">Número DS</label><input id="editDsNumeroAdmin" class="form-control"></div>
-              <div class="col-md-2"><label class="form-label">Año</label><input id="editDsAnioAdmin" class="form-control"></div>
-              <div class="col-md-3"><label class="form-label">Código de registro</label><input id="editDsCodigoAdmin" class="form-control"></div>
-              <div class="col-md-2"><label class="form-label">Plazo (días)</label><input id="editDsPlazoAdmin" type="number" min="0" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">NÃºmero DS</label><input id="editDsNumeroAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">AÃ±o</label><input id="editDsAnioAdmin" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">CÃ³digo de registro</label><input id="editDsCodigoAdmin" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Plazo (dÃ­as)</label><input id="editDsPlazoAdmin" type="number" min="0" class="form-control"></div>
               <div class="col-md-2"><label class="form-label">Vigencia</label><input id="editDsVigenciaAdmin" class="form-control" readonly></div>
-              <div class="col-md-3"><label class="form-label">Peligro</label><select id="editDsPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Por impacto de daños</option><option>Por peligro inminente</option></select></div>
-              <div class="col-md-3"><label class="form-label">Tipo de peligro</label><select id="editDsTipoPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Lluvias intensas</option><option>Inundación</option><option>Deslizamiento</option><option>Friaje</option><option>Heladas</option><option>Incendio forestal</option><option>Contaminación hídrica</option><option>Sismo</option></select></div>
+              <div class="col-md-3"><label class="form-label">Peligro</label><select id="editDsPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Por impacto de daÃ±os</option><option>Por peligro inminente</option></select></div>
+              <div class="col-md-3"><label class="form-label">Tipo de peligro</label><select id="editDsTipoPeligroAdmin" class="form-select"><option value="">Seleccione...</option><option>Lluvias intensas</option><option>InundaciÃ³n</option><option>Deslizamiento</option><option>Friaje</option><option>Heladas</option><option>Incendio forestal</option><option>ContaminaciÃ³n hÃ­drica</option><option>Sismo</option></select></div>
               <div class="col-md-2"><label class="form-label">Fecha inicio</label><input id="editDsFechaInicioAdmin" type="date" class="form-control"></div>
               <div class="col-md-2"><label class="form-label">Fecha final</label><input id="editDsFechaFinAdmin" type="date" class="form-control"></div>
-              <div class="col-md-2"><label class="form-label">Semáforo</label><input id="editDsSemaforoAdmin" class="form-control" readonly></div>
-              <div class="col-12"><label class="form-label">Exposición de Motivos</label><textarea id="editDsMotivosAdmin" class="form-control" rows="3"></textarea></div>
+              <div class="col-md-2"><label class="form-label">SemÃ¡foro</label><input id="editDsSemaforoAdmin" class="form-control" readonly></div>
+              <div class="col-12"><label class="form-label">ExposiciÃ³n de Motivos</label><textarea id="editDsMotivosAdmin" class="form-control" rows="3"></textarea></div>
             </div>
             <hr>
-            <h6 class="text-primary">Relación de prórrogas</h6>
+            <h6 class="text-primary">RelaciÃ³n de prÃ³rrogas</h6>
             <div class="row g-3 align-items-end">
-              <div class="col-md-3"><div class="form-check mt-4"><input id="editDsEsProrrogaAdmin" class="form-check-input" type="checkbox"><label class="form-check-label" for="editDsEsProrrogaAdmin">Es prórroga</label></div></div>
+              <div class="col-md-3"><div class="form-check mt-4"><input id="editDsEsProrrogaAdmin" class="form-check-input" type="checkbox"><label class="form-check-label" for="editDsEsProrrogaAdmin">Es prÃ³rroga</label></div></div>
               <div class="col-md-3"><label class="form-label">DS origen</label><input id="editDsOrigenAdmin" class="form-control"></div>
-              <div class="col-md-2"><label class="form-label">Nivel prórroga</label><input id="editDsNivelAdmin" type="number" min="0" class="form-control"></div>
+              <div class="col-md-2"><label class="form-label">Nivel prÃ³rroga</label><input id="editDsNivelAdmin" type="number" min="0" class="form-control"></div>
               <div class="col-md-4"><label class="form-label">Cadena</label><input id="editDsCadenaAdmin" class="form-control"></div>
             </div>
             <hr>
@@ -9685,14 +9630,14 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
             <div id="editDsSectoresAdmin" class="row g-2"></div>
             <hr>
             <h6 class="text-primary">Territorio involucrado</h6>
-            <div class="alert alert-warning small py-2">Para no romper la estructura actual, el territorio se edita como JSON. Mantén departamento, provincia y distrito.</div>
+            <div class="alert alert-warning small py-2">Para no romper la estructura actual, el territorio se edita como JSON. MantÃ©n departamento, provincia y distrito.</div>
             <textarea id="editDsTerritorioAdmin" class="form-control font-monospace" rows="10"></textarea>
             <hr>
             <h6 class="text-primary">RDS / Estado del proceso</h6>
             <div class="row g-3">
               <div class="col-md-2"><div class="form-check mt-4"><input id="editDsRdsActivoAdmin" class="form-check-input" type="checkbox"><label class="form-check-label" for="editDsRdsActivoAdmin">RDS activo</label></div></div>
-              <div class="col-md-3"><label class="form-label">Número de reunión</label><input id="editDsNumeroReunionAdmin" class="form-control"></div>
-              <div class="col-md-3"><label class="form-label">Fecha de reunión</label><input id="editDsFechaReunionAdmin" type="date" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">NÃºmero de reuniÃ³n</label><input id="editDsNumeroReunionAdmin" class="form-control"></div>
+              <div class="col-md-3"><label class="form-label">Fecha de reuniÃ³n</label><input id="editDsFechaReunionAdmin" type="date" class="form-control"></div>
               <div class="col-md-2"><label class="form-label">Estado RDS</label><input id="editDsEstadoRDSAdmin" class="form-control"></div>
               <div class="col-md-2"><label class="form-label">Fecha Registro RDS</label><input id="editDsFechaRegistroRDSAdmin" class="form-control"></div>
             </div>
@@ -9743,7 +9688,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!esAdminDS()) return alert('Solo el Administrador puede editar Decretos Supremos.');
     asegurarModalEditarDSAdmin();
     const d = (typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : listaDSAdmin().find(x => String(x.id) === String(id)));
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
 
     q('editDsIdAdmin').value = d.id || id;
     q('editDsNumeroAdmin').value = d.numero || '';
@@ -9778,7 +9723,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const idOriginal = q('editDsIdAdmin')?.value || '';
     const lista = listaDSAdmin();
     const idx = lista.findIndex(d => String(d.id) === String(idOriginal));
-    if (idx < 0) return alert('No se encontró el Decreto Supremo para actualizar.');
+    if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo para actualizar.');
 
     let territorio = [];
     try {
@@ -9786,7 +9731,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       if (!Array.isArray(parsed)) throw new Error('El territorio debe ser un arreglo JSON.');
       territorio = parsed;
     } catch (e) {
-      alert('El territorio involucrado no tiene un JSON válido. Revíselo antes de guardar.');
+      alert('El territorio involucrado no tiene un JSON vÃ¡lido. RevÃ­selo antes de guardar.');
       return;
     }
 
@@ -9843,10 +9788,10 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   async function eliminarDSAdmin(id) {
     if (!esAdminDS()) return alert('Solo el Administrador puede eliminar Decretos Supremos.');
     const d = (typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(id) : listaDSAdmin().find(x => String(x.id) === String(id)));
-    if (!d) return alert('No se encontró el Decreto Supremo seleccionado.');
+    if (!d) return alert('No se encontrÃ³ el Decreto Supremo seleccionado.');
 
     const acciones = accionesAdmin().filter(a => String(a.dsId || a.ds_id) === String(id));
-    const mensaje = `Se eliminará el Decreto Supremo:\n\n${tituloDSAdmin(d)}\n\nTambién se eliminarán ${acciones.length} acción(es) registrada(s) asociada(s).\n\nEsta acción no se puede deshacer. ¿Desea continuar?`;
+    const mensaje = `Se eliminarÃ¡ el Decreto Supremo:\n\n${tituloDSAdmin(d)}\n\nTambiÃ©n se eliminarÃ¡n ${acciones.length} acciÃ³n(es) registrada(s) asociada(s).\n\nEsta acciÃ³n no se puede deshacer. Â¿Desea continuar?`;
     if (!confirm(mensaje)) return;
 
     const decretosActualizados = listaDSAdmin().filter(x => String(x.id) !== String(id));
@@ -9856,7 +9801,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const accionesActualizadas = accionesAdmin().filter(a => String(a.dsId || a.ds_id) !== String(id));
     guardarAccionesAdmin(accionesActualizadas);
 
-    // Intentos de borrado remoto. Si algún endpoint no soporta DELETE, no se rompe el flujo local.
+    // Intentos de borrado remoto. Si algÃºn endpoint no soporta DELETE, no se rompe el flujo local.
     try { await api(`/acciones?ds_id=${encodeURIComponent(id)}`, 'DELETE'); } catch {}
     try { await api('/acciones', 'DELETE', { ds_id: id }); } catch {}
     try { await api(`/decretos/${encodeURIComponent(id)}`, 'DELETE'); } catch {}
@@ -9898,7 +9843,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }, 1200);
   });
 
-  // Refuerzo por si el render final del sistema se instala después del DOMContentLoaded.
+  // Refuerzo por si el render final del sistema se instala despuÃ©s del DOMContentLoaded.
   setTimeout(() => {
     instalarWrapperRenderAdminDS();
     aplicarBotonesAdminDS();
@@ -9906,8 +9851,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 })();
 
 // ================= AJUSTE v65.1 - ADMIN EDITAR DS: TERRITORIO CON UBIGEO =================
-// Alcance quirúrgico: solo mejora el campo "Territorio involucrado" del modal Editar DS.
-// No modifica login, roles, RDS, acciones, aprobación, exportación ni estructura base.
+// Alcance quirÃºrgico: solo mejora el campo "Territorio involucrado" del modal Editar DS.
+// No modifica login, roles, RDS, acciones, aprobaciÃ³n, exportaciÃ³n ni estructura base.
 (function () {
   'use strict';
 
@@ -10094,7 +10039,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const distritos = data.filter(x => norm(x.departamento) === norm(dep) && norm(x.provincia) === norm(prov))
       .sort((a, b) => String(a.distrito || '').localeCompare(String(b.distrito || ''), 'es'));
 
-    if (!distritos.length) return limpiarDistritosEditarTerritorioAdmin('No hay distritos para esta selección.');
+    if (!distritos.length) return limpiarDistritosEditarTerritorioAdmin('No hay distritos para esta selecciÃ³n.');
 
     cont.innerHTML = distritos.map(d => {
       const t = normalizarTerritorioAdmin(d);
@@ -10105,7 +10050,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <div class="form-check distrito-edit-item-admin">
           <input class="form-check-input chk-edit-distrito-admin" type="checkbox" id="editDistAdmin_${escAttr(idSeguro)}" value="${escAttr(key)}" ${ya ? 'disabled' : ''}>
           <label class="form-check-label" for="editDistAdmin_${escAttr(idSeguro)}">
-            ${esc(d.distrito || '')}${ya ? '<span class="text-success small"> — agregado</span>' : ''}
+            ${esc(d.distrito || '')}${ya ? '<span class="text-success small"> â€” agregado</span>' : ''}
           </label>
         </div>`;
     }).join('');
@@ -10259,8 +10204,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
 
 // ================= CIERRE FINAL DASHBOARD EJECUTIVO v66.1 =================
-// Mejora exclusiva de la pestaña Dashboard: filtro Vigentes/No vigentes/Todos,
-// leyenda por DS con checkboxes, tablas con DS involucrados y exportación JPG/PDF.
+// Mejora exclusiva de la pestaÃ±a Dashboard: filtro Vigentes/No vigentes/Todos,
+// leyenda por DS con checkboxes, tablas con DS involucrados y exportaciÃ³n JPG/PDF.
 (function cierreDashboardEjecutivoV661(){
   const VERSION = 'Dashboard v66.1';
   const DASH_COLORS = ['#0d6efd','#198754','#dc3545','#fd7e14','#6f42c1','#20c997','#0dcaf0','#6610f2','#d63384','#ffc107','#6c757d','#2f5597','#70ad47','#c00000','#7030a0','#264653','#2a9d8f','#e76f51','#8d99ae','#003049'];
@@ -10361,7 +10306,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const total = fin - ini;
     const pct = (restante / total) * 100;
     if (pct < 20) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
-    if (pct <= 50) return { texto:'Ámbar', clase:'dee-badge-ambar', orden:2 };
+    if (pct <= 50) return { texto:'Ãmbar', clase:'dee-badge-ambar', orden:2 };
     return { texto:'Verde', clase:'dee-badge-verde', orden:3 };
   }
 
@@ -10375,7 +10320,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
     return null;
   }
-  function nombreDS(d){ return formatearNumeroDS(d).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°'); }
+  function nombreDS(d){ return formatearNumeroDS(d).replace('DS N.Â°', 'D.S. NÂ°').replace('DS NÂ°', 'D.S. NÂ°'); }
 
   function todosDecretos() {
     return (state.decretos?.length ? state.decretos : cargarDecretosLocales()).map(normalizarDecreto).filter(Boolean);
@@ -10493,8 +10438,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       resumen.closest('.table-responsive')?.insertAdjacentHTML('afterend', `
         <div id="dashboardSemaforoLeyenda" class="dee-semaforo-legend">
           <span class="dee-semaforo-item"><span class="badge dee-badge-verde">Verde</span> Plazo suficiente de vigencia</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ámbar</span> Próxima a vencer</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crítica o pocos días restantes</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ãmbar</span> PrÃ³xima a vencer</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crÃ­tica o pocos dÃ­as restantes</span>
           <span class="dee-semaforo-item"><span class="badge dee-badge-gris">Gris</span> Declaratoria no vigente</span>
         </div>`);
     }
@@ -10511,7 +10456,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <label class="dee-legend-row">
           <input type="checkbox" class="form-check-input dash-ds-check" value="${escapeHtmlAttr(id)}" ${checked}>
           <span class="dee-color-dot" style="background:${escapeHtmlAttr(d.__dashColor)}"></span>
-          <span><strong>${escapeHtml(nombreDS(d))}</strong><br><span class="text-muted">${esVigente(d) ? 'Vigente' : 'No vigente'} · ${distCount} distrito(s)</span></span>
+          <span><strong>${escapeHtml(nombreDS(d))}</strong><br><span class="text-muted">${esVigente(d) ? 'Vigente' : 'No vigente'} Â· ${distCount} distrito(s)</span></span>
         </label>`;
     }).join('');
     cont.innerHTML = `
@@ -10521,7 +10466,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       </div>
       <div class="d-flex gap-2 mb-2">
         <button id="btnDashSeleccionarTodos" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
-        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
+        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selecciÃ³n</button>
       </div>
       ${filas || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
     cont.querySelectorAll('.dash-ds-check').forEach(chk => chk.addEventListener('change', () => {
@@ -10550,7 +10495,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
-      ['Distritos en más de una declaratoria', repetidos, `Según filtro ${estadoFiltroTexto().toLowerCase()}`]
+      ['Distritos en mÃ¡s de una declaratoria', repetidos, `SegÃºn filtro ${estadoFiltroTexto().toLowerCase()}`]
     ];
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${escapeHtml(value)}</div><div class="dee-kpi-label">${escapeHtml(label)}</div><div class="dee-kpi-note">${escapeHtml(note)}</div></div></div>`).join('');
   }
@@ -10560,7 +10505,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!el || !window.L) return null;
 
     // Este archivo conserva cierres anteriores del Dashboard. Si alguno de ellos
-    // inicializó Leaflet sobre #mapaDS, Leaflet deja _leaflet_id y capas antiguas
+    // inicializÃ³ Leaflet sobre #mapaDS, Leaflet deja _leaflet_id y capas antiguas
     // que no obedecen la leyenda final. Se reemplaza SOLO el nodo del mapa para
     // recuperar control limpio sin tocar tablas, KPIs ni estilos.
     const necesitaReset = !mapaDashboard && (el._leaflet_id || el.classList.contains('leaflet-container'));
@@ -10595,8 +10540,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!capaDashboard) capaDashboard = L.layerGroup().addTo(mapaDashboard);
     capaDashboard.clearLayers();
 
-    // Blindaje adicional: cualquier círculo/marcador dejado por cierres anteriores
-    // se retira; se conserva únicamente la capa base y la capa controlada aquí.
+    // Blindaje adicional: cualquier cÃ­rculo/marcador dejado por cierres anteriores
+    // se retira; se conserva Ãºnicamente la capa base y la capa controlada aquÃ­.
     mapaDashboard.eachLayer(layer => {
       if (layer !== capaDashboard && !(layer instanceof L.TileLayer)) {
         try { mapaDashboard.removeLayer(layer); } catch (_) {}
@@ -10666,7 +10611,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const badge = q('dashboardFiltroActivo');
     if (badge) badge.textContent = estadoFiltroTexto();
     const subtitulo = q('tabDashboard')?.querySelector('h4.text-primary + .text-muted');
-    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia · Filtro aplicado: ${estadoFiltroTexto()} · Control territorial sin duplicidades`;
+    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia Â· Filtro aplicado: ${estadoFiltroTexto()} Â· Control territorial sin duplicidades`;
     const tituloRep = [...(q('tabDashboard')?.querySelectorAll('h5.text-primary') || [])].find(h => normalizarTexto(h.textContent).includes('DISTRITOS REPETIDOS'));
     if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${estadoFiltroTexto().toLowerCase()}`;
   }
@@ -10734,7 +10679,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function exportarDashboard(tipo) {
     const area = q('dashboardExportArea') || q('tabDashboard');
-    if (!area) return alert('No se encontró el Dashboard para exportar.');
+    if (!area) return alert('No se encontrÃ³ el Dashboard para exportar.');
     const oldAreaWidth = area.style.width;
     const oldAreaMaxWidth = area.style.maxWidth;
     const oldOverflow = document.body.style.overflow;
@@ -10751,7 +10696,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       titulo = document.createElement('div');
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${escapeHtml(fechaHoraLocalISO())} · Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} · DS seleccionados: ${dsVisibles.size}</div>`;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generaciÃ³n: ${escapeHtml(fechaHoraLocalISO())} Â· Filtro aplicado: ${escapeHtml(estadoFiltroTexto())} Â· DS seleccionados: ${dsVisibles.size}</div>`;
       area.insertBefore(titulo, area.firstChild);
       try { mapaDashboard?.invalidateSize(true); } catch (_) {}
       await new Promise(r => setTimeout(r, 250));
@@ -10777,7 +10722,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         return;
       }
       const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-      if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
+      if (!jsPDF) return alert('No se encontrÃ³ jsPDF para generar el PDF.');
       const pdf = new jsPDF('l', 'mm', 'a4');
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
@@ -10797,7 +10742,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       pdf.save(`${fileBase}.pdf`);
     } catch (e) {
       console.error('Error exportando Dashboard:', e);
-      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle tÃ©cnico.');
     } finally {
       if (titulo) { try { titulo.remove(); } catch (_) {} }
       area.style.width = oldAreaWidth;
@@ -10847,8 +10792,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
-// ================= CORRECCIÓN QUIRÚRGICA FINAL DASHBOARD v68.2 =================
-// Alcance exclusivo: checkbox Leyenda por DS ↔ puntos del mapa y exportación JPG/PDF.
+// ================= CORRECCIÃ“N QUIRÃšRGICA FINAL DASHBOARD v68.2 =================
+// Alcance exclusivo: checkbox Leyenda por DS â†” puntos del mapa y exportaciÃ³n JPG/PDF.
 // No modifica login, roles, tablas de registro, RDS, usuarios ni estilos generales.
 (function dashboardCheckboxExportV682(){
   const VERSION = 'v68.2 checkbox-export-map-final';
@@ -10903,8 +10848,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
   }
   function dsNombre(d){
-    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
-    return txt.replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
+    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. NÂ° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    return txt.replace('DS N.Â°', 'D.S. NÂ°').replace('DS NÂ°', 'D.S. NÂ°');
   }
   function decretosBase(){
     const arr = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
@@ -10922,7 +10867,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (!ini || !fin || fin <= ini) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
     const pct = (Math.max(fin - h, 0) / (fin - ini)) * 100;
     if (pct < 20) return { texto:'Rojo', clase:'dee-badge-rojo', orden:1 };
-    if (pct <= 50) return { texto:'Ámbar', clase:'dee-badge-ambar', orden:2 };
+    if (pct <= 50) return { texto:'Ãmbar', clase:'dee-badge-ambar', orden:2 };
     return { texto:'Verde', clase:'dee-badge-verde', orden:3 };
   }
 
@@ -10977,7 +10922,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const thResumen = document.querySelector('#tablaResumenDS thead tr');
     if (thResumen) {
       // v77.1: normaliza la cabecera para evitar columnas duplicadas Peligro/Tipo.
-      // La versión anterior insertaba Peligro/Tipo aunque ya existían en el HTML,
+      // La versiÃ³n anterior insertaba Peligro/Tipo aunque ya existÃ­an en el HTML,
       // desfasando los encabezados respecto de las celdas del cuerpo.
       thResumen.innerHTML = `
         <th>Decreto Supremo</th>
@@ -10985,18 +10930,18 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <th data-dash-tipo-col>Tipo</th>
         <th>Fecha inicio</th>
         <th>Fecha fin</th>
-        <th>Días restantes</th>
+        <th>DÃ­as restantes</th>
         <th>Avance %</th>
-        <th>Semáforo</th>
-        <th>N.° departamentos</th>
-        <th>N.° provincias</th>
-        <th>N.° distritos</th>`;
+        <th>SemÃ¡foro</th>
+        <th>N.Â° departamentos</th>
+        <th>N.Â° provincias</th>
+        <th>N.Â° distritos</th>`;
     }
 
     const thDeptos = document.querySelector('#tablaDeptos thead tr');
     if (thDeptos) {
       const ths = thDeptos.querySelectorAll('th');
-      if (ths[1]) ths[1].textContent = 'Número de distritos';
+      if (ths[1]) ths[1].textContent = 'NÃºmero de distritos';
       if (!thDeptos.querySelector('[data-dash-ds-col]')) thDeptos.insertAdjacentHTML('beforeend', '<th data-dash-ds-col>Decretos Supremos involucrados</th>');
     }
     const thReps = document.querySelector('#tablaRepetidos thead tr');
@@ -11007,8 +10952,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       resumen.closest('.table-responsive')?.insertAdjacentHTML('afterend', `
         <div id="dashboardSemaforoLeyenda" class="dee-semaforo-legend">
           <span class="dee-semaforo-item"><span class="badge dee-badge-verde">Verde</span> Plazo suficiente de vigencia</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ámbar</span> Próxima a vencer</span>
-          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crítica o pocos días restantes</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-ambar">Ãmbar</span> PrÃ³xima a vencer</span>
+          <span class="dee-semaforo-item"><span class="badge dee-badge-rojo">Rojo</span> Fase crÃ­tica o pocos dÃ­as restantes</span>
           <span class="dee-semaforo-item"><span class="badge dee-badge-gris">Gris</span> Declaratoria no vigente</span>
         </div>`);
     }
@@ -11058,7 +11003,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       </div>
       <div class="d-flex gap-2 mb-2">
         <button id="btnDashSeleccionarTodos" type="button" class="btn btn-sm btn-outline-primary">Seleccionar todos</button>
-        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selección</button>
+        <button id="btnDashQuitarSeleccion" type="button" class="btn btn-sm btn-outline-secondary">Quitar selecciÃ³n</button>
       </div>
       ${datos.filtrados.map(d => {
         const id = String(d.id);
@@ -11066,7 +11011,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         return `<label class="dee-legend-row">
           <input type="checkbox" class="form-check-input dash-ds-check" value="${escAttr(id)}" ${dsSeleccionados.has(id) ? 'checked' : ''}>
           <span class="dee-color-dot" style="background:${escAttr(d.__dashColor)}"></span>
-          <span><strong>${esc(dsNombre(d))}</strong><br><span class="text-muted">${vigente(d) ? 'Vigente' : 'No vigente'} · ${count} distrito(s)</span></span>
+          <span><strong>${esc(dsNombre(d))}</strong><br><span class="text-muted">${vigente(d) ? 'Vigente' : 'No vigente'} Â· ${count} distrito(s)</span></span>
         </label>`;
       }).join('') || '<div class="dee-dashboard-empty">No hay decretos para el filtro seleccionado.</div>'}`;
   }
@@ -11131,7 +11076,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       ['Departamentos declarados', datos.departamentos.size, 'Sin duplicados'],
       ['Provincias declaradas', datos.provincias.size, 'Sin duplicados'],
       ['Distritos declarados', datos.distritos.size, 'Sin duplicados'],
-      ['Distritos en más de una declaratoria', repetidos, `Según filtro ${filtroTexto().toLowerCase()}`]
+      ['Distritos en mÃ¡s de una declaratoria', repetidos, `SegÃºn filtro ${filtroTexto().toLowerCase()}`]
     ];
     cont.innerHTML = cards.map(([label,value,note]) => `<div class="col-12 col-md-6"><div class="dee-kpi-card"><div class="dee-kpi-number">${esc(value)}</div><div class="dee-kpi-label">${esc(label)}</div><div class="dee-kpi-note">${esc(note)}</div></div></div>`).join('');
   }
@@ -11164,7 +11109,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     const sel = q('dashboardFiltroEstado'); if (sel) sel.value = filtroEstado;
     const badge = q('dashboardFiltroActivo'); if (badge) badge.textContent = filtroTexto();
     const subtitulo = q('tabDashboard')?.querySelector('h4.text-primary + .text-muted');
-    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia · Filtro aplicado: ${filtroTexto()} · Control territorial sin duplicidades`;
+    if (subtitulo) subtitulo.textContent = `Declaratorias de Estado de Emergencia Â· Filtro aplicado: ${filtroTexto()} Â· Control territorial sin duplicidades`;
     const tituloRep = [...(q('tabDashboard')?.querySelectorAll('h5.text-primary') || [])].find(h => norm(h.textContent).includes('DISTRITOS REPETIDOS'));
     if (tituloRep) tituloRep.textContent = `Distritos repetidos en declaratorias ${filtroTexto().toLowerCase()}`;
   }
@@ -11194,7 +11139,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
   async function exportar(tipo){
     const area = q('dashboardExportArea') || q('tabDashboard');
-    if (!area) return alert('No se encontró el Dashboard para exportar.');
+    if (!area) return alert('No se encontrÃ³ el Dashboard para exportar.');
     const oldFiltro = filtroEstado;
     const oldSeleccion = new Set(dsSeleccionados);
     const oldInit = seleccionInicializada;
@@ -11225,7 +11170,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       titulo = document.createElement('div');
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${dsSeleccionados.size}</div>`;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generaciÃ³n: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} Â· Filtro aplicado: ${esc(filtroTexto())} Â· DS seleccionados: ${dsSeleccionados.size}</div>`;
       area.insertBefore(titulo, area.firstChild);
       await new Promise(r => setTimeout(r, 300));
 
@@ -11239,7 +11184,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         a.click();
       } else {
         const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
-        if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
+        if (!jsPDF) return alert('No se encontrÃ³ jsPDF para generar el PDF.');
         const pdf = new jsPDF('l','mm','a4');
         const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
         const imgW = pageW - 16, imgH = canvas.height * imgW / canvas.width;
@@ -11252,7 +11197,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       }
     } catch(e) {
       console.error('Error exportando Dashboard v68.2:', e);
-      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle tÃ©cnico.');
     } finally {
       if (titulo) { try { titulo.remove(); } catch(_) {} }
       area.style.width = oldW;
@@ -11329,8 +11274,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
-// ================= CORRECCIÓN QUIRÚRGICA DASHBOARD v74.1 =================
-// Alcance exclusivo: alineación de puntos Leaflet en el mapa del Dashboard y exportación JPG/PDF.
+// ================= CORRECCIÃ“N QUIRÃšRGICA DASHBOARD v74.1 =================
+// Alcance exclusivo: alineaciÃ³n de puntos Leaflet en el mapa del Dashboard y exportaciÃ³n JPG/PDF.
 // No modifica login, usuarios, roles, RDS, tablas ni estructura general.
 (function dashboardPuntosCalzadosV741(){
   const VERSION = 'v74.1 puntos-calzados-mapa-export';
@@ -11409,8 +11354,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     return [lat, lng];
   }
   function nombreDS(d) {
-    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. N° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
-    return String(txt).replace('DS N.°', 'D.S. N°').replace('DS N°', 'D.S. N°');
+    const txt = typeof formatearNumeroDS === 'function' ? formatearNumeroDS(d) : `D.S. NÂ° ${d?.numero || ''}-${d?.anio || ''}-PCM`;
+    return String(txt).replace('DS N.Â°', 'D.S. NÂ°').replace('DS NÂ°', 'D.S. NÂ°');
   }
   function decretosBase() {
     const base = (window.state?.decretos?.length ? window.state.decretos : (typeof cargarDecretosLocales === 'function' ? cargarDecretosLocales() : []));
@@ -11551,7 +11496,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       .addTo(grupo);
     });
 
-    // v75: mantener el mapa centrado en el Perú, tanto en pantalla como durante exportación.
+    // v75: mantener el mapa centrado en el PerÃº, tanto en pantalla como durante exportaciÃ³n.
     // No se usa fitBounds porque desplaza la vista hacia el bloque de puntos y deja el mapa visualmente corrido.
     fixedMap.setView(PERU_CENTER, PERU_ZOOM);
 
@@ -11602,7 +11547,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (exportando) return;
     exportando = true;
     const area = $id('dashboardExportArea') || $id('tabDashboard');
-    if (!area) { exportando = false; return alert('No se encontró el Dashboard para exportar.'); }
+    if (!area) { exportando = false; return alert('No se encontrÃ³ el Dashboard para exportar.'); }
 
     const oldFiltro = $id('dashboardFiltroEstado')?.value || 'vigentes';
     const oldChecks = new Map([...document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check')].map(chk => [String(chk.value), chk.checked]));
@@ -11633,7 +11578,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       titulo.id = 'dashboardExportHeaderTmp';
       titulo.className = 'border-bottom mb-2 pb-2';
       const totalChecks = document.querySelectorAll('#dashboardMapaLeyenda .dash-ds-check:checked').length;
-      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} · Filtro aplicado: ${esc(filtroTexto())} · DS seleccionados: ${totalChecks}</div>`;
+      titulo.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generaciÃ³n: ${esc(typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString())} Â· Filtro aplicado: ${esc(filtroTexto())} Â· DS seleccionados: ${totalChecks}</div>`;
       area.insertBefore(titulo, area.firstChild);
       await sleep(200);
 
@@ -11678,7 +11623,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       }
     } catch (e) {
       console.error('Error exportando Dashboard v74.1:', e);
-      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle técnico.');
+      alert('No se pudo exportar el Dashboard. Revise la consola para el detalle tÃ©cnico.');
     } finally {
       if (titulo) { try { titulo.remove(); } catch (_) {} }
       area.style.width = oldW;
@@ -11700,7 +11645,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if (installing) return;
     installing = true;
 
-    // Evita que cierres antiguos del Dashboard vuelvan a dibujar un mapa desfasado al abrir la pestaña.
+    // Evita que cierres antiguos del Dashboard vuelvan a dibujar un mapa desfasado al abrir la pestaÃ±a.
     document.addEventListener('shown.bs.tab', (e) => {
       const target = e.target?.getAttribute?.('data-bs-target');
       if (target === '#tabDashboard') {
@@ -11759,7 +11704,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
 
 // ================= PUENTE D1 FINAL v79: DECRETOS Y ACCIONES =================
 // Objetivo: usar D1 como fuente principal para decretos, acciones, listado y dashboard.
-// localStorage queda solo como caché/respaldo temporal del navegador.
+// localStorage queda solo como cachÃ©/respaldo temporal del navegador.
 let __DEE_D1_IMPORTANDO = false;
 let __DEE_D1_SYNC_TIMER = null;
 let __DEE_ACCIONES_D1_CACHE = [];
@@ -11896,7 +11841,7 @@ async function sincronizarDecretosLocalesAD1(lista) {
 async function sincronizarAccionesLocalesAD1(lista) {
   if (!Array.isArray(lista) || !lista.length) return;
   for (const a of lista) {
-    try { await api('/acciones', 'POST', a); } catch (e) { console.warn('No se pudo sincronizar acción en D1', a?.id, e); }
+    try { await api('/acciones', 'POST', a); } catch (e) { console.warn('No se pudo sincronizar acciÃ³n en D1', a?.id, e); }
   }
 }
 
@@ -11907,8 +11852,8 @@ async function cargarAccionesDesdeD1() {
 
   let acciones = remotas;
 
-  // Migración controlada: si D1 está vacío pero el navegador actual sí tiene acciones,
-  // las sube a D1 para que otros usuarios/navegadores también las vean.
+  // MigraciÃ³n controlada: si D1 estÃ¡ vacÃ­o pero el navegador actual sÃ­ tiene acciones,
+  // las sube a D1 para que otros usuarios/navegadores tambiÃ©n las vean.
   if (res.ok && !remotas.length && locales.length) {
     await sincronizarAccionesLocalesAD1(locales);
     const reread = await api('/acciones');
@@ -11927,7 +11872,7 @@ async function cargarDecretosParaOrigen() {
   const res = await api('/decretos');
   let remotos = extraerListaDecretos(res?.data).map(normalizarDecretoD1).filter(Boolean);
 
-  // Migración controlada: si D1 está vacío pero este navegador tiene DS,
+  // MigraciÃ³n controlada: si D1 estÃ¡ vacÃ­o pero este navegador tiene DS,
   // los sube a D1 y luego vuelve a leer desde la base.
   if (res.ok && !remotos.length && locales.length) {
     await sincronizarDecretosLocalesAD1(locales);
@@ -11974,11 +11919,11 @@ async function guardarDecreto() {
     cargarDSOrigen();
     renderTablaDecretosBasica();
     if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true);
-    alert(res.ok ? 'Decreto guardado correctamente en D1.' : 'Decreto guardado localmente. No se confirmó en D1; revise API/decretos.');
+    alert(res.ok ? 'Decreto guardado correctamente en D1.' : 'Decreto guardado localmente. No se confirmÃ³ en D1; revise API/decretos.');
     limpiarFormularioDecreto();
   } catch (e) {
     console.error('Error al guardar Decreto Supremo:', e);
-    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle técnico.');
+    alert('No se pudo guardar el Decreto Supremo. Revise la consola para el detalle tÃ©cnico.');
   }
 }
 
@@ -11988,12 +11933,12 @@ async function activarRDSSeleccionado() {
   const numeroReunion = $('rdsNumeroReunion')?.value || '';
   const fechaReunion = $('rdsFechaReunion')?.value || '';
   if (!id) return alert('Seleccione un Decreto Supremo.');
-  if (!numeroReunion) return alert('Seleccione el número de reunión.');
-  if (!fechaReunion) return alert('Ingrese la fecha de reunión.');
+  if (!numeroReunion) return alert('Seleccione el nÃºmero de reuniÃ³n.');
+  if (!fechaReunion) return alert('Ingrese la fecha de reuniÃ³n.');
 
   const lista = cargarDecretosLocales().map(normalizarDecretoD1).filter(Boolean);
   const idx = lista.findIndex(d => String(d.id) === String(id));
-  if (idx < 0) return alert('No se encontró el Decreto Supremo.');
+  if (idx < 0) return alert('No se encontrÃ³ el Decreto Supremo.');
 
   lista[idx] = {
     ...lista[idx],
@@ -12024,7 +11969,7 @@ async function activarRDSSeleccionado() {
   aplicarRestriccionesAccion();
   aplicarVistaRegistroAcciones();
   if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true);
-  alert(res.ok ? 'RDS activado correctamente en D1.' : 'RDS activado localmente. No se confirmó en D1.');
+  alert(res.ok ? 'RDS activado correctamente en D1.' : 'RDS activado localmente. No se confirmÃ³ en D1.');
 }
 
 async function guardarAccionDS() {
@@ -12037,9 +11982,9 @@ async function guardarAccionDS() {
   const codigo = String($('accionCodigo')?.value || '').trim();
   if (!programa) return alert('Seleccione el Programa Nacional.');
   if (esRegistradorPrograma() && programa !== programaSesionNormalizado()) return alert('No puede registrar acciones de otro programa.');
-  if (!tipo) return alert('Seleccione el Tipo de acción.');
-  if (!codigo) return alert('Ingrese el Código de acción.');
-  if (!$('accionDetalle')?.value.trim()) return alert('Ingrese la acción específica programada.');
+  if (!tipo) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigo) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!$('accionDetalle')?.value.trim()) return alert('Ingrese la acciÃ³n especÃ­fica programada.');
 
   calcularFechaFinalAccion();
   calcularAvanceAccion();
@@ -12084,7 +12029,7 @@ async function guardarAccionDS() {
   });
 
   const duplicada = lista.some(a => String(a.id) !== String(id) && String(a.ds_id || a.dsId) === String(d.id) && String(a.numero_reunion || a.numeroReunion || '') === String(accion.numero_reunion || '') && normalizarProgramaNombre(a.programaNacional || a.programa) === programa && normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigo));
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, reunión, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, reuniÃ³n, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const res = await api('/acciones', 'POST', accion);
   const depurada = lista.filter(a => String(a.id) !== String(id));
@@ -12095,8 +12040,8 @@ async function guardarAccionDS() {
   renderTablaAcciones();
   limpiarFormularioAccion();
   accionEditandoId = null;
-  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acción';
-  alert(res.ok ? 'Acción guardada correctamente en D1.' : 'Acción guardada localmente. No se confirmó en D1.');
+  if ($('btnGuardarAccion')) $('btnGuardarAccion').textContent = 'Guardar acciÃ³n';
+  alert(res.ok ? 'AcciÃ³n guardada correctamente en D1.' : 'AcciÃ³n guardada localmente. No se confirmÃ³ en D1.');
 }
 
 async function guardarAccionPrograma() {
@@ -12108,9 +12053,9 @@ async function guardarAccionPrograma() {
   const tipoAccion = $('progTipoAccion')?.value || '';
   const codigoAccion = String($('progCodigoAccion')?.value || '').trim();
   const detalle = String($('progDetalle')?.value || '').trim();
-  if (!tipoAccion) return alert('Seleccione el Tipo de acción.');
-  if (!codigoAccion) return alert('Ingrese el Código de acción.');
-  if (!detalle) return alert('Ingrese las acciones específicas programadas y ejecutadas.');
+  if (!tipoAccion) return alert('Seleccione el Tipo de acciÃ³n.');
+  if (!codigoAccion) return alert('Ingrese el CÃ³digo de acciÃ³n.');
+  if (!detalle) return alert('Ingrese las acciones especÃ­ficas programadas y ejecutadas.');
   if (!$('progUnidadMedida')?.value) return alert('Seleccione la Unidad de medida.');
   if (!$('progFechaInicio')?.value) return alert('Ingrese la Fecha de inicio.');
 
@@ -12119,7 +12064,7 @@ async function guardarAccionPrograma() {
 
   const lista = cargarAccionesLocales();
   const duplicada = lista.some(a => String(a.dsId || a.ds_id) === String(d.id) && String(a.numeroReunion || a.numero_reunion || '') === String(d.numeroReunion || '') && normalizarProgramaNombre(a.programaNacional || a.programa) === programa && normalizarTexto(a.codigoAccion || a.codigo) === normalizarTexto(codigoAccion) && !a.departamento && !a.provincia && !a.distrito);
-  if (duplicada) return alert('Ya existe una acción con el mismo DS, reunión, Programa Nacional y Código de acción.');
+  if (duplicada) return alert('Ya existe una acciÃ³n con el mismo DS, reuniÃ³n, Programa Nacional y CÃ³digo de acciÃ³n.');
 
   const fechaRegistro = fechaHoraLocalISO();
   const accion = normalizarAccionD1({
@@ -12171,10 +12116,10 @@ async function guardarAccionPrograma() {
   limpiarFormularioAccionPrograma(true);
   renderTablaAccionesProgramas();
   renderTablaDecretosBasica();
-  alert(res.ok ? 'Acción registrada correctamente en D1.' : 'Acción registrada localmente. No se confirmó en D1.');
+  alert(res.ok ? 'AcciÃ³n registrada correctamente en D1.' : 'AcciÃ³n registrada localmente. No se confirmÃ³ en D1.');
 }
 
-// Refuerza la carga D1 al entrar al sistema y al cambiar a pestañas que dependen de DS/acciones.
+// Refuerza la carga D1 al entrar al sistema y al cambiar a pestaÃ±as que dependen de DS/acciones.
 document.addEventListener('shown.bs.tab', (e) => {
   const target = e.target?.getAttribute?.('data-bs-target');
   if (['#tabListado', '#tabDashboard', '#tabAcciones', '#tabAccionesProgramas'].includes(target)) {
@@ -12189,9 +12134,9 @@ setTimeout(() => {
 console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decretos y acciones usan D1 como fuente principal');
 
 
-// ================= AJUSTE v79.2 - FILTROS Y PAGINACIÓN REGISTRO ACCIONES PROGRAMAS =================
-// Alcance estricto: usuarios Registradores de Programas Nacionales, pestaña Registro Acciones Programas.
-// No modifica login, roles, Listado DS, Dashboard ni flujos de aprobación.
+// ================= AJUSTE v79.2 - FILTROS Y PAGINACIÃ“N REGISTRO ACCIONES PROGRAMAS =================
+// Alcance estricto: usuarios Registradores de Programas Nacionales, pestaÃ±a Registro Acciones Programas.
+// No modifica login, roles, Listado DS, Dashboard ni flujos de aprobaciÃ³n.
 (function(){
   'use strict';
 
@@ -12200,7 +12145,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   const txt = (v) => String(v ?? '').trim();
   const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
   const canonTerritorial = (v) => {
-    // Normalización territorial fuerte para cruzar DS, ubigeoData.js y cobertura_programas.json.
+    // NormalizaciÃ³n territorial fuerte para cruzar DS, ubigeoData.js y cobertura_programas.json.
     // Corrige diferencias usuales como NASCA/NAZCA, tildes, espacios y signos.
     let s = norm(v).replace(/[^A-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
     const alias = {
@@ -12227,25 +12172,25 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   };
 
   const COBERTURA_PROGRAMA_KEYS = {
-    'CUNA MÁS': ['cuna_mas_cuidado_diurno', 'cuna_mas_acomp_familias'],
+    'CUNA MÃS': ['cuna_mas_cuidado_diurno', 'cuna_mas_acomp_familias'],
     'JUNTOS': ['juntos_hogares_afiliados'],
     'FONCODES': ['foncodes_proy_ejecucion', 'foncodes_haku_ejecucion'],
-    'PENSIÓN 65': ['pension65_usuarios'],
+    'PENSIÃ“N 65': ['pension65_usuarios'],
     'PAE': ['pae_iiee', 'pae_ninos_atendidos'],
     'CONTIGO': ['contigo_usuarios'],
     'PAIS': ['pais_tambos']
   };
 
   const COBERTURA_LABELS_FALLBACK = {
-    cuna_mas_cuidado_diurno: 'Cuna Más - Cuidado Diurno (N° usuarios)',
-    cuna_mas_acomp_familias: 'Cuna Más - Acompañamiento de Familias (N° usuarios)',
+    cuna_mas_cuidado_diurno: 'Cuna MÃ¡s - Cuidado Diurno (NÂ° usuarios)',
+    cuna_mas_acomp_familias: 'Cuna MÃ¡s - AcompaÃ±amiento de Familias (NÂ° usuarios)',
     juntos_hogares_afiliados: 'Juntos - Hogares afiliados',
-    foncodes_proy_ejecucion: 'Foncodes - N° proyectos en ejecución',
-    foncodes_haku_ejecucion: 'Foncodes - Haku Wiñay (hogares) en ejecución',
-    pension65_usuarios: 'Pensión 65 - N° usuarios',
-    pae_iiee: 'PAE - N° IIEE',
-    pae_ninos_atendidos: 'PAE - N° niños y niñas atendidos',
-    contigo_usuarios: 'Contigo - N° usuarios',
+    foncodes_proy_ejecucion: 'Foncodes - NÂ° proyectos en ejecuciÃ³n',
+    foncodes_haku_ejecucion: 'Foncodes - Haku WiÃ±ay (hogares) en ejecuciÃ³n',
+    pension65_usuarios: 'PensiÃ³n 65 - NÂ° usuarios',
+    pae_iiee: 'PAE - NÂ° IIEE',
+    pae_ninos_atendidos: 'PAE - NÂ° niÃ±os y niÃ±as atendidos',
+    contigo_usuarios: 'Contigo - NÂ° usuarios',
     pais_tambos: 'Tambos'
   };
 
@@ -12345,8 +12290,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       <th>Provincia</th>
       <th>Distrito</th>
       ${columnas.map(c => `<th class="text-end cobertura-col" style="min-width:90px;white-space:nowrap">${esc(c.label)}</th>`).join('')}
-      <th>Acciones específicas programadas y ejecutadas</th>
-      <th>Descripción de actividades</th>`;
+      <th>Acciones especÃ­ficas programadas y ejecutadas</th>
+      <th>DescripciÃ³n de actividades</th>`;
   }
 
   function keyTerritorio(t) {
@@ -12528,11 +12473,11 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         <div class="col-md-2"><label class="form-label small mb-1">Provincia</label><input id="progFiltroProvincia" class="form-control form-control-sm" placeholder="Provincia"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Distrito</label><input id="progFiltroDistrito" class="form-control form-control-sm" placeholder="Distrito"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Cobertura</label><select id="progFiltroCobertura" class="form-select form-select-sm"><option value="">Todos</option><option value="con">Con cobertura</option><option value="sin">Sin cobertura</option><option value="mayor_0">Mayor a 0</option><option value="mayor_100">Mayor a 100</option><option value="mayor_500">Mayor a 500</option><option value="mayor_1000">Mayor a 1000</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Cobertura mínima</label><input id="progFiltroCoberturaMinima" type="number" min="0" class="form-control form-control-sm" placeholder="N° mínimo"></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Estado de acción</label><select id="progFiltroEstadoAccion" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="registrado">Registrados</option></select></div>
+        <div class="col-md-2"><label class="form-label small mb-1">Cobertura mÃ­nima</label><input id="progFiltroCoberturaMinima" type="number" min="0" class="form-control form-control-sm" placeholder="NÂ° mÃ­nimo"></div>
+        <div class="col-md-2"><label class="form-label small mb-1">Estado de acciÃ³n</label><select id="progFiltroEstadoAccion" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="registrado">Registrados</option></select></div>
         <div class="col-md-2" data-cobertura-en-box><label class="form-label small mb-1">Cobertura en</label><select id="progFiltroCoberturaEn" class="form-select form-select-sm"><option value="cualquiera">Cualquiera</option><option value="primera">Primera columna</option><option value="segunda">Segunda columna</option><option value="ambas">Ambas</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Acciones específicas</label><select id="progFiltroDetalleEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Descripción de actividades</label><select id="progFiltroDescripcionEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
+        <div class="col-md-2"><label class="form-label small mb-1">Acciones especÃ­ficas</label><select id="progFiltroDetalleEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
+        <div class="col-md-2"><label class="form-label small mb-1">DescripciÃ³n de actividades</label><select id="progFiltroDescripcionEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
         <div class="col-md-2 d-flex gap-2"><button id="btnBuscarDistritosPrograma" type="button" class="btn btn-sm btn-primary">Buscar</button><button id="btnLimpiarBuscarDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button></div>
       </div>`;
     if (header && header.parentNode) header.parentNode.insertBefore(filtros, header.nextSibling);
@@ -12558,7 +12503,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       <div class="d-flex align-items-center gap-2">
         <span id="progRegistradasContador" class="text-muted small">Mostrando 0 de 0 registros</span>
         <button id="btnProgRegistradasAnterior" type="button" class="btn btn-sm btn-outline-secondary">Anterior</button>
-        <span id="progRegistradasPaginaInfo" class="text-muted small">Página 1 de 1</span>
+        <span id="progRegistradasPaginaInfo" class="text-muted small">PÃ¡gina 1 de 1</span>
         <button id="btnProgRegistradasSiguiente" type="button" class="btn btn-sm btn-outline-secondary">Siguiente</button>
       </div>`;
     wrapper.parentNode.insertBefore(controles, wrapper);
@@ -12595,12 +12540,12 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const hasta = Math.min(desdeIdx + pageSize, total);
 
     if (q('progDistritosContador')) q('progDistritosContador').textContent = `Mostrando ${desde}-${hasta} de ${total} registro(s)`;
-    if (q('progDistritosPaginaInfo')) q('progDistritosPaginaInfo').textContent = `Página ${stateV792.paginaDistritos} de ${totalPaginas}`;
+    if (q('progDistritosPaginaInfo')) q('progDistritosPaginaInfo').textContent = `PÃ¡gina ${stateV792.paginaDistritos} de ${totalPaginas}`;
     if (q('btnProgDistritosAnterior')) q('btnProgDistritosAnterior').disabled = stateV792.paginaDistritos <= 1;
     if (q('btnProgDistritosSiguiente')) q('btnProgDistritosSiguiente').disabled = stateV792.paginaDistritos >= totalPaginas;
 
     if (!pagina.length) {
-      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">No hay distritos que coincidan con la búsqueda.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">No hay distritos que coincidan con la bÃºsqueda.</td></tr>`;
       return;
     }
 
@@ -12645,17 +12590,17 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   }
 
   function abrirModalGrupalV792() {
-    if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Esta opción corresponde a Registradores de Programas Nacionales.');
+    if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Esta opciÃ³n corresponde a Registradores de Programas Nacionales.');
     if (!dsProgramaSeleccionadoId) return alert('Seleccione un Decreto Supremo activado.');
     document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
       if (chk?.value) stateV792.seleccion.add(String(chk.value));
     });
-    if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito para registrar la acciÃ³n.');
     if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
     if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
     const modal = q('modalAccionGrupalPrograma');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).show();
-    else alert('No se encontró el modal de registro grupal.');
+    else alert('No se encontrÃ³ el modal de registro grupal.');
   }
 
   function valoresFormularioPrograma() {
@@ -12692,16 +12637,16 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     }
 
     const v = valoresFormularioPrograma();
-    if (!v.tipoAccion) return alert('Seleccione el Tipo de acción.');
-    if (!v.codigoAccion) return alert('Ingrese el Código de acción.');
+    if (!v.tipoAccion) return alert('Seleccione el Tipo de acciÃ³n.');
+    if (!v.codigoAccion) return alert('Ingrese el CÃ³digo de acciÃ³n.');
     if (!v.unidadMedida) return alert('Seleccione la Unidad de medida.');
     if (!v.fechaInicio) return alert('Ingrese la Fecha de inicio.');
-    if (!v.detalle && !v.descripcion) return alert('Ingrese acciones específicas programadas y ejecutadas o descripción de actividades.');
+    if (!v.detalle && !v.descripcion) return alert('Ingrese acciones especÃ­ficas programadas y ejecutadas o descripciÃ³n de actividades.');
 
     const programa = programaActual();
     const keyR = reunionKey(d);
     const seleccionados = getTerritoriosDSPrograma().filter(t => stateV792.seleccion.has(t.key));
-    if (!seleccionados.length) return alert('No se encontraron distritos válidos seleccionados.');
+    if (!seleccionados.length) return alert('No se encontraron distritos vÃ¡lidos seleccionados.');
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
@@ -12786,7 +12731,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     renderDistritosAccionesProgramaV792();
     renderTablaAccionesProgramasV792();
     if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
-    alert(`Acción registrada correctamente. Creados: ${creados}. Actualizados: ${actualizados}.`);
+    alert(`AcciÃ³n registrada correctamente. Creados: ${creados}. Actualizados: ${actualizados}.`);
   }
 
   function renderTablaAccionesProgramasV792() {
@@ -12810,7 +12755,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const hasta = Math.min(desdeIdx + pageSize, total);
 
     if (q('progRegistradasContador')) q('progRegistradasContador').textContent = `Mostrando ${desde}-${hasta} de ${total} registro(s)`;
-    if (q('progRegistradasPaginaInfo')) q('progRegistradasPaginaInfo').textContent = `Página ${stateV792.paginaRegistradas} de ${totalPaginas}`;
+    if (q('progRegistradasPaginaInfo')) q('progRegistradasPaginaInfo').textContent = `PÃ¡gina ${stateV792.paginaRegistradas} de ${totalPaginas}`;
     if (q('btnProgRegistradasAnterior')) q('btnProgRegistradasAnterior').disabled = stateV792.paginaRegistradas <= 1;
     if (q('btnProgRegistradasSiguiente')) q('btnProgRegistradasSiguiente').disabled = stateV792.paginaRegistradas >= totalPaginas;
 
@@ -12866,7 +12811,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 
   function initRegistroAccionesProgramasV792() {
     if (initAnterior) {
-      try { initAnterior(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completó:', e); }
+      try { initAnterior(); } catch (e) { console.warn('initRegistroAccionesProgramas base no completÃ³:', e); }
     }
     initV792();
     renderDistritosAccionesProgramaV792();
