@@ -1,4 +1,4 @@
-﻿// ================= VERSION 79.10 - FIX SELECCIÃ“N REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
+﻿// ================= VERSION 79.11 - COMPATIBILIDAD CAMPOS D1 - 2026-05-25 =================
 // Main structure:
 // 1. Core state and constants
 // 2. Helpers
@@ -6,7 +6,7 @@
 // 4. API and auth flow
 // 5. Feature modules appended below by historical versions
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.10-d1-login-syntax-fix-20260525';
+const APP_BUILD_VERSION = '79.10-fix-seleccion-registro-grupal-programas-20260522';
 
 // ================= CORE STATE =================
 let state = {
@@ -7374,7 +7374,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
   function numeroDSLimpioV541(d){
     let n = txt(valor(d, ['numero','ds','decreto','decreto_supremo']));
-    const anio = txt(valor(d, ['anio','aÃ±o']));
+    const anio = txt(valor(d, ['anio','año']));
     n = n.replace(/^D\.?\s*S\.?\s*N[Â°.Âº]?\s*/i,'')
          .replace(/^DS\s*N[Â°.Âº]?\s*/i,'')
          .replace(/^N[Â°.Âº]?\s*/i,'')
@@ -12846,4 +12846,346 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       console.info('DEE MIDIS cierre aplicado:', VERSION);
     }, 1600);
   });
+})();
+
+
+// ================= CORRECCION v79.11 - COMPATIBILIDAD CAMPOS D1 =================
+// Confirmado en revision del front: la tabla D1 guarda columnas como tipo_peligro,
+// rds_activo, numero_reunion, fecha_reunion, estado_rds, fecha_registro_rds y, sobre todo,
+// territorio como TEXTO JSON. La version anterior solo aceptaba territorio si ya era Array,
+// por eso el Listado DS/Dashboard quedaban en 0 o sin data aunque D1 si tuviera registros.
+(function d1FieldCompatibilityV7911(){
+  'use strict';
+
+  const VERSION = '79.11-d1-field-compat-20260525';
+
+  function safeJson(value, fallback) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value === 'object') return value;
+    if (value === null || value === undefined || value === '') return fallback;
+    try {
+      const parsed = JSON.parse(String(value));
+      return parsed ?? fallback;
+    } catch {
+      if (typeof value === 'string' && value.includes(',')) {
+        return value.split(',').map(x => x.trim()).filter(Boolean);
+      }
+      return fallback;
+    }
+  }
+
+  function asArray(value) {
+    const parsed = safeJson(value, []);
+    if (Array.isArray(parsed)) return parsed;
+    return parsed ? [parsed] : [];
+  }
+
+  function asBool(value) {
+    if (value === true || value === 1) return true;
+    const t = String(value ?? '').trim().toLowerCase();
+    return ['1', 'true', 'activo', 'active', 'si', 'sí'].includes(t);
+  }
+
+  function first(...values) {
+    for (const v of values) {
+      if (v !== undefined && v !== null && String(v).trim() !== '') return v;
+    }
+    return '';
+  }
+
+  function onlyYear(value) {
+    const s = String(value || '').trim();
+    const m = s.match(/(20\d{2}|19\d{2})/);
+    return m ? m[1] : s;
+  }
+
+  function cleanNumeroDS(numero, anio) {
+    let n = String(numero || '').trim();
+    const y = onlyYear(anio);
+    n = n.replace(/^DS\s*(N\.?\s*°|N\.?|NRO\.?|Nº)?\s*/i, '').trim();
+    n = n.replace(/^-+/, '').trim();
+    n = n.replace(/-?PCM$/i, '').trim();
+    if (y) n = n.replace(new RegExp('-?' + y + '$'), '').trim();
+    n = n.replace(/-+$/g, '').trim();
+    return n;
+  }
+
+  const normalizarTextoLocal = (value) => {
+    if (typeof normalizarTexto === 'function') return normalizarTexto(value);
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+  };
+
+  const normalizarProgramaLocal = (value) => {
+    if (typeof normalizarProgramaNombre === 'function') return normalizarProgramaNombre(value);
+    return normalizarTextoLocal(value);
+  };
+
+  function normalizarTerritorioD1(value) {
+    return asArray(value).map((t) => {
+      const dep = first(t.departamento, t.departamento_nombre, t.region, t.dpto, t.DEPARTAMENTO);
+      const prov = first(t.provincia, t.provincia_nombre, t.PROVINCIA);
+      const dist = first(t.distrito, t.distrito_nombre, t.DISTRITO);
+      const ubigeo = first(t.ubigeo, t.UBIGEO, t.codigo, t.cod_ubigeo);
+      const lat = first(t.latitud, t.lat, t.latitude, t.LATITUD);
+      const lon = first(t.longitud, t.lng, t.lon, t.longitude, t.LONGITUD);
+      return {
+        ...t,
+        clave: first(t.clave, ubigeo, [normalizarTextoLocal(dep), normalizarTextoLocal(prov), normalizarTextoLocal(dist)].join('|')),
+        ubigeo,
+        departamento: String(dep || '').trim(),
+        provincia: String(prov || '').trim(),
+        distrito: String(dist || '').trim(),
+        latitud: lat,
+        longitud: lon
+      };
+    }).filter(t => t.departamento || t.provincia || t.distrito || t.ubigeo);
+  }
+
+  window.extraerListaDecretos = function extraerListaDecretos(data) {
+    if (Array.isArray(data)) return data;
+    if (!data || typeof data !== 'object') return [];
+    if (Array.isArray(data.decretos)) return data.decretos;
+    if (Array.isArray(data.items)) return data.items;
+    if (Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data.rows)) return data.rows;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.result)) return data.result;
+    if (Array.isArray(data.records)) return data.records;
+    if (data.result && typeof data.result === 'object') {
+      if (Array.isArray(data.result.results)) return data.result.results;
+      if (Array.isArray(data.result.rows)) return data.result.rows;
+    }
+    return [];
+  };
+
+  window.extraerListaAccionesD1 = function extraerListaAccionesD1(data) {
+    if (Array.isArray(data)) return data;
+    if (!data || typeof data !== 'object') return [];
+    if (Array.isArray(data.acciones)) return data.acciones;
+    if (Array.isArray(data.items)) return data.items;
+    if (Array.isArray(data.data)) return data.data;
+    if (Array.isArray(data.rows)) return data.rows;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.result)) return data.result;
+    if (data.result && typeof data.result === 'object') {
+      if (Array.isArray(data.result.results)) return data.result.results;
+      if (Array.isArray(data.result.rows)) return data.result.rows;
+    }
+    return [];
+  };
+
+  window.normalizarDecretoD1 = function normalizarDecretoD1(raw) {
+    if (!raw) return null;
+    const anio = onlyYear(first(raw.anio, raw.year, raw.año, raw.fecha_inicio && String(raw.fecha_inicio).slice(0, 4)));
+    const numeroLimpio = cleanNumeroDS(first(raw.numero, raw.ds, raw.decreto, raw.decreto_supremo, raw.codigo_registro, raw.id), anio);
+    const codigo = first(raw.codigo_registro, raw.codigoRegistro, raw.id, numeroLimpio ? `DS-${numeroLimpio}-${anio}` : '');
+    const territorio = normalizarTerritorioD1(raw.territorio);
+    const sectores = asArray(first(raw.sectores, raw.sectores_firmantes));
+    const programasRaw = first(raw.programasHabilitados, raw.programas_habilitados);
+    const programas = asArray(programasRaw).map(normalizarProgramaLocal).filter(Boolean);
+    const fechaFin = first(raw.fecha_fin, raw.fechaFin);
+
+    const base = {
+      ...raw,
+      id: String(first(raw.id, codigo, crypto.randomUUID())),
+      codigo_registro: codigo,
+      codigoRegistro: codigo,
+      numero: numeroLimpio,
+      anio,
+      peligro: first(raw.peligro, raw.tipo, raw.tipo_declaratoria),
+      tipo_peligro: first(raw.tipo_peligro, raw.tipoPeligro, raw.tipo_evento, raw.evento),
+      tipoPeligro: first(raw.tipo_peligro, raw.tipoPeligro, raw.tipo_evento, raw.evento),
+      fecha_inicio: first(raw.fecha_inicio, raw.fechaInicio),
+      fechaInicio: first(raw.fecha_inicio, raw.fechaInicio),
+      fecha_fin: fechaFin,
+      fechaFin,
+      vigencia: first(raw.vigencia, (typeof calcularVigencia === 'function' ? calcularVigencia(fechaFin) : '')),
+      semaforo: first(raw.semaforo, (typeof calcularSemaforo === 'function' ? calcularSemaforo(fechaFin) : '')),
+      motivos: first(raw.motivos, raw.exposicion_motivos, raw.exposicionMotivos),
+      sectores,
+      territorio,
+      estado: first(raw.estado, 'activo'),
+      deleted_at: first(raw.deleted_at, raw.deletedAt),
+      es_prorroga: asBool(first(raw.es_prorroga, raw.esProrroga, 0)),
+      ds_origen_id: first(raw.ds_origen_id, raw.dsOrigenId, raw.ds_origen),
+      nivel_prorroga: Number(first(raw.nivel_prorroga, raw.nivelProrroga, 0) || 0),
+      cadena: first(raw.cadena),
+      rdsActivo: asBool(first(raw.rdsActivo, raw.rds_activo, 0)),
+      rds_activo: asBool(first(raw.rdsActivo, raw.rds_activo, 0)) ? 1 : 0,
+      numeroReunion: first(raw.numeroReunion, raw.numero_reunion),
+      numero_reunion: first(raw.numero_reunion, raw.numeroReunion),
+      fechaReunion: first(raw.fechaReunion, raw.fecha_reunion),
+      fecha_reunion: first(raw.fecha_reunion, raw.fechaReunion),
+      estadoRDS: first(raw.estadoRDS, raw.estado_rds),
+      estado_rds: first(raw.estado_rds, raw.estadoRDS),
+      fechaRegistroRDS: first(raw.fechaRegistroRDS, raw.fecha_registro_rds),
+      fecha_registro_rds: first(raw.fecha_registro_rds, raw.fechaRegistroRDS),
+      activadoPor: first(raw.activadoPor, raw.activado_por),
+      activado_por: first(raw.activado_por, raw.activadoPor),
+      programasHabilitados: programas.length ? programas : (Array.isArray(PROGRAMAS_RDS) ? PROGRAMAS_RDS.slice() : []),
+      programas_habilitados: programas.length ? programas : (Array.isArray(PROGRAMAS_RDS) ? PROGRAMAS_RDS.slice() : []),
+      created_at: first(raw.created_at, raw.fecha_registro, raw.createdAt),
+      updated_at: first(raw.updated_at, raw.updatedAt)
+    };
+
+    return base.deleted_at ? null : base;
+  };
+
+  window.normalizarAccionD1 = function normalizarAccionD1(raw) {
+    if (!raw) return null;
+    const dsId = first(raw.ds_id, raw.dsId, raw.decreto_id, raw.decretoId);
+    const programa = normalizarProgramaLocal(first(raw.programaNacional, raw.programa, raw.programa_nacional));
+    const codigo = first(raw.codigoAccion, raw.codigo, raw.codigo_accion);
+    const id = first(raw.id, [dsId, first(raw.numero_reunion, raw.numeroReunion), programa, first(raw.departamento), first(raw.provincia), first(raw.distrito), codigo].join('|'));
+    return {
+      ...raw,
+      id,
+      dsId,
+      ds_id: dsId,
+      numeroDS: first(raw.numeroDS, raw.ds, raw.numero_ds),
+      ds: first(raw.ds, raw.numeroDS, raw.numero_ds),
+      numeroReunion: first(raw.numeroReunion, raw.numero_reunion),
+      numero_reunion: first(raw.numero_reunion, raw.numeroReunion),
+      fechaReunion: first(raw.fechaReunion, raw.fecha_reunion),
+      fecha_reunion: first(raw.fecha_reunion, raw.fechaReunion),
+      estadoRDS: first(raw.estadoRDS, raw.estado_rds),
+      programaNacional: programa,
+      programa,
+      tipoAccion: first(raw.tipoAccion, raw.tipo, raw.tipo_accion),
+      tipo: first(raw.tipo, raw.tipoAccion, raw.tipo_accion),
+      subtipoRehabilitacion: first(raw.subtipoRehabilitacion, raw.subtipo_rehabilitacion),
+      subtipo_rehabilitacion: first(raw.subtipo_rehabilitacion, raw.subtipoRehabilitacion),
+      codigoAccion: codigo,
+      codigo,
+      detalle: first(raw.detalle, raw.accion_registrada, raw.accionRegistrada, raw.accion_especifica),
+      unidadMedida: first(raw.unidadMedida, raw.unidad, raw.unidad_medida),
+      unidad: first(raw.unidad, raw.unidadMedida, raw.unidad_medida),
+      metaProgramada: Number(first(raw.metaProgramada, raw.meta_programada, 0) || 0),
+      meta_programada: Number(first(raw.meta_programada, raw.metaProgramada, 0) || 0),
+      plazoDias: Number(first(raw.plazoDias, raw.plazo_dias, raw.plazo, 0) || 0),
+      plazo_dias: Number(first(raw.plazo_dias, raw.plazoDias, raw.plazo, 0) || 0),
+      plazo: Number(first(raw.plazo, raw.plazo_dias, raw.plazoDias, 0) || 0),
+      fechaInicio: first(raw.fechaInicio, raw.fecha_inicio),
+      fecha_inicio: first(raw.fecha_inicio, raw.fechaInicio),
+      fechaFinal: first(raw.fechaFinal, raw.fecha_final),
+      fecha_final: first(raw.fecha_final, raw.fechaFinal),
+      metaEjecutada: Number(first(raw.metaEjecutada, raw.meta_ejecutada, 0) || 0),
+      meta_ejecutada: Number(first(raw.meta_ejecutada, raw.metaEjecutada, 0) || 0),
+      avance: String(first(raw.avance, raw.porcentaje_avance, 0)).includes('%') ? String(first(raw.avance, raw.porcentaje_avance, 0)) : String(first(raw.avance, raw.porcentaje_avance, 0)) + '%',
+      descripcionActividades: first(raw.descripcionActividades, raw.descripcion, raw.observaciones),
+      descripcion: first(raw.descripcion, raw.descripcionActividades, raw.observaciones),
+      usuarioRegistro: first(raw.usuarioRegistro, raw.usuario_registro, raw.usuario),
+      usuario_registro: first(raw.usuario_registro, raw.usuarioRegistro, raw.usuario),
+      fechaRegistro: first(raw.fechaRegistro, raw.fecha_registro, raw.created_at),
+      fecha_registro: first(raw.fecha_registro, raw.fechaRegistro, raw.created_at),
+      estado: first(raw.estado, 'Registrado'),
+      departamento: first(raw.departamento),
+      provincia: first(raw.provincia),
+      distrito: first(raw.distrito)
+    };
+  };
+
+  window.formatearNumeroDS = function formatearNumeroDS(d) {
+    const anio = onlyYear(first(d?.anio, d?.fecha_inicio && String(d.fecha_inicio).slice(0, 4)));
+    const numero = cleanNumeroDS(first(d?.numero, d?.codigo_registro, d?.id), anio);
+    if (!numero && !anio) return '';
+    return `DS N.° ${numero}${anio ? '-' + anio : ''}-PCM`;
+  };
+
+  window.cargarDecretosLocales = function cargarDecretosLocales() {
+    try {
+      if (Array.isArray(state.decretos) && state.decretos.length) return state.decretos.map(window.normalizarDecretoD1).filter(Boolean);
+      const data = JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]');
+      return Array.isArray(data) ? data.map(window.normalizarDecretoD1).filter(Boolean) : [];
+    } catch (e) {
+      console.warn('No se pudo leer cache local de decretos', e);
+      return [];
+    }
+  };
+
+  window.guardarDecretosLocales = function guardarDecretosLocales(lista) {
+    const data = (Array.isArray(lista) ? lista : []).map(window.normalizarDecretoD1).filter(Boolean);
+    state.decretos = data;
+    localStorage.setItem(DECRETOS_STORAGE_KEY, JSON.stringify(data));
+    if (!__DEE_D1_IMPORTANDO && state.session?.email) {
+      clearTimeout(__DEE_D1_SYNC_TIMER);
+      __DEE_D1_SYNC_TIMER = setTimeout(() => sincronizarDecretosLocalesAD1(data), 300);
+    }
+    return data;
+  };
+
+  window.cargarAccionesLocales = function cargarAccionesLocales() {
+    try {
+      if (Array.isArray(__DEE_ACCIONES_D1_CACHE) && __DEE_ACCIONES_D1_CACHE.length) return __DEE_ACCIONES_D1_CACHE.map(window.normalizarAccionD1).filter(Boolean);
+      const data = JSON.parse(localStorage.getItem(ACCIONES_STORAGE_KEY) || '[]');
+      return Array.isArray(data) ? data.map(window.normalizarAccionD1).filter(Boolean) : [];
+    } catch { return []; }
+  };
+
+  window.guardarAccionesLocales = function guardarAccionesLocales(lista) {
+    const data = (Array.isArray(lista) ? lista : []).map(window.normalizarAccionD1).filter(Boolean);
+    __DEE_ACCIONES_D1_CACHE = data;
+    localStorage.setItem(ACCIONES_STORAGE_KEY, JSON.stringify(data));
+    if (!__DEE_D1_IMPORTANDO && state.session?.email) setTimeout(() => sincronizarAccionesLocalesAD1(data), 300);
+    return data;
+  };
+
+  window.cargarAccionesDesdeD1 = async function cargarAccionesDesdeD1() {
+    const res = await api('/acciones');
+    const remotas = window.extraerListaAccionesD1(res?.data).map(window.normalizarAccionD1).filter(Boolean);
+    const locales = (() => { try { return JSON.parse(localStorage.getItem(ACCIONES_STORAGE_KEY) || '[]'); } catch { return []; } })().map(window.normalizarAccionD1).filter(Boolean);
+    let acciones = remotas.length ? remotas : locales;
+    if (res.ok && !remotas.length && locales.length) {
+      await sincronizarAccionesLocalesAD1(locales);
+      const reread = await api('/acciones');
+      const rereadData = window.extraerListaAccionesD1(reread?.data).map(window.normalizarAccionD1).filter(Boolean);
+      if (rereadData.length) acciones = rereadData;
+    }
+    __DEE_D1_IMPORTANDO = true;
+    window.guardarAccionesLocales(acciones);
+    __DEE_D1_IMPORTANDO = false;
+    return acciones;
+  };
+
+  window.cargarDecretosParaOrigen = async function cargarDecretosParaOrigen() {
+    const locales = (() => { try { return JSON.parse(localStorage.getItem(DECRETOS_STORAGE_KEY) || '[]'); } catch { return []; } })().map(window.normalizarDecretoD1).filter(Boolean);
+    const res = await api('/decretos');
+    let remotos = window.extraerListaDecretos(res?.data).map(window.normalizarDecretoD1).filter(Boolean);
+
+    if (res.ok && !remotos.length && locales.length) {
+      await sincronizarDecretosLocalesAD1(locales);
+      const reread = await api('/decretos');
+      remotos = window.extraerListaDecretos(reread?.data).map(window.normalizarDecretoD1).filter(Boolean);
+    }
+
+    const fuente = remotos.length ? remotos : locales;
+    const mapa = new Map();
+    fuente.forEach(d => {
+      const key = String(first(d.id, d.codigo_registro));
+      if (key) mapa.set(key, d);
+    });
+
+    __DEE_D1_IMPORTANDO = true;
+    window.guardarDecretosLocales([...mapa.values()]);
+    await window.cargarAccionesDesdeD1();
+    __DEE_D1_IMPORTANDO = false;
+
+    try { cargarDSOrigen(); } catch {}
+    try { actualizarDatosProrroga(); } catch {}
+    try { renderTablaDecretosBasica(); } catch (e) { console.warn('No se pudo renderizar Listado DS', e); }
+    try { cargarSelectAccionDS(); } catch {}
+    try { cargarRDSDesdeDSSeleccionado(); } catch {}
+    try { renderTablaAcciones(); } catch {}
+    try { renderTablaAccionesProgramas(); } catch {}
+    try { if (typeof renderDashboardEjecutivoDEE === 'function') renderDashboardEjecutivoDEE(true); } catch (e) { console.warn('No se pudo renderizar Dashboard', e); }
+    try { if (typeof renderDashboardEjecutivoV661 === 'function') renderDashboardEjecutivoV661(true); } catch {}
+    __DEE_D1_LISTO = true;
+  };
+
+  window.APP_BUILD_VERSION = VERSION;
+  console.info('DEE MIDIS VERSION ' + VERSION + ' activo: lectura D1 compatible con rows/results y territorio JSON.');
+
+  setTimeout(() => {
+    if (state?.session?.email) window.cargarDecretosParaOrigen().catch(err => console.warn('Carga D1 v79.11 fallida:', err));
+  }, 2200);
 })();
