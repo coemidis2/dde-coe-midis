@@ -1,6 +1,6 @@
-// ================= VERSION 79.10 - FIX SELECCIÓN REGISTRO GRUPAL PROGRAMAS - 2026-05-22 =================
+// ================= VERSION 79.11 - FIX FECHAS PERÚ DEE - 2026-06-01 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.10-fix-seleccion-registro-grupal-programas-20260522';
+const APP_BUILD_VERSION = '79.10-fix-fechas-peru-dee-20260601';
 
 let state = {
   session: null,
@@ -22,8 +22,61 @@ const PROGRAMAS_RDS = ['CUNA MÁS','PAE','JUNTOS','CONTIGO','PENSIÓN 65','FONCO
 // ================= HELPERS =================
 const $ = (id) => document.getElementById(id);
 
+function fechaPeruActualYYYYMMDD() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const get = (type) => parts.find(p => p.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+function fechaHoraPeruActual() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).formatToParts(new Date());
+  const get = (type) => parts.find(p => p.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}`;
+}
+
+function normalizarFechaYYYYMMDD(valor) {
+  if (!valor) return '';
+  const s = String(valor).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function fechaLocalPeruCero(valor) {
+  const s = normalizarFechaYYYYMMDD(valor);
+  if (!s) return null;
+  const [y, m, d] = s.split('-').map(Number);
+  const fecha = new Date(y, m - 1, d, 0, 0, 0, 0);
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function sumarDiasFechaPeru(fechaYYYYMMDD, dias) {
+  const base = fechaLocalPeruCero(fechaYYYYMMDD);
+  if (!base) return '';
+  base.setDate(base.getDate() + Number(dias || 0));
+  const pad = n => String(n).padStart(2, '0');
+  return `${base.getFullYear()}-${pad(base.getMonth()+1)}-${pad(base.getDate())}`;
+}
+
 function hoy() {
-  return new Date().toISOString().split('T')[0];
+  return fechaPeruActualYYYYMMDD();
 }
 
 function getCookie(name) {
@@ -1050,20 +1103,18 @@ function activarEventosDS() {
 }
 
 function calcularFechaFin() {
-  const inicio = $('dsFechaInicio')?.value;
-  const plazo = parseInt($('dsPlazoDias')?.value || 0);
+  const inicio = normalizarFechaYYYYMMDD($('dsFechaInicio')?.value);
+  const plazo = parseInt($('dsPlazoDias')?.value || 0, 10);
 
-  if (!inicio || !plazo) return;
+  if (!inicio || !plazo || plazo < 1) return;
 
-  const f = new Date(inicio);
-  f.setDate(f.getDate() + plazo);
-
-  const fin = f.toISOString().split('T')[0];
+  // Regla DEE Perú: el plazo incluye la misma Fecha de inicio.
+  // Ejemplo: inicio 01/06 + 1 día = final 01/06; inicio 01/06 + 60 días = final 30/07.
+  const fin = sumarDiasFechaPeru(inicio, plazo - 1);
   if ($('dsFechaFin')) $('dsFechaFin').value = fin;
 
-  if ($('dsVigencia')) {
-    $('dsVigencia').value = (new Date(fin) >= new Date()) ? 'Vigente' : 'No vigente';
-  }
+  if ($('dsVigencia')) $('dsVigencia').value = calcularVigencia(fin);
+  if ($('dsSemaforo')) $('dsSemaforo').value = calcularSemaforo(fin);
 }
 
 
@@ -1123,6 +1174,11 @@ function normalizarDecreto(raw) {
   const numero = String(raw.numero || raw.ds || raw.decreto || raw.decreto_supremo || '').trim();
   const anio = String(raw.anio || raw.año || '').trim();
   const idBase = raw.id || raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio) || crypto.randomUUID();
+  const fechaInicioNorm = normalizarFechaYYYYMMDD(raw.fecha_inicio || raw.fechaInicio || '');
+  const plazoDiasNorm = Number(raw.plazo_dias ?? raw.plazoDias ?? raw.plazo ?? 0);
+  const fechaFinNorm = fechaInicioNorm && plazoDiasNorm > 0
+    ? sumarDiasFechaPeru(fechaInicioNorm, plazoDiasNorm - 1)
+    : normalizarFechaYYYYMMDD(raw.fecha_fin || raw.fechaFin || '');
   return {
     ...raw,
     id: String(idBase),
@@ -1131,10 +1187,11 @@ function normalizarDecreto(raw) {
     codigo_registro: raw.codigo_registro || raw.codigoRegistro || generarCodigoRegistro(numero, anio),
     peligro: raw.peligro || '',
     tipo_peligro: raw.tipo_peligro || raw.tipoPeligro || '',
-    fecha_inicio: raw.fecha_inicio || raw.fechaInicio || '',
-    fecha_fin: raw.fecha_fin || raw.fechaFin || '',
-    vigencia: raw.vigencia || calcularVigencia(raw.fecha_fin || raw.fechaFin || ''),
-    semaforo: raw.semaforo || calcularSemaforo(raw.fecha_fin || raw.fechaFin || ''),
+    fecha_inicio: fechaInicioNorm,
+    fecha_fin: fechaFinNorm,
+    plazo_dias: plazoDiasNorm,
+    vigencia: calcularVigencia(fechaFinNorm),
+    semaforo: calcularSemaforo(fechaFinNorm),
     motivos: raw.motivos || raw.exposicion_motivos || '',
     sectores: Array.isArray(raw.sectores) ? raw.sectores : parsearLista(raw.sectores),
     territorio: Array.isArray(raw.territorio) ? raw.territorio : [],
@@ -1348,18 +1405,16 @@ function limpiarFormularioDecreto() {
 }
 
 function calcularVigencia(fechaFin) {
-  if (!fechaFin) return '';
-  const hoyLocal = new Date();
-  hoyLocal.setHours(0, 0, 0, 0);
-  const fin = new Date(`${fechaFin}T00:00:00`);
+  const fin = fechaLocalPeruCero(fechaFin);
+  const hoyLocal = fechaLocalPeruCero(hoy());
+  if (!fin || !hoyLocal) return '';
   return fin >= hoyLocal ? 'Vigente' : 'No vigente';
 }
 
 function calcularSemaforo(fechaFin) {
-  if (!fechaFin) return '';
-  const hoyLocal = new Date();
-  hoyLocal.setHours(0, 0, 0, 0);
-  const fin = new Date(`${fechaFin}T00:00:00`);
+  const fin = fechaLocalPeruCero(fechaFin);
+  const hoyLocal = fechaLocalPeruCero(hoy());
+  if (!fin || !hoyLocal) return '';
   const dias = Math.ceil((fin - hoyLocal) / 86400000);
   if (dias < 0) return 'Vencido';
   if (dias <= 7) return 'Rojo';
@@ -1959,12 +2014,11 @@ function aplicarRestriccionesAccion() {
 }
 
 function calcularFechaFinalAccion() {
-  const inicio = $('accionFechaInicio')?.value;
-  const plazo = parseInt($('accionPlazo')?.value || 0);
-  if (!inicio || isNaN(plazo)) return;
-  const f = new Date(`${inicio}T00:00:00`);
-  f.setDate(f.getDate() + plazo);
-  if ($('accionFechaFinal')) $('accionFechaFinal').value = f.toISOString().split('T')[0];
+  const inicio = normalizarFechaYYYYMMDD($('accionFechaInicio')?.value);
+  const plazo = parseInt($('accionPlazo')?.value || 0, 10);
+  if (!inicio || isNaN(plazo) || plazo < 1) return;
+  const fin = sumarDiasFechaPeru(inicio, plazo - 1);
+  if ($('accionFechaFinal')) $('accionFechaFinal').value = fin;
 }
 
 function calcularAvanceAccion() {
@@ -2053,9 +2107,7 @@ let modoRegistroAcciones = 'registro'; // rds | revision | registro
 let accionEditandoId = null;
 
 function fechaHoraLocalISO() {
-  const d = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return fechaHoraPeruActual();
 }
 
 function initRegistroAcciones() {
@@ -2899,9 +2951,7 @@ function dsTieneAccionesDeTodosLosProgramas(dsId) {
 }
 
 function fechaHoraLocalISO() {
-  const d = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return fechaHoraPeruActual();
 }
 
 function esRegistradorPrograma() {
@@ -3232,12 +3282,11 @@ function cargarVistaAccionesPrograma(id) {
 }
 
 function calcularFechaFinalPrograma() {
-  const inicio = $('progFechaInicio')?.value;
-  const plazo = parseInt($('progPlazoDias')?.value || 0);
-  if (!inicio || isNaN(plazo)) return;
-  const f = new Date(`${inicio}T00:00:00`);
-  f.setDate(f.getDate() + plazo);
-  if ($('progFechaFinal')) $('progFechaFinal').value = f.toISOString().split('T')[0];
+  const inicio = normalizarFechaYYYYMMDD($('progFechaInicio')?.value);
+  const plazo = parseInt($('progPlazoDias')?.value || 0, 10);
+  if (!inicio || isNaN(plazo) || plazo < 1) return;
+  const fin = sumarDiasFechaPeru(inicio, plazo - 1);
+  if ($('progFechaFinal')) $('progFechaFinal').value = fin;
 }
 
 function calcularAvancePrograma() {
@@ -3771,12 +3820,11 @@ function abrirModalEditarAccion(id) {
 }
 
 function calcularFechaFinalModal() {
-  const inicio = $('editFechaInicio')?.value;
-  const plazo = parseInt($('editPlazoDias')?.value || 0);
-  if (!inicio || isNaN(plazo)) return;
-  const f = new Date(`${inicio}T00:00:00`);
-  f.setDate(f.getDate() + plazo);
-  if ($('editFechaFinal')) $('editFechaFinal').value = f.toISOString().split('T')[0];
+  const inicio = normalizarFechaYYYYMMDD($('editFechaInicio')?.value);
+  const plazo = parseInt($('editPlazoDias')?.value || 0, 10);
+  if (!inicio || isNaN(plazo) || plazo < 1) return;
+  const fin = sumarDiasFechaPeru(inicio, plazo - 1);
+  if ($('editFechaFinal')) $('editFechaFinal').value = fin;
 }
 
 function calcularAvanceModal() {
@@ -4529,16 +4577,11 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
   }
 
   function fechaLocalCero(valor) {
-    if (!valor) return null;
-    const s = String(valor).slice(0, 10);
-    const d = new Date(`${s}T00:00:00`);
-    return Number.isNaN(d.getTime()) ? null : d;
+    return fechaLocalPeruCero(valor);
   }
 
   function hoyLocalCeroDEE() {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
+    return fechaLocalPeruCero(hoy());
   }
 
   function esDSVigenteDEE(d) {
@@ -11192,6 +11235,33 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     });
   }
 
+
+function agregarCanvasPdfSinDuplicar(pdf, canvas) {
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const margin = 8;
+  const usableW = pageW - (margin * 2);
+  const usableH = pageH - (margin * 2);
+  const slicePx = Math.floor(usableH * canvas.width / usableW);
+  let y = 0;
+  let page = 0;
+
+  while (y < canvas.height) {
+    const h = Math.min(slicePx, canvas.height - y);
+    const c = document.createElement('canvas');
+    c.width = canvas.width;
+    c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+    if (page > 0) pdf.addPage('l');
+    const imgH = h * usableW / canvas.width;
+    pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableW, imgH);
+    y += h;
+    page += 1;
+  }
+}
+window.agregarCanvasPdfSinDuplicar = agregarCanvasPdfSinDuplicar;
+
   async function exportar(tipo){
     const area = q('dashboardExportArea') || q('tabDashboard');
     if (!area) return alert('No se encontró el Dashboard para exportar.');
@@ -11241,13 +11311,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPDF) return alert('No se encontró jsPDF para generar el PDF.');
         const pdf = new jsPDF('l','mm','a4');
-        const pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
-        const imgW = pageW - 16, imgH = canvas.height * imgW / canvas.width;
-        const img = canvas.toDataURL('image/jpeg', 0.95);
-        let pos = 8, left = imgH;
-        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-        left -= (pageH - 16);
-        while (left > 0) { pdf.addPage('l'); pos = left - imgH + 8; pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH); left -= (pageH - 16); }
+        (typeof agregarCanvasPdfSinDuplicar === 'function' ? agregarCanvasPdfSinDuplicar : window.agregarCanvasPdfSinDuplicar)(pdf, canvas);
         pdf.save(`${base}.pdf`);
       }
     } catch(e) {
@@ -11659,21 +11723,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         const jsPDF = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPDF) throw new Error('jsPDF no disponible');
         const pdf = new jsPDF('l', 'mm', 'a4');
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const imgW = pageW - 16;
-        const imgH = canvas.height * imgW / canvas.width;
-        const img = canvas.toDataURL('image/jpeg', 0.95);
-        let pos = 8;
-        let left = imgH;
-        pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-        left -= (pageH - 16);
-        while (left > 0) {
-          pdf.addPage('l');
-          pos = left - imgH + 8;
-          pdf.addImage(img, 'JPEG', 8, pos, imgW, imgH);
-          left -= (pageH - 16);
-        }
+        (typeof agregarCanvasPdfSinDuplicar === 'function' ? agregarCanvasPdfSinDuplicar : window.agregarCanvasPdfSinDuplicar)(pdf, canvas);
         pdf.save(`${base}.pdf`);
       }
     } catch (e) {
