@@ -1,6 +1,6 @@
-// ================= VERSION 79.11 - FIX FECHAS PERÚ DEE - 2026-06-01 =================
+// ================= VERSION 79.12 - DASHBOARD PDF SALTO DE PÁGINA - 2026-06-01 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.10-fix-fechas-peru-dee-20260601';
+const APP_BUILD_VERSION = '79.12-dashboard-pdf-pagebreak-20260601';
 
 let state = {
   session: null,
@@ -12951,4 +12951,120 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       console.info('DEE MIDIS cierre aplicado:', VERSION);
     }, 1600);
   });
+})();
+
+
+// ================= CORRECCIÓN QUIRÚRGICA v79.12 - DASHBOARD PDF CON SALTOS DE PÁGINA =================
+// Alcance exclusivo: exportación "Exportar Dashboard PDF".
+// Evita cortar letras/filas al paginar el canvas del dashboard.
+(function dashboardPdfPageBreaksV7912(){
+  const VERSION = '79.12-dashboard-pdf-pagebreak-20260601';
+
+  function q(id){ return document.getElementById(id); }
+
+  function clamp(n, min, max){
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function getExportArea(){
+    return q('dashboardExportArea') || q('tabDashboard');
+  }
+
+  function obtenerCortesSeguros(area, canvas, slicePx){
+    const cortes = new Set([0, canvas.height]);
+    if (!area || !canvas || !slicePx) return [...cortes].sort((a,b)=>a-b);
+
+    const areaRect = area.getBoundingClientRect();
+    const scaleY = canvas.height / Math.max(1, area.scrollHeight || areaRect.height || canvas.height);
+
+    const selectors = [
+      '#dashboardExportHeaderTmp',
+      '#tabDashboard h4',
+      '#tabDashboard h5',
+      '#tabDashboard .dee-section-title',
+      '#tabDashboard .card',
+      '#tabDashboard table',
+      '#tabDashboard thead',
+      '#tabDashboard tbody tr',
+      '#tablaResumenDS tbody tr',
+      '#tablaDeptos tbody tr',
+      '#tablaRepetidos tbody tr'
+    ].join(',');
+
+    area.querySelectorAll(selectors).forEach(el => {
+      try {
+        const r = el.getBoundingClientRect();
+        const topCss = (r.top - areaRect.top) + (area.scrollTop || 0);
+        const bottomCss = (r.bottom - areaRect.top) + (area.scrollTop || 0);
+        const top = Math.round(topCss * scaleY);
+        const bottom = Math.round(bottomCss * scaleY);
+        if (top > 20 && top < canvas.height - 20) cortes.add(top);
+        if (bottom > 20 && bottom < canvas.height - 20) cortes.add(bottom);
+      } catch (_) {}
+    });
+
+    // Cortes de respaldo cada alto de página, para no generar páginas excesivamente largas.
+    for (let y = slicePx; y < canvas.height; y += slicePx) cortes.add(Math.round(y));
+
+    return [...cortes]
+      .map(x => clamp(Math.round(x), 0, canvas.height))
+      .filter((x, i, arr) => i === 0 || Math.abs(x - arr[i-1]) > 8)
+      .sort((a,b)=>a-b);
+  }
+
+  function elegirCorteSeguro(y, maxEnd, minEnd, cortes, canvasHeight){
+    if (maxEnd >= canvasHeight) return canvasHeight;
+
+    // Se busca el último borde de fila/sección antes del final de la página.
+    const margenEvitarCorte = 22;
+    const candidatos = cortes.filter(c => c > minEnd && c < (maxEnd - margenEvitarCorte));
+    if (candidatos.length) return candidatos[candidatos.length - 1];
+
+    // Si no hay candidato suficiente, cortar un poco antes del límite para reducir corte de texto.
+    return clamp(maxEnd - margenEvitarCorte, y + 60, canvasHeight);
+  }
+
+  function agregarCanvasPdfConSaltos(pdf, canvas) {
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 8;
+    const usableW = pageW - (margin * 2);
+    const usableH = pageH - (margin * 2);
+    const slicePx = Math.floor(usableH * canvas.width / usableW);
+    const area = getExportArea();
+    const cortes = obtenerCortesSeguros(area, canvas, slicePx);
+
+    let y = 0;
+    let page = 0;
+    const minSlice = Math.floor(slicePx * 0.55);
+
+    while (y < canvas.height - 1) {
+      const maxEnd = Math.min(y + slicePx, canvas.height);
+      const minEnd = Math.min(y + minSlice, canvas.height);
+      let end = elegirCorteSeguro(y, maxEnd, minEnd, cortes, canvas.height);
+      if (end <= y + 20) end = maxEnd;
+
+      const h = Math.max(1, end - y);
+      const c = document.createElement('canvas');
+      c.width = canvas.width;
+      c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+
+      if (page > 0) pdf.addPage('l');
+      const imgH = h * usableW / canvas.width;
+      pdf.addImage(c.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableW, imgH);
+
+      y = end;
+      page += 1;
+    }
+  }
+
+  // Mantiene el mismo nombre usado por la versión 79.11, pero mejora la paginación.
+  window.agregarCanvasPdfSinDuplicar = agregarCanvasPdfConSaltos;
+  try { agregarCanvasPdfSinDuplicar = agregarCanvasPdfConSaltos; } catch (_) {}
+
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
