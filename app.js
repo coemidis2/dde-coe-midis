@@ -1,6 +1,6 @@
-// ================= VERSION 79.12 - DASHBOARD PDF SALTO DE PÁGINA - 2026-06-01 =================
+// ================= VERSION 79.13 - DETALLE DS ACCIONES CON TERRITORIO - 2026-06-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.12-dashboard-pdf-pagebreak-20260601';
+const APP_BUILD_VERSION = '79.13-detalle-ds-acciones-territorio-20260622';
 
 let state = {
   session: null,
@@ -7538,6 +7538,9 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
       reunion: txt(valor(a,['numeroReunion','numero_reunion'])) || txt(d?.numeroReunion),
       fechaReunion: txt(valor(a,['fechaReunion','fecha_reunion'])) || txt(d?.fechaReunion),
       programa: valor(a,['programaNacional','programa']),
+      departamento: valor(a,['departamento','Departamento','depa','region']),
+      provincia: valor(a,['provincia','Provincia']),
+      distrito: valor(a,['distrito','Distrito']),
       tipo: valor(a,['tipoAccion','tipo']),
       codigo: valor(a,['codigoAccion','codigo']),
       detalle: valor(a,['detalle','accion','acciones']),
@@ -7614,8 +7617,8 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     grupos.forEach((items, key) => {
       const [reunion, freunion] = key.split('|');
       html += `<div class="dee-ds-action-title">${esc(reunion)}${freunion ? ' · ' + esc(fecha(freunion)) : ''}</div>`;
-      html += `<div class="table-responsive"><table class="dee-ds-action-table"><thead><tr><th>Programa Nacional</th><th>Tipo de acción</th><th>Código</th><th>Acción registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
-      html += items.map(a => `<tr><td>${esc(a.programa)}</td><td>${esc(a.tipo)}</td><td>${esc(a.codigo)}</td><td>${esc(a.detalle)}</td><td>${esc(a.metaProgramada)}</td><td>${esc(a.metaEjecutada)}</td><td>${esc(a.avance)}</td><td>${esc(a.descripcion)}</td><td>${esc(a.usuario)}</td><td>${esc(fecha(a.fechaRegistro) || a.fechaRegistro)}</td></tr>`).join('');
+      html += `<div class="table-responsive"><table class="dee-ds-action-table"><thead><tr><th>Programa Nacional</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Tipo de acción</th><th>Código</th><th>Acción registrada</th><th>Meta prog.</th><th>Meta ejec.</th><th>Avance</th><th>Observaciones</th><th>Usuario</th><th>Fecha registro</th></tr></thead><tbody>`;
+      html += items.map(a => `<tr><td>${esc(a.programa)}</td><td>${esc(a.departamento)}</td><td>${esc(a.provincia)}</td><td>${esc(a.distrito)}</td><td>${esc(a.tipo)}</td><td>${esc(a.codigo)}</td><td>${esc(a.detalle)}</td><td>${esc(a.metaProgramada)}</td><td>${esc(a.metaEjecutada)}</td><td>${esc(a.avance)}</td><td>${esc(a.descripcion)}</td><td>${esc(a.usuario)}</td><td>${esc(fecha(a.fechaRegistro) || a.fechaRegistro)}</td></tr>`).join('');
       html += '</tbody></table></div>';
     });
     return html;
@@ -7657,7 +7660,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <div class="dee-ds-page-tabs" role="tablist">
           <button type="button" class="active" data-hoja="1" onclick="activarHojaDetalleV541(1)">Hoja 1 · Datos generales</button>
           <button type="button" data-hoja="2" onclick="activarHojaDetalleV541(2)">Hoja 2 · Acciones registradas</button>
-          <button type="button" data-hoja="3" onclick="activarHojaDetalleV541(3)">Anexo · Territorio involucrado</button>
         </div>
         <section class="dee-detalle-hoja active" data-hoja="1">
           <div class="dee-hoja-title">Hoja 1: Datos generales del Decreto Supremo</div>
@@ -7666,10 +7668,6 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
         <section class="dee-detalle-hoja" data-hoja="2">
           <div class="dee-hoja-title">Hoja 2: Acciones registradas por Programas Nacionales</div>
           ${htmlAccionesV541(d)}
-        </section>
-        <section class="dee-detalle-hoja" data-hoja="3">
-          <div class="dee-hoja-title">Anexo: Territorio involucrado</div>
-          ${htmlTerritorioV541(d)}
         </section>
       `;
     }
@@ -7732,12 +7730,12 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     if(acciones.length){
       doc.autoTable({
         startY: 27,
-        head: [['N°','Reunión','Fecha reunión','Programa','Tipo de acción','Código','Acción registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
-        body: acciones.map((a,i) => [i+1, a.reunion, fecha(a.fechaReunion), a.programa, a.tipo, a.codigo, a.detalle, a.unidad, a.metaProgramada, a.metaEjecutada, a.avance, a.descripcion, a.usuario, fecha(a.fechaRegistro) || a.fechaRegistro]),
+        head: [['N°','Reunión','Fecha reunión','Programa','Departamento','Provincia','Distrito','Tipo de acción','Código','Acción registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
+        body: acciones.map((a,i) => [i+1, a.reunion, fecha(a.fechaReunion), a.programa, a.departamento, a.provincia, a.distrito, a.tipo, a.codigo, a.detalle, a.unidad, a.metaProgramada, a.metaEjecutada, a.avance, a.descripcion, a.usuario, fecha(a.fechaRegistro) || a.fechaRegistro]),
         theme:'grid',
         headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:6.2, halign:'center', valign:'middle' },
         styles:{ fontSize:5.8, cellPadding:.85, overflow:'linebreak', valign:'top', lineColor:[120,120,120], lineWidth:.1 },
-        columnStyles:{ 0:{cellWidth:8},1:{cellWidth:18},2:{cellWidth:17},3:{cellWidth:21},4:{cellWidth:30},5:{cellWidth:15},6:{cellWidth:50},7:{cellWidth:14},8:{cellWidth:13},9:{cellWidth:13},10:{cellWidth:13},11:{cellWidth:42},12:{cellWidth:22},13:{cellWidth:16} },
+        columnStyles:{ 0:{cellWidth:7},1:{cellWidth:15},2:{cellWidth:15},3:{cellWidth:18},4:{cellWidth:20},5:{cellWidth:22},6:{cellWidth:22},7:{cellWidth:24},8:{cellWidth:13},9:{cellWidth:38},10:{cellWidth:12},11:{cellWidth:11},12:{cellWidth:11},13:{cellWidth:11},14:{cellWidth:34},15:{cellWidth:18},16:{cellWidth:13} },
         margin:{ left:margen, right:margen }
       });
     } else {
@@ -7745,25 +7743,7 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     }
     pie();
 
-    doc.addPage('a4','landscape');
-    encabezado('Anexo: Territorio involucrado');
-    const terr = territorioV541(d);
-    if(terr.length){
-      doc.autoTable({
-        startY: 27,
-        head: [['N°','Departamento','Provincia','Distrito','Ubigeo','Latitud','Longitud']],
-        body: terr.map((t,i)=>[i+1,t.departamento,t.provincia,t.distrito,t.ubigeo,t.latitud,t.longitud]),
-        theme:'grid',
-        headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:7.5, halign:'center' },
-        styles:{ fontSize:7.2, cellPadding:1.4, overflow:'linebreak', lineColor:[120,120,120], lineWidth:.1 },
-        columnStyles:{ 0:{cellWidth:12},1:{cellWidth:48},2:{cellWidth:52},3:{cellWidth:58},4:{cellWidth:28},5:{cellWidth:38},6:{cellWidth:38} },
-        margin:{ left:margen, right:margen }
-      });
-    } else {
-      doc.setFontSize(9); doc.setTextColor(80); doc.text('No hay territorio registrado.', margen, 34);
-    }
-    pie();
-
+    // Versión 79.13: se eliminó la hoja Anexo - Territorio involucrado del detalle/PDF.
     doc.save(`Detalle_${numeroDSLimpioV541(d)}.pdf`.replace(/[^a-zA-Z0-9._-]/g,'_'));
   }
 
@@ -12954,11 +12934,11 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 })();
 
 
-// ================= CORRECCIÓN QUIRÚRGICA v79.12 - DASHBOARD PDF CON SALTOS DE PÁGINA =================
+// ================= CORRECCIÓN QUIRÚRGICA v79.13 - DASHBOARD PDF CON SALTOS DE PÁGINA =================
 // Alcance exclusivo: exportación "Exportar Dashboard PDF".
 // Evita cortar letras/filas al paginar el canvas del dashboard.
 (function dashboardPdfPageBreaksV7912(){
-  const VERSION = '79.12-dashboard-pdf-pagebreak-20260601';
+  const VERSION = '79.13-detalle-ds-acciones-territorio-20260622';
 
   function q(id){ return document.getElementById(id); }
 
