@@ -1,6 +1,6 @@
-// ================= VERSION 79.13 - DETALLE DS ACCIONES CON TERRITORIO - 2026-06-22 =================
+// ================= VERSION 79.14 - DETALLE DS PDF MATRIZ A4 - 2026-06-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.13-detalle-ds-acciones-territorio-20260622';
+const APP_BUILD_VERSION = '79.14-detalle-ds-pdf-matriz-a4-20260622';
 
 let state = {
   session: null,
@@ -7728,22 +7728,46 @@ window.abrirModalEditarAccion = abrirModalEditarAccion;
     encabezado('Hoja 2: Acciones registradas por Programas Nacionales');
     const acciones = accionesDSV541(d).map(a => filaAccionV541(a,d));
     if(acciones.length){
+      // v79.14: la matriz de Hoja 2 se ajusta al ancho útil de una hoja A4 horizontal,
+      // respetando márgenes laterales para evitar cortes fuera de página.
       doc.autoTable({
-        startY: 27,
+        startY: 29,
         head: [['N°','Reunión','Fecha reunión','Programa','Departamento','Provincia','Distrito','Tipo de acción','Código','Acción registrada','Unidad','Meta prog.','Meta ejec.','Avance','Observaciones','Usuario','Fecha registro']],
         body: acciones.map((a,i) => [i+1, a.reunion, fecha(a.fechaReunion), a.programa, a.departamento, a.provincia, a.distrito, a.tipo, a.codigo, a.detalle, a.unidad, a.metaProgramada, a.metaEjecutada, a.avance, a.descripcion, a.usuario, fecha(a.fechaRegistro) || a.fechaRegistro]),
         theme:'grid',
-        headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:6.2, halign:'center', valign:'middle' },
-        styles:{ fontSize:5.8, cellPadding:.85, overflow:'linebreak', valign:'top', lineColor:[120,120,120], lineWidth:.1 },
-        columnStyles:{ 0:{cellWidth:7},1:{cellWidth:15},2:{cellWidth:15},3:{cellWidth:18},4:{cellWidth:20},5:{cellWidth:22},6:{cellWidth:22},7:{cellWidth:24},8:{cellWidth:13},9:{cellWidth:38},10:{cellWidth:12},11:{cellWidth:11},12:{cellWidth:11},13:{cellWidth:11},14:{cellWidth:34},15:{cellWidth:18},16:{cellWidth:13} },
-        margin:{ left:margen, right:margen }
+        tableWidth: ancho,
+        showHead: 'everyPage',
+        pageBreak: 'auto',
+        rowPageBreak: 'avoid',
+        headStyles:{ fillColor:azul, textColor:[255,255,255], fontSize:5.7, halign:'center', valign:'middle', cellPadding:.65 },
+        styles:{ fontSize:5.05, cellPadding:.62, overflow:'linebreak', valign:'top', lineColor:[120,120,120], lineWidth:.08, minCellHeight:3.8 },
+        columnStyles:{
+          0:{cellWidth:6, halign:'center'},
+          1:{cellWidth:14},
+          2:{cellWidth:14},
+          3:{cellWidth:18},
+          4:{cellWidth:18},
+          5:{cellWidth:18},
+          6:{cellWidth:18},
+          7:{cellWidth:20},
+          8:{cellWidth:11},
+          9:{cellWidth:42},
+          10:{cellWidth:12},
+          11:{cellWidth:10, halign:'center'},
+          12:{cellWidth:10, halign:'center'},
+          13:{cellWidth:10, halign:'center'},
+          14:{cellWidth:32},
+          15:{cellWidth:20},
+          16:{cellWidth:18}
+        },
+        margin:{ left:margen, right:margen, top:29, bottom:10 }
       });
     } else {
       doc.setFontSize(9); doc.setTextColor(80); doc.text('No hay acciones registradas por Programas Nacionales para este Decreto Supremo.', margen, 34);
     }
     pie();
 
-    // Versión 79.13: se eliminó la hoja Anexo - Territorio involucrado del detalle/PDF.
+    // Versión 79.14: se mantiene eliminado el Anexo y se ajusta Hoja 2 a A4 horizontal.
     doc.save(`Detalle_${numeroDSLimpioV541(d)}.pdf`.replace(/[^a-zA-Z0-9._-]/g,'_'));
   }
 
