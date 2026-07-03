@@ -1,6 +1,6 @@
-// ================= VERSION 79.16 - CONTADOR DISTRITOS NUEVO DS - 2026-06-22 =================
+// ================= VERSION 79.17 - PAGINACION TABLAS DASHBOARD - 2026-06-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.15-contador-distritos-nuevo-ds-20260622';
+const APP_BUILD_VERSION = '79.17-dashboard-tablas-paginadas-20260622';
 
 let state = {
   session: null,
@@ -13201,9 +13201,9 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   }
 
   function ensureExportCss(){
-    if (q('dashboardJpgPartesStylesV7916')) return;
+    if (q('dashboardJpgPartesStylesV7917')) return;
     const style = document.createElement('style');
-    style.id = 'dashboardJpgPartesStylesV7916';
+    style.id = 'dashboardJpgPartesStylesV7917';
     style.textContent = `
       .dee-jpg-export-v7916{background:#fff;width:1400px;max-width:1400px;padding:16px 18px;font-family:Segoe UI,Arial,sans-serif;color:#1f2937}
       .dee-jpg-export-v7916 h4{font-size:20px;color:#0b3f8a;margin:0 0 4px 0;font-weight:800}
@@ -13308,7 +13308,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       await sleep(250);
 
       header = document.createElement('div');
-      header.id = 'dashboardExportHeaderTmpV7916';
+      header.id = 'dashboardExportHeaderTmpV7917';
       header.className = 'border-bottom mb-2 pb-2';
       const dsSel = document.querySelectorAll('#dashboardMapaLeyenda input[type="checkbox"]:checked, #dashboardMapaLeyenda .dash-ds-check:checked').length;
       header.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(fechaGeneracion())} · Filtro aplicado: ${esc(getFiltroTexto())} · DS seleccionados: ${dsSel || ''}</div>`;
@@ -13330,7 +13330,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       await exportarTablaEnPartes('tablaRepetidos', 'Distritos repetidos en declaratorias vigentes', 'Parte_3_Distritos_Repetidos', 85);
 
     } catch (e) {
-      console.error('Error exportando Dashboard JPG en partes v79.16:', e);
+      console.error('Error exportando Dashboard JPG en partes v79.17:', e);
       alert('No se pudo exportar el Dashboard JPG en partes. Revise la consola para el detalle técnico.');
     } finally {
       if (header) { try { header.remove(); } catch {} }
@@ -13353,6 +13353,203 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     exportarDashboardJPGPartes();
   }, true);
 
-  window.exportarDashboardJPGPartesV7916 = exportarDashboardJPGPartes;
+  window.exportarDashboardJPGPartesV7917 = exportarDashboardJPGPartes;
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+
+// ================= CORRECCIÓN QUIRÚRGICA v79.17 - PAGINACIÓN DASHBOARD =================
+// Alcance exclusivo: agrega selector 10/25/50/100 y paginación visual en:
+// 1) Departamentos declarados en estado de emergencia
+// 2) Distritos repetidos en declaratorias vigentes
+// No modifica login, D1, RDS, registro de DS, exportaciones ni estructura de datos.
+(function dashboardTablasPaginadasV7917(){
+  const VERSION = 'v79.17 dashboard-tablas-paginadas';
+  const ESTADO = {
+    tablaDeptos: { page: 1, pageSize: 10, label: 'Departamentos declarados en estado de emergencia' },
+    tablaRepetidos: { page: 1, pageSize: 10, label: 'Distritos repetidos en declaratorias vigentes' }
+  };
+
+  const $id = (id) => document.getElementById(id);
+
+  function normalizar(v){
+    return String(v || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
+  }
+
+  function crearControles(tableId){
+    const table = $id(tableId);
+    if (!table) return null;
+    const wrap = table.closest('.table-responsive') || table.parentElement;
+    if (!wrap || !wrap.parentElement) return null;
+
+    const controlId = `${tableId}PagerV7917`;
+    let control = $id(controlId);
+    if (!control) {
+      control = document.createElement('div');
+      control.id = controlId;
+      control.className = 'd-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 dashboard-pager-v7917';
+      control.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label mb-0 small">Mostrar</label>
+          <select class="form-select form-select-sm" data-dashboard-page-size="${tableId}" style="width:auto;min-width:78px">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <span class="small text-muted">registros</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="small text-muted" data-dashboard-page-info="${tableId}">Mostrando 0-0 de 0 (página 1/1)</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-dashboard-page-prev="${tableId}">Anterior</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-dashboard-page-next="${tableId}">Siguiente</button>
+        </div>`;
+      wrap.parentElement.insertBefore(control, wrap);
+    }
+    return control;
+  }
+
+  function filaVacia(row){
+    return Boolean(row?.querySelector?.('.dee-dashboard-empty')) || row?.cells?.length === 1;
+  }
+
+  function aplicarPaginacion(tableId, resetPage = false){
+    const table = $id(tableId);
+    if (!table) return;
+    const state = ESTADO[tableId];
+    if (!state) return;
+    const control = crearControles(tableId);
+    if (!control) return;
+
+    const select = control.querySelector(`[data-dashboard-page-size="${tableId}"]`);
+    if (select) {
+      select.value = String(state.pageSize);
+    }
+
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    if (!rows.length || (rows.length === 1 && filaVacia(rows[0]))) {
+      rows.forEach(r => r.style.display = '');
+      const info = control.querySelector(`[data-dashboard-page-info="${tableId}"]`);
+      if (info) info.textContent = 'Mostrando 0-0 de 0 (página 1/1)';
+      control.querySelector(`[data-dashboard-page-prev="${tableId}"]`)?.setAttribute('disabled', 'disabled');
+      control.querySelector(`[data-dashboard-page-next="${tableId}"]`)?.setAttribute('disabled', 'disabled');
+      return;
+    }
+
+    if (resetPage) state.page = 1;
+    const total = rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+    state.page = Math.min(Math.max(1, state.page), totalPages);
+
+    const start = (state.page - 1) * state.pageSize;
+    const end = Math.min(total, start + state.pageSize);
+    rows.forEach((row, idx) => {
+      row.style.display = (idx >= start && idx < end) ? '' : 'none';
+    });
+
+    const info = control.querySelector(`[data-dashboard-page-info="${tableId}"]`);
+    if (info) info.textContent = `Mostrando ${start + 1}-${end} de ${total} (página ${state.page}/${totalPages})`;
+
+    const prev = control.querySelector(`[data-dashboard-page-prev="${tableId}"]`);
+    const next = control.querySelector(`[data-dashboard-page-next="${tableId}"]`);
+    if (prev) prev.disabled = state.page <= 1;
+    if (next) next.disabled = state.page >= totalPages;
+  }
+
+  function aplicarAmbas(resetPage = false){
+    aplicarPaginacion('tablaDeptos', resetPage);
+    aplicarPaginacion('tablaRepetidos', resetPage);
+  }
+
+  function asegurarEventos(){
+    if (window.__dashboardPaginacionV7917Eventos) return;
+    window.__dashboardPaginacionV7917Eventos = true;
+
+    document.addEventListener('change', (e) => {
+      const tableId = e.target?.dataset?.dashboardPageSize;
+      if (!tableId || !ESTADO[tableId]) return;
+      ESTADO[tableId].pageSize = Number(e.target.value || 10);
+      ESTADO[tableId].page = 1;
+      aplicarPaginacion(tableId, false);
+    });
+
+    document.addEventListener('click', (e) => {
+      const prevId = e.target?.dataset?.dashboardPagePrev;
+      const nextId = e.target?.dataset?.dashboardPageNext;
+      if (prevId && ESTADO[prevId]) {
+        ESTADO[prevId].page = Math.max(1, ESTADO[prevId].page - 1);
+        aplicarPaginacion(prevId, false);
+      }
+      if (nextId && ESTADO[nextId]) {
+        ESTADO[nextId].page += 1;
+        aplicarPaginacion(nextId, false);
+      }
+      if (e.target?.id === 'btnActualizarDashboard' || e.target?.id === 'btnDashSeleccionarTodos' || e.target?.id === 'btnDashQuitarSeleccion') {
+        setTimeout(() => aplicarAmbas(true), 250);
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      if (e.target?.id === 'dashboardFiltroEstado' || e.target?.classList?.contains('dash-ds-check')) {
+        setTimeout(() => aplicarAmbas(true), 250);
+      }
+    });
+
+    document.querySelector('[data-bs-target="#tabDashboard"]')?.addEventListener('shown.bs.tab', () => {
+      setTimeout(() => aplicarAmbas(false), 350);
+    });
+  }
+
+  function instalarRenderHook(){
+    const hook = window.__dashboardCheckboxExportV682;
+    if (hook?.render && !hook.__paginadoV7917) {
+      const original = hook.render.bind(hook);
+      hook.render = function(reset){
+        const r = original(reset);
+        setTimeout(() => aplicarAmbas(Boolean(reset)), 80);
+        return r;
+      };
+      hook.__paginadoV7917 = true;
+    }
+
+    if (window.renderDashboardEjecutivoDEE && !window.renderDashboardEjecutivoDEE.__paginadoV7917) {
+      const originalGlobal = window.renderDashboardEjecutivoDEE;
+      const wrapper = function(reset){
+        const r = originalGlobal.apply(this, arguments);
+        setTimeout(() => aplicarAmbas(Boolean(reset)), 100);
+        return r;
+      };
+      wrapper.__paginadoV7917 = true;
+      window.renderDashboardEjecutivoDEE = wrapper;
+    }
+  }
+
+  function observarTablas(){
+    ['tablaDeptos','tablaRepetidos'].forEach(tableId => {
+      const tbody = $id(tableId)?.querySelector('tbody');
+      if (!tbody || tbody.dataset.pagerObserverV7917) return;
+      tbody.dataset.pagerObserverV7917 = '1';
+      const obs = new MutationObserver(() => setTimeout(() => aplicarPaginacion(tableId, true), 50));
+      obs.observe(tbody, { childList: true });
+    });
+  }
+
+  function init(){
+    asegurarEventos();
+    instalarRenderHook();
+    observarTablas();
+    aplicarAmbas(false);
+    setTimeout(() => { instalarRenderHook(); observarTablas(); aplicarAmbas(false); }, 800);
+    setTimeout(() => { instalarRenderHook(); observarTablas(); aplicarAmbas(false); }, 2500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  window.aplicarPaginacionDashboardV7917 = aplicarAmbas;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
