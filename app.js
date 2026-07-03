@@ -1,4 +1,4 @@
-// ================= VERSION 79.15 - CONTADOR DISTRITOS NUEVO DS - 2026-06-22 =================
+// ================= VERSION 79.16 - CONTADOR DISTRITOS NUEVO DS - 2026-06-22 =================
 const API_BASE = window.location.origin + '/api';
 const APP_BUILD_VERSION = '79.15-contador-distritos-nuevo-ds-20260622';
 
@@ -13095,5 +13095,264 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   window.agregarCanvasPdfSinDuplicar = agregarCanvasPdfConSaltos;
   try { agregarCanvasPdfSinDuplicar = agregarCanvasPdfConSaltos; } catch (_) {}
 
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+
+// ================= CORRECCIÓN QUIRÚRGICA v79.16 - DASHBOARD JPG EN PARTES =================
+// Alcance exclusivo: botón "Exportar Dashboard JPG".
+// Divide la exportación en: Parte 1 (mapa + indicadores + resumen), Parte 2 (departamentos), Parte 3 (distritos repetidos).
+(function dashboardJpgPartesV7916(){
+  const VERSION = '79.16-dashboard-jpg-partes-20260703';
+  let exportandoJpg = false;
+
+  const q = (id) => document.getElementById(id);
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const esc = (v) => (typeof escapeHtml === 'function'
+    ? escapeHtml(v)
+    : String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'));
+
+  function fechaArchivo(){
+    try { return typeof hoy === 'function' ? hoy() : new Date().toISOString().slice(0,10); }
+    catch { return new Date().toISOString().slice(0,10); }
+  }
+
+  function fechaGeneracion(){
+    try { return typeof fechaHoraLocalISO === 'function' ? fechaHoraLocalISO() : new Date().toLocaleString('es-PE'); }
+    catch { return new Date().toLocaleString('es-PE'); }
+  }
+
+  function getArea(){
+    return q('dashboardExportArea') || q('tabDashboard');
+  }
+
+  function getFiltroTexto(){
+    try {
+      if (typeof filtroTexto === 'function') return filtroTexto();
+      if (typeof estadoFiltroTexto === 'function') return estadoFiltroTexto();
+    } catch {}
+    const sel = q('dashboardFiltroEstado');
+    return sel?.selectedOptions?.[0]?.textContent?.trim() || 'Dashboard';
+  }
+
+  function getFileBase(){
+    return `Dashboard_DEE_${String(getFiltroTexto()).replace(/\s+/g,'_')}_${fechaArchivo()}`;
+  }
+
+  async function loadScriptOnce(src){
+    if (src.includes('html2canvas') && window.html2canvas) return;
+    if ([...document.scripts].some(s => s.src === src)) {
+      for (let i = 0; i < 60 && !window.html2canvas; i++) await sleep(100);
+      return;
+    }
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  function descargarCanvas(canvas, nombre){
+    const a = document.createElement('a');
+    a.download = nombre;
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 200);
+  }
+
+  async function capturarElemento(el){
+    return await window.html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: Math.max(1200, el.scrollWidth || el.offsetWidth || 1200),
+      height: Math.max(400, el.scrollHeight || el.offsetHeight || 400),
+      windowWidth: Math.max(1400, el.scrollWidth || 1400),
+      windowHeight: Math.max(900, el.scrollHeight || 900)
+    });
+  }
+
+  function sectionNodesForTable(tableId){
+    const table = q(tableId);
+    if (!table) return [];
+    const wrap = table.closest('.table-responsive') || table;
+    const title = wrap.previousElementSibling && /^H[1-6]$/i.test(wrap.previousElementSibling.tagName)
+      ? wrap.previousElementSibling
+      : null;
+    return [title, wrap].filter(Boolean);
+  }
+
+  function setHidden(nodes, hidden){
+    nodes.forEach(n => {
+      if (!n) return;
+      if (hidden) {
+        n.dataset._displayV7916 = n.style.display || '';
+        n.style.display = 'none';
+      } else {
+        n.style.display = n.dataset._displayV7916 || '';
+        delete n.dataset._displayV7916;
+      }
+    });
+  }
+
+  function ensureExportCss(){
+    if (q('dashboardJpgPartesStylesV7916')) return;
+    const style = document.createElement('style');
+    style.id = 'dashboardJpgPartesStylesV7916';
+    style.textContent = `
+      .dee-jpg-export-v7916{background:#fff;width:1400px;max-width:1400px;padding:16px 18px;font-family:Segoe UI,Arial,sans-serif;color:#1f2937}
+      .dee-jpg-export-v7916 h4{font-size:20px;color:#0b3f8a;margin:0 0 4px 0;font-weight:800}
+      .dee-jpg-export-v7916 h5{font-size:16px;color:#0b3f8a;margin:14px 0 8px 0;font-weight:800}
+      .dee-jpg-export-v7916 .dee-export-sub{font-size:12px;color:#64748b;margin-bottom:12px;border-bottom:1px solid #dbe4f0;padding-bottom:8px}
+      .dee-jpg-export-v7916 table{width:100%;border-collapse:collapse;font-size:11px;line-height:1.25}
+      .dee-jpg-export-v7916 th{background:#cfe3ff;color:#102a43;font-weight:800;border:1px solid #c5d4e5;padding:5px 6px;white-space:nowrap}
+      .dee-jpg-export-v7916 td{border:1px solid #d9e2ef;padding:4px 6px;vertical-align:top}
+      .dee-jpg-export-v7916 tr:nth-child(even) td{background:#f7f9fc}
+      .dee-jpg-export-note{font-size:11px;color:#64748b;margin:6px 0 10px 0}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function crearContenedorTemporal(titulo, subtitulo){
+    ensureExportCss();
+    const div = document.createElement('div');
+    div.className = 'dee-jpg-export-v7916';
+    div.style.position = 'absolute';
+    div.style.left = '-10000px';
+    div.style.top = '0';
+    div.innerHTML = `<h4>${esc(titulo)}</h4><div class="dee-export-sub">${esc(subtitulo)}</div>`;
+    document.body.appendChild(div);
+    return div;
+  }
+
+  function clonarTablaPorFilas(tableId, desde, hasta){
+    const table = q(tableId);
+    if (!table) return null;
+    const clone = table.cloneNode(false);
+    clone.className = 'table table-sm table-striped align-middle';
+
+    const thead = table.querySelector('thead')?.cloneNode(true);
+    const tbody = document.createElement('tbody');
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    rows.slice(desde, hasta).forEach(r => tbody.appendChild(r.cloneNode(true)));
+    if (thead) clone.appendChild(thead);
+    clone.appendChild(tbody);
+    return clone;
+  }
+
+  async function exportarTablaEnPartes(tableId, titulo, parteBase, rowsPerImage){
+    const table = q(tableId);
+    if (!table) return 0;
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    if (!rows.length) return 0;
+
+    const totalPartes = Math.max(1, Math.ceil(rows.length / rowsPerImage));
+    let generadas = 0;
+
+    for (let i = 0; i < totalPartes; i++) {
+      const desde = i * rowsPerImage;
+      const hasta = Math.min(rows.length, desde + rowsPerImage);
+      const cont = crearContenedorTemporal(
+        titulo,
+        `Fecha de generación: ${fechaGeneracion()} · Filtro aplicado: ${getFiltroTexto()} · Registros ${desde + 1}-${hasta} de ${rows.length}`
+      );
+      const nota = document.createElement('div');
+      nota.className = 'dee-jpg-export-note';
+      nota.textContent = totalPartes > 1 ? `Imagen ${i + 1} de ${totalPartes}` : '';
+      cont.appendChild(nota);
+      const cloned = clonarTablaPorFilas(tableId, desde, hasta);
+      if (cloned) cont.appendChild(cloned);
+      await sleep(120);
+      const canvas = await capturarElemento(cont);
+      const sufijo = totalPartes > 1 ? `_${String(i + 1).padStart(2,'0')}` : '';
+      descargarCanvas(canvas, `${getFileBase()}_${parteBase}${sufijo}.jpg`);
+      cont.remove();
+      generadas++;
+      await sleep(350);
+    }
+    return generadas;
+  }
+
+  async function exportarDashboardJPGPartes(){
+    if (exportandoJpg) return;
+    exportandoJpg = true;
+    const area = getArea();
+    if (!area) {
+      exportandoJpg = false;
+      alert('No se encontró el Dashboard para exportar.');
+      return;
+    }
+
+    const oldW = area.style.width;
+    const oldMax = area.style.maxWidth;
+    const oldOverflow = document.body.style.overflow;
+    let header = null;
+    const ocultarParte1 = [...sectionNodesForTable('tablaDeptos'), ...sectionNodesForTable('tablaRepetidos')];
+
+    try {
+      await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+      area.style.width = '1400px';
+      area.style.maxWidth = '1400px';
+      document.body.style.overflow = 'visible';
+      try { if (window.__dashboardCheckboxExportV682?.render) window.__dashboardCheckboxExportV682.render(false); } catch {}
+      try { if (window.renderDashboardEjecutivoDEE) window.renderDashboardEjecutivoDEE(false); } catch {}
+      try { if (window.renderDashboardEjecutivoV661) window.renderDashboardEjecutivoV661(false); } catch {}
+      await sleep(650);
+      try { window.dispatchEvent(new Event('resize')); } catch {}
+      await sleep(250);
+
+      header = document.createElement('div');
+      header.id = 'dashboardExportHeaderTmpV7916';
+      header.className = 'border-bottom mb-2 pb-2';
+      const dsSel = document.querySelectorAll('#dashboardMapaLeyenda input[type="checkbox"]:checked, #dashboardMapaLeyenda .dash-ds-check:checked').length;
+      header.innerHTML = `<h4 class="text-primary mb-1">Dashboard de Declaratorias de Estado de Emergencia</h4><div class="small text-muted">Fecha de generación: ${esc(fechaGeneracion())} · Filtro aplicado: ${esc(getFiltroTexto())} · DS seleccionados: ${dsSel || ''}</div>`;
+      area.insertBefore(header, area.firstChild);
+
+      // PARTE 1: mapa, indicadores y resumen ejecutivo. Se ocultan las tablas largas.
+      setHidden(ocultarParte1, true);
+      await sleep(250);
+      const canvasParte1 = await capturarElemento(area);
+      descargarCanvas(canvasParte1, `${getFileBase()}_Parte_1_Mapa_Indicadores_Resumen.jpg`);
+      setHidden(ocultarParte1, false);
+      if (header) { header.remove(); header = null; }
+      await sleep(500);
+
+      // PARTE 2: departamentos declarados.
+      await exportarTablaEnPartes('tablaDeptos', 'Departamentos declarados en estado de emergencia', 'Parte_2_Departamentos', 80);
+
+      // PARTE 3: distritos repetidos. Se divide si es muy largo.
+      await exportarTablaEnPartes('tablaRepetidos', 'Distritos repetidos en declaratorias vigentes', 'Parte_3_Distritos_Repetidos', 85);
+
+    } catch (e) {
+      console.error('Error exportando Dashboard JPG en partes v79.16:', e);
+      alert('No se pudo exportar el Dashboard JPG en partes. Revise la consola para el detalle técnico.');
+    } finally {
+      if (header) { try { header.remove(); } catch {} }
+      setHidden(ocultarParte1, false);
+      area.style.width = oldW;
+      area.style.maxWidth = oldMax;
+      document.body.style.overflow = oldOverflow;
+      try { window.dispatchEvent(new Event('resize')); } catch {}
+      exportandoJpg = false;
+    }
+  }
+
+  // Se captura en window para bloquear las exportaciones JPG anteriores delegadas en document.
+  window.addEventListener('click', function(e){
+    const btn = e.target?.closest?.('#btnExportDashboardJPG');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    exportarDashboardJPGPartes();
+  }, true);
+
+  window.exportarDashboardJPGPartesV7916 = exportarDashboardJPGPartes;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
