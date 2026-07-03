@@ -1,6 +1,6 @@
-// ================= VERSION 79.14 - DETALLE DS PDF MATRIZ A4 - 2026-06-22 =================
+// ================= VERSION 79.15 - CONTADOR DISTRITOS NUEVO DS - 2026-06-22 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.14-detalle-ds-pdf-matriz-a4-20260622';
+const APP_BUILD_VERSION = '79.15-contador-distritos-nuevo-ds-20260622';
 
 let state = {
   session: null,
@@ -1839,9 +1839,34 @@ function quitarTerritorioSeleccionado(clave) {
 
 window.quitarTerritorioSeleccionado = quitarTerritorioSeleccionado;
 
+function actualizarContadorTerritorioSeleccionado() {
+  const total = Array.isArray(state.nuevoDSTerritorios) ? state.nuevoDSTerritorios.length : 0;
+  const cont = $('territorioSeleccionado');
+  let badge = $('contadorTerritorioSeleccionado');
+
+  // Respaldo quirúrgico: si el HTML no trae el contador, se crea encima de la lista.
+  if (!badge && cont?.parentElement) {
+    const wrap = document.createElement('div');
+    wrap.className = 'd-flex justify-content-between align-items-center mb-2';
+    wrap.innerHTML = `
+      <div class="small text-muted">Distritos seleccionados</div>
+      <span id="contadorTerritorioSeleccionado" class="badge text-bg-primary">0 distrito(s)</span>
+    `;
+    cont.parentElement.insertBefore(wrap, cont);
+    badge = $('contadorTerritorioSeleccionado');
+  }
+
+  if (badge) {
+    badge.textContent = `${total} distrito(s)`;
+    badge.setAttribute('title', `Total de distritos seleccionados: ${total}`);
+  }
+}
+
 function renderTerritorioSeleccionado() {
   const cont = $('territorioSeleccionado');
   if (!cont) return;
+
+  actualizarContadorTerritorioSeleccionado();
 
   if (!state.nuevoDSTerritorios.length) {
     cont.innerHTML = '<div class="text-muted small">No hay distritos agregados.</div>';
