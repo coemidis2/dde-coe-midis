@@ -1,6 +1,6 @@
-// ================= VERSION 79.17 - PAGINACION TABLAS DASHBOARD - 2026-06-22 =================
+// ================= VERSION 79.18 - REAPERTURA DE REGISTRO HASTA PREAPROBACION - 2026-07-14 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.17-dashboard-tablas-paginadas-20260622';
+const APP_BUILD_VERSION = '79.18-reapertura-registro-hasta-preaprobacion-20260714';
 
 let state = {
   session: null,
@@ -3525,8 +3525,9 @@ function dsTieneAccionesDelPrograma(dsId, programa) {
 }
 
 function dsProgramaCerroRegistro(d, programa) {
-  const p = normalizarProgramaNombre(programa);
-  return Boolean((d?.programasRegistroCerrado || {})[p]) || dsTieneAccionesDelPrograma(d?.id, p);
+  if (!d) return false;
+  const estado = normalizarTexto(d.estadoRDS || d.estado_rds || '').replace(/[^A-Z0-9]/g, '');
+  return estado === 'PREAPROBADO' || estado === 'APROBADO';
 }
 
 function setDsProgramaCerrado(dsId, programa) {
@@ -3756,7 +3757,8 @@ function salirRegistroAccionesPrograma() {
     alert('Debe registrar al menos una acción antes de salir.');
     return;
   }
-  setDsProgramaCerrado(dsProgramaSeleccionadoId, programa);
+  // Salir no cierra el registro del Programa. El usuario puede volver a ingresar
+  // y continuar adicionando información hasta que el DS sea PreAprobado.
   renderTablaDecretosBasica();
   mostrarTabAccionesProgramas(false);
   abrirTabBootstrap('#tabListado');
@@ -4171,8 +4173,10 @@ function cierreKeyProgramaV38(d, programa) {
 
 function dsProgramaCerroRegistro(d, programa) {
   if (!d) return false;
-  const key = cierreKeyProgramaV38(d, programa);
-  return Boolean((d.programasRegistroCerrado || {})[key]) || dsTieneAccionesDelPrograma(d.id, programa);
+  // El registro permanece abierto aunque el Programa ya tenga acciones guardadas.
+  // Solo se cierra cuando el Decreto Supremo pasa a PreAprobado o Aprobado.
+  const estado = normalizarTexto(d.estadoRDS || d.estado_rds || '').replace(/[^A-Z0-9]/g, '');
+  return estado === 'PREAPROBADO' || estado === 'APROBADO';
 }
 
 function setDsProgramaCerrado(dsId, programa) {
@@ -13552,4 +13556,23 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 
   window.aplicarPaginacionDashboardV7917 = aplicarAmbas;
   console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= CORRECCION QUIRURGICA v79.18 - REGISTRO ABIERTO HASTA PREAPROBACION =================
+// Los Registradores de Programas pueden volver a ingresar al mismo DS y continuar
+// adicionando acciones mientras el estado RDS sea Activo. El bloqueo inicia recién
+// cuando el DS queda PreAprobado o Aprobado.
+(function reaperturaRegistroProgramasV7918(){
+  function registroProgramaCerradoSoloPorFlujo(d){
+    if (!d) return false;
+    const estadoBase = (typeof normalizarTexto === 'function')
+      ? normalizarTexto(d.estadoRDS || d.estado_rds || '')
+      : String(d.estadoRDS || d.estado_rds || '').trim().toUpperCase();
+    const estado = estadoBase.replace(/[^A-Z0-9]/g, '');
+    return estado === 'PREAPROBADO' || estado === 'APROBADO';
+  }
+
+  window.dsProgramaCerroRegistro = registroProgramaCerradoSoloPorFlujo;
+  try { dsProgramaCerroRegistro = registroProgramaCerradoSoloPorFlujo; } catch (_) {}
+  console.info('DEE MIDIS cierre aplicado: v79.18-reapertura-registro-hasta-preaprobacion');
 })();
