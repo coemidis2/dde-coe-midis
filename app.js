@@ -1,6 +1,6 @@
-// ================= VERSION 79.18 - REAPERTURA DE REGISTRO HASTA PREAPROBACION - 2026-07-14 =================
+// ================= VERSION 79.19 - CONSOLIDACION RDS HASTA PREAPROBACION - 2026-07-14 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.18-reapertura-registro-hasta-preaprobacion-20260714';
+const APP_BUILD_VERSION = '79.19-consolidacion-rds-hasta-preaprobacion-20260714';
 
 let state = {
   session: null,
@@ -3739,6 +3739,11 @@ function abrirRegistrarAcciones(id) {
     alert('El Decreto Supremo aún no tiene RDS activo.');
     return;
   }
+  if (typeof dsProgramaCerroRegistro === 'function' && dsProgramaCerroRegistro(d, programaSesionNormalizado())) {
+    alert('El registro se encuentra cerrado porque el Decreto Supremo ya fue Preaprobado o Aprobado.');
+    renderTablaDecretosBasica();
+    return;
+  }
   dsProgramaSeleccionadoId = id;
   mostrarTabAccionesProgramas(true);
   mostrarTabPreAprobar(false);
@@ -4457,53 +4462,64 @@ function renderTablaPreAprobarAcciones() {
     </tr>`).join('');
 }
 
-function guardarDatosDSPreAprobar(estadoFinal) {
-  const dsId = dsPreAprobarSeleccionadoId;
-  const lista = cargarDecretosLocales().map(normalizarDecreto).filter(Boolean).map(migrarReunionesEnDecretoV38);
-  const idx = lista.findIndex(d => String(d.id) === String(dsId));
-  if (idx < 0) return null;
-  const numeroReunion = lista[idx].numeroReunion || '';
-  const fechaReunion = lista[idx].fechaReunion || '';
-  const key = reunionKeyV38(numeroReunion, fechaReunion);
-  const extra = estadoFinal === 'Preaprobado'
-    ? { usuarioPreaprueba: state.session?.email || '', fechaPreaprueba: fechaHoraLocalISO() }
-    : { usuarioAprueba: state.session?.email || '', fechaAprueba: fechaHoraLocalISO() };
-  const reuniones = obtenerReunionesDSV38(lista[idx]).map(r => reunionKeyV38(r.numeroReunion, r.fechaReunion) === key ? { ...r, estadoRDS: estadoFinal, fechaEstadoRDS: fechaHoraLocalISO(), usuarioEstadoRDS: state.session?.email || '', ...extra } : r);
-  lista[idx] = { ...lista[idx], estadoRDS: estadoFinal, fechaEstadoRDS: fechaHoraLocalISO(), usuarioEstadoRDS: state.session?.email || '', rdsReuniones: reuniones, ...extra };
-  guardarDecretosLocales(lista);
-  api('/decretos', 'POST', lista[idx]);
-  return lista[idx];
+function mensajeErrorFlujoRDS(data, estadoFinal) {
+  const error = String(data?.error || data?.message || '').trim();
+  const mensajes = {
+    session_invalid: 'La sesión venció. Ingrese nuevamente.',
+    role_not_allowed: 'Su usuario no tiene permisos para esta operación.',
+    preaprobar_not_allowed: 'Solo el Registrador general puede PreAprobar.',
+    aprobar_not_allowed: 'Solo el Administrador puede Aprobar.',
+    rds_not_active: 'El RDS no se encuentra activo.',
+    decreto_locked: 'El Decreto Supremo se encuentra bloqueado.',
+    decreto_deleted: 'El Decreto Supremo fue eliminado.',
+    rds_must_be_preapproved: 'El Decreto Supremo debe estar Preaprobado antes de aprobarse.',
+    registro_preaprobado: 'El Decreto Supremo ya se encuentra Preaprobado.',
+    registro_aprobado: 'El Decreto Supremo ya se encuentra Aprobado.'
+  };
+  return mensajes[error] || `No se pudo completar el cambio a ${estadoFinal}.`;
 }
 
-function preaprobarAccionesDS() {
+async function guardarDatosDSPreAprobar(estadoFinal) {
+  const dsId = dsPreAprobarSeleccionadoId;
+  if (!dsId) return { ok: false, data: { error: 'id_required' } };
+
+  const res = await api('/decretos', 'PATCH', {
+    id: dsId,
+    action: 'estado_rds',
+    estado_rds: estadoFinal
+  });
+
+  if (!res.ok || !res.data?.ok) return res;
+
+  await cargarDecretosParaOrigen();
+  return res;
+}
+
+async function preaprobarAccionesDS() {
   const dsId = dsPreAprobarSeleccionadoId;
   if (!puedePreaprobar()) return alert('Solo el usuario Registrador puede PreAprobar.');
   if (!dsId) return alert('Seleccione un Decreto Supremo.');
   if (!dsTieneAccionesRegistradas(dsId)) return alert('No se puede PreAprobar: no existen acciones registradas para esta reunión.');
-  const acciones = cargarAccionesLocales().map(a => accionCoincideReunionV38(a, buscarDecretoPorId(dsId))
-    ? { ...a, estado: 'Preaprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
-    : a
-  );
-  guardarAccionesLocales(acciones);
-  guardarDatosDSPreAprobar('Preaprobado');
+
+  const res = await guardarDatosDSPreAprobar('Preaprobado');
+  if (!res.ok || !res.data?.ok) return alert(mensajeErrorFlujoRDS(res.data, 'Preaprobado'));
+
   renderTablaPreAprobarAcciones();
   renderTablaDecretosBasica();
   cargarVistaPreAprobar(dsId);
   alert('DS PreAprobado correctamente para la reunión seleccionada.');
 }
 
-function aprobarAccionesDS() {
+async function aprobarAccionesDS() {
   const dsId = dsPreAprobarSeleccionadoId;
   const d = buscarDecretoPorId(dsId);
   if (!puedeAprobar()) return alert('Solo el Administrador puede Aprobar.');
   if (!dsId) return alert('Seleccione un Decreto Supremo.');
-  if (normalizarTexto(d?.estadoRDS) !== 'PREAPROBADO') return alert('Solo se puede aprobar un DS en estado PreAprobado.');
-  const acciones = cargarAccionesLocales().map(a => accionCoincideReunionV38(a, d)
-    ? { ...a, estado: 'Aprobado', usuario_flujo: state.session?.email || '', fecha_flujo: fechaHoraLocalISO() }
-    : a
-  );
-  guardarAccionesLocales(acciones);
-  guardarDatosDSPreAprobar('Aprobado');
+  if (normalizarTexto(d?.estadoRDS) !== 'PREAPROBADO') return alert('Solo se puede aprobar un DS en estado Preaprobado.');
+
+  const res = await guardarDatosDSPreAprobar('Aprobado');
+  if (!res.ok || !res.data?.ok) return alert(mensajeErrorFlujoRDS(res.data, 'Aprobado'));
+
   renderTablaPreAprobarAcciones();
   renderTablaDecretosBasica();
   cargarVistaPreAprobar(dsId);
@@ -12096,7 +12112,27 @@ async function activarRDSSeleccionado() {
     programas_habilitados: PROGRAMAS_RDS.slice()
   };
 
-  const res = await api('/decretos', 'POST', lista[idx]);
+  const res = await api('/decretos', 'PATCH', {
+    id,
+    action: 'rds',
+    rdsActivo: true,
+    numeroReunion,
+    fechaReunion,
+    estadoRDS: 'Activo',
+    fechaRegistroRDS: lista[idx].fechaRegistroRDS,
+    programasHabilitados: PROGRAMAS_RDS.slice()
+  });
+  if (!res.ok || !res.data?.ok) {
+    await cargarDecretosParaOrigen();
+    const error = String(res.data?.error || '').trim();
+    const mensajes = {
+      registro_preaprobado: 'El RDS ya fue Preaprobado y no puede reactivarse.',
+      registro_aprobado: 'El RDS ya fue Aprobado y no puede reactivarse.',
+      rds_update_not_allowed: 'Su usuario no tiene permisos para activar o actualizar el RDS.',
+      decreto_locked: 'El Decreto Supremo se encuentra bloqueado.'
+    };
+    return alert(mensajes[error] || 'No se pudo confirmar la activación del RDS en D1.');
+  }
   __DEE_D1_IMPORTANDO = true;
   guardarDecretosLocales(lista);
   __DEE_D1_IMPORTANDO = false;
@@ -12767,6 +12803,9 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const d = getDSPrograma();
     if (typeof esRegistradorPrograma === 'function' && !esRegistradorPrograma()) return alert('Solo un Registrador de Programa puede guardar acciones en esta vista.');
     if (!d || !d.rdsActivo) return alert('El Decreto Supremo no tiene RDS activo.');
+    if (typeof dsProgramaCerroRegistro === 'function' && dsProgramaCerroRegistro(d, programaActual())) {
+      return alert('El registro se encuentra cerrado porque el Decreto Supremo ya fue Preaprobado o Aprobado.');
+    }
     if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito.');
 
     if (usarModal) {
@@ -12788,9 +12827,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
-    let creados = 0;
-    let actualizados = 0;
-    const promesas = [];
+    const cambios = [];
 
     seleccionados.forEach(t => {
       const idx = lista.findIndex(a =>
@@ -12850,9 +12887,43 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         estado: 'Registrado'
       };
       const normalizada = (typeof normalizarAccionD1 === 'function') ? normalizarAccionD1(accion) : accion;
-      if (idx >= 0) { lista[idx] = normalizada; actualizados++; }
-      else { lista.push(normalizada); creados++; }
-      if (typeof api === 'function') promesas.push(api('/acciones', 'POST', normalizada));
+      cambios.push({ idx, normalizada, esActualizacion: idx >= 0 });
+    });
+
+    const resultados = await Promise.all(cambios.map(c => api('/acciones', 'POST', c.normalizada)));
+    const rechazados = resultados
+      .map((r, i) => ({ r, cambio: cambios[i] }))
+      .filter(x => !x.r?.ok || !x.r?.data?.ok);
+
+    if (rechazados.length) {
+      if (typeof cargarAccionesDesdeD1 === 'function') await cargarAccionesDesdeD1();
+      if (typeof cargarDecretosParaOrigen === 'function') await cargarDecretosParaOrigen();
+      renderDistritosAccionesProgramaV792();
+      renderTablaAccionesProgramasV792();
+      if (typeof renderTablaDecretosBasica === 'function') renderTablaDecretosBasica();
+
+      const error = String(rechazados[0].r?.data?.error || '').trim();
+      const mensajes = {
+        registro_preaprobado: 'No se guardó la información porque el Decreto Supremo ya fue Preaprobado.',
+        registro_aprobado: 'No se guardó la información porque el Decreto Supremo ya fue Aprobado.',
+        accion_locked: 'No se guardó la información porque una acción se encuentra bloqueada.',
+        decreto_locked: 'No se guardó la información porque el Decreto Supremo se encuentra bloqueado.',
+        rds_not_active: 'No se guardó la información porque el RDS ya no se encuentra activo.',
+        programa_not_allowed: 'El Programa Nacional de la sesión no coincide con la acción enviada.'
+      };
+      return alert(mensajes[error] || `No se pudo guardar ${rechazados.length} registro(s). Se recargó la información vigente desde D1.`);
+    }
+
+    let creados = 0;
+    let actualizados = 0;
+    cambios.forEach(c => {
+      if (c.idx >= 0) {
+        lista[c.idx] = c.normalizada;
+        actualizados++;
+      } else {
+        lista.push(c.normalizada);
+        creados++;
+      }
     });
 
     if (typeof guardarAccionesLocales === 'function') {
@@ -12860,7 +12931,6 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       guardarAccionesLocales(lista);
       try { __DEE_D1_IMPORTANDO = false; } catch {}
     }
-    if (promesas.length) await Promise.allSettled(promesas);
 
     const modal = q('modalAccionGrupalPrograma');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
@@ -13558,11 +13628,11 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
-// ================= CORRECCION QUIRURGICA v79.18 - REGISTRO ABIERTO HASTA PREAPROBACION =================
+// ================= CORRECCION QUIRURGICA v79.19 - CONSOLIDACION RDS HASTA PREAPROBACION =================
 // Los Registradores de Programas pueden volver a ingresar al mismo DS y continuar
 // adicionando acciones mientras el estado RDS sea Activo. El bloqueo inicia recién
 // cuando el DS queda PreAprobado o Aprobado.
-(function reaperturaRegistroProgramasV7918(){
+(function consolidacionRDSV7919(){
   function registroProgramaCerradoSoloPorFlujo(d){
     if (!d) return false;
     const estadoBase = (typeof normalizarTexto === 'function')
@@ -13574,5 +13644,5 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 
   window.dsProgramaCerroRegistro = registroProgramaCerradoSoloPorFlujo;
   try { dsProgramaCerroRegistro = registroProgramaCerradoSoloPorFlujo; } catch (_) {}
-  console.info('DEE MIDIS cierre aplicado: v79.18-reapertura-registro-hasta-preaprobacion');
+  console.info('DEE MIDIS cierre aplicado: v79.19-consolidacion-rds-hasta-preaprobacion');
 })();
