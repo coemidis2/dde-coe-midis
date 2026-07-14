@@ -165,6 +165,40 @@ function mustVerifyCsrf(auth, request) {
   return auth?.local ? true : verifyCsrf(request);
 }
 
+
+function sessionRole(session) {
+  return normalizeText(session?.role || session?.rol || '');
+}
+
+function isAdmin(session) {
+  return sessionRole(session) === 'ADMINISTRADOR';
+}
+
+function isRegistradorGeneral(session) {
+  return sessionRole(session) === 'REGISTRADOR' && !String(session?.programa || '').trim();
+}
+
+function isRegistradorPrograma(session) {
+  return sessionRole(session) === 'REGISTRADOR' && Boolean(String(session?.programa || '').trim());
+}
+
+function normalizeEstadoRds(value) {
+  return normalizeText(value).replace(/[^A-Z0-9]/g, '');
+}
+
+function estadoRdsCerrado(value) {
+  const estado = normalizeEstadoRds(value);
+  return estado === 'PREAPROBADO' || estado === 'APROBADO';
+}
+
+function canonicalEstadoRds(value) {
+  const estado = normalizeEstadoRds(value);
+  if (estado === 'PREAPROBADO') return 'Preaprobado';
+  if (estado === 'APROBADO') return 'Aprobado';
+  if (estado === 'ACTIVO') return 'Activo';
+  return '';
+}
+
 export async function onRequestGet(context) {
   const auth = await requireSessionCompat(context, ['Administrador', 'Revisor', 'Registrador', 'Consulta']);
   if (!auth.ok) return auth.response;
@@ -192,6 +226,7 @@ export async function onRequestPost(context) {
   const auth = await requireSessionCompat(context, ['Administrador', 'Revisor', 'Registrador']);
   if (!auth.ok) return auth.response;
   if (!mustVerifyCsrf(auth, context.request)) return forbidden('invalid_csrf');
+  if (isRegistradorPrograma(auth.session)) return forbidden('programa_registrador_decreto_not_allowed');
 
   try {
     await ensureSchema(context.env);
@@ -204,13 +239,20 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
     const existing = await context.env.DB.prepare(`
-      SELECT id, version, locked, deleted_at
+      SELECT id, version, locked, deleted_at,
+             rds_activo, numero_reunion, fecha_reunion, estado_rds,
+             fecha_registro_rds, activado_por, programas_habilitados
       FROM decretos
       WHERE id = ? OR codigo_registro = ?
       LIMIT 1
     `).bind(d.id, d.codigo_registro).first();
 
+    if (existing?.deleted_at) return badRequest('decreto_deleted');
     if (existing && Number(existing.locked) === 1) return badRequest('decreto_locked');
+    if (existing && estadoRdsCerrado(existing.estado_rds)) {
+      const error = normalizeEstadoRds(existing.estado_rds) === 'APROBADO' ? 'registro_aprobado' : 'registro_preaprobado';
+      return json({ ok: false, error }, { status: 409 });
+    }
 
     if (existing) {
       const nextVersion = Number(existing.version || 1) + 1;
@@ -220,15 +262,15 @@ export async function onRequestPost(context) {
             fecha_inicio = ?, fecha_fin = ?, vigencia = ?, semaforo = ?, motivos = ?, sectores = ?, territorio = ?,
             es_prorroga = ?, ds_origen_id = ?, nivel_prorroga = ?, cadena = ?, usuario_registro = ?, fecha_registro = ?,
             estado = ?, rds_activo = ?, numero_reunion = ?, fecha_reunion = ?, estado_rds = ?, fecha_registro_rds = ?,
-            activado_por = ?, programas_habilitados = ?, deleted_at = NULL, version = ?, updated_at = ?
+            activado_por = ?, programas_habilitados = ?, version = ?, updated_at = ?
         WHERE id = ?
       `).bind(
         d.codigo_registro, d.numero, d.anio, d.peligro, d.tipo_peligro, d.plazo_dias,
         d.fecha_inicio, d.fecha_fin, d.vigencia, d.semaforo, d.motivos,
         JSON.stringify(d.sectores || []), JSON.stringify(d.territorio || []),
         d.es_prorroga, d.ds_origen_id, d.nivel_prorroga, d.cadena, d.usuario_registro, d.fecha_registro,
-        d.estado, d.rds_activo, d.numero_reunion, d.fecha_reunion, d.estado_rds, d.fecha_registro_rds,
-        d.activado_por, JSON.stringify(d.programas_habilitados || []), nextVersion, now, existing.id
+        d.estado, Number(existing.rds_activo || 0), existing.numero_reunion || '', existing.fecha_reunion || '', existing.estado_rds || '', existing.fecha_registro_rds || '',
+        existing.activado_por || '', existing.programas_habilitados || '[]', nextVersion, now, existing.id
       ).run();
 
       await writeAudit(context.env, { actor: auth.session.email, action: 'update_decreto', detail: d.numero, entity_type: 'decreto', entity_id: existing.id });
@@ -300,29 +342,153 @@ export async function onRequestPatch(context) {
     const body = await readJson(context.request);
     if (!body.id) return badRequest('id_required');
 
-    const current = await context.env.DB.prepare('SELECT id, numero FROM decretos WHERE id = ?').bind(body.id).first();
+    const current = await context.env.DB.prepare(`
+      SELECT id, numero, rds_activo, numero_reunion, fecha_reunion,
+             estado_rds, fecha_registro_rds, activado_por,
+             programas_habilitados, locked, deleted_at
+      FROM decretos
+      WHERE id = ?
+      LIMIT 1
+    `).bind(body.id).first();
+
     if (!current) return notFound('decreto_not_found');
+    if (current.deleted_at) return badRequest('decreto_deleted');
 
     const now = new Date().toISOString();
+    const action = normalizeText(body.action || '');
 
-    if (body.action === 'rds' || body.rdsActivo !== undefined || body.rds_activo !== undefined) {
-      const d = normalizePayload({ ...body, id: body.id }, auth.session.email);
+    if (action === 'ESTADO_RDS') {
+      const nuevoEstado = canonicalEstadoRds(valueOf(body, 'estado_rds', 'estadoRDS'));
+      if (!nuevoEstado || nuevoEstado === 'Activo') return badRequest('estado_rds_invalid');
+      if (Number(current.locked) === 1) return badRequest('decreto_locked');
+      if (Number(current.rds_activo) !== 1) return badRequest('rds_not_active');
+
+      const estadoActual = canonicalEstadoRds(current.estado_rds) || (Number(current.rds_activo) === 1 ? 'Activo' : '');
+
+      if (nuevoEstado === 'Preaprobado') {
+        if (!isRegistradorGeneral(auth.session)) return forbidden('preaprobar_not_allowed');
+        if (estadoActual === 'Aprobado') return badRequest('rds_already_approved');
+      }
+
+      if (nuevoEstado === 'Aprobado') {
+        if (!isAdmin(auth.session)) return forbidden('aprobar_not_allowed');
+        if (estadoActual !== 'Preaprobado') return badRequest('rds_must_be_preapproved');
+      }
+
+      if (estadoActual === nuevoEstado) {
+        return json({ ok: true, estado_rds: nuevoEstado, unchanged: true });
+      }
+
+      await context.env.DB.prepare(`
+        UPDATE decretos
+        SET estado_rds = ?, updated_at = ?
+        WHERE id = ?
+      `).bind(nuevoEstado, now, body.id).run();
+
+      if (current.numero_reunion && current.fecha_reunion) {
+        await context.env.DB.prepare(`
+          UPDATE acciones
+          SET estado = ?, version = COALESCE(version, 1) + 1, updated_at = ?
+          WHERE ds_id = ?
+            AND deleted_at IS NULL
+            AND COALESCE(numero_reunion, '') = ?
+            AND COALESCE(fecha_reunion, '') = ?
+        `).bind(nuevoEstado, now, body.id, current.numero_reunion, current.fecha_reunion).run();
+      } else if (current.numero_reunion) {
+        await context.env.DB.prepare(`
+          UPDATE acciones
+          SET estado = ?, version = COALESCE(version, 1) + 1, updated_at = ?
+          WHERE ds_id = ?
+            AND deleted_at IS NULL
+            AND COALESCE(numero_reunion, '') = ?
+        `).bind(nuevoEstado, now, body.id, current.numero_reunion).run();
+      } else {
+        await context.env.DB.prepare(`
+          UPDATE acciones
+          SET estado = ?, version = COALESCE(version, 1) + 1, updated_at = ?
+          WHERE ds_id = ?
+            AND deleted_at IS NULL
+        `).bind(nuevoEstado, now, body.id).run();
+      }
+
+      await writeAudit(context.env, {
+        actor: auth.session.email,
+        action: nuevoEstado === 'Preaprobado' ? 'PREAPROBAR_RDS' : 'APROBAR_RDS',
+        detail: `${current.numero || body.id} | ${nuevoEstado}`,
+        entity_type: 'decreto',
+        entity_id: body.id
+      });
+
+      return json({ ok: true, estado_rds: nuevoEstado });
+    }
+
+    if (action === 'RDS' || body.rdsActivo !== undefined || body.rds_activo !== undefined) {
+      if (!isAdmin(auth.session) && !isRegistradorGeneral(auth.session)) {
+        return forbidden('rds_update_not_allowed');
+      }
+      if (Number(current.locked) === 1) return badRequest('decreto_locked');
+      if (estadoRdsCerrado(current.estado_rds)) {
+        const error = normalizeEstadoRds(current.estado_rds) === 'APROBADO' ? 'registro_aprobado' : 'registro_preaprobado';
+        return json({ ok: false, error }, { status: 409 });
+      }
+
+      const hasRdsActivo = Object.prototype.hasOwnProperty.call(body, 'rdsActivo') || Object.prototype.hasOwnProperty.call(body, 'rds_activo');
+      const hasNumero = Object.prototype.hasOwnProperty.call(body, 'numeroReunion') || Object.prototype.hasOwnProperty.call(body, 'numero_reunion');
+      const hasFecha = Object.prototype.hasOwnProperty.call(body, 'fechaReunion') || Object.prototype.hasOwnProperty.call(body, 'fecha_reunion');
+      const hasEstado = Object.prototype.hasOwnProperty.call(body, 'estadoRDS') || Object.prototype.hasOwnProperty.call(body, 'estado_rds');
+      const hasFechaRegistro = Object.prototype.hasOwnProperty.call(body, 'fechaRegistroRDS') || Object.prototype.hasOwnProperty.call(body, 'fecha_registro_rds');
+      const hasProgramas = Object.prototype.hasOwnProperty.call(body, 'programasHabilitados') || Object.prototype.hasOwnProperty.call(body, 'programas_habilitados');
+
+      const rdsActivo = hasRdsActivo ? bool01(valueOf(body, 'rds_activo', 'rdsActivo')) : Number(current.rds_activo || 0);
+      const numeroReunion = hasNumero ? String(valueOf(body, 'numero_reunion', 'numeroReunion')).trim() : (current.numero_reunion || '');
+      const fechaReunion = hasFecha ? String(valueOf(body, 'fecha_reunion', 'fechaReunion')).trim() : (current.fecha_reunion || '');
+      let estadoRds = hasEstado ? canonicalEstadoRds(valueOf(body, 'estado_rds', 'estadoRDS')) : (canonicalEstadoRds(current.estado_rds) || '');
+      if (estadoRdsCerrado(estadoRds)) return badRequest('use_estado_rds_action');
+      if (!estadoRds && rdsActivo) estadoRds = 'Activo';
+      const fechaRegistroRds = hasFechaRegistro ? String(valueOf(body, 'fecha_registro_rds', 'fechaRegistroRDS')).trim() : (current.fecha_registro_rds || now);
+      const programas = hasProgramas
+        ? (Array.isArray(body.programasHabilitados) ? body.programasHabilitados : (Array.isArray(body.programas_habilitados) ? body.programas_habilitados : safeJsonParse(body.programas_habilitados, [])))
+        : safeJsonParse(current.programas_habilitados, []);
+
       await context.env.DB.prepare(`
         UPDATE decretos
         SET rds_activo = ?, numero_reunion = ?, fecha_reunion = ?, estado_rds = ?, fecha_registro_rds = ?,
             activado_por = ?, programas_habilitados = ?, updated_at = ?
         WHERE id = ?
       `).bind(
-        d.rds_activo, d.numero_reunion, d.fecha_reunion, d.estado_rds || (d.rds_activo ? 'Activo' : ''),
-        d.fecha_registro_rds || now, d.activado_por || auth.session.email,
-        JSON.stringify(d.programas_habilitados || []), now, body.id
+        rdsActivo,
+        numeroReunion,
+        fechaReunion,
+        estadoRds,
+        fechaRegistroRds,
+        current.activado_por || auth.session.email,
+        JSON.stringify(programas || []),
+        now,
+        body.id
       ).run();
-      return json({ ok: true });
+
+      await writeAudit(context.env, {
+        actor: auth.session.email,
+        action: rdsActivo ? 'ACTIVAR_RDS' : 'ACTUALIZAR_RDS',
+        detail: `${current.numero || body.id} | ${numeroReunion || 'Sin reunión'}`,
+        entity_type: 'decreto',
+        entity_id: body.id
+      });
+
+      return json({ ok: true, rds_activo: !!rdsActivo, estado_rds: estadoRds });
     }
+
+    if (!isAdmin(auth.session)) return forbidden('lock_not_allowed');
 
     const locked = body.locked ? 1 : 0;
     await context.env.DB.prepare('UPDATE decretos SET locked = ?, updated_at = ? WHERE id = ?').bind(locked, now, body.id).run();
-    await writeAudit(context.env, { actor: auth.session.email, action: locked ? 'lock_decreto' : 'unlock_decreto', detail: current.numero || body.id, entity_type: 'decreto', entity_id: body.id });
+    await writeAudit(context.env, {
+      actor: auth.session.email,
+      action: locked ? 'lock_decreto' : 'unlock_decreto',
+      detail: current.numero || body.id,
+      entity_type: 'decreto',
+      entity_id: body.id
+    });
     return json({ ok: true, locked: !!locked });
   } catch (error) {
     return serverError('decreto_patch_failed', String(error?.message || error));

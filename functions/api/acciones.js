@@ -134,6 +134,39 @@ function buildConflictPayload(current, body, sessionEmail) {
   };
 }
 
+
+function normalizeEstadoRds(value) {
+  return normalizeText(value).replace(/[^A-Z0-9]/g, '');
+}
+
+function estadoRdsCerrado(value) {
+  const estado = normalizeEstadoRds(value);
+  return estado === 'PREAPROBADO' || estado === 'APROBADO';
+}
+
+function respuestaFlujoCerrado(estadoRds) {
+  const estado = normalizeEstadoRds(estadoRds);
+  const error = estado === 'APROBADO' ? 'registro_aprobado' : 'registro_preaprobado';
+  return json({ ok: false, error }, { status: 409 });
+}
+
+async function validarDecretoParaEscritura(env, dsId) {
+  const ds = await env.DB.prepare(`
+    SELECT id, numero, rds_activo, estado_rds, locked, deleted_at
+    FROM decretos
+    WHERE id = ?
+    LIMIT 1
+  `).bind(dsId).first();
+
+  if (!ds) return { ok: false, response: notFound('decreto_not_found') };
+  if (ds.deleted_at) return { ok: false, response: badRequest('decreto_deleted') };
+  if (Number(ds.locked) === 1) return { ok: false, response: badRequest('decreto_locked') };
+  if (Number(ds.rds_activo) !== 1) return { ok: false, response: badRequest('rds_not_active') };
+  if (estadoRdsCerrado(ds.estado_rds)) return { ok: false, response: respuestaFlujoCerrado(ds.estado_rds) };
+
+  return { ok: true, ds };
+}
+
 export async function onRequestGet(context) {
   const auth = await requireSessionCompat(context, [
     'Administrador',
@@ -222,19 +255,13 @@ export async function onRequestPost(context) {
       }
     }
 
-    const ds = await context.env.DB
-      .prepare('SELECT id, numero, locked FROM decretos WHERE id = ? AND deleted_at IS NULL')
-      .bind(accion.ds_id)
-      .first();
-
-    // Compatibilidad con DS creados/activados en localStorage: si el Decreto Supremo
-    // aún no fue confirmado en D1, no bloqueamos el guardado de la acción.
-    if (ds && Number(ds.locked) === 1) return badRequest('decreto_locked');
+    const validacionDS = await validarDecretoParaEscritura(context.env, accion.ds_id);
+    if (!validacionDS.ok) return validacionDS.response;
 
     const now = new Date().toISOString();
 
     const existente = await context.env.DB.prepare(`
-      SELECT id, version
+      SELECT id, version, locked, deleted_at, estado
       FROM acciones
       WHERE deleted_at IS NULL
         AND ds_id = ?
@@ -258,6 +285,10 @@ export async function onRequestPost(context) {
     ).first();
 
     if (existente) {
+      if (existente.deleted_at) return badRequest('accion_deleted');
+      if (Number(existente.locked) === 1) return badRequest('accion_locked');
+      if (estadoRdsCerrado(existente.estado)) return respuestaFlujoCerrado(existente.estado);
+
       const nextVersion = Number(existente.version || 1) + 1;
       await context.env.DB.prepare(`
         UPDATE acciones
@@ -371,7 +402,7 @@ export async function onRequestPut(context) {
     }
 
     const current = await context.env.DB.prepare(`
-      SELECT id, codigo, programa, version, locked, deleted_at
+      SELECT id, ds_id, codigo, programa, estado, version, locked, deleted_at
       FROM acciones
       WHERE id = ?
     `).bind(body.id).first();
@@ -379,8 +410,12 @@ export async function onRequestPut(context) {
     if (!current) return notFound('accion_not_found');
     if (current.deleted_at) return badRequest('accion_deleted');
     if (Number(current.locked) === 1) return badRequest('accion_locked');
+    if (estadoRdsCerrado(current.estado)) return respuestaFlujoCerrado(current.estado);
 
-    const accion = normalizeAccionPayload({ ...body, id: body.id }, auth);
+    const validacionDS = await validarDecretoParaEscritura(context.env, current.ds_id);
+    if (!validacionDS.ok) return validacionDS.response;
+
+    const accion = normalizeAccionPayload({ ...body, id: body.id, ds_id: current.ds_id }, auth);
 
     if (auth.session.role === 'Registrador' && auth.session.programa) {
       if (normalizePrograma(auth.session.programa || '') !== normalizePrograma(current.programa || '')) {
