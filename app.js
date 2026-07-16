@@ -1,6 +1,6 @@
-// ================= VERSION 79.21 - FORMULARIOS POR PROGRAMA Y GESTIÓN POR DISTRITO - 2026-07-16 =================
+// ================= VERSION 79.21.1 - PAGINACIÓN ACCIONES REGISTRADAS Y GESTIÓN SIN AGREGAR DISTRITOS - 2026-07-16 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.21-formularios-programa-gestion-distrito-20260716';
+const APP_BUILD_VERSION = '79.21.1-paginacion-acciones-registradas-20260716';
 
 let state = {
   session: null,
@@ -14462,8 +14462,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         <td>${esc(a.estado || 'Registrado')}</td>
         <td class="text-nowrap">
           <button class="btn btn-sm btn-outline-primary me-1" data-v7921-edit="${esc(a.id)}" ${puede ? '' : 'disabled'}>Editar</button>
-          <button class="btn btn-sm btn-outline-danger me-1" data-v7921-delete="${esc(a.id)}" ${puede ? '' : 'disabled'}>Eliminar</button>
-          <button class="btn btn-sm btn-outline-success" data-v7921-add-group="${esc(a.id)}" ${puede ? '' : 'disabled'}>Agregar distritos</button>
+          <button class="btn btn-sm btn-outline-danger" data-v7921-delete="${esc(a.id)}" ${puede ? '' : 'disabled'}>Eliminar</button>
         </td>
       </tr>`;
     }).join('');
@@ -14622,7 +14621,7 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     envolverGuardadoGrupal();
     envolverCargaVista();
     instalarEventos();
-    if (q('progAccionesRegistradasControles')) q('progAccionesRegistradasControles').style.display = 'none';
+    if (q('progAccionesRegistradasControles')) q('progAccionesRegistradasControles').style.display = '';
     configurarUnidades(q('grupoUnidadMedidaPrograma'), programaActual(), q('grupoUnidadMedidaPrograma')?.value || '');
     renderCamposEspecificos('grupoCamposEspecificosContenidoV7921', 'grupoCamposEspecificosProgramaV7921', programaActual(), {}, 'grupo');
     renderTablaV7921();
@@ -14635,5 +14634,181 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     if (e.target?.getAttribute?.('data-bs-target') === '#tabAccionesProgramas') setTimeout(instalar, 0);
   });
   setTimeout(instalar, 3000);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+
+// ================= CORRECCIÓN QUIRÚRGICA v79.21.1 =================
+// Alcance exclusivo: tabla "Acciones registradas" de Registro Acciones Programas.
+// 1) Elimina el botón "Agregar distritos".
+// 2) Unifica la paginación 10/25/50/100 con la tabla vigente de 11 columnas.
+// 3) Evita que los listeners heredados reemplacen la tabla y oculten Editar/Eliminar.
+(function accionesRegistradasPaginacionV79211(){
+  'use strict';
+  const VERSION = '79.21.1-paginacion-acciones-registradas-20260716';
+  const q = (id) => document.getElementById(id);
+  const txt = (v) => String(v ?? '').trim();
+  const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  const esc = (v) => typeof escapeHtml === 'function'
+    ? escapeHtml(v)
+    : txt(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  let pagina = 1;
+  const tamanosPermitidos = new Set([10, 25, 50, 100]);
+
+  function programaActual(){
+    try { return typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : ''; }
+    catch (_) { return ''; }
+  }
+
+  function decretoActual(){
+    try { return typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null; }
+    catch (_) { return null; }
+  }
+
+  function flujoAbierto(){
+    const d = decretoActual();
+    if (!d?.rdsActivo) return false;
+    return !['PREAPROBADO','APROBADO'].includes(norm(d.estadoRDS || d.estado_rds || ''));
+  }
+
+  function accionesActuales(){
+    const dsId = String(typeof dsProgramaSeleccionadoId !== 'undefined' ? (dsProgramaSeleccionadoId || '') : '');
+    const programa = programaActual();
+    const lista = typeof cargarAccionesLocales === 'function' ? cargarAccionesLocales() : [];
+    return lista.filter(a =>
+      String(a.dsId || a.ds_id || '') === dsId &&
+      (typeof normalizarProgramaNombre === 'function'
+        ? normalizarProgramaNombre(a.programaNacional || a.programa || '')
+        : norm(a.programaNacional || a.programa || '')) === programa
+    ).sort((a,b) => txt(b.fechaRegistro || b.fecha_registro || '').localeCompare(txt(a.fechaRegistro || a.fecha_registro || '')));
+  }
+
+  function resumenDatosPrograma(a){
+    const raw = a?.datosPrograma ?? a?.datos_programa ?? a?.datos_programa_json ?? {};
+    let datos = raw;
+    if (!datos || typeof datos !== 'object' || Array.isArray(datos)) {
+      try { datos = JSON.parse(String(raw || '{}')); } catch (_) { datos = {}; }
+    }
+    return datos && Object.keys(datos).length ? 'Datos específicos registrados' : '';
+  }
+
+  function asegurarCabecera(){
+    const tr = document.querySelector('#tablaAccionesProgramas thead tr');
+    if (!tr) return;
+    tr.innerHTML = '<th>Código</th><th>Tipo</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Unidad</th><th>Meta prog.</th><th>Meta ejec.</th><th>% Avance</th><th>Estado</th><th>Gestión</th>';
+  }
+
+  function pageSize(){
+    const n = Number.parseInt(q('progRegistradasPageSize')?.value || '10', 10);
+    return tamanosPermitidos.has(n) ? n : 10;
+  }
+
+  function mostrarControles(){
+    const controles = q('progAccionesRegistradasControles');
+    if (controles) controles.style.display = '';
+  }
+
+  function render(){
+    asegurarCabecera();
+    mostrarControles();
+    const tbody = document.querySelector('#tablaAccionesProgramas tbody');
+    if (!tbody) return;
+
+    const acciones = accionesActuales();
+    const total = acciones.length;
+    const tamano = pageSize();
+    const totalPaginas = Math.max(1, Math.ceil(total / tamano));
+    pagina = Math.min(Math.max(1, pagina), totalPaginas);
+    const inicio = (pagina - 1) * tamano;
+    const filas = acciones.slice(inicio, inicio + tamano);
+    const desde = total ? inicio + 1 : 0;
+    const hasta = Math.min(inicio + tamano, total);
+
+    if (q('progRegistradasContador')) q('progRegistradasContador').textContent = `Mostrando ${desde}-${hasta} de ${total} registro(s)`;
+    if (q('progRegistradasPaginaInfo')) q('progRegistradasPaginaInfo').textContent = `Página ${pagina} de ${totalPaginas}`;
+    if (q('btnProgRegistradasAnterior')) q('btnProgRegistradasAnterior').disabled = pagina <= 1;
+    if (q('btnProgRegistradasSiguiente')) q('btnProgRegistradasSiguiente').disabled = pagina >= totalPaginas;
+
+    if (!filas.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-muted">No hay acciones registradas para su programa.</td></tr>';
+      return;
+    }
+
+    const abierto = flujoAbierto();
+    tbody.innerHTML = filas.map(a => {
+      const puede = abierto && !a.locked && !['PREAPROBADO','APROBADO'].includes(norm(a.estado));
+      const datos = resumenDatosPrograma(a);
+      return `<tr>
+        <td><strong>${esc(a.codigoAccion || a.codigo || '')}</strong><div class="small text-muted">${esc(a.accionGrupoId || a.accion_grupo_id || '')}</div></td>
+        <td>${esc(a.tipoAccion || a.tipo || '')}</td>
+        <td>${esc(a.departamento || '')}</td>
+        <td>${esc(a.provincia || '')}</td>
+        <td><strong>${esc(a.distrito || '')}</strong>${datos ? `<div class="small text-muted">${esc(datos)}</div>` : ''}</td>
+        <td>${esc(a.unidadMedida || a.unidad || '')}</td>
+        <td>${esc(a.metaProgramada ?? a.meta_programada ?? 0)}</td>
+        <td>${esc(a.metaEjecutada ?? a.meta_ejecutada ?? 0)}</td>
+        <td>${esc(a.avance || '0%')}</td>
+        <td>${esc(a.estado || 'Registrado')}</td>
+        <td class="text-nowrap">
+          <button class="btn btn-sm btn-outline-primary me-1" data-v7921-edit="${esc(a.id)}" ${puede ? '' : 'disabled'}>Editar</button>
+          <button class="btn btn-sm btn-outline-danger" data-v7921-delete="${esc(a.id)}" ${puede ? '' : 'disabled'}>Eliminar</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function instalarEventos(){
+    const sel = q('progRegistradasPageSize');
+    if (sel && sel.dataset.v79211 !== '1') {
+      sel.dataset.v79211 = '1';
+      sel.addEventListener('change', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pagina = 1;
+        render();
+      }, true);
+    }
+
+    const anterior = q('btnProgRegistradasAnterior');
+    if (anterior && anterior.dataset.v79211 !== '1') {
+      anterior.dataset.v79211 = '1';
+      anterior.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pagina = Math.max(1, pagina - 1);
+        render();
+      }, true);
+    }
+
+    const siguiente = q('btnProgRegistradasSiguiente');
+    if (siguiente && siguiente.dataset.v79211 !== '1') {
+      siguiente.dataset.v79211 = '1';
+      siguiente.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pagina += 1;
+        render();
+      }, true);
+    }
+  }
+
+  function instalar(){
+    mostrarControles();
+    instalarEventos();
+    render();
+    try { window.renderTablaAccionesProgramas = render; renderTablaAccionesProgramas = render; } catch (_) {}
+  }
+
+  setTimeout(instalar, 0);
+  setTimeout(instalar, 500);
+  setTimeout(instalar, 3300);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(instalar, 350));
+  document.addEventListener('shown.bs.tab', (e) => {
+    if (e.target?.getAttribute?.('data-bs-target') === '#tabAccionesProgramas') {
+      pagina = 1;
+      setTimeout(instalar, 0);
+    }
+  });
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
