@@ -1,3 +1,4 @@
+// ================= VERSION 79.21 - FORMULARIOS POR PROGRAMA Y GESTION POR DISTRITO - 2026-07-16 =================
 import {
   json,
   readJson,
@@ -15,11 +16,34 @@ import {
 
 import { writeAudit, writeConflict } from '../_lib/audit.js';
 
+function safeJsonObject(value) {
+  if (!value) return {};
+  if (typeof value === 'object' && !Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(String(value));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function stringifyJsonObject(value) {
+  if (!value) return '{}';
+  if (typeof value === 'string') {
+    try { return JSON.stringify(safeJsonObject(value)); } catch (_) { return '{}'; }
+  }
+  try { return JSON.stringify(value); } catch (_) { return '{}'; }
+}
+
 function normalizeRow(row) {
+  const datosPrograma = safeJsonObject(row.datos_programa_json);
   return {
     ...row,
     accionGrupoId: row.accion_grupo_id || '',
     accion_grupo_id: row.accion_grupo_id || '',
+    datosPrograma,
+    datos_programa: datosPrograma,
+    datos_programa_json: row.datos_programa_json || '{}',
     locked: Number(row.locked) === 1,
     deleted: !!row.deleted_at
   };
@@ -127,6 +151,7 @@ async function ensureColumn(env, table, columnSql) {
 
 async function ensureAccionesSchema(env) {
   await ensureColumn(env, 'acciones', 'accion_grupo_id TEXT');
+  await ensureColumn(env, 'acciones', `datos_programa_json TEXT DEFAULT '{}'`);
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS accion_correlativos (
       programa TEXT NOT NULL,
@@ -153,6 +178,7 @@ async function ensureAccionesSchema(env) {
       updated_at TEXT
     )
   `).run();
+  await ensureColumn(env, 'acciones_grupos', `datos_programa_json TEXT DEFAULT '{}'`);
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_acciones_grupo_id ON acciones(accion_grupo_id)`).run();
   await env.DB.prepare(`
     CREATE UNIQUE INDEX IF NOT EXISTS ux_acciones_grupo_territorio
@@ -276,6 +302,9 @@ function normalizeAccionPayload(body, auth) {
     meta_ejecutada: toNumber(valueOf(body, 'meta_ejecutada', 'metaEjecutada')),
     avance: avanceRaw === '' ? 0 : toNumber(avanceRaw),
     descripcion: valueOf(body, 'descripcion', 'descripcionActividades', 'observaciones'),
+    datos_programa_json: stringifyJsonObject(
+      body?.datosPrograma ?? body?.datos_programa ?? body?.datos_programa_json ?? {}
+    ),
     estado: valueOf(body, 'estado') || 'Registrado',
     usuario_registro: valueOf(body, 'usuario_registro', 'usuarioRegistro', 'usuario') || auth.session.email || '',
     fecha_registro: fechaRegistro
@@ -497,7 +526,7 @@ export async function onRequestPost(context) {
         SET accion_grupo_id = ?, numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
             subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
             meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
-            avance = ?, descripcion = ?, estado = ?, usuario_registro = ?, fecha_registro = ?,
+            avance = ?, descripcion = ?, datos_programa_json = ?, estado = ?, usuario_registro = ?, fecha_registro = ?,
             version = ?, updated_at = ?
         WHERE id = ?
       `).bind(
@@ -520,6 +549,7 @@ export async function onRequestPost(context) {
         accion.meta_ejecutada,
         accion.avance,
         accion.descripcion,
+        accion.datos_programa_json,
         accion.estado,
         accion.usuario_registro,
         accion.fecha_registro,
@@ -544,9 +574,9 @@ export async function onRequestPost(context) {
         id, accion_grupo_id, ds_id, numero_reunion, fecha_reunion, departamento, provincia, distrito,
         subtipo_rehabilitacion, programa, tipo, codigo, detalle, unidad,
         meta_programada, plazo_dias, fecha_inicio, fecha_final, meta_ejecutada,
-        avance, descripcion, estado, usuario_registro, fecha_registro,
+        avance, descripcion, datos_programa_json, estado, usuario_registro, fecha_registro,
         version, locked, deleted_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?, ?)
     `).bind(
       accion.id,
       accion.accion_grupo_id || '',
@@ -569,6 +599,7 @@ export async function onRequestPost(context) {
       accion.meta_ejecutada,
       accion.avance,
       accion.descripcion,
+      accion.datos_programa_json,
       accion.estado,
       accion.usuario_registro,
       accion.fecha_registro,
@@ -668,7 +699,7 @@ export async function onRequestPut(context) {
       SET accion_grupo_id = ?, numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
           subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
           meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
-          avance = ?, descripcion = ?, estado = ?, version = ?, updated_at = ?
+          avance = ?, descripcion = ?, datos_programa_json = ?, estado = ?, version = ?, updated_at = ?
       WHERE id = ?
     `).bind(
       accion.accion_grupo_id || current.accion_grupo_id || '',
@@ -690,6 +721,7 @@ export async function onRequestPut(context) {
       accion.meta_ejecutada,
       accion.avance,
       accion.descripcion,
+      accion.datos_programa_json,
       accion.estado,
       nextVersion,
       now,
@@ -711,7 +743,7 @@ export async function onRequestPut(context) {
 }
 
 export async function onRequestDelete(context) {
-  const auth = await requireSessionCompat(context, ['Administrador']);
+  const auth = await requireSessionCompat(context, ['Administrador', 'Registrador']);
   if (!auth.ok) return auth.response;
 
   if (!mustVerifyCsrf(auth, context.request)) {
@@ -724,30 +756,74 @@ export async function onRequestDelete(context) {
     const id = url.searchParams.get('id');
     if (!id) return badRequest('id_required');
 
-    const current = await context.env.DB
-      .prepare('SELECT id, codigo, locked FROM acciones WHERE id = ?')
-      .bind(id)
-      .first();
+    const current = await context.env.DB.prepare(`
+      SELECT id, accion_grupo_id, ds_id, programa, codigo, estado, version,
+             locked, deleted_at, departamento, provincia, distrito
+      FROM acciones
+      WHERE id = ?
+      LIMIT 1
+    `).bind(id).first();
 
     if (!current) return notFound('accion_not_found');
+    if (current.deleted_at) return badRequest('accion_deleted');
     if (Number(current.locked) === 1) return badRequest('accion_locked');
+    if (estadoRdsCerrado(current.estado)) return respuestaFlujoCerrado(current.estado);
+
+    const rol = normalizeText(auth.session.role || auth.session.rol || '');
+    const programaSesion = normalizePrograma(auth.session.programa || '');
+    if (rol === 'REGISTRADOR') {
+      if (!programaSesion) return forbidden('registrador_programa_required');
+      if (programaSesion !== normalizePrograma(current.programa || '')) {
+        return forbidden('programa_not_allowed');
+      }
+    }
+
+    const validacionDS = await validarDecretoParaEscritura(context.env, current.ds_id);
+    if (!validacionDS.ok) return validacionDS.response;
+
+    if (current.accion_grupo_id) {
+      const grupo = await context.env.DB.prepare(`
+        SELECT id, estado, locked, deleted_at
+        FROM acciones_grupos
+        WHERE id = ?
+        LIMIT 1
+      `).bind(current.accion_grupo_id).first();
+      if (grupo?.deleted_at) return badRequest('accion_grupo_deleted');
+      if (Number(grupo?.locked || 0) === 1) return badRequest('accion_grupo_locked');
+      if (estadoRdsCerrado(grupo?.estado)) return respuestaFlujoCerrado(grupo.estado);
+    }
 
     const now = new Date().toISOString();
+    await context.env.DB.prepare(`
+      UPDATE acciones
+      SET deleted_at = ?, updated_at = ?, version = COALESCE(version, 1) + 1
+      WHERE id = ? AND deleted_at IS NULL
+    `).bind(now, now, id).run();
 
-    await context.env.DB
-      .prepare('UPDATE acciones SET deleted_at = ?, updated_at = ? WHERE id = ?')
-      .bind(now, now, id)
-      .run();
+    if (current.accion_grupo_id) {
+      const restantes = await context.env.DB.prepare(`
+        SELECT COUNT(*) AS total
+        FROM acciones
+        WHERE accion_grupo_id = ? AND deleted_at IS NULL
+      `).bind(current.accion_grupo_id).first();
+      if (Number(restantes?.total || 0) === 0) {
+        await context.env.DB.prepare(`
+          UPDATE acciones_grupos
+          SET deleted_at = ?, updated_at = ?
+          WHERE id = ? AND deleted_at IS NULL
+        `).bind(now, now, current.accion_grupo_id).run();
+      }
+    }
 
     await writeAudit(context.env, {
       actor: auth.session.email,
-      action: 'delete_accion',
-      detail: current.codigo || id,
+      action: 'DELETE_ACCION_DISTRITO',
+      detail: `${current.programa || ''} | ${current.codigo || ''} | ${current.departamento || ''}/${current.provincia || ''}/${current.distrito || ''}`,
       entity_type: 'accion',
       entity_id: id
     });
 
-    return json({ ok: true });
+    return json({ ok: true, id, deleted: true });
   } catch (error) {
     return serverError('accion_delete_failed', String(error?.message || error));
   }
