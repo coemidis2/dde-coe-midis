@@ -1,6 +1,6 @@
 // ================= VERSION 79.20 - CODIGO AUTOMATICO Y REGISTRO GRUPAL COMPLETO - 2026-07-16 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.20-registro-grupal-sin-duplicados-20260716';
+const APP_BUILD_VERSION = '79.20.1-correccion-guardado-codigo-automatico-20260716';
 
 let state = {
   session: null,
@@ -14047,5 +14047,150 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   });
   setTimeout(instalar, 1000);
   setTimeout(instalar, 2600);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+
+// ================= CORRECCIÓN CRÍTICA v79.20.1 - GUARDADO GRUPAL SIN CÓDIGO MANUAL =================
+// Intercepta el clic antes de los listeners heredados de versiones anteriores.
+// El código queda vacío hasta que /api/acciones reserve el correlativo automático.
+(function guardadoGrupalCodigoAutomaticoV79201(){
+  const VERSION = 'v79.20.1-guardado-grupal-codigo-automatico';
+  const q = (id) => document.getElementById(id);
+
+  function fechaRegistroActual(){
+    try {
+      if (typeof fechaHoraLocalISO === 'function') return fechaHoraLocalISO();
+      if (typeof fechaHoraPeruActual === 'function') return fechaHoraPeruActual();
+    } catch (_) {}
+    return new Date().toISOString();
+  }
+
+  function sincronizarModalABase(){
+    const pares = [
+      ['grupoUnidadMedidaPrograma', 'progUnidadMedida'],
+      ['grupoMetaProgramadaPrograma', 'progMetaProgramada'],
+      ['grupoPlazoDiasPrograma', 'progPlazoDias'],
+      ['grupoFechaInicioPrograma', 'progFechaInicio'],
+      ['grupoFechaFinalPrograma', 'progFechaFinal'],
+      ['grupoMetaEjecutadaPrograma', 'progMetaEjecutada'],
+      ['grupoAvancePrograma', 'progAvance']
+    ];
+    pares.forEach(([origenId, destinoId]) => {
+      const origen = q(origenId);
+      const destino = q(destinoId);
+      if (origen && destino) {
+        destino.value = origen.value ?? '';
+        destino.dispatchEvent(new Event('input', { bubbles: true }));
+        destino.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    if (q('progDetalle') && q('grupoDetallePrograma')) {
+      q('progDetalle').value = q('grupoDetallePrograma').value || '';
+    }
+    if (q('progDescripcionActividades') && q('grupoDescripcionPrograma')) {
+      q('progDescripcionActividades').value = q('grupoDescripcionPrograma').value || '';
+    }
+  }
+
+  function prepararCodigoAutomatico(){
+    const codigo = q('progCodigoAccion');
+    if (!codigo) return;
+    codigo.readOnly = true;
+    codigo.setAttribute('aria-readonly', 'true');
+    codigo.placeholder = 'Se genera automáticamente al guardar';
+    codigo.title = 'Código generado automáticamente por D1 según Programa Nacional y Tipo de acción.';
+    // No se crea ni se exige código en el navegador. El Worker lo reserva al guardar.
+    if (!codigo.dataset.accionGrupoId) codigo.value = '';
+  }
+
+  function validarModal(){
+    if (!String(q('progTipoAccion')?.value || '').trim()) {
+      alert('Seleccione el Tipo de acción.');
+      q('progTipoAccion')?.focus();
+      return false;
+    }
+    if (!String(q('grupoUnidadMedidaPrograma')?.value || '').trim()) {
+      alert('Seleccione la Unidad de medida.');
+      q('grupoUnidadMedidaPrograma')?.focus();
+      return false;
+    }
+    if (!String(q('grupoFechaInicioPrograma')?.value || '').trim()) {
+      alert('Ingrese la Fecha de inicio.');
+      q('grupoFechaInicioPrograma')?.focus();
+      return false;
+    }
+    const detalle = String(q('grupoDetallePrograma')?.value || '').trim();
+    const descripcion = String(q('grupoDescripcionPrograma')?.value || '').trim();
+    if (!detalle && !descripcion) {
+      alert('Ingrese las Acciones específicas programadas y ejecutadas o la Descripción de actividades.');
+      q('grupoDetallePrograma')?.focus();
+      return false;
+    }
+    return true;
+  }
+
+  async function guardarGrupal(e){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    prepararCodigoAutomatico();
+    sincronizarModalABase();
+    if (!validarModal()) return;
+
+    const fecha = q('progFechaRegistro');
+    if (fecha && !String(fecha.value || '').trim()) fecha.value = fechaRegistroActual();
+
+    if (typeof window.__guardarAccionesTerritorialesV792 !== 'function') {
+      alert('No se pudo iniciar el guardado grupal. Recargue la página con Ctrl + F5 e inténtelo nuevamente.');
+      return;
+    }
+
+    await window.__guardarAccionesTerritorialesV792({ usarModal: true });
+  }
+
+  function abrirGrupal(e){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    prepararCodigoAutomatico();
+    if (!String(q('progTipoAccion')?.value || '').trim()) {
+      alert('Seleccione el Tipo de acción antes de registrar la acción grupal.');
+      q('progTipoAccion')?.focus();
+      return;
+    }
+    const fecha = q('progFechaRegistro');
+    if (fecha) fecha.value = fechaRegistroActual();
+
+    if (typeof window.__abrirModalGrupalV792 === 'function') {
+      window.__abrirModalGrupalV792();
+    } else {
+      alert('No se pudo abrir el Registro de acción grupal. Recargue la página con Ctrl + F5 e inténtelo nuevamente.');
+    }
+  }
+
+  // Delegación en fase de captura: se ejecuta antes de todos los listeners antiguos
+  // asociados directamente a los botones y evita la validación obsoleta de código manual.
+  document.addEventListener('click', (e) => {
+    const objetivo = e.target?.closest?.('#btnGuardarAccionGrupalPrograma, #btnRegistrarAccionGrupalPrograma');
+    if (!objetivo) return;
+    if (objetivo.id === 'btnGuardarAccionGrupalPrograma') {
+      void guardarGrupal(e);
+    } else {
+      abrirGrupal(e);
+    }
+  }, true);
+
+  function iniciar(){
+    prepararCodigoAutomatico();
+    const fecha = q('progFechaRegistro');
+    if (fecha && !String(fecha.value || '').trim()) fecha.value = fechaRegistroActual();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+  document.addEventListener('shown.bs.tab', iniciar);
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
