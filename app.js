@@ -1,6 +1,6 @@
 // ================= VERSION 79.20 - CODIGO AUTOMATICO Y REGISTRO GRUPAL COMPLETO - 2026-07-16 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.20-codigo-accion-automatico-registro-grupal-completo-20260716';
+const APP_BUILD_VERSION = '79.20-registro-grupal-sin-duplicados-20260716';
 
 let state = {
   session: null,
@@ -13089,6 +13089,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   window.renderDistritosAccionesPrograma = renderDistritosAccionesProgramaV792;
   window.renderTablaAccionesProgramas = renderTablaAccionesProgramasV792;
   window.guardarAccionPrograma = function(){ return guardarAccionesTerritorialesV792({ usarModal: false }); };
+  window.__guardarAccionesTerritorialesV792 = guardarAccionesTerritorialesV792;
+  window.__abrirModalGrupalV792 = abrirModalGrupalV792;
 
   try { initRegistroAccionesProgramas = initRegistroAccionesProgramasV792; } catch {}
   try { cargarVistaAccionesPrograma = cargarVistaAccionesProgramaV792; } catch {}
@@ -13871,3 +13873,179 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
 
+
+
+// ================= CORRECCIÓN FINAL v79.20 - REGISTRO GRUPAL SIN CAMPOS DUPLICADOS =================
+// La pestaña conserva únicamente Tipo de acción, Código automático y Fecha de registro.
+// Las metas, unidad, plazo, fechas operativas, avance, detalle y descripción se capturan
+// exclusivamente dentro del modal "Registrar acción grupal".
+(function registroGrupalSinDuplicadosV7920(){
+  const VERSION = 'v79.20-registro-grupal-sin-duplicados';
+  const q = (id) => document.getElementById(id);
+
+  function fechaRegistroActual(){
+    try {
+      if (typeof fechaHoraLocalISO === 'function') return fechaHoraLocalISO();
+      if (typeof fechaHoraPeruActual === 'function') return fechaHoraPeruActual();
+    } catch (_) {}
+    return new Date().toISOString();
+  }
+
+  function prepararCabecera(){
+    const compat = q('progCamposCompatibilidadGrupal');
+    if (compat) {
+      compat.classList.add('d-none');
+      compat.setAttribute('aria-hidden', 'true');
+    }
+
+    const fecha = q('progFechaRegistro');
+    if (fecha && !String(fecha.value || '').trim()) fecha.value = fechaRegistroActual();
+
+    const codigo = q('progCodigoAccion');
+    if (codigo) {
+      codigo.readOnly = true;
+      codigo.setAttribute('aria-readonly', 'true');
+      codigo.placeholder = 'Se genera automáticamente al guardar';
+      codigo.title = 'Código asignado por D1 según Programa Nacional y Tipo de acción.';
+    }
+
+    const guardarIndividual = q('btnGuardarAccionPrograma');
+    if (guardarIndividual) {
+      guardarIndividual.classList.add('d-none');
+      guardarIndividual.setAttribute('aria-hidden', 'true');
+      guardarIndividual.tabIndex = -1;
+    }
+  }
+
+  function sincronizarModalABase(){
+    const pares = [
+      ['grupoUnidadMedidaPrograma', 'progUnidadMedida'],
+      ['grupoMetaProgramadaPrograma', 'progMetaProgramada'],
+      ['grupoPlazoDiasPrograma', 'progPlazoDias'],
+      ['grupoFechaInicioPrograma', 'progFechaInicio'],
+      ['grupoFechaFinalPrograma', 'progFechaFinal'],
+      ['grupoMetaEjecutadaPrograma', 'progMetaEjecutada'],
+      ['grupoAvancePrograma', 'progAvance']
+    ];
+    pares.forEach(([origenId, destinoId]) => {
+      const origen = q(origenId);
+      const destino = q(destinoId);
+      if (origen && destino) destino.value = origen.value ?? '';
+    });
+    if (q('progDetalle') && q('grupoDetallePrograma')) q('progDetalle').value = q('grupoDetallePrograma').value || '';
+    if (q('progDescripcionActividades') && q('grupoDescripcionPrograma')) q('progDescripcionActividades').value = q('grupoDescripcionPrograma').value || '';
+  }
+
+  function sincronizarCabeceraModal(){
+    if (q('grupoTipoAccionPrograma')) q('grupoTipoAccionPrograma').value = q('progTipoAccion')?.value || '';
+    if (q('grupoCodigoAccionPrograma')) q('grupoCodigoAccionPrograma').value = q('progCodigoAccion')?.value || '';
+  }
+
+  function limpiarCodigoAlCambiarTipo(){
+    const codigo = q('progCodigoAccion');
+    if (codigo) {
+      codigo.value = '';
+      codigo.placeholder = 'Se genera automáticamente al guardar';
+      delete codigo.dataset.accionGrupoId;
+    }
+    const fecha = q('progFechaRegistro');
+    if (fecha) fecha.value = fechaRegistroActual();
+    sincronizarCabeceraModal();
+  }
+
+  function reemplazarBoton(id, handler){
+    const actual = q(id);
+    if (!actual || actual.dataset.listenerUnicoV7920 === '1') return actual;
+    const limpio = actual.cloneNode(true);
+    limpio.dataset.listenerUnicoV7920 = '1';
+    actual.replaceWith(limpio);
+    limpio.addEventListener('click', handler);
+    return limpio;
+  }
+
+  function instalarBotonesUnicos(){
+    reemplazarBoton('btnRegistrarAccionGrupalPrograma', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      prepararCabecera();
+      const tipo = String(q('progTipoAccion')?.value || '').trim();
+      if (!tipo) {
+        alert('Seleccione el Tipo de acción antes de registrar la acción grupal.');
+        q('progTipoAccion')?.focus();
+        return;
+      }
+      const fecha = q('progFechaRegistro');
+      if (fecha) fecha.value = fechaRegistroActual();
+      sincronizarCabeceraModal();
+      if (typeof window.__abrirModalGrupalV792 === 'function') {
+        window.__abrirModalGrupalV792();
+      } else {
+        alert('No se pudo abrir el Registro de acción grupal. Actualice la página e inténtelo nuevamente.');
+      }
+    });
+
+    reemplazarBoton('btnGuardarAccionGrupalPrograma', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      sincronizarModalABase();
+      const tipo = String(q('progTipoAccion')?.value || '').trim();
+      if (!tipo) {
+        alert('Seleccione el Tipo de acción.');
+        return;
+      }
+      if (!String(q('grupoUnidadMedidaPrograma')?.value || '').trim()) {
+        alert('Seleccione la Unidad de medida.');
+        q('grupoUnidadMedidaPrograma')?.focus();
+        return;
+      }
+      if (!String(q('grupoFechaInicioPrograma')?.value || '').trim()) {
+        alert('Ingrese la Fecha de inicio.');
+        q('grupoFechaInicioPrograma')?.focus();
+        return;
+      }
+      const detalle = String(q('grupoDetallePrograma')?.value || '').trim();
+      const descripcion = String(q('grupoDescripcionPrograma')?.value || '').trim();
+      if (!detalle && !descripcion) {
+        alert('Ingrese las Acciones específicas programadas y ejecutadas o la Descripción de actividades.');
+        q('grupoDetallePrograma')?.focus();
+        return;
+      }
+      if (typeof window.__guardarAccionesTerritorialesV792 === 'function') {
+        await window.__guardarAccionesTerritorialesV792({ usarModal: true });
+      } else {
+        alert('No se pudo iniciar el guardado grupal. Actualice la página e inténtelo nuevamente.');
+      }
+    });
+  }
+
+  function instalar(){
+    prepararCabecera();
+    instalarBotonesUnicos();
+
+    const tipo = q('progTipoAccion');
+    if (tipo && tipo.dataset.codigoAutoV7920 !== '1') {
+      tipo.dataset.codigoAutoV7920 = '1';
+      tipo.addEventListener('change', limpiarCodigoAlCambiarTipo);
+    }
+
+    const modal = q('modalAccionGrupalPrograma');
+    if (modal && modal.dataset.cabeceraAutoV7920 !== '1') {
+      modal.dataset.cabeceraAutoV7920 = '1';
+      modal.addEventListener('show.bs.modal', () => {
+        prepararCabecera();
+        sincronizarCabeceraModal();
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', instalar);
+  else instalar();
+  document.addEventListener('shown.bs.tab', (e) => {
+    if (e.target?.getAttribute?.('data-bs-target') === '#tabAccionesProgramas') {
+      setTimeout(instalar, 0);
+    }
+  });
+  setTimeout(instalar, 1000);
+  setTimeout(instalar, 2600);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
