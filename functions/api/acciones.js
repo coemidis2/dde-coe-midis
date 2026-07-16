@@ -18,6 +18,8 @@ import { writeAudit, writeConflict } from '../_lib/audit.js';
 function normalizeRow(row) {
   return {
     ...row,
+    accionGrupoId: row.accion_grupo_id || '',
+    accion_grupo_id: row.accion_grupo_id || '',
     locked: Number(row.locked) === 1,
     deleted: !!row.deleted_at
   };
@@ -92,12 +94,169 @@ function normalizePrograma(value) {
     .replace('PENSION 65', 'PENSIÓN 65');
 }
 
+
+const PREFIJOS_PROGRAMA = Object.freeze({
+  'CUNA MÁS': 'CUN',
+  'PAE': 'PAE',
+  'JUNTOS': 'JUN',
+  'CONTIGO': 'CON',
+  'PENSIÓN 65': 'PEN',
+  'FONCODES': 'FON',
+  'PAIS': 'PAI'
+});
+
+function tipoCodigo(value) {
+  const t = normalizeText(value);
+  if (t.includes('REHABILITACION')) return 'ARH';
+  if (t.includes('RESPUESTA')) return 'AR';
+  if (t.includes('PREPARACION')) return 'AP';
+  return '';
+}
+
+function prefijoPrograma(value) {
+  return PREFIJOS_PROGRAMA[normalizePrograma(value)] || '';
+}
+
+async function ensureColumn(env, table, columnSql) {
+  try {
+    await env.DB.prepare(`ALTER TABLE ${table} ADD COLUMN ${columnSql}`).run();
+  } catch (_) {
+    // La columna ya existe o la migración no aplica.
+  }
+}
+
+async function ensureAccionesSchema(env) {
+  await ensureColumn(env, 'acciones', 'accion_grupo_id TEXT');
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS accion_correlativos (
+      programa TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      ultimo_numero INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT,
+      PRIMARY KEY (programa, tipo)
+    )
+  `).run();
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS acciones_grupos (
+      id TEXT PRIMARY KEY,
+      ds_id TEXT NOT NULL,
+      numero_reunion TEXT,
+      fecha_reunion TEXT,
+      programa TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      codigo TEXT NOT NULL UNIQUE,
+      estado TEXT NOT NULL DEFAULT 'Registrado',
+      locked INTEGER NOT NULL DEFAULT 0,
+      deleted_at TEXT,
+      usuario_registro TEXT,
+      created_at TEXT,
+      updated_at TEXT
+    )
+  `).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_acciones_grupo_id ON acciones(accion_grupo_id)`).run();
+  await env.DB.prepare(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_acciones_grupo_territorio
+    ON acciones(accion_grupo_id, departamento, provincia, distrito)
+    WHERE accion_grupo_id IS NOT NULL AND accion_grupo_id <> '' AND deleted_at IS NULL
+  `).run();
+}
+
+async function reservarCodigoAccion(context, body, auth) {
+  let programa = normalizePrograma(valueOf(body, 'programa', 'programaNacional'));
+  const rol = normalizeText(auth.session.role || auth.session.rol || '');
+  const programaSesion = normalizePrograma(auth.session.programa || '');
+
+  if (rol === 'REGISTRADOR' && programaSesion) {
+    if (programa && programa !== programaSesion) return forbidden('programa_not_allowed');
+    programa = programaSesion;
+  }
+
+  const dsId = valueOf(body, 'ds_id', 'dsId');
+  const numeroReunion = valueOf(body, 'numero_reunion', 'numeroReunion', 'reunion');
+  const fechaReunion = valueOf(body, 'fecha_reunion', 'fechaReunion');
+  const tipo = valueOf(body, 'tipo', 'tipoAccion', 'tipo_accion');
+  if (!dsId || !programa || !tipo) return badRequest('ds_id_programa_tipo_required');
+
+  const pPrograma = prefijoPrograma(programa);
+  const pTipo = tipoCodigo(tipo);
+  if (!pPrograma) return badRequest('programa_codigo_not_supported');
+  if (!pTipo) return badRequest('tipo_codigo_not_supported');
+
+  const validacionDS = await validarDecretoParaEscritura(context.env, dsId);
+  if (!validacionDS.ok) return validacionDS.response;
+
+  const now = new Date().toISOString();
+  const prefijo = `${pPrograma}${pTipo}`;
+  const maxExistente = await context.env.DB.prepare(`
+    SELECT COALESCE(MAX(CAST(SUBSTR(codigo, ?) AS INTEGER)), 0) AS maximo
+    FROM acciones
+    WHERE deleted_at IS NULL
+      AND COALESCE(programa, '') = ?
+      AND codigo GLOB ?
+  `).bind(prefijo.length + 1, programa, `${prefijo}[0-9]*`).first();
+
+  await context.env.DB.prepare(`
+    INSERT OR IGNORE INTO accion_correlativos (programa, tipo, ultimo_numero, updated_at)
+    VALUES (?, ?, ?, ?)
+  `).bind(programa, pTipo, Number(maxExistente?.maximo || 0), now).run();
+
+  let grupoId = '';
+  let codigo = '';
+  let numero = 0;
+  for (let intento = 0; intento < 4; intento++) {
+    const correlativo = await context.env.DB.prepare(`
+      UPDATE accion_correlativos
+      SET ultimo_numero = ultimo_numero + 1, updated_at = ?
+      WHERE programa = ? AND tipo = ?
+      RETURNING ultimo_numero
+    `).bind(now, programa, pTipo).first();
+    numero = Number(correlativo?.ultimo_numero || 0);
+    if (!numero) return serverError('codigo_correlativo_failed');
+    codigo = `${prefijo}${numero}`;
+    grupoId = newId();
+    try {
+      await context.env.DB.prepare(`
+        INSERT INTO acciones_grupos (
+          id, ds_id, numero_reunion, fecha_reunion, programa, tipo, codigo,
+          estado, locked, deleted_at, usuario_registro, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'Registrado', 0, NULL, ?, ?, ?)
+      `).bind(
+        grupoId, dsId, numeroReunion || '', fechaReunion || '', programa, tipo, codigo,
+        auth.session.email || '', now, now
+      ).run();
+      break;
+    } catch (error) {
+      if (intento === 3) throw error;
+      grupoId = '';
+    }
+  }
+
+  await writeAudit(context.env, {
+    actor: auth.session.email,
+    action: 'RESERVAR_CODIGO_ACCION',
+    detail: `${programa} | ${tipo} | ${codigo}`,
+    entity_type: 'accion_grupo',
+    entity_id: grupoId
+  });
+
+  return json({
+    ok: true,
+    accion_grupo_id: grupoId,
+    accionGrupoId: grupoId,
+    codigo,
+    numero,
+    programa,
+    tipo
+  });
+}
+
 function normalizeAccionPayload(body, auth) {
   const avanceRaw = valueOf(body, 'avance', 'porcentajeAvance', 'porcentaje_avance');
   const fechaRegistro = valueOf(body, 'fecha_registro', 'fechaRegistro') || new Date().toISOString();
 
   return {
     id: valueOf(body, 'id') || newId(),
+    accion_grupo_id: valueOf(body, 'accion_grupo_id', 'accionGrupoId', 'grupo_id', 'grupoId'),
     ds_id: valueOf(body, 'ds_id', 'dsId'),
     numero_reunion: valueOf(body, 'numero_reunion', 'numeroReunion', 'reunion'),
     fecha_reunion: valueOf(body, 'fecha_reunion', 'fechaReunion'),
@@ -177,6 +336,7 @@ export async function onRequestGet(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    await ensureAccionesSchema(context.env);
     const url = new URL(context.request.url);
     const dsId = url.searchParams.get('ds_id') || url.searchParams.get('dsId');
     const numeroReunion = url.searchParams.get('numero_reunion') || url.searchParams.get('numeroReunion');
@@ -242,8 +402,34 @@ export async function onRequestPost(context) {
   }
 
   try {
+    await ensureAccionesSchema(context.env);
     const body = await readJson(context.request);
+    const action = normalizeText(body?.action || '');
+    if (action === 'RESERVE_CODE' || action === 'RESERVAR_CODIGO') {
+      return reservarCodigoAccion(context, body, auth);
+    }
     const accion = normalizeAccionPayload(body, auth);
+
+    let grupo = null;
+    if (accion.accion_grupo_id) {
+      grupo = await context.env.DB.prepare(`
+        SELECT id, ds_id, numero_reunion, fecha_reunion, programa, tipo, codigo,
+               estado, locked, deleted_at
+        FROM acciones_grupos
+        WHERE id = ?
+        LIMIT 1
+      `).bind(accion.accion_grupo_id).first();
+      if (!grupo) return notFound('accion_grupo_not_found');
+      if (grupo.deleted_at) return badRequest('accion_grupo_deleted');
+      if (Number(grupo.locked) === 1) return badRequest('accion_grupo_locked');
+      if (estadoRdsCerrado(grupo.estado)) return respuestaFlujoCerrado(grupo.estado);
+      accion.ds_id = grupo.ds_id;
+      accion.numero_reunion = grupo.numero_reunion || accion.numero_reunion;
+      accion.fecha_reunion = grupo.fecha_reunion || accion.fecha_reunion;
+      accion.programa = normalizePrograma(grupo.programa);
+      accion.tipo = grupo.tipo;
+      accion.codigo = grupo.codigo;
+    }
 
     if (!accion.ds_id || !accion.programa || !accion.codigo) {
       return badRequest('ds_id_programa_codigo_required');
@@ -260,29 +446,45 @@ export async function onRequestPost(context) {
 
     const now = new Date().toISOString();
 
-    const existente = await context.env.DB.prepare(`
-      SELECT id, version, locked, deleted_at, estado
-      FROM acciones
-      WHERE deleted_at IS NULL
-        AND ds_id = ?
-        AND COALESCE(numero_reunion, '') = ?
-        AND COALESCE(programa, '') = ?
-        AND COALESCE(departamento, '') = ?
-        AND COALESCE(provincia, '') = ?
-        AND COALESCE(distrito, '') = ?
-        AND COALESCE(tipo, '') = ?
-        AND COALESCE(codigo, '') = ?
-      LIMIT 1
-    `).bind(
-      accion.ds_id,
-      accion.numero_reunion || '',
-      accion.programa || '',
-      accion.departamento || '',
-      accion.provincia || '',
-      accion.distrito || '',
-      accion.tipo || '',
-      accion.codigo || ''
-    ).first();
+    const existente = accion.accion_grupo_id
+      ? await context.env.DB.prepare(`
+          SELECT id, version, locked, deleted_at, estado, accion_grupo_id
+          FROM acciones
+          WHERE deleted_at IS NULL
+            AND accion_grupo_id = ?
+            AND COALESCE(departamento, '') = ?
+            AND COALESCE(provincia, '') = ?
+            AND COALESCE(distrito, '') = ?
+          LIMIT 1
+        `).bind(
+          accion.accion_grupo_id,
+          accion.departamento || '',
+          accion.provincia || '',
+          accion.distrito || ''
+        ).first()
+      : await context.env.DB.prepare(`
+          SELECT id, version, locked, deleted_at, estado, accion_grupo_id
+          FROM acciones
+          WHERE deleted_at IS NULL
+            AND ds_id = ?
+            AND COALESCE(numero_reunion, '') = ?
+            AND COALESCE(programa, '') = ?
+            AND COALESCE(departamento, '') = ?
+            AND COALESCE(provincia, '') = ?
+            AND COALESCE(distrito, '') = ?
+            AND COALESCE(tipo, '') = ?
+            AND COALESCE(codigo, '') = ?
+          LIMIT 1
+        `).bind(
+          accion.ds_id,
+          accion.numero_reunion || '',
+          accion.programa || '',
+          accion.departamento || '',
+          accion.provincia || '',
+          accion.distrito || '',
+          accion.tipo || '',
+          accion.codigo || ''
+        ).first();
 
     if (existente) {
       if (existente.deleted_at) return badRequest('accion_deleted');
@@ -292,13 +494,14 @@ export async function onRequestPost(context) {
       const nextVersion = Number(existente.version || 1) + 1;
       await context.env.DB.prepare(`
         UPDATE acciones
-        SET numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
+        SET accion_grupo_id = ?, numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
             subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
             meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
             avance = ?, descripcion = ?, estado = ?, usuario_registro = ?, fecha_registro = ?,
             version = ?, updated_at = ?
         WHERE id = ?
       `).bind(
+        accion.accion_grupo_id || existente.accion_grupo_id || '',
         accion.numero_reunion,
         accion.fecha_reunion,
         accion.departamento,
@@ -333,19 +536,20 @@ export async function onRequestPost(context) {
         entity_id: existente.id
       });
 
-      return json({ ok: true, id: existente.id, version: nextVersion, updated: true });
+      return json({ ok: true, id: existente.id, version: nextVersion, updated: true, codigo: accion.codigo, accion_grupo_id: accion.accion_grupo_id || existente.accion_grupo_id || '' });
     }
 
     await context.env.DB.prepare(`
       INSERT INTO acciones (
-        id, ds_id, numero_reunion, fecha_reunion, departamento, provincia, distrito,
+        id, accion_grupo_id, ds_id, numero_reunion, fecha_reunion, departamento, provincia, distrito,
         subtipo_rehabilitacion, programa, tipo, codigo, detalle, unidad,
         meta_programada, plazo_dias, fecha_inicio, fecha_final, meta_ejecutada,
         avance, descripcion, estado, usuario_registro, fecha_registro,
         version, locked, deleted_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NULL, ?, ?)
     `).bind(
       accion.id,
+      accion.accion_grupo_id || '',
       accion.ds_id,
       accion.numero_reunion,
       accion.fecha_reunion,
@@ -380,7 +584,7 @@ export async function onRequestPost(context) {
       entity_id: accion.id
     });
 
-    return json({ ok: true, id: accion.id, version: 1 });
+    return json({ ok: true, id: accion.id, version: 1, codigo: accion.codigo, accion_grupo_id: accion.accion_grupo_id || '' });
   } catch (error) {
     return serverError('accion_create_failed', String(error?.message || error));
   }
@@ -395,6 +599,7 @@ export async function onRequestPut(context) {
   }
 
   try {
+    await ensureAccionesSchema(context.env);
     const body = await readJson(context.request);
 
     if (!body.id || !Number.isInteger(body.version)) {
@@ -402,7 +607,7 @@ export async function onRequestPut(context) {
     }
 
     const current = await context.env.DB.prepare(`
-      SELECT id, ds_id, codigo, programa, estado, version, locked, deleted_at
+      SELECT id, accion_grupo_id, ds_id, codigo, programa, tipo, estado, version, locked, deleted_at
       FROM acciones
       WHERE id = ?
     `).bind(body.id).first();
@@ -415,7 +620,24 @@ export async function onRequestPut(context) {
     const validacionDS = await validarDecretoParaEscritura(context.env, current.ds_id);
     if (!validacionDS.ok) return validacionDS.response;
 
-    const accion = normalizeAccionPayload({ ...body, id: body.id, ds_id: current.ds_id }, auth);
+    const accion = normalizeAccionPayload({ ...body, id: body.id, ds_id: current.ds_id, accion_grupo_id: current.accion_grupo_id }, auth);
+    if (current.accion_grupo_id) {
+      const grupo = await context.env.DB.prepare(`
+        SELECT id, ds_id, numero_reunion, fecha_reunion, programa, tipo, codigo, estado, locked, deleted_at
+        FROM acciones_grupos WHERE id = ? LIMIT 1
+      `).bind(current.accion_grupo_id).first();
+      if (!grupo) return notFound('accion_grupo_not_found');
+      if (grupo.deleted_at) return badRequest('accion_grupo_deleted');
+      if (Number(grupo.locked) === 1) return badRequest('accion_grupo_locked');
+      if (estadoRdsCerrado(grupo.estado)) return respuestaFlujoCerrado(grupo.estado);
+      accion.accion_grupo_id = grupo.id;
+      accion.ds_id = grupo.ds_id;
+      accion.numero_reunion = grupo.numero_reunion || accion.numero_reunion;
+      accion.fecha_reunion = grupo.fecha_reunion || accion.fecha_reunion;
+      accion.programa = normalizePrograma(grupo.programa);
+      accion.tipo = grupo.tipo;
+      accion.codigo = grupo.codigo;
+    }
 
     if (auth.session.role === 'Registrador' && auth.session.programa) {
       if (normalizePrograma(auth.session.programa || '') !== normalizePrograma(current.programa || '')) {
@@ -443,12 +665,13 @@ export async function onRequestPut(context) {
 
     await context.env.DB.prepare(`
       UPDATE acciones
-      SET numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
+      SET accion_grupo_id = ?, numero_reunion = ?, fecha_reunion = ?, departamento = ?, provincia = ?, distrito = ?,
           subtipo_rehabilitacion = ?, programa = ?, tipo = ?, codigo = ?, detalle = ?, unidad = ?,
           meta_programada = ?, plazo_dias = ?, fecha_inicio = ?, fecha_final = ?, meta_ejecutada = ?,
           avance = ?, descripcion = ?, estado = ?, version = ?, updated_at = ?
       WHERE id = ?
     `).bind(
+      accion.accion_grupo_id || current.accion_grupo_id || '',
       accion.numero_reunion,
       accion.fecha_reunion,
       accion.departamento,
@@ -496,6 +719,7 @@ export async function onRequestDelete(context) {
   }
 
   try {
+    await ensureAccionesSchema(context.env);
     const url = new URL(context.request.url);
     const id = url.searchParams.get('id');
     if (!id) return badRequest('id_required');
@@ -538,6 +762,7 @@ export async function onRequestPatch(context) {
   }
 
   try {
+    await ensureAccionesSchema(context.env);
     const body = await readJson(context.request);
     if (!body.id) return badRequest('id_required');
 

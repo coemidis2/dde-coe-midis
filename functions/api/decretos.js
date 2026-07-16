@@ -324,6 +324,9 @@ export async function onRequestDelete(context) {
     try {
       await context.env.DB.prepare('UPDATE acciones SET deleted_at = ?, updated_at = ? WHERE ds_id = ?').bind(now, now, id).run();
     } catch (_) {}
+    try {
+      await context.env.DB.prepare('UPDATE acciones_grupos SET deleted_at = ?, updated_at = ? WHERE ds_id = ?').bind(now, now, id).run();
+    } catch (_) {}
 
     await writeAudit(context.env, { actor: auth.session.email, action: 'delete_decreto', detail: current.numero || id, entity_type: 'decreto', entity_id: id });
     return json({ ok: true });
@@ -409,6 +412,26 @@ export async function onRequestPatch(context) {
           WHERE ds_id = ?
             AND deleted_at IS NULL
         `).bind(nuevoEstado, now, body.id).run();
+      }
+
+      try {
+        if (current.numero_reunion) {
+          await context.env.DB.prepare(`
+            UPDATE acciones_grupos
+            SET estado = ?, updated_at = ?
+            WHERE ds_id = ?
+              AND deleted_at IS NULL
+              AND COALESCE(numero_reunion, '') = ?
+          `).bind(nuevoEstado, now, body.id, current.numero_reunion).run();
+        } else {
+          await context.env.DB.prepare(`
+            UPDATE acciones_grupos
+            SET estado = ?, updated_at = ?
+            WHERE ds_id = ? AND deleted_at IS NULL
+          `).bind(nuevoEstado, now, body.id).run();
+        }
+      } catch (_) {
+        // Compatibilidad con despliegues donde la tabla de grupos aún no fue inicializada.
       }
 
       await writeAudit(context.env, {
