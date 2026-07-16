@@ -1,6 +1,6 @@
-// ================= VERSION 79.19 - CONSOLIDACION RDS HASTA PREAPROBACION - 2026-07-14 =================
+// ================= VERSION 79.20 - CODIGO AUTOMATICO Y REGISTRO GRUPAL COMPLETO - 2026-07-16 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.19-consolidacion-rds-hasta-preaprobacion-20260714';
+const APP_BUILD_VERSION = '79.20-codigo-accion-automatico-registro-grupal-completo-20260716';
 
 let state = {
   session: null,
@@ -12813,9 +12813,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       if (q('progDescripcionActividades')) q('progDescripcionActividades').value = txt(q('grupoDescripcionPrograma')?.value || '');
     }
 
-    const v = valoresFormularioPrograma();
+    let v = valoresFormularioPrograma();
     if (!v.tipoAccion) return alert('Seleccione el Tipo de acción.');
-    if (!v.codigoAccion) return alert('Ingrese el Código de acción.');
     if (!v.unidadMedida) return alert('Seleccione la Unidad de medida.');
     if (!v.fechaInicio) return alert('Ingrese la Fecha de inicio.');
     if (!v.detalle && !v.descripcion) return alert('Ingrese acciones específicas programadas y ejecutadas o descripción de actividades.');
@@ -12824,6 +12823,47 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const keyR = reunionKey(d);
     const seleccionados = getTerritoriosDSPrograma().filter(t => stateV792.seleccion.has(t.key));
     if (!seleccionados.length) return alert('No se encontraron distritos válidos seleccionados.');
+
+    // v79.20: el Worker reserva una sola cabecera/código y ese mismo código se
+    // reutiliza en todas las filas territoriales de la acción grupal.
+    let accionGrupoId = '';
+    const codigoInput = q('progCodigoAccion');
+    if (!v.codigoAccion) {
+      if (codigoInput) {
+        codigoInput.readOnly = true;
+        codigoInput.placeholder = 'Generando código...';
+      }
+      const reserva = await api('/acciones', 'POST', {
+        action: 'reserve_code',
+        ds_id: d.id,
+        numero_reunion: d.numeroReunion || '',
+        fecha_reunion: d.fechaReunion || '',
+        programa,
+        tipo: v.tipoAccion
+      });
+      if (!reserva?.ok || !reserva?.data?.ok || !reserva?.data?.codigo || !reserva?.data?.accion_grupo_id) {
+        if (codigoInput) codigoInput.placeholder = 'Se genera al guardar';
+        const error = String(reserva?.data?.error || '').trim();
+        const mensajes = {
+          programa_codigo_not_supported: 'El Programa Nacional no tiene un prefijo configurado para generar el código.',
+          tipo_codigo_not_supported: 'El Tipo de acción no tiene un prefijo configurado para generar el código.',
+          registro_preaprobado: 'No se generó el código porque el Decreto Supremo ya fue Preaprobado.',
+          registro_aprobado: 'No se generó el código porque el Decreto Supremo ya fue Aprobado.',
+          rds_not_active: 'No se generó el código porque el RDS no se encuentra activo.',
+          programa_not_allowed: 'El Programa Nacional de la sesión no coincide con la solicitud.'
+        };
+        return alert(mensajes[error] || 'No se pudo generar el Código de acción en D1.');
+      }
+      v = { ...v, codigoAccion: String(reserva.data.codigo) };
+      accionGrupoId = String(reserva.data.accion_grupo_id);
+      if (codigoInput) {
+        codigoInput.value = v.codigoAccion;
+        codigoInput.dataset.accionGrupoId = accionGrupoId;
+        codigoInput.placeholder = 'Se genera al guardar';
+      }
+    } else {
+      accionGrupoId = String(codigoInput?.dataset?.accionGrupoId || '');
+    }
 
     const lista = (typeof cargarAccionesLocales === 'function') ? cargarAccionesLocales() : [];
     const fechaRegistro = (typeof fechaHoraLocalISO === 'function') ? fechaHoraLocalISO() : new Date().toISOString();
@@ -12856,6 +12896,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         tipo: v.tipoAccion,
         codigoAccion: v.codigoAccion,
         codigo: v.codigoAccion,
+        accionGrupoId: base.accionGrupoId || base.accion_grupo_id || accionGrupoId,
+        accion_grupo_id: base.accion_grupo_id || base.accionGrupoId || accionGrupoId,
         detalle: v.detalle || base.detalle || base.accionesEspecificas || '',
         accionesEspecificas: v.detalle || base.accionesEspecificas || base.detalle || '',
         descripcionActividades: v.descripcion || base.descripcionActividades || base.descripcion || '',
@@ -12935,6 +12977,12 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const modal = q('modalAccionGrupalPrograma');
     if (modal && window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(modal).hide();
     if (typeof limpiarFormularioAccionPrograma === 'function' && !usarModal) limpiarFormularioAccionPrograma(true);
+    if (codigoInput) {
+      codigoInput.value = '';
+      codigoInput.readOnly = true;
+      codigoInput.placeholder = 'Se genera al guardar';
+      delete codigoInput.dataset.accionGrupoId;
+    }
     stateV792.seleccion.clear();
     renderDistritosAccionesProgramaV792();
     renderTablaAccionesProgramasV792();
@@ -13646,3 +13694,180 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   try { dsProgramaCerroRegistro = registroProgramaCerradoSoloPorFlujo; } catch (_) {}
   console.info('DEE MIDIS cierre aplicado: v79.19-consolidacion-rds-hasta-preaprobacion');
 })();
+
+
+// ================= ACTUALIZACION QUIRURGICA v79.20 - CODIGO DE ACCION AUTOMATICO =================
+(function codigoAccionAutomaticoV7920(){
+  const VERSION = 'v79.20-codigo-accion-automatico';
+  function prepararCampo(){
+    const input = document.getElementById('progCodigoAccion');
+    if (!input) return;
+    input.readOnly = true;
+    input.setAttribute('aria-readonly', 'true');
+    if (!input.value) input.placeholder = 'Se genera al guardar';
+    input.title = 'Código generado automáticamente por Programa Nacional y Tipo de acción.';
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', prepararCampo);
+  else prepararCampo();
+  document.addEventListener('shown.bs.tab', prepararCampo);
+  document.addEventListener('change', (e) => {
+    if (e.target?.id === 'progTipoAccion') {
+      const input = document.getElementById('progCodigoAccion');
+      if (input && !input.dataset.accionGrupoId) input.value = '';
+      prepararCampo();
+    }
+  });
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+// ================= REVISION QUIRURGICA v79.20 - MODAL DE REGISTRO GRUPAL COMPLETO =================
+// Incorpora en el modal los campos de unidad, metas, plazo y fechas. Se sincronizan
+// con el formulario base para conservar intacto el flujo territorial y el Worker v79.20.
+(function registroGrupalCompletoV7920(){
+  const VERSION = 'v79.20-registro-grupal-completo';
+  const q = (id) => document.getElementById(id);
+
+  const pares = [
+    ['grupoUnidadMedidaPrograma', 'progUnidadMedida'],
+    ['grupoMetaProgramadaPrograma', 'progMetaProgramada'],
+    ['grupoPlazoDiasPrograma', 'progPlazoDias'],
+    ['grupoFechaInicioPrograma', 'progFechaInicio'],
+    ['grupoFechaFinalPrograma', 'progFechaFinal'],
+    ['grupoMetaEjecutadaPrograma', 'progMetaEjecutada'],
+    ['grupoAvancePrograma', 'progAvance']
+  ];
+
+  function numero(valor){
+    const limpio = String(valor ?? '').replace('%', '').replace(',', '.').trim();
+    const n = Number(limpio);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function fechaFinalInclusiva(inicio, plazo){
+    if (!inicio || !Number.isFinite(plazo) || plazo < 1) return '';
+    if (typeof sumarDiasFechaPeru === 'function') return sumarDiasFechaPeru(inicio, plazo - 1);
+    const partes = String(inicio).split('-').map(Number);
+    if (partes.length !== 3 || partes.some(x => !Number.isFinite(x))) return '';
+    const fecha = new Date(partes[0], partes[1] - 1, partes[2]);
+    fecha.setDate(fecha.getDate() + plazo - 1);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}`;
+  }
+
+  function copiarOpcionesUnidad(){
+    const origen = q('progUnidadMedida');
+    const destino = q('grupoUnidadMedidaPrograma');
+    if (!origen || !destino) return;
+    const valor = destino.value || origen.value || '';
+    destino.innerHTML = origen.innerHTML;
+    if ([...destino.options].some(o => String(o.value) === String(valor))) destino.value = valor;
+    else if ([...destino.options].some(o => String(o.value) === String(origen.value))) destino.value = origen.value;
+  }
+
+  function copiarFormularioAlModal(){
+    copiarOpcionesUnidad();
+    pares.forEach(([modalId, baseId]) => {
+      const modal = q(modalId);
+      const base = q(baseId);
+      if (modal && base) modal.value = base.value ?? '';
+    });
+    if (q('grupoTipoAccionPrograma')) q('grupoTipoAccionPrograma').value = q('progTipoAccion')?.value || '';
+    if (q('grupoCodigoAccionPrograma')) q('grupoCodigoAccionPrograma').value = q('progCodigoAccion')?.value || '';
+
+    const seleccion = document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').length;
+    const memoria = window.__deeSeleccionGrupalCantidad || 0;
+    if (q('grupoDistritosSeleccionadosPrograma')) {
+      const total = Math.max(seleccion, memoria);
+      q('grupoDistritosSeleccionadosPrograma').textContent = `${total} distrito(s)`;
+    }
+    calcularModal();
+  }
+
+  function copiarModalAlFormulario(){
+    pares.forEach(([modalId, baseId]) => {
+      const modal = q(modalId);
+      const base = q(baseId);
+      if (modal && base) {
+        base.value = modal.value ?? '';
+        base.dispatchEvent(new Event('input', { bubbles: true }));
+        base.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    if (q('progDetalle') && q('grupoDetallePrograma')) q('progDetalle').value = q('grupoDetallePrograma').value || '';
+    if (q('progDescripcionActividades') && q('grupoDescripcionPrograma')) q('progDescripcionActividades').value = q('grupoDescripcionPrograma').value || '';
+  }
+
+  function calcularModal(){
+    const plazo = Math.trunc(numero(q('grupoPlazoDiasPrograma')?.value));
+    const inicio = q('grupoFechaInicioPrograma')?.value || '';
+    const fin = fechaFinalInclusiva(inicio, plazo);
+    if (q('grupoFechaFinalPrograma')) q('grupoFechaFinalPrograma').value = fin;
+
+    const meta = numero(q('grupoMetaProgramadaPrograma')?.value);
+    const ejecutada = numero(q('grupoMetaEjecutadaPrograma')?.value);
+    const avance = meta > 0 ? Math.min(100, Math.max(0, Math.round((ejecutada / meta) * 100))) : 0;
+    if (q('grupoAvancePrograma')) q('grupoAvancePrograma').value = `${avance}%`;
+
+    copiarValorSimple('grupoFechaFinalPrograma', 'progFechaFinal');
+    copiarValorSimple('grupoAvancePrograma', 'progAvance');
+  }
+
+  function copiarValorSimple(origenId, destinoId){
+    const origen = q(origenId);
+    const destino = q(destinoId);
+    if (origen && destino) destino.value = origen.value || '';
+  }
+
+  function validarAntesDeGuardar(e){
+    copiarModalAlFormulario();
+    calcularModal();
+    const obligatorios = [
+      ['grupoUnidadMedidaPrograma', 'Seleccione la Unidad de medida.'],
+      ['grupoFechaInicioPrograma', 'Ingrese la Fecha de inicio.']
+    ];
+    for (const [id, mensaje] of obligatorios) {
+      const valor = String(q(id)?.value || '').trim();
+      if (!valor) {
+        e?.preventDefault?.();
+        e?.stopImmediatePropagation?.();
+        alert(mensaje);
+        q(id)?.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function instalar(){
+    const modal = q('modalAccionGrupalPrograma');
+    if (!modal || modal.dataset.grupalCompletoV7920 === '1') return;
+    modal.dataset.grupalCompletoV7920 = '1';
+
+    modal.addEventListener('show.bs.modal', copiarFormularioAlModal);
+    modal.addEventListener('shown.bs.modal', () => q('grupoUnidadMedidaPrograma')?.focus());
+
+    ['grupoMetaProgramadaPrograma', 'grupoMetaEjecutadaPrograma', 'grupoPlazoDiasPrograma']
+      .forEach(id => q(id)?.addEventListener('input', () => { calcularModal(); copiarModalAlFormulario(); }));
+    q('grupoFechaInicioPrograma')?.addEventListener('change', () => { calcularModal(); copiarModalAlFormulario(); });
+    q('grupoUnidadMedidaPrograma')?.addEventListener('change', copiarModalAlFormulario);
+    q('grupoDetallePrograma')?.addEventListener('input', copiarModalAlFormulario);
+    q('grupoDescripcionPrograma')?.addEventListener('input', copiarModalAlFormulario);
+
+    // Se instala antes de los listeners diferidos del bloque territorial v79.2.
+    q('btnGuardarAccionGrupalPrograma')?.addEventListener('pointerdown', copiarModalAlFormulario, true);
+    q('btnGuardarAccionGrupalPrograma')?.addEventListener('click', validarAntesDeGuardar, true);
+
+    q('btnRegistrarAccionGrupalPrograma')?.addEventListener('click', () => {
+      const checked = document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').length;
+      window.__deeSeleccionGrupalCantidad = checked;
+      setTimeout(copiarFormularioAlModal, 0);
+    }, true);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', instalar);
+  else instalar();
+  setTimeout(instalar, 900);
+  setTimeout(instalar, 2200);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+

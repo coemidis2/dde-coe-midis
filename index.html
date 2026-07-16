@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="build-version" content="79.19-consolidacion-rds-hasta-preaprobacion-20260714" />
-  <!-- BUILD: VERSION 79.19 - CONSOLIDACION RDS HASTA PREAPROBACION - 2026-07-14 -->
+  <meta name="build-version" content="79.20-codigo-accion-automatico-registro-grupal-completo-20260716" />
+  <!-- BUILD: VERSION 79.20 - CODIGO AUTOMATICO Y REGISTRO GRUPAL COMPLETO - 2026-07-16 -->
   <title>DEE MIDIS — Declaratorias de Estado de Emergencia</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="app.css?v=79.19-consolidacion-rds-hasta-preaprobacion-20260714" />
+  <link rel="stylesheet" href="app.css?v=79.20-codigo-accion-automatico-registro-grupal-completo-20260716" />
 
   <style>
     :root {
@@ -1480,7 +1480,7 @@
           </div>
 
           <div class="login-version">
-            VERSION 79.19 · CONSOLIDACIÓN RDS HASTA PREAPROBACIÓN · 14/07/2026 · MIDIS © 2026</div>
+            VERSION 79.20 · CÓDIGO DE ACCIÓN AUTOMÁTICO · 16/07/2026 · MIDIS © 2026</div>
         </div>
       </section>
     </div>
@@ -1907,7 +1907,7 @@
                 <div class="row g-3">
                   <div class="col-md-3"><label class="form-label">Tipo de acción</label><select id="progTipoAccion" class="form-select"></select></div>
                   <div class="col-md-4" id="progSubtipoRehabBox" style="display:none"><label class="form-label">Subtipo de Rehabilitación</label><select id="progSubtipoRehabilitacion" class="form-select"></select></div>
-                  <div class="col-md-3"><label class="form-label">Código de acción</label><input id="progCodigoAccion" class="form-control"></div>
+                  <div class="col-md-3"><label class="form-label">Código de acción (automático)</label><input id="progCodigoAccion" class="form-control" readonly placeholder="Se genera al guardar"><div class="form-text">El sistema asignará un correlativo por Programa Nacional y tipo de acción.</div></div>
                   <div class="col-md-3"><label class="form-label">Unidad de medida</label><select id="progUnidadMedida" class="form-select"></select></div>
                   <div class="col-md-3"><label class="form-label">Meta programada</label><input id="progMetaProgramada" type="number" min="0" class="form-control"></div>
                   <div class="col-md-3"><label class="form-label">Plazo (días)</label><input id="progPlazoDias" type="number" min="0" class="form-control"></div>
@@ -2359,16 +2359,60 @@
 
   <!-- MODAL REGISTRO GRUPAL DE ACCIONES POR DISTRITO -->
   <div class="modal fade" id="modalAccionGrupalPrograma" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Registro grupal de acciones</h5>
+          <div>
+            <h5 class="modal-title mb-1">Registro grupal de acciones</h5>
+            <div class="text-muted small">Complete la información que se aplicará a todos los distritos seleccionados.</div>
+          </div>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="alert alert-info small mb-3">
-            Las acciones registradas se aplicarán a todos los distritos seleccionados.
+          <div class="alert alert-info small mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>La misma acción, metas, fechas y descripción se aplicarán a todos los distritos seleccionados.</span>
+            <span id="grupoDistritosSeleccionadosPrograma" class="badge text-bg-primary">0 distrito(s)</span>
           </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Tipo de acción</label>
+              <input id="grupoTipoAccionPrograma" class="form-control" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Código de acción</label>
+              <input id="grupoCodigoAccionPrograma" class="form-control" readonly placeholder="Se genera automáticamente al guardar">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Unidad de medida</label>
+              <select id="grupoUnidadMedidaPrograma" class="form-select"></select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Meta programada</label>
+              <input id="grupoMetaProgramadaPrograma" type="number" min="0" step="any" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Plazo (días)</label>
+              <input id="grupoPlazoDiasPrograma" type="number" min="0" step="1" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">F. inicio</label>
+              <input id="grupoFechaInicioPrograma" type="date" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">F. final</label>
+              <input id="grupoFechaFinalPrograma" type="date" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Meta ejecutada</label>
+              <input id="grupoMetaEjecutadaPrograma" type="number" min="0" step="any" class="form-control">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">% Avance</label>
+              <input id="grupoAvancePrograma" class="form-control" readonly>
+            </div>
+          </div>
+
           <div class="mb-3">
             <label class="form-label">Acciones específicas programadas y ejecutadas</label>
             <textarea id="grupoDetallePrograma" class="form-control" rows="3"></textarea>
@@ -2379,7 +2423,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button id="btnGuardarAccionGrupalPrograma" type="button" class="btn btn-primary">Guardar acción</button>
+          <button id="btnGuardarAccionGrupalPrograma" type="button" class="btn btn-primary">Guardar acción grupal</button>
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -2393,7 +2437,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <script src="ubigeoData.js?v=79.19-consolidacion-rds-hasta-preaprobacion-20260714"></script>
-  <script src="app.js?v=79.19-consolidacion-rds-hasta-preaprobacion-20260714"></script>
+  <script src="ubigeoData.js?v=79.20-codigo-accion-automatico-registro-grupal-completo-20260716"></script>
+  <script src="app.js?v=79.20-codigo-accion-automatico-registro-grupal-completo-20260716"></script>
 </body>
 </html>
