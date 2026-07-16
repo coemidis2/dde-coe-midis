@@ -1,6 +1,6 @@
-// ================= VERSION 79.20 - CODIGO AUTOMATICO Y REGISTRO GRUPAL COMPLETO - 2026-07-16 =================
+// ================= VERSION 79.21 - FORMULARIOS POR PROGRAMA Y GESTIÓN POR DISTRITO - 2026-07-16 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.20.1-correccion-guardado-codigo-automatico-20260716';
+const APP_BUILD_VERSION = '79.21-formularios-programa-gestion-distrito-20260716';
 
 let state = {
   session: null,
@@ -11899,6 +11899,15 @@ function normalizarAccionD1(raw) {
     subtipo_rehabilitacion: raw.subtipo_rehabilitacion || raw.subtipoRehabilitacion || '',
     codigoAccion: codigo,
     codigo,
+    accionGrupoId: raw.accionGrupoId || raw.accion_grupo_id || '',
+    accion_grupo_id: raw.accion_grupo_id || raw.accionGrupoId || '',
+    version: Number(raw.version || 1),
+    locked: raw.locked === true || Number(raw.locked) === 1,
+    datosPrograma: (() => {
+      const v = raw.datosPrograma ?? raw.datos_programa ?? raw.datos_programa_json ?? {};
+      if (v && typeof v === 'object' && !Array.isArray(v)) return v;
+      try { const p = JSON.parse(String(v || '{}')); return p && typeof p === 'object' && !Array.isArray(p) ? p : {}; } catch (_) { return {}; }
+    })(),
     detalle: raw.detalle || raw.accion_registrada || raw.accionRegistrada || '',
     unidadMedida: raw.unidadMedida || raw.unidad || raw.unidad_medida || '',
     unidad: raw.unidad || raw.unidadMedida || raw.unidad_medida || '',
@@ -14192,5 +14201,439 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
   else iniciar();
   document.addEventListener('shown.bs.tab', iniciar);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
+
+// ================= VERSION 79.21 - FORMULARIOS POR PROGRAMA Y GESTIÓN POR DISTRITO =================
+// Alcance quirúrgico: Registro Acciones Programas. Añade campos específicos por programa,
+// edición/eliminación por distrito y reutilización del mismo grupo/código para agregar distritos.
+(function formulariosProgramaGestionDistritoV7921(){
+  'use strict';
+  const VERSION = '79.21-formularios-programa-gestion-distrito-20260716';
+  const q = (id) => document.getElementById(id);
+  const txt = (v) => String(v ?? '').trim();
+  const norm = (v) => txt(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  const esc = (v) => typeof escapeHtml === 'function' ? escapeHtml(v) : txt(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  const CONFIG = Object.freeze({
+    'PENSIÓN 65': {
+      unidades: ['Usuario', 'Persona', 'Punto de atención', 'Acción'],
+      campos: [
+        ['usuarios_programados', 'Usuarios programados'],
+        ['usuarios_atendidos', 'Usuarios atendidos']
+      ]
+    },
+    'JUNTOS': {
+      unidades: ['Hogar', 'Usuario', 'Persona', 'Acción'],
+      campos: [
+        ['hogares_programados', 'Hogares programados'],
+        ['hogares_atendidos', 'Hogares atendidos']
+      ]
+    },
+    'CONTIGO': {
+      unidades: ['Usuario', 'Persona', 'Visita domiciliaria', 'Acción'],
+      campos: [
+        ['usuarios_programados', 'Usuarios programados'],
+        ['usuarios_atendidos', 'Usuarios atendidos']
+      ]
+    },
+    'CUNA MÁS': {
+      unidades: ['Usuario', 'Familia', 'Servicio CIAI', 'Acción'],
+      campos: [
+        ['usuarios_programados', 'Usuarios programados'],
+        ['usuarios_atendidos', 'Usuarios atendidos'],
+        ['servicios_operativos', 'Servicios operativos'],
+        ['servicios_suspendidos', 'Servicios suspendidos']
+      ]
+    },
+    'PAE': {
+      unidades: ['Usuario', 'II.EE.', 'Servicio alimentario', 'Acción'],
+      campos: [
+        ['iiee_programadas', 'II.EE. programadas'],
+        ['iiee_atendidas', 'II.EE. atendidas'],
+        ['usuarios_programados', 'Usuarios programados'],
+        ['usuarios_atendidos', 'Usuarios atendidos']
+      ]
+    },
+    'FONCODES': {
+      unidades: ['Proyecto', 'Hogar', 'Familia', 'Acción'],
+      campos: [
+        ['proyectos_programados', 'Proyectos programados'],
+        ['proyectos_ejecutados', 'Proyectos ejecutados'],
+        ['hogares_familias_programados', 'Hogares o familias programados'],
+        ['hogares_familias_atendidos', 'Hogares o familias atendidos']
+      ]
+    },
+    'PAIS': {
+      unidades: ['Tambo', 'PIAS', 'Comunidad', 'Atención', 'Acción'],
+      campos: [
+        ['tambos_pias_programados', 'Tambos o PIAS programados'],
+        ['tambos_pias_operativos', 'Tambos o PIAS operativos'],
+        ['comunidades_programadas', 'Comunidades programadas'],
+        ['comunidades_atendidas', 'Comunidades atendidas'],
+        ['atenciones_realizadas', 'Atenciones realizadas']
+      ]
+    }
+  });
+
+  let accionEditando = null;
+  let datosGrupoPendientes = null;
+  let apiBase = null;
+  let guardarGrupalBase = null;
+  let cargarVistaBase = null;
+
+  function programaActual(){
+    try { return typeof programaSesionNormalizado === 'function' ? programaSesionNormalizado() : ''; }
+    catch (_) { return ''; }
+  }
+  function configPrograma(programa = programaActual()){
+    const p = typeof normalizarProgramaNombre === 'function' ? normalizarProgramaNombre(programa) : norm(programa);
+    return { programa: p, ...(CONFIG[p] || { unidades: ['Usuario','Servicio','Distrito','Acción'], campos: [] }) };
+  }
+  function parseDatos(a){
+    const v = a?.datosPrograma ?? a?.datos_programa ?? a?.datos_programa_json ?? {};
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v;
+    try { const p = JSON.parse(String(v || '{}')); return p && typeof p === 'object' && !Array.isArray(p) ? p : {}; } catch (_) { return {}; }
+  }
+  function renderCamposEspecificos(contenedorId, badgeId, programa, datos = {}, prefijo = 'grupo'){
+    const cont = q(contenedorId);
+    const badge = q(badgeId);
+    if (!cont) return;
+    const cfg = configPrograma(programa);
+    if (badge) badge.textContent = cfg.programa || 'Programa';
+    if (!cfg.campos.length) {
+      cont.innerHTML = '<div class="col-12 text-muted small">No hay campos adicionales configurados; se mantienen los campos comunes.</div>';
+      return;
+    }
+    cont.innerHTML = cfg.campos.map(([key, label]) => `
+      <div class="col-md-4">
+        <label class="form-label" for="${prefijo}DatoPrograma_${key}">${esc(label)}</label>
+        <input id="${prefijo}DatoPrograma_${key}" data-programa-key="${esc(key)}" type="number" min="0" step="any" class="form-control" value="${esc(datos[key] ?? '')}">
+      </div>`).join('');
+  }
+  function recogerCamposEspecificos(contenedorId){
+    const cont = q(contenedorId);
+    const datos = {};
+    cont?.querySelectorAll('[data-programa-key]').forEach(el => {
+      const key = el.getAttribute('data-programa-key');
+      if (!key) return;
+      const raw = txt(el.value);
+      datos[key] = raw === '' ? 0 : Number(raw);
+    });
+    return datos;
+  }
+  function configurarUnidades(select, programa, valor = ''){
+    if (!select) return;
+    const cfg = configPrograma(programa);
+    const opciones = [...new Set([...cfg.unidades, 'Otro'])];
+    select.innerHTML = '<option value="">Seleccione...</option>' + opciones.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+    if (valor && !opciones.includes(valor)) select.insertAdjacentHTML('beforeend', `<option value="${esc(valor)}">${esc(valor)}</option>`);
+    select.value = valor || '';
+  }
+  function fechaFinal(inicio, plazo){
+    try { return typeof sumarDiasFechaPeru === 'function' && inicio && Number(plazo) > 0 ? sumarDiasFechaPeru(inicio, Number(plazo) - 1) : ''; }
+    catch (_) { return ''; }
+  }
+  function avance(meta, ejecutada){
+    const m = Number(meta || 0), e = Number(ejecutada || 0);
+    return m > 0 ? `${Math.min(100, Math.round((e / m) * 100))}%` : '0%';
+  }
+  function dsActual(){
+    try { return typeof buscarDecretoPorId === 'function' ? buscarDecretoPorId(dsProgramaSeleccionadoId) : null; }
+    catch (_) { return null; }
+  }
+  function flujoAbierto(){
+    const d = dsActual();
+    if (!d?.rdsActivo) return false;
+    const estado = norm(d.estadoRDS || d.estado_rds || '');
+    return !['PREAPROBADO','APROBADO'].includes(estado);
+  }
+  function accionesActuales(){
+    const dsId = String(dsProgramaSeleccionadoId || '');
+    const programa = programaActual();
+    const lista = typeof cargarAccionesLocales === 'function' ? cargarAccionesLocales() : [];
+    return lista.filter(a => String(a.dsId || a.ds_id || '') === dsId &&
+      (typeof normalizarProgramaNombre === 'function' ? normalizarProgramaNombre(a.programaNacional || a.programa || '') : norm(a.programaNacional || a.programa || '')) === programa);
+  }
+
+  function prepararModalGrupal(){
+    const programa = programaActual();
+    const plantilla = datosGrupoPendientes;
+    configurarUnidades(q('grupoUnidadMedidaPrograma'), programa, plantilla?.unidadMedida || plantilla?.unidad || '');
+    renderCamposEspecificos('grupoCamposEspecificosContenidoV7921', 'grupoCamposEspecificosProgramaV7921', programa, parseDatos(plantilla), 'grupo');
+    if (plantilla) {
+      const set = (id, value) => { if (q(id)) q(id).value = value ?? ''; };
+      set('grupoMetaProgramadaPrograma', plantilla.metaProgramada ?? plantilla.meta_programada ?? 0);
+      set('grupoPlazoDiasPrograma', plantilla.plazoDias ?? plantilla.plazo_dias ?? plantilla.plazo ?? 0);
+      set('grupoFechaInicioPrograma', plantilla.fechaInicio || plantilla.fecha_inicio || '');
+      set('grupoFechaFinalPrograma', plantilla.fechaFinal || plantilla.fecha_final || '');
+      set('grupoMetaEjecutadaPrograma', plantilla.metaEjecutada ?? plantilla.meta_ejecutada ?? 0);
+      set('grupoAvancePrograma', plantilla.avance || '0%');
+      set('grupoDetallePrograma', plantilla.detalle || plantilla.accionesEspecificas || '');
+      set('grupoDescripcionPrograma', plantilla.descripcion || plantilla.descripcionActividades || '');
+      set('grupoTipoAccionPrograma', plantilla.tipoAccion || plantilla.tipo || q('progTipoAccion')?.value || '');
+      set('grupoCodigoAccionPrograma', plantilla.codigoAccion || plantilla.codigo || q('progCodigoAccion')?.value || '');
+      datosGrupoPendientes = null;
+    }
+  }
+
+  function instalarCalculosModal(){
+    const recalcular = () => {
+      const meta = q('grupoMetaProgramadaPrograma')?.value || 0;
+      const eje = q('grupoMetaEjecutadaPrograma')?.value || 0;
+      if (q('grupoAvancePrograma')) q('grupoAvancePrograma').value = avance(meta, eje);
+      const inicio = q('grupoFechaInicioPrograma')?.value || '';
+      const plazo = q('grupoPlazoDiasPrograma')?.value || 0;
+      if (q('grupoFechaFinalPrograma')) q('grupoFechaFinalPrograma').value = fechaFinal(inicio, plazo);
+    };
+    ['grupoMetaProgramadaPrograma','grupoMetaEjecutadaPrograma','grupoPlazoDiasPrograma','grupoFechaInicioPrograma'].forEach(id => {
+      const el = q(id); if (el && el.dataset.v7921Calc !== '1') { el.dataset.v7921Calc='1'; el.addEventListener('input', recalcular); el.addEventListener('change', recalcular); }
+    });
+  }
+
+  function envolverApi(){
+    if (apiBase || typeof api !== 'function') return;
+    apiBase = api;
+    api = async function(path, method = 'GET', body = null){
+      let payload = body;
+      const esAccionEscritura = path === '/acciones' && ['POST','PUT'].includes(String(method).toUpperCase()) && norm(body?.action || '') !== 'RESERVE_CODE';
+      if (esAccionEscritura && window.__datosProgramaV7921) {
+        payload = { ...(body || {}), datosPrograma: window.__datosProgramaV7921, datos_programa: window.__datosProgramaV7921 };
+      }
+      return apiBase(path, method, payload);
+    };
+    try { window.api = api; } catch (_) {}
+  }
+
+  function envolverGuardadoGrupal(){
+    if (guardarGrupalBase || typeof window.__guardarAccionesTerritorialesV792 !== 'function') return;
+    guardarGrupalBase = window.__guardarAccionesTerritorialesV792;
+    window.__guardarAccionesTerritorialesV792 = async function(opts){
+      window.__datosProgramaV7921 = recogerCamposEspecificos('grupoCamposEspecificosContenidoV7921');
+      try {
+        const r = await guardarGrupalBase(opts);
+        if (typeof cargarAccionesDesdeD1 === 'function') await cargarAccionesDesdeD1();
+        renderTablaV7921();
+        try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch (_) {}
+        return r;
+      } finally {
+        delete window.__datosProgramaV7921;
+      }
+    };
+  }
+
+  function asegurarCabeceraTabla(){
+    const tr = document.querySelector('#tablaAccionesProgramas thead tr');
+    if (!tr) return;
+    tr.innerHTML = '<th>Código</th><th>Tipo</th><th>Departamento</th><th>Provincia</th><th>Distrito</th><th>Unidad</th><th>Meta prog.</th><th>Meta ejec.</th><th>% Avance</th><th>Estado</th><th>Gestión</th>';
+  }
+
+  function resumenDatosPrograma(a){
+    const datos = parseDatos(a);
+    const cfg = configPrograma(a.programaNacional || a.programa || programaActual());
+    const partes = cfg.campos.map(([key,label]) => datos[key] !== undefined ? `${label}: ${datos[key]}` : '').filter(Boolean);
+    return partes.join(' · ');
+  }
+
+  function renderTablaV7921(){
+    asegurarCabeceraTabla();
+    const tbody = document.querySelector('#tablaAccionesProgramas tbody');
+    if (!tbody) return;
+    const acciones = accionesActuales().sort((a,b) => txt(b.fechaRegistro || b.fecha_registro).localeCompare(txt(a.fechaRegistro || a.fecha_registro)));
+    if (!acciones.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-muted">No hay acciones registradas para su programa.</td></tr>';
+      return;
+    }
+    const abierto = flujoAbierto();
+    tbody.innerHTML = acciones.map(a => {
+      const puede = abierto && !a.locked && !['PREAPROBADO','APROBADO'].includes(norm(a.estado));
+      const datosResumen = resumenDatosPrograma(a);
+      return `<tr>
+        <td><strong>${esc(a.codigoAccion || a.codigo || '')}</strong><div class="small text-muted">${esc(a.accionGrupoId || a.accion_grupo_id || '')}</div></td>
+        <td>${esc(a.tipoAccion || a.tipo || '')}</td>
+        <td>${esc(a.departamento || '')}</td>
+        <td>${esc(a.provincia || '')}</td>
+        <td><strong>${esc(a.distrito || '')}</strong>${datosResumen ? `<div class="small text-muted" title="${esc(datosResumen)}">Datos específicos registrados</div>` : ''}</td>
+        <td>${esc(a.unidadMedida || a.unidad || '')}</td>
+        <td>${esc(a.metaProgramada ?? a.meta_programada ?? 0)}</td>
+        <td>${esc(a.metaEjecutada ?? a.meta_ejecutada ?? 0)}</td>
+        <td>${esc(a.avance || '0%')}</td>
+        <td>${esc(a.estado || 'Registrado')}</td>
+        <td class="text-nowrap">
+          <button class="btn btn-sm btn-outline-primary me-1" data-v7921-edit="${esc(a.id)}" ${puede ? '' : 'disabled'}>Editar</button>
+          <button class="btn btn-sm btn-outline-danger me-1" data-v7921-delete="${esc(a.id)}" ${puede ? '' : 'disabled'}>Eliminar</button>
+          <button class="btn btn-sm btn-outline-success" data-v7921-add-group="${esc(a.id)}" ${puede ? '' : 'disabled'}>Agregar distritos</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function abrirEdicion(id){
+    const a = accionesActuales().find(x => String(x.id) === String(id));
+    if (!a) return alert('No se encontró la acción seleccionada.');
+    if (!flujoAbierto()) return alert('No se puede editar porque el RDS está Preaprobado o Aprobado.');
+    accionEditando = a;
+    const set = (id, value) => { if (q(id)) q(id).value = value ?? ''; };
+    set('editAccionIdV7921', a.id);
+    set('editAccionVersionV7921', Number(a.version || 1));
+    set('editCodigoV7921', a.codigoAccion || a.codigo || '');
+    set('editTipoV7921', a.tipoAccion || a.tipo || '');
+    configurarUnidades(q('editUnidadV7921'), a.programaNacional || a.programa, a.unidadMedida || a.unidad || '');
+    set('editMetaProgramadaV7921', a.metaProgramada ?? a.meta_programada ?? 0);
+    set('editPlazoV7921', a.plazoDias ?? a.plazo_dias ?? a.plazo ?? 0);
+    set('editFechaInicioV7921', a.fechaInicio || a.fecha_inicio || '');
+    set('editFechaFinalV7921', a.fechaFinal || a.fecha_final || '');
+    set('editMetaEjecutadaV7921', a.metaEjecutada ?? a.meta_ejecutada ?? 0);
+    set('editAvanceV7921', a.avance || '0%');
+    set('editDetalleV7921', a.detalle || a.accionesEspecificas || '');
+    set('editDescripcionV7921', a.descripcion || a.descripcionActividades || '');
+    if (q('editTerritorioResumenV7921')) q('editTerritorioResumenV7921').textContent = `${a.departamento || ''} / ${a.provincia || ''} / ${a.distrito || ''}`;
+    renderCamposEspecificos('editCamposEspecificosContenidoV7921', 'editProgramaBadgeV7921', a.programaNacional || a.programa, parseDatos(a), 'edit');
+    if (window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(q('modalEditarAccionDistritoV7921')).show();
+  }
+
+  function recalcularEdicion(){
+    if (q('editFechaFinalV7921')) q('editFechaFinalV7921').value = fechaFinal(q('editFechaInicioV7921')?.value || '', q('editPlazoV7921')?.value || 0);
+    if (q('editAvanceV7921')) q('editAvanceV7921').value = avance(q('editMetaProgramadaV7921')?.value || 0, q('editMetaEjecutadaV7921')?.value || 0);
+  }
+
+  async function guardarEdicion(){
+    const a = accionEditando;
+    if (!a) return;
+    if (!flujoAbierto()) return alert('No se puede editar porque el RDS está Preaprobado o Aprobado.');
+    const unidad = txt(q('editUnidadV7921')?.value);
+    const inicio = txt(q('editFechaInicioV7921')?.value);
+    const detalle = txt(q('editDetalleV7921')?.value);
+    const descripcion = txt(q('editDescripcionV7921')?.value);
+    if (!unidad) return alert('Seleccione la Unidad de medida.');
+    if (!inicio) return alert('Ingrese la Fecha de inicio.');
+    if (!detalle && !descripcion) return alert('Ingrese las Acciones específicas o la Descripción de actividades.');
+    recalcularEdicion();
+    const payload = {
+      ...a,
+      id: a.id,
+      version: Number(a.version || 1),
+      unidad,
+      unidadMedida: unidad,
+      meta_programada: Number(q('editMetaProgramadaV7921')?.value || 0),
+      metaProgramada: Number(q('editMetaProgramadaV7921')?.value || 0),
+      plazo_dias: Number(q('editPlazoV7921')?.value || 0),
+      plazoDias: Number(q('editPlazoV7921')?.value || 0),
+      fecha_inicio: inicio,
+      fechaInicio: inicio,
+      fecha_final: q('editFechaFinalV7921')?.value || '',
+      fechaFinal: q('editFechaFinalV7921')?.value || '',
+      meta_ejecutada: Number(q('editMetaEjecutadaV7921')?.value || 0),
+      metaEjecutada: Number(q('editMetaEjecutadaV7921')?.value || 0),
+      avance: q('editAvanceV7921')?.value || '0%',
+      detalle,
+      descripcion,
+      datosPrograma: recogerCamposEspecificos('editCamposEspecificosContenidoV7921')
+    };
+    window.__datosProgramaV7921 = payload.datosPrograma;
+    const res = await api('/acciones', 'PUT', payload);
+    delete window.__datosProgramaV7921;
+    if (!res?.ok || !res?.data?.ok) {
+      const error = txt(res?.data?.error);
+      const mensajes = { version_mismatch:'La acción fue modificada por otro usuario. Se recargará la versión vigente.', registro_preaprobado:'El RDS ya fue Preaprobado.', registro_aprobado:'El RDS ya fue Aprobado.', programa_not_allowed:'No puede modificar acciones de otro programa.', accion_locked:'La acción se encuentra bloqueada.' };
+      if (typeof cargarAccionesDesdeD1 === 'function') await cargarAccionesDesdeD1();
+      renderTablaV7921();
+      return alert(mensajes[error] || 'No se pudo actualizar la acción.');
+    }
+    if (window.bootstrap?.Modal) bootstrap.Modal.getOrCreateInstance(q('modalEditarAccionDistritoV7921')).hide();
+    accionEditando = null;
+    if (typeof cargarAccionesDesdeD1 === 'function') await cargarAccionesDesdeD1();
+    renderTablaV7921();
+    try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch (_) {}
+    alert('Acción del distrito actualizada correctamente.');
+  }
+
+  async function eliminarDistrito(id){
+    const a = accionesActuales().find(x => String(x.id) === String(id));
+    if (!a) return alert('No se encontró la acción seleccionada.');
+    if (!flujoAbierto()) return alert('No se puede eliminar porque el RDS está Preaprobado o Aprobado.');
+    if (!confirm(`¿Eliminar la acción del distrito ${a.distrito || ''}?\n\nEl Código de acción ${a.codigoAccion || a.codigo || ''} se mantiene para los demás distritos y no se reutiliza.`)) return;
+    const res = await api(`/acciones?id=${encodeURIComponent(a.id)}`, 'DELETE');
+    if (!res?.ok || !res?.data?.ok) {
+      const error = txt(res?.data?.error);
+      const mensajes = { registro_preaprobado:'El RDS ya fue Preaprobado.', registro_aprobado:'El RDS ya fue Aprobado.', programa_not_allowed:'No puede eliminar acciones de otro programa.', registrador_programa_required:'La eliminación corresponde al Registrador del Programa Nacional.', accion_locked:'La acción se encuentra bloqueada.' };
+      return alert(mensajes[error] || 'No se pudo eliminar la acción del distrito.');
+    }
+    if (typeof cargarAccionesDesdeD1 === 'function') await cargarAccionesDesdeD1();
+    renderTablaV7921();
+    try { if (typeof renderDistritosAccionesPrograma === 'function') renderDistritosAccionesPrograma(); } catch (_) {}
+    alert('Acción del distrito eliminada correctamente.');
+  }
+
+  function prepararAgregarDistritos(id){
+    const a = accionesActuales().find(x => String(x.id) === String(id));
+    if (!a) return alert('No se encontró la acción seleccionada.');
+    if (!flujoAbierto()) return alert('No se pueden agregar distritos porque el RDS está Preaprobado o Aprobado.');
+    if (q('progTipoAccion')) q('progTipoAccion').value = a.tipoAccion || a.tipo || '';
+    if (q('progCodigoAccion')) {
+      q('progCodigoAccion').value = a.codigoAccion || a.codigo || '';
+      q('progCodigoAccion').dataset.accionGrupoId = a.accionGrupoId || a.accion_grupo_id || '';
+    }
+    datosGrupoPendientes = a;
+    document.querySelector('#progDistritosAccionesBox')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    alert(`Seleccione los distritos adicionales y presione “Registrar acción grupal”. Se conservará el Código ${a.codigoAccion || a.codigo || ''}.`);
+  }
+
+  function instalarEventos(){
+    const modalGrupo = q('modalAccionGrupalPrograma');
+    if (modalGrupo && modalGrupo.dataset.v7921 !== '1') {
+      modalGrupo.dataset.v7921 = '1';
+      modalGrupo.addEventListener('show.bs.modal', () => { prepararModalGrupal(); instalarCalculosModal(); });
+    }
+    ['editMetaProgramadaV7921','editMetaEjecutadaV7921','editPlazoV7921','editFechaInicioV7921'].forEach(id => {
+      const el=q(id); if(el && el.dataset.v7921Calc!=='1'){el.dataset.v7921Calc='1';el.addEventListener('input',recalcularEdicion);el.addEventListener('change',recalcularEdicion);}
+    });
+    if (q('btnGuardarEdicionDistritoV7921') && q('btnGuardarEdicionDistritoV7921').dataset.v7921 !== '1') {
+      q('btnGuardarEdicionDistritoV7921').dataset.v7921='1'; q('btnGuardarEdicionDistritoV7921').addEventListener('click', guardarEdicion);
+    }
+    const tbody = document.querySelector('#tablaAccionesProgramas tbody');
+    if (tbody && tbody.dataset.v7921 !== '1') {
+      tbody.dataset.v7921='1';
+      tbody.addEventListener('click', (e) => {
+        const edit = e.target.closest('[data-v7921-edit]');
+        const del = e.target.closest('[data-v7921-delete]');
+        const add = e.target.closest('[data-v7921-add-group]');
+        if (edit) abrirEdicion(edit.getAttribute('data-v7921-edit'));
+        else if (del) void eliminarDistrito(del.getAttribute('data-v7921-delete'));
+        else if (add) prepararAgregarDistritos(add.getAttribute('data-v7921-add-group'));
+      });
+    }
+  }
+
+  function envolverCargaVista(){
+    if (cargarVistaBase || typeof window.cargarVistaAccionesPrograma !== 'function') return;
+    cargarVistaBase = window.cargarVistaAccionesPrograma;
+    window.cargarVistaAccionesPrograma = function(id){
+      const r = cargarVistaBase(id);
+      setTimeout(() => { instalar(); renderTablaV7921(); }, 0);
+      return r;
+    };
+    try { cargarVistaAccionesPrograma = window.cargarVistaAccionesPrograma; } catch (_) {}
+  }
+
+  function instalar(){
+    envolverApi();
+    envolverGuardadoGrupal();
+    envolverCargaVista();
+    instalarEventos();
+    if (q('progAccionesRegistradasControles')) q('progAccionesRegistradasControles').style.display = 'none';
+    configurarUnidades(q('grupoUnidadMedidaPrograma'), programaActual(), q('grupoUnidadMedidaPrograma')?.value || '');
+    renderCamposEspecificos('grupoCamposEspecificosContenidoV7921', 'grupoCamposEspecificosProgramaV7921', programaActual(), {}, 'grupo');
+    renderTablaV7921();
+    try { window.renderTablaAccionesProgramas = renderTablaV7921; renderTablaAccionesProgramas = renderTablaV7921; } catch (_) {}
+  }
+
+  setTimeout(instalar, 0);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(instalar, 300));
+  document.addEventListener('shown.bs.tab', (e) => {
+    if (e.target?.getAttribute?.('data-bs-target') === '#tabAccionesProgramas') setTimeout(instalar, 0);
+  });
+  setTimeout(instalar, 3000);
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
