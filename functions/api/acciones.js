@@ -1,4 +1,4 @@
-// ================= VERSION 79.21 - FORMULARIOS POR PROGRAMA Y GESTION POR DISTRITO - 2026-07-16 =================
+// ================= VERSION 79.21.2 - CONTROL UNICO DE ACCION POR DISTRITO - 2026-07-17 =================
 import {
   json,
   readJson,
@@ -473,6 +473,41 @@ export async function onRequestPost(context) {
     const validacionDS = await validarDecretoParaEscritura(context.env, accion.ds_id);
     if (!validacionDS.ok) return validacionDS.response;
 
+    // Regla v79.21.2: un Programa Nacional solo puede mantener una acción activa
+    // por distrito, dentro del mismo DS y reunión. Las modificaciones se realizan
+    // exclusivamente mediante PUT y las bajas mediante DELETE lógico.
+    if (accion.departamento || accion.provincia || accion.distrito) {
+      const distritoYaRegistrado = await context.env.DB.prepare(`
+        SELECT id, codigo, accion_grupo_id
+        FROM acciones
+        WHERE deleted_at IS NULL
+          AND ds_id = ?
+          AND COALESCE(numero_reunion, '') = ?
+          AND COALESCE(programa, '') = ?
+          AND COALESCE(departamento, '') = ?
+          AND COALESCE(provincia, '') = ?
+          AND COALESCE(distrito, '') = ?
+        LIMIT 1
+      `).bind(
+        accion.ds_id,
+        accion.numero_reunion || '',
+        accion.programa || '',
+        accion.departamento || '',
+        accion.provincia || '',
+        accion.distrito || ''
+      ).first();
+
+      if (distritoYaRegistrado) {
+        return json({
+          ok: false,
+          error: 'distrito_ya_registrado',
+          existing_id: distritoYaRegistrado.id,
+          codigo: distritoYaRegistrado.codigo || '',
+          accion_grupo_id: distritoYaRegistrado.accion_grupo_id || ''
+        }, { status: 409 });
+      }
+    }
+
     const now = new Date().toISOString();
 
     const existente = accion.accion_grupo_id
@@ -676,6 +711,33 @@ export async function onRequestPut(context) {
       }
       if (normalizePrograma(auth.session.programa || '') !== accion.programa) {
         return forbidden('programa_not_allowed');
+      }
+    }
+
+    if (accion.departamento || accion.provincia || accion.distrito) {
+      const otroDistrito = await context.env.DB.prepare(`
+        SELECT id, codigo
+        FROM acciones
+        WHERE deleted_at IS NULL
+          AND id <> ?
+          AND ds_id = ?
+          AND COALESCE(numero_reunion, '') = ?
+          AND COALESCE(programa, '') = ?
+          AND COALESCE(departamento, '') = ?
+          AND COALESCE(provincia, '') = ?
+          AND COALESCE(distrito, '') = ?
+        LIMIT 1
+      `).bind(
+        body.id,
+        current.ds_id,
+        accion.numero_reunion || '',
+        accion.programa || '',
+        accion.departamento || '',
+        accion.provincia || '',
+        accion.distrito || ''
+      ).first();
+      if (otroDistrito) {
+        return json({ ok: false, error: 'distrito_ya_registrado', existing_id: otroDistrito.id, codigo: otroDistrito.codigo || '' }, { status: 409 });
       }
     }
 
