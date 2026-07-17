@@ -1,6 +1,6 @@
-// ================= VERSION 79.21.1 - PAGINACIÓN ACCIONES REGISTRADAS Y GESTIÓN SIN AGREGAR DISTRITOS - 2026-07-16 =================
+// ================= VERSION 79.21.2 - CONTROL ÚNICO POR DISTRITO Y FILTROS TERRITORIALES - 2026-07-17 =================
 const API_BASE = window.location.origin + '/api';
-const APP_BUILD_VERSION = '79.21.1-paginacion-acciones-registradas-20260716';
+const APP_BUILD_VERSION = '79.21.2-control-unico-distrito-filtros-20260717';
 
 let state = {
   session: null,
@@ -12600,6 +12600,15 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const sel = q('progFiltroCoberturaEn');
     const columnas = getColumnasCoberturaPrograma();
     if (!box || !sel) return;
+
+    // Conserva la opción elegida antes de reconstruir el catálogo dinámico.
+    // Sin esta reserva, cada render devolvía el selector a “Cualquiera”.
+    const valorAnterior = ['cualquiera','primera','segunda','ambas'].includes(sel.value)
+      ? sel.value
+      : (['cualquiera','primera','segunda','ambas'].includes(stateV792.filtros.coberturaEn)
+          ? stateV792.filtros.coberturaEn
+          : 'cualquiera');
+
     const mostrar = columnas.length > 1;
     box.style.display = mostrar ? '' : 'none';
     if (!mostrar) {
@@ -12610,17 +12619,15 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const primera = columnas[0]?.label || 'Primera columna';
     const segunda = columnas[1]?.label || 'Segunda columna';
     sel.innerHTML = `<option value="cualquiera">Cualquiera</option><option value="primera">${escapeHtml(primera)}</option><option value="segunda">${escapeHtml(segunda)}</option><option value="ambas">Ambas</option>`;
-    if (!['cualquiera','primera','segunda','ambas'].includes(sel.value)) sel.value = 'cualquiera';
+    sel.value = valorAnterior;
+    stateV792.filtros.coberturaEn = valorAnterior;
   }
 
   function leerFiltrosDistritos() {
     stateV792.filtros.dep = norm(q('progFiltroDepartamento')?.value || '');
     stateV792.filtros.prov = norm(q('progFiltroProvincia')?.value || '');
     stateV792.filtros.dist = norm(q('progFiltroDistrito')?.value || '');
-    stateV792.filtros.detalleEstado = q('progFiltroDetalleEstado')?.value || '';
-    stateV792.filtros.descripcionEstado = q('progFiltroDescripcionEstado')?.value || '';
     stateV792.filtros.cobertura = q('progFiltroCobertura')?.value || '';
-    stateV792.filtros.coberturaMinima = q('progFiltroCoberturaMinima')?.value || '';
     stateV792.filtros.coberturaEn = q('progFiltroCoberturaEn')?.value || 'cualquiera';
     stateV792.filtros.estadoAccion = q('progFiltroEstadoAccion')?.value || '';
   }
@@ -12632,10 +12639,6 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       if (f.dep && !norm(t.departamento).includes(f.dep)) return false;
       if (f.prov && !norm(t.provincia).includes(f.prov)) return false;
       if (f.dist && !norm(t.distrito).includes(f.dist)) return false;
-      if (f.detalleEstado === 'pendiente' && tieneTextoAccion(acciones)) return false;
-      if (f.detalleEstado === 'no_pendiente' && !tieneTextoAccion(acciones)) return false;
-      if (f.descripcionEstado === 'pendiente' && tieneTextoDescripcion(acciones)) return false;
-      if (f.descripcionEstado === 'no_pendiente' && !tieneTextoDescripcion(acciones)) return false;
       if (!cumpleFiltroCobertura(t)) return false;
       if (f.estadoAccion === 'pendiente' && acciones.length) return false;
       if (f.estadoAccion === 'registrado' && !acciones.length) return false;
@@ -12656,11 +12659,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         <div class="col-md-2"><label class="form-label small mb-1">Provincia</label><input id="progFiltroProvincia" class="form-control form-control-sm" placeholder="Provincia"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Distrito</label><input id="progFiltroDistrito" class="form-control form-control-sm" placeholder="Distrito"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Cobertura</label><select id="progFiltroCobertura" class="form-select form-select-sm"><option value="">Todos</option><option value="con">Con cobertura</option><option value="sin">Sin cobertura</option><option value="mayor_0">Mayor a 0</option><option value="mayor_100">Mayor a 100</option><option value="mayor_500">Mayor a 500</option><option value="mayor_1000">Mayor a 1000</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Cobertura mínima</label><input id="progFiltroCoberturaMinima" type="number" min="0" class="form-control form-control-sm" placeholder="N° mínimo"></div>
         <div class="col-md-2"><label class="form-label small mb-1">Estado de acción</label><select id="progFiltroEstadoAccion" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="registrado">Registrados</option></select></div>
-        <div class="col-md-2" data-cobertura-en-box><label class="form-label small mb-1">Cobertura en</label><select id="progFiltroCoberturaEn" class="form-select form-select-sm"><option value="cualquiera">Cualquiera</option><option value="primera">Primera columna</option><option value="segunda">Segunda columna</option><option value="ambas">Ambas</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Acciones específicas</label><select id="progFiltroDetalleEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
-        <div class="col-md-2"><label class="form-label small mb-1">Descripción de actividades</label><select id="progFiltroDescripcionEstado" class="form-select form-select-sm"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="no_pendiente">No pendientes</option></select></div>
+        <div class="col-md-3" data-cobertura-en-box><label class="form-label small mb-1">Cobertura en</label><select id="progFiltroCoberturaEn" class="form-select form-select-sm"><option value="cualquiera">Cualquiera</option><option value="primera">Primera columna</option><option value="segunda">Segunda columna</option><option value="ambas">Ambas</option></select></div>
         <div class="col-md-2 d-flex gap-2"><button id="btnBuscarDistritosPrograma" type="button" class="btn btn-sm btn-primary">Buscar</button><button id="btnLimpiarBuscarDistritosPrograma" type="button" class="btn btn-sm btn-outline-secondary">Limpiar</button></div>
       </div>`;
     if (header && header.parentNode) header.parentNode.insertBefore(filtros, header.nextSibling);
@@ -12692,6 +12692,18 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     wrapper.parentNode.insertBefore(controles, wrapper);
   }
 
+  function actualizarBotonRegistroGrupalV792() {
+    const btn = q('btnRegistrarAccionGrupalPrograma');
+    if (!btn) return;
+    const pendientes = getTerritoriosDSPrograma().filter(t =>
+      stateV792.seleccion.has(t.key) && accionesDeTerritorio(t).length === 0
+    );
+    btn.disabled = pendientes.length === 0;
+    btn.title = pendientes.length
+      ? `Registrar una acción en ${pendientes.length} distrito(s) pendiente(s)`
+      : 'Seleccione al menos un distrito pendiente.';
+  }
+
   function renderDistritosAccionesProgramaV792() {
     asegurarControlesDistritos();
     const tbody = document.querySelector('#tablaDistritosAccionesPrograma tbody');
@@ -12707,6 +12719,10 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       return;
     }
     let territorios = getTerritoriosDSPrograma();
+    // Un distrito ya registrado no puede volver a formar parte de un registro grupal.
+    territorios.forEach(t => {
+      if (accionesDeTerritorio(t).length > 0) stateV792.seleccion.delete(t.key);
+    });
     if (!territorios.length) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-muted">El Decreto Supremo seleccionado no tiene distritos registrados.</td></tr>`;
       return;
@@ -12736,10 +12752,12 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
       const acciones = accionesDeTerritorio(t);
       const detalle = resumen(acciones, ['detalle', 'accionesEspecificas']);
       const descripcion = resumen(acciones, ['descripcionActividades', 'descripcion']);
-      const checked = stateV792.seleccion.has(t.key) ? 'checked' : '';
-      const estadoFila = acciones.length ? '<span class="badge text-bg-success">Registrado</span>' : '<span class="badge text-bg-secondary">Pendiente</span>';
-      return `<tr data-territorio-key="${escAttr(t.key)}">
-        <td class="text-center"><input class="form-check-input chk-distrito-programa" type="checkbox" value="${escAttr(t.key)}" ${checked}></td>
+      const registrado = acciones.length > 0;
+      const checked = !registrado && stateV792.seleccion.has(t.key) ? 'checked' : '';
+      const estadoFila = registrado ? '<span class="badge text-bg-success">Registrado</span>' : '<span class="badge text-bg-secondary">Pendiente</span>';
+      const bloqueoSeleccion = registrado ? 'disabled aria-disabled="true" title="Este distrito ya tiene una acción registrada. Use Editar o Eliminar en Acciones registradas."' : '';
+      return `<tr data-territorio-key="${escAttr(t.key)}" class="${registrado ? 'table-light' : ''}">
+        <td class="text-center"><input class="form-check-input chk-distrito-programa" type="checkbox" value="${escAttr(t.key)}" ${checked} ${bloqueoSeleccion}></td>
         <td>${esc(t.departamento)}</td>
         <td>${esc(t.provincia)}</td>
         <td><strong>${esc(t.distrito)}</strong><div class="small text-muted">${estadoFila}</div></td>
@@ -12751,10 +12769,18 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
 
     tbody.querySelectorAll('.chk-distrito-programa').forEach(chk => {
       chk.addEventListener('change', () => {
-        if (chk.checked) stateV792.seleccion.add(chk.value);
-        else stateV792.seleccion.delete(chk.value);
+        if (chk.disabled) {
+          chk.checked = false;
+          stateV792.seleccion.delete(chk.value);
+        } else if (chk.checked) {
+          stateV792.seleccion.add(chk.value);
+        } else {
+          stateV792.seleccion.delete(chk.value);
+        }
+        actualizarBotonRegistroGrupalV792();
       });
     });
+    actualizarBotonRegistroGrupalV792();
   }
 
   function territoriosFiltradosActuales() {
@@ -12763,7 +12789,9 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   }
 
   function seleccionarTodosDistritosV792() {
-    territoriosFiltradosActuales().forEach(t => stateV792.seleccion.add(t.key));
+    territoriosFiltradosActuales()
+      .filter(t => accionesDeTerritorio(t).length === 0)
+      .forEach(t => stateV792.seleccion.add(t.key));
     renderDistritosAccionesProgramaV792();
   }
 
@@ -12778,7 +12806,13 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     document.querySelectorAll('.chk-distrito-programa:checked, .chk-distrito-programa-v571:checked').forEach(chk => {
       if (chk?.value) stateV792.seleccion.add(String(chk.value));
     });
-    if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito para registrar la acción.');
+    if (!stateV792.seleccion.size) return alert('Debe seleccionar al menos un distrito pendiente para registrar la acción.');
+    const yaRegistrados = getTerritoriosDSPrograma().filter(t => stateV792.seleccion.has(t.key) && accionesDeTerritorio(t).length > 0);
+    if (yaRegistrados.length) {
+      yaRegistrados.forEach(t => stateV792.seleccion.delete(t.key));
+      renderDistritosAccionesProgramaV792();
+      return alert('Uno o más distritos seleccionados ya tienen una acción registrada. Para cambiar esa información use Editar o Eliminar en la sección Acciones registradas.');
+    }
     if (q('grupoDetallePrograma')) q('grupoDetallePrograma').value = '';
     if (q('grupoDescripcionPrograma')) q('grupoDescripcionPrograma').value = '';
     const modal = q('modalAccionGrupalPrograma');
@@ -12832,6 +12866,12 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     const keyR = reunionKey(d);
     const seleccionados = getTerritoriosDSPrograma().filter(t => stateV792.seleccion.has(t.key));
     if (!seleccionados.length) return alert('No se encontraron distritos válidos seleccionados.');
+    const duplicadosTerritoriales = seleccionados.filter(t => accionesDeTerritorio(t).length > 0);
+    if (duplicadosTerritoriales.length) {
+      duplicadosTerritoriales.forEach(t => stateV792.seleccion.delete(t.key));
+      renderDistritosAccionesProgramaV792();
+      return alert('No se puede registrar nuevamente un distrito que ya tiene una acción. Use Editar o Eliminar en Acciones registradas.');
+    }
 
     // v79.20: el Worker reserva una sola cabecera/código y ese mismo código se
     // reutiliza en todas las filas territoriales de la acción grupal.
@@ -12960,7 +13000,8 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
         accion_locked: 'No se guardó la información porque una acción se encuentra bloqueada.',
         decreto_locked: 'No se guardó la información porque el Decreto Supremo se encuentra bloqueado.',
         rds_not_active: 'No se guardó la información porque el RDS ya no se encuentra activo.',
-        programa_not_allowed: 'El Programa Nacional de la sesión no coincide con la acción enviada.'
+        programa_not_allowed: 'El Programa Nacional de la sesión no coincide con la acción enviada.',
+        distrito_ya_registrado: 'El distrito ya tiene una acción registrada. Para modificarla use Editar; para retirarla use Eliminar.'
       };
       return alert(mensajes[error] || `No se pudo guardar ${rechazados.length} registro(s). Se recargó la información vigente desde D1.`);
     }
@@ -13050,14 +13091,14 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
     q('btnBuscarDistritosPrograma')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }, true);
     q('btnLimpiarBuscarDistritosPrograma')?.addEventListener('click', (e) => {
       e.preventDefault(); e.stopImmediatePropagation();
-      ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroCobertura','progFiltroCoberturaMinima','progFiltroEstadoAccion','progFiltroDetalleEstado','progFiltroDescripcionEstado'].forEach(id => { if (q(id)) q(id).value = ''; });
+      ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroCobertura','progFiltroEstadoAccion'].forEach(id => { if (q(id)) q(id).value = ''; });
       if (q('progFiltroCoberturaEn')) q('progFiltroCoberturaEn').value = 'cualquiera';
       stateV792.filtros = { dep:'', prov:'', dist:'', detalleEstado:'', descripcionEstado:'', cobertura:'', coberturaMinima:'', coberturaEn:'cualquiera', estadoAccion:'' };
       stateV792.paginaDistritos = 1;
       renderDistritosAccionesProgramaV792();
     }, true);
-    ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito','progFiltroCoberturaMinima'].forEach(id => q(id)?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); } }));
-    ['progFiltroCobertura','progFiltroCoberturaEn','progFiltroEstadoAccion','progFiltroDetalleEstado','progFiltroDescripcionEstado','progDistritosPageSize'].forEach(id => q(id)?.addEventListener('change', () => { stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }));
+    ['progFiltroDepartamento','progFiltroProvincia','progFiltroDistrito'].forEach(id => q(id)?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); } }));
+    ['progFiltroCobertura','progFiltroCoberturaEn','progFiltroEstadoAccion','progDistritosPageSize'].forEach(id => q(id)?.addEventListener('change', () => { stateV792.paginaDistritos = 1; renderDistritosAccionesProgramaV792(); }));
     q('btnProgDistritosAnterior')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos = Math.max(1, stateV792.paginaDistritos - 1); renderDistritosAccionesProgramaV792(); }, true);
     q('btnProgDistritosSiguiente')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); stateV792.paginaDistritos += 1; renderDistritosAccionesProgramaV792(); }, true);
     q('btnSeleccionarTodosDistritosPrograma')?.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); seleccionarTodosDistritosV792(); }, true);
@@ -14812,3 +14853,40 @@ console.info('DEE MIDIS VERSION 79.8 - COBERTURA TERRITORIAL FIX activo: decreto
   });
   console.info('DEE MIDIS cierre aplicado:', VERSION);
 })();
+
+// ================= CORRECCIÓN QUIRÚRGICA v79.21.2 =================
+// Alcance exclusivo: filtros y selección territorial en Registro Acciones Programas.
+(function controlUnicoDistritoFiltrosV79212(){
+  'use strict';
+  const VERSION = '79.21.2-control-unico-distrito-filtros-20260717';
+  const q = (id) => document.getElementById(id);
+
+  function retirarFiltro(id){
+    const el = q(id);
+    if (!el) return;
+    const col = el.closest('.col-md-2, .col-md-3, .col-md-4, [class*="col-"]');
+    (col || el).remove();
+  }
+
+  function limpiarFiltrosObsoletos(){
+    retirarFiltro('progFiltroCoberturaMinima');
+    retirarFiltro('progFiltroDetalleEstado');
+    retirarFiltro('progFiltroDescripcionEstado');
+  }
+
+  function instalar(){
+    limpiarFiltrosObsoletos();
+    const btn = q('btnRegistrarAccionGrupalPrograma');
+    if (btn && !document.querySelector('.chk-distrito-programa:checked:not(:disabled)')) {
+      btn.disabled = true;
+      btn.title = 'Seleccione al menos un distrito pendiente.';
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', instalar);
+  else instalar();
+  document.addEventListener('shown.bs.tab', () => setTimeout(instalar, 0));
+  setTimeout(instalar, 1200);
+  console.info('DEE MIDIS cierre aplicado:', VERSION);
+})();
+
